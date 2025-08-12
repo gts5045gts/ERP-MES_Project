@@ -13,7 +13,7 @@
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">부산 아이티윌</div>
             </a>
 
             <!-- Divider -->
@@ -39,61 +39,57 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                    aria-expanded="true" aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-cog"></i>
-                    <span>Components</span>
+                    <span>시스템 관리</span>
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="buttons.html">Buttons</a>
-                        <a class="collapse-item" href="cards.html">Cards</a>
+                        <h6 class="collapse-header">코드관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{/admin/commonCode}">공통코드 관리</a>
                     </div>
                 </div>
             </li>
 
-            <!-- Nav Item - Utilities Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                   aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>Utilities</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                     data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Utilities:</h6>
-                        <a class="collapse-item" href="utilities-color.html">Colors</a>
-                        <a class="collapse-item" href="utilities-border.html">Borders</a>
-                        <a class="collapse-item" href="utilities-animation.html">Animations</a>
-                        <a class="collapse-item" href="utilities-other.html">Other</a>
-                    </div>
-                </div>
-            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
             <!-- Heading -->
             <div class="sidebar-heading">
+            <!-- Nav Item - Utilities Collapse Menu -->
                 Addons
             </div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                   aria-expanded="true" aria-controls="collapseUtilities">
+                    <i class="fas fa-fw fa-wrench"></i>
+                    <span>인사관리</span>
+                </a>
+                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                     data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">인사관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{/personnel/orgChart}">인사현황</a>
+                        <a class="collapse-item" th:href="@{/personnel/App}">인사등록</a>
+                        <a class="collapse-item" th:href="@{/personnel/Regist}">인사발령</a>
+                        <a class="collapse-item" th:href="@{/personnel/Current}">조직도</a>
+                    </div>
+                </div>
+            </li>
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
                    aria-expanded="true" aria-controls="collapsePages">
                     <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
+                    <span>근태관리</span>
                 </a>
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Login Screens:</h6>
-                        <a class="collapse-item" th:href="@{login}">Login</a>
-                        <a class="collapse-item" th:href="@{register}">Register</a>
-                        <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
+                        <h6 class="collapse-header">근태관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{/attendence/commuteList}">출퇴근확인</a>
+                        <a class="collapse-item" th:href="@{/attendence/attendanceList }">나의 근태 내역</a>
+                        <a class="collapse-item" th:href="@{/attendence/annualList}">연차 관리</a>
                         <div class="collapse-divider"></div>
-                        <h6 class="collapse-header">Other Pages:</h6>
-                        <a class="collapse-item" href="404.html">404 Page</a>
-                        <a class="collapse-item" th:href="@{blank}">Blank Page</a>
                     </div>
                 </div>
             </li>
@@ -107,25 +103,30 @@
                 </a>
                 <div id="collapsePayment" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">전자결재 메뉴들:</h6>
-                        <a class="collapse-item" th:href="@{/e_approval/doc_list}">기안신청</a>
-                        <a class="collapse-item" th:href="@{/e_approval/doc_list2}">결재목록</a>
+                        <h6 class="collapse-header">전자결재 메뉴:</h6>
+                       	<a class="collapse-item" th:href="@{/approval/doc_list}">기안작성</a>
+                        <a class="collapse-item" th:href="@{/approval/approval_list}">내결재관리</a>
                     </div>
                 </div>
             </li>
-
-            <!-- Nav Item - Charts -->
             <li class="nav-item">
-                <a class="nav-link" href="charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePay"
+                   aria-expanded="true" aria-controls="collapsePayment">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>그룹웨어</span>
+                </a>
+                <div id="collapsePay" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">공지사항 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{/groupware/aNotic}">전체 공지사항</a>
+                        <a class="collapse-item" th:href="@{/groupware/eNotic}">부서별 공지사항</a>
+                        <h6 class="collapse-header">회사일정 메뉴:</h6>
+                    	<a class="collapse-item" th:href="@{/groupware/aSchedule}">전체 일정</a>
+                        <a class="collapse-item" th:href="@{/groupware/eSchedule}">부서별 일정</a>
+                        <h6 class="collapse-header">공통문서 메뉴:</h6>
+                    	<a class="collapse-item" th:href="@{/groupware/document}">사내공통 문서양식관리</a>
+                    </div>
+                </div>
             </li>
 
             <!-- Divider -->
@@ -137,11 +138,6 @@
             </div>
 
             <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" th:src="@{/bootstrap/img/undraw_rocket.svg}" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>
 
         </ul>
         <!-- End of Sidebar -->
@@ -160,19 +156,7 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form
-                            class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                   aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
