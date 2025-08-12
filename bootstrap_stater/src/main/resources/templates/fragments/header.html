@@ -13,7 +13,7 @@
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+                <div class="sidebar-brand-text mx-3">부산 아이티윌</div>
             </a>
 
             <!-- Divider -->
@@ -43,9 +43,8 @@
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="buttons.html">Buttons</a>
-                        <a class="collapse-item" href="cards.html">Cards</a>
+                        <h6 class="collapse-header">코드관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{login}">공통코드 관리</a>
                     </div>
                 </div>
             </li>
@@ -68,11 +67,11 @@
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                      data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">인사관리 메뉴들:</h6>
-                        <a class="collapse-item" href="utilities-color.html">인사현황</a>
-                        <a class="collapse-item" href="utilities-border.html">인사등록</a>
-                        <a class="collapse-item" href="utilities-animation.html">인사발령</a>
-                        <a class="collapse-item" href="utilities-other.html">조직도</a>
+                        <h6 class="collapse-header">인사관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{login}">인사현황</a>
+                        <a class="collapse-item" th:href="@{login}">인사등록</a>
+                        <a class="collapse-item" th:href="@{login}">인사발령</a>
+                        <a class="collapse-item" th:href="@{login}">조직도</a>
                     </div>
                 </div>
             </li>
@@ -82,14 +81,14 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
                    aria-expanded="true" aria-controls="collapsePages">
                     <i class="fas fa-fw fa-folder"></i>
-                    <span>근퇘관리</span>
+                    <span>근태관리</span>
                 </a>
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header"></h6>
-                        <a class="collapse-item" th:href="@{login}">Login</a>
-                        <a class="collapse-item" th:href="@{register}">Register</a>
-                        <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
+                        <h6 class="collapse-header">근태관리 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{login}">출퇴근확인</a>
+                        <a class="collapse-item" th:href="@{register}">나의 근태 내역</a>
+                        <a class="collapse-item" th:href="@{login}">연차 관리</a>
                         <div class="collapse-divider"></div>
                     </div>
                 </div>
@@ -104,26 +103,32 @@
                 </a>
                 <div id="collapsePayment" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">전자결재 메뉴들:</h6>
+                        <h6 class="collapse-header">전자결재 메뉴:</h6>
                         <a class="collapse-item" th:href="@{login}">기안작성</a>
                         <a class="collapse-item" th:href="@{register}">내결재관리</a>
                     </div>
                 </div>
             </li>
-
-            <!-- Nav Item - Charts -->
             <li class="nav-item">
-                <a class="nav-link" href="charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePay"
+                   aria-expanded="true" aria-controls="collapsePayment">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>그룹웨어</span>
+                </a>
+                <div id="collapsePay" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">공지사항 메뉴:</h6>
+                        <a class="collapse-item" th:href="@{login}">기안작성</a>
+                        <a class="collapse-item" th:href="@{register}">내결재관리</a>
+                        <h6 class="collapse-header">회사일정 메뉴:</h6>
+                    	<a class="collapse-item" th:href="@{login}">기안작성</a>
+                        <a class="collapse-item" th:href="@{register}">내결재관리</a>
+                        <h6 class="collapse-header">공통문서 메뉴:</h6>
+                    	<a class="collapse-item" th:href="@{login}">사내공통 문서양식관리</a>
+                    </div>
+                </div>
             </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>
+           
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -134,11 +139,6 @@
             </div>
 
             <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" th:src="@{/bootstrap/img/undraw_rocket.svg}" alt="...">
-                <p class="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-            </div>
 
         </ul>
         <!-- End of Sidebar -->
