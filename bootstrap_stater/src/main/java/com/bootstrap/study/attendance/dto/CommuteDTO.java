@@ -20,20 +20,20 @@ public class CommuteDTO {
 	private LocalDateTime checkOutTime;
 	private String empId;
 	private String workStatus;
-	private Timestamp createAt;
-	private Timestamp updateAt;
+	private Timestamp createdAt;
+	private Timestamp updatedAt;
 	
 	
 	@Builder
 	public CommuteDTO(Long commuteId, LocalDateTime checkInTime, LocalDateTime checkOutTime, String empId,
-			String workStatus, Timestamp createAt, Timestamp updateAt) {
+			String workStatus, Timestamp createdAt, Timestamp updatedAt) {
 		this.commuteId = commuteId;
 		this.checkInTime = checkInTime;
 		this.checkOutTime = checkOutTime;
 		this.empId = empId;
 		this.workStatus = workStatus;
-		this.createAt = createAt;
-		this.updateAt = updateAt;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 	}
 	
 }

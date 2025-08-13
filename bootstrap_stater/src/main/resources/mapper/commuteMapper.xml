@@ -12,8 +12,8 @@
             check_out_time AS checkOutTime,
             emp_id         AS empId,
             work_status    AS workStatus,
-            created_at     AS createAt,
-            updated_at     AS updateAt
+            created_at     AS createdAt,
+            updated_at     AS updatedAt
         FROM commute
 	</select>
 </mapper>

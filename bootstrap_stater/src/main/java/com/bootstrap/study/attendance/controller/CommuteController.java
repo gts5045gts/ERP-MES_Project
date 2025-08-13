@@ -25,6 +25,7 @@ public class CommuteController {
 	}
 // =====================================================================	
 
+	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
 	public String getComuuteList(Model model) {
 		
@@ -37,6 +38,7 @@ public class CommuteController {
 		return "/commute/commute_list";
 	}
 	
+	// 내 근태내역 관리
 	@GetMapping("/attendanceList")
 	public String getAttendanceList() {
 		
