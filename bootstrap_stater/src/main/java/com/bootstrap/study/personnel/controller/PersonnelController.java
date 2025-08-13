@@ -11,6 +11,26 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("/personnel")
 @Log4j2
 public class PersonnelController {
+	@GetMapping("/current")
+	public String current() {
+		log.info("PersonnelController current()");
+		
+		return "/hrn/personnelCurrent";
+	}
+	
+	@GetMapping("/regist")
+	public String regist() {
+		log.info("PersonnelController regist()");
+		
+		return "/hrn/personnelRegist";
+	}
+	
+	@GetMapping("/app")
+	public String app() {
+		log.info("PersonnelController app()");
+		
+		return "/hrn/personnelApp";
+	}
 	
 	@GetMapping("/orgChart")
 	public String orgChart() {
@@ -18,11 +38,4 @@ public class PersonnelController {
 		
 		return "/hrn/orgChart";
 	}
-	@GetMapping("/regist")
-	public String regist() {
-		log.info("PersonnelController regist()");
-		
-		return "/hrn/personnelRegist";
-	}
-
 }
