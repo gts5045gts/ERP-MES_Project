@@ -15,17 +15,67 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Log4j2
 public class GroupwareController {
 	
-	@GetMapping("/gwMain")
-	public String gwMain() {
-		log.info("PersonnelController orgChart()");
+	@GetMapping("/notice")
+	public String notice() {
+		log.info("GroupwareController gwMain()");
 		
-		return "/gw/gwMain";
+		return "/gw/notice";
 	}
-	@GetMapping("/aNotice")
-	public String regist() {
-		log.info("PersonnelController regist()");
+	
+	@GetMapping("/ntcWrite")
+	public String ntcWrite() {
+		log.info("GroupwareController ntcWrite()");
 		
-		return "/gw/aNotice";
+		return "/gw/ntcWrite";
 	}
+	
+	@GetMapping("/schWrite")
+	public String schWrite() {
+		log.info("GroupwareController schWrite()");
+		
+		return "/gw/schWrite";
+	}
+	
+	@GetMapping("/schedule")
+	public String schedule() {
+		log.info("GroupwareController aSchedule()");
+		
+		return "/gw/schedule";
+	}
+	
+//	@GetMapping("/aSchedule")
+//	public String aSchedule() {
+//		log.info("GroupwareController aSchedule()");
+//		
+//		return "/gw/aSchedule";
+//	}
+//	
+//	@GetMapping("/eSchedule")
+//	public String eSchedule() {
+//		log.info("GroupwareController eSchedule()");
+//		
+//		return "/gw/eSchedule";
+//	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }

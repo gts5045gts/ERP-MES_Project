@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<title>그룹웨어 - 메인</title>
+<link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+	type="text/css">
+<link
+	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+	rel="stylesheet">
+<link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<!-- 전체 공지사항 -->
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div class="card-header d-flex justify-content-between align-items-center">
+							<a href="#collapse1" class="text-decoration-none text-primary"
+								data-toggle="collapse" role="button" aria-expanded="true"
+								aria-controls="collapse1">
+								<h6 class="m-0 font-weight-bold">전체 공지사항</h6>
+							</a> <a th:href="@{/groupware/ntcWrite}"
+								class="btn btn-sm btn-primary">공지 등록</a>
+						</div>
+
+						<div class="collapse show" id="collapse1">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table id="dataTable1" class="table table-bordered table-striped table-hover">
+										<thead>
+											<tr>
+												<th>공지 제목</th>
+												<th>공지 내용</th>
+												<th>작성자</th>
+												<th>등록일</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>asdf</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Cddfgst</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>111227</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Custogdsgr Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Cussdr Support</td>
+												<td>New York</td>
+												<td>22227</td>
+											</tr>
+											<tr>
+												<td>Doddd gdder</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>233327</td>
+											</tr>
+											<tr>
+												<td>Donasfa  ider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>22155127</td>
+											</tr>
+										</tbody>
+									</table>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 부서별 공지사항 -->
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div
+							class="card-header py-3 d-flex justify-content-between align-items-center">
+							<a href="#collapse2" class="text-decoration-none text-primary"
+								data-toggle="collapse" role="button" aria-expanded="true"
+								aria-controls="collapse2">
+								<h6 class="m-0 font-weight-bold">부서별 공지사항</h6>
+							</a> <a th:href="@{/groupware/ntcWrite}"
+								class="btn btn-sm btn-primary">공지 등록</a>
+						</div>
+
+						<div class="collapse show" id="collapse2">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table id="dataTable2" class="table table-bordered"
+										width="100%" cellspacing="0">
+										<thead>
+											<tr>
+												<th>공지 제목</th>
+												<th>공지 내용</th>
+												<th>작성자</th>
+												<th>등록일</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>Donna Snider</td>
+												<td>Customer Support</td>
+												<td>New York</td>
+												<td>27</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+		</div>
+	</th:block>
+</body>
+<th:block layout:fragment="scripts">
+	<script>
+		$(document).ready(function() {
+			$('#dataTable1').DataTable({
+				dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6'f>>" +
+		           "<'row'<'col-sm-12'tr>>" +
+		           "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
+				paging: true,
+			    searching: true,
+			    info: true
+			});
+			$('#dataTable2').DataTable({
+				dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6'f>>" +
+		           "<'row'<'col-sm-12'tr>>" +
+		           "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
+				paging: true,
+			    searching: true,
+			    info: true
+			});
+		});
+	</script>
+</th:block>
+
+</html>
