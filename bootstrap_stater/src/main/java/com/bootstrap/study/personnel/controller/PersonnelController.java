@@ -1,9 +1,14 @@
 package com.bootstrap.study.personnel.controller;
 
-import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.bootstrap.study.personnel.entity.Personnel;
+import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -11,9 +16,21 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("/personnel")
 @Log4j2
 public class PersonnelController {
+	private final PersonnelService personnelService;
+	
+	public PersonnelController(PersonnelService personnelService) {
+		this.personnelService = personnelService;
+	}
+	
+	
 	@GetMapping("/current")
-	public String current() {
+	public String current(Model model) {
 		log.info("PersonnelController current()");
+	
+		List<Personnel> personList = personnelService.getPersonList(); 
+		
+		
+//		model.addAttribute("personList", personList);
 		
 		return "/hrn/personnelCurrent";
 	}
