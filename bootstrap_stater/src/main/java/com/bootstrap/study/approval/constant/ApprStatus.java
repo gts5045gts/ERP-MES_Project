@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum apprStatus {
+public enum ApprStatus {
 	//enum 값은 대문자로 지정
 	
 	REQUESTED("R"), // 기안 신청

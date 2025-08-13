@@ -2,7 +2,7 @@ package com.bootstrap.study.approval.dto;
 
 import java.time.LocalDateTime;
 
-import com.bootstrap.study.approval.constant.apprStatus;
+import com.bootstrap.study.approval.constant.ApprStatus;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -17,7 +17,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class apprDTO {
+public class ApprDTO {
 	
 	private Long request_id;
 	
@@ -34,15 +34,15 @@ public class apprDTO {
 	
 	private LocalDateTime updateDate;
 	
- 	private apprStatus status = apprStatus.PROCESSING;
+ 	private ApprStatus status = ApprStatus.PROCESSING;
  	
  	private Integer currentStep;
  	
  	private Integer totStep;
 
  	@Builder
-	public apprDTO(Long request_id, String empId, String reqType, String title, String content, LocalDateTime createDate,
-			LocalDateTime updateDate, apprStatus status, Integer currentStep, Integer totStep) {
+	public ApprDTO(Long request_id, String empId, String reqType, String title, String content, LocalDateTime createDate,
+			LocalDateTime updateDate, ApprStatus status, Integer currentStep, Integer totStep) {
 		this.request_id = request_id;
 		this.empId = empId;
 		this.reqType = reqType;

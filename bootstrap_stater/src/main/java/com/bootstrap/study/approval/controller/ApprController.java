@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.bootstrap.study.approval.dto.apprDTO;
+import com.bootstrap.study.approval.dto.ApprDTO;
 
 @Controller
 @RequestMapping("/approval")
 @Log4j2
-public class apprController {
+public class ApprController {
 
     @GetMapping("/doc_list")
     public String getDocList(){
@@ -22,7 +22,7 @@ public class apprController {
 
     @GetMapping("/new")
     public String draftingForm(Model model){
-    	model.addAttribute("apprDTO", new apprDTO());
+    	model.addAttribute("apprDTO", new ApprDTO());
     	    	
         return "approval/drafting_form";
     }
