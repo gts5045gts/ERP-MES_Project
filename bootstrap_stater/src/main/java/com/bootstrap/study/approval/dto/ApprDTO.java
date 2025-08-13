@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 public class ApprDTO {
 	
-	private Long request_id;
+	private Long requestId;
 	
 	private String empId;
 	
@@ -30,9 +30,9 @@ public class ApprDTO {
 	
 	private String content;
 	
-	private LocalDateTime createDate;
+	private LocalDateTime createAt;
 	
-	private LocalDateTime updateDate;
+	private LocalDateTime updateAt;
 	
  	private ApprStatus status = ApprStatus.PROCESSING;
  	
@@ -41,15 +41,15 @@ public class ApprDTO {
  	private Integer totStep;
 
  	@Builder
-	public ApprDTO(Long request_id, String empId, String reqType, String title, String content, LocalDateTime createDate,
-			LocalDateTime updateDate, ApprStatus status, Integer currentStep, Integer totStep) {
-		this.request_id = request_id;
+	public ApprDTO(Long requestId, String empId, String reqType, String title, String content, LocalDateTime createAt,
+			LocalDateTime updateAt, ApprStatus status, Integer currentStep, Integer totStep) {
+		this.requestId = requestId;
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
 		this.content = content;
-		this.createDate = createDate;
-		this.updateDate = updateDate;
+		this.createAt = createAt;
+		this.updateAt = updateAt;
 		this.status = status;
 		this.currentStep = currentStep;
 		this.totStep = totStep;
