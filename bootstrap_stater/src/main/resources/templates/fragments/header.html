@@ -111,16 +111,16 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePay"
+                <a class="nav-link collapsed"  data-toggle="collapse" data-target="#collapsePay"
                    aria-expanded="true" aria-controls="collapsePayment">
                     <i class="fas fa-fw fa-folder"></i>
                     <span>그룹웨어</span>
                 </a>
                 <div id="collapsePay" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">공지사항 메뉴:</h6>
-                        <a class="collapse-item" th:href="@{/groupware/aNotic}">전체 공지사항</a>
-                        <a class="collapse-item" th:href="@{/groupware/eNotic}">부서별 공지사항</a>
+                        <a class="collapse-header" th:href="@{/groupware/gwMain}">공지사항 메뉴:</a>
+                        <a class="collapse-item" th:href="@{/groupware/aNotice}">전체 공지사항</a>
+                        <a class="collapse-item" th:href="@{/groupware/eNotice}">부서별 공지사항</a>
                         <h6 class="collapse-header">회사일정 메뉴:</h6>
                     	<a class="collapse-item" th:href="@{/groupware/aSchedule}">전체 일정</a>
                         <a class="collapse-item" th:href="@{/groupware/eSchedule}">부서별 일정</a>
