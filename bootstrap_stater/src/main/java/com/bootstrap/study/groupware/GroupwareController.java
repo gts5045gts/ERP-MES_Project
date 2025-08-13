@@ -22,6 +22,13 @@ public class GroupwareController {
 		return "/gw/notice";
 	}
 	
+	@GetMapping("/schedule")
+	public String schedule() {
+		log.info("GroupwareController aSchedule()");
+		
+		return "/gw/schedule";
+	}
+	
 	@GetMapping("/ntcWrite")
 	public String ntcWrite() {
 		log.info("GroupwareController ntcWrite()");
@@ -36,12 +43,6 @@ public class GroupwareController {
 		return "/gw/schWrite";
 	}
 	
-	@GetMapping("/schedule")
-	public String schedule() {
-		log.info("GroupwareController aSchedule()");
-		
-		return "/gw/schedule";
-	}
 	
 //	@GetMapping("/aSchedule")
 //	public String aSchedule() {
