@@ -8,7 +8,7 @@ public class WebController {
 	@RequestMapping("/")
     public String main(){
 
-        return "index";
+        return "main";
     }
 	
 	@RequestMapping("login")
