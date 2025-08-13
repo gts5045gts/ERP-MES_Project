@@ -21,7 +21,7 @@ public class Personnel {
     private String position; // 직책 (예: 사원, 대리, 과장)
     
     @Column(nullable = false, name = "emp_name")
-    private String name; // 이름
+    private String name; // 이름.
     
     @Column(nullable = false, name = "emp_phone")
     private String phone; // 전화번호
