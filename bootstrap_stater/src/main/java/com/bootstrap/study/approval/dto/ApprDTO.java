@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.bootstrap.study.approval.constant.ApprStatus;
 
+import com.bootstrap.study.approval.entity.Appr;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.modelmapper.ModelMapper;
 
 @Getter
 @Setter
@@ -19,7 +21,7 @@ import lombok.ToString;
 @ToString
 public class ApprDTO {
 	
-	private Long requestId;
+	private Long reqId;
 	
 	private String empId;
 	
@@ -34,16 +36,16 @@ public class ApprDTO {
 	
 	private LocalDateTime updateAt;
 	
- 	private ApprStatus status = ApprStatus.PROCESSING;
+ 	private ApprStatus status = ApprStatus.REQUESTED;
  	
  	private Integer currentStep;
  	
  	private Integer totStep;
 
  	@Builder
-	public ApprDTO(Long requestId, String empId, String reqType, String title, String content, LocalDateTime createAt,
+	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDateTime createAt,
 			LocalDateTime updateAt, ApprStatus status, Integer currentStep, Integer totStep) {
-		this.requestId = requestId;
+		this.reqId = reqId;
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
@@ -54,7 +56,10 @@ public class ApprDTO {
 		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
- 	
- 	
 
+	private static ModelMapper modelMapper = new ModelMapper();
+
+ 	public Appr toEntity() { return modelMapper.map(this, Appr.class); }
+
+	public static ApprDTO fromEntity(Appr appr) { return modelMapper.map(appr, ApprDTO.class); }
 }
