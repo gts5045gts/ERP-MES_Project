@@ -4,7 +4,7 @@
 	layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
-<title>그룹웨어 - 메인</title>
+<title>그룹웨어 - 공지사항</title>
 <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
 	type="text/css">
 <link
@@ -16,7 +16,6 @@
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
 			<div class="row">
-				<!-- 전체 공지사항 -->
 				<div class="col-md-6 mb-4">
 					<div class="card shadow">
 						<div class="card-header d-flex justify-content-between align-items-center">
@@ -41,22 +40,25 @@
 											</tr>
 										</thead>
 										<tbody>
-											<tr>
-												<td>Donasfa  ider</td>
-												<td>Customer Support</td>
-												<td>New York</td>
-												<td>22155127</td>
+											<tr th:each="notice : ${allNotices}">
+												<td>
+													<a href="#" data-toggle="modal" data-target="#noticeModal"
+													   th:attr="data-title=${notice.title}, data-content=${notice.content}, data-author=${notice.author}, data-date=${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}">
+														<span th:text="${notice.title}">공지 제목</span>
+													</a>
+												</td>
+												<td th:text="${notice.content}">공지 내용</td>
+												<td th:text="${notice.author}">작성자</td>
+												<td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
 										</tbody>
 									</table>
-
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- 부서별 공지사항 -->
 				<div class="col-md-6 mb-4">
 					<div class="card shadow">
 						<div
@@ -83,11 +85,16 @@
 											</tr>
 										</thead>
 										<tbody>
-											<tr>
-												<td>Donna Snider</td>
-												<td>Customer Support</td>
-												<td>New York</td>
-												<td>27</td>
+											<tr th:each="notice : ${deptNotices}">
+												<td>
+													<a href="#" data-toggle="modal" data-target="#noticeModal"
+													   th:attr="data-title=${notice.title}, data-content=${notice.content}, data-author=${notice.author}, data-date=${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}">
+														<span th:text="${notice.title}">공지 제목</span>
+													</a>
+												</td>
+												<td th:text="${notice.content}">공지 내용</td>
+												<td th:text="${notice.author}">작성자</td>
+												<td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
 										</tbody>
 									</table>
@@ -96,12 +103,32 @@
 						</div>
 					</div>
 				</div>
-
-
 			</div>
 		</div>
 	</th:block>
-</body>
+
+	<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog" aria-labelledby="noticeModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="noticeModalLabel">공지사항 상세 내용</h5>
+					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<h4 id="modalTitle"></h4>
+					<p><small class="text-muted mr-3" id="modalAuthor"></small><small class="text-muted" id="modalDate"></small></p>
+					<hr>
+					<pre id="modalContent"></pre>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 <th:block layout:fragment="scripts">
 	<script>
 		$(document).ready(function() {
@@ -120,6 +147,21 @@
 				paging: true,
 			    searching: true,
 			    info: true
+			});
+
+			// **모달에 공지 내용 채우기**
+			$('#noticeModal').on('show.bs.modal', function (event) {
+				var button = $(event.relatedTarget);
+				var title = button.data('title');
+				var content = button.data('content');
+				var author = button.data('author');
+				var date = button.data('date');
+
+				var modal = $(this);
+				modal.find('#modalTitle').text(title);
+				modal.find('#modalAuthor').text('작성자: ' + author);
+				modal.find('#modalDate').text('등록일: ' + date);
+				modal.find('#modalContent').text(content);
 			});
 		});
 	</script>

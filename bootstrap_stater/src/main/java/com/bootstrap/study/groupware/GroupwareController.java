@@ -44,19 +44,19 @@ public class GroupwareController {
 	}
 	
 	
-//	@GetMapping("/aSchedule")
-//	public String aSchedule() {
-//		log.info("GroupwareController aSchedule()");
-//		
-//		return "/gw/aSchedule";
-//	}
-//	
-//	@GetMapping("/eSchedule")
-//	public String eSchedule() {
-//		log.info("GroupwareController eSchedule()");
-//		
-//		return "/gw/eSchedule";
-//	}
+	@GetMapping("/document")
+	public String document() {
+		log.info("GroupwareController document()");
+		
+		return "/gw/document";
+	}
+	
+	@GetMapping("/docWrite")
+	public String docWrite() {
+		log.info("GroupwareController docWrite()");
+		
+		return "/gw/docWrite";
+	}
 	
 	
 	
