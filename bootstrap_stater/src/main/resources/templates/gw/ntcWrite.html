@@ -15,19 +15,27 @@
 <body>
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
-			<h1 class="h3 mb-4 text-gray-800">일정 등록</h1>
+			<h1 class="h3 mb-4 text-gray-800">공지 등록</h1>
 			<div class="card shadow mb-4">
 				<div class="card-body">
-					<form method="post" th:action="@{/notice/save}">
-						<div class="form-group">
-							<label>제목</label> <input type="text" name="title"
-								class="form-control" />
-						</div>
-						<div class="form-group">
-							<label>내용</label>
-							<textarea name="content" class="form-control"></textarea>
-						</div>
-						<button type="submit" class="btn btn-primary">등록</button>
+					<form method="post" th:action="@{/notice/save}" th:object="${noticeDTO}">
+					    <div class="form-group">
+					        <label for="notTitle">제목</label>
+					        <input type="text" th:field="*{notTitle}" id="notTitle" class="form-control" />
+					    </div>
+					    <div class="form-group">
+					        <label for="notContent">내용</label>
+					        <textarea th:field="*{notContent}" id="notContent" class="form-control"></textarea>
+					    </div>
+					    <div class="form-group">
+					        <label for="notType">유형</label>
+					        <input type="text" th:field="*{notType}" id="notType" class="form-control" />
+					    </div>
+					    <div class="form-group">
+					        <label for="empId">작성자 ID</label>
+					        <input type="text" th:field="*{empId}" id="empId" class="form-control" />
+					    </div>
+					    <button type="submit" class="btn btn-primary">등록</button>
 					</form>
 				</div>
 			</div>

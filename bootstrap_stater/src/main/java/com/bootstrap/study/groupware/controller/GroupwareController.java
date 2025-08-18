@@ -1,4 +1,4 @@
-package com.bootstrap.study.groupware;
+package com.bootstrap.study.groupware.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Log4j2
 public class GroupwareController {
 	
-	@GetMapping("/notice")
-	public String notice() {
-		log.info("GroupwareController gwMain()");
-		
-		return "/gw/notice";
-	}
+//	@GetMapping("/notice")
+//	public String notice() {
+//		log.info("GroupwareController gwMain()");
+//		
+//		return "/gw/notice";
+//	}
 	
 	@GetMapping("/schedule")
 	public String schedule() {
@@ -29,12 +29,12 @@ public class GroupwareController {
 		return "/gw/schedule";
 	}
 	
-	@GetMapping("/ntcWrite")
-	public String ntcWrite() {
-		log.info("GroupwareController ntcWrite()");
-		
-		return "/gw/ntcWrite";
-	}
+//	@GetMapping("/ntcWrite")
+//	public String ntcWrite() {
+//		log.info("GroupwareController ntcWrite()");
+//		
+//		return "/gw/ntcWrite";
+//	}
 	
 	@GetMapping("/schWrite")
 	public String schWrite() {
@@ -57,26 +57,4 @@ public class GroupwareController {
 		
 		return "/gw/docWrite";
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
