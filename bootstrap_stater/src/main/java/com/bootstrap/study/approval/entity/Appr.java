@@ -54,7 +54,11 @@ public class Appr {
  	private int totStep;
 
  	@OneToMany(mappedBy = "appr", fetch = FetchType.LAZY)
-    private  List<AppLine> appLines = new ArrayList<AppLine>();
+    private  List<ApprLine> appLines = new ArrayList<ApprLine>();
+ 	
+ 	 // 새로 추가하는 ApprDetail 연결
+    @OneToMany(mappedBy = "appr", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ApprDetail> apprDetails = new ArrayList<>();
 
 	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
 		this.empId = empId;

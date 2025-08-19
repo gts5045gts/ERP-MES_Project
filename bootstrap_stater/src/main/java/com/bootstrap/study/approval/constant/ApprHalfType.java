@@ -5,18 +5,17 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ApprStatus {
-	//enum 값은 대문자로 지정
-	
-	REQUESTED("기안신청"), // 기안 신청
-    PROCESSING("진행중"), // 진행중
-    FINISHED("완료");   // 완료
-	
+public enum ApprHalfType {
+	//시작일, 종료일, 오전 오후인지 구분
+	STARTMORNING("오전 반차"),
+    STARTAFTERNOON("오후 반차"),
+	ENDMORNING("오전 반차"),
+    ENDAFTERNOON("오후 반차");
+
 	private final String label;
-	
+
 	public String getCode() {
 		return this.name();
 	}
-	
 
 }

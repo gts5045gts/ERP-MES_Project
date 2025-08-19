@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "approval_line")
 @Getter
 @Setter
-public class AppLine {
+public class ApprLine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,7 +28,6 @@ public class AppLine {
     private	String apprId; //결제자 id
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ApprDecision decision; //승인 반려 상태
 
     @LastModifiedDate
@@ -37,7 +36,7 @@ public class AppLine {
     @Column(length = 500)
     private	String	comments;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "req_id")
     private Appr appr;
 }

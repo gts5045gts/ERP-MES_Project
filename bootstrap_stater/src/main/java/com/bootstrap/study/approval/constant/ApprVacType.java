@@ -5,14 +5,15 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ApprDecision {
-	//enum 값은 대문자로 지정	
-    ACCEPT("승인"), 
-    DENY("반려"); 
+public enum ApprVacType {
+	
+	LEAVE("연차"),
+	HALF_LEAVE("반차");
 	
 	private final String label;
 	
-	public String getCode() {
+	public String getCode()	{
 		return this.name();
-	}	
+	}
+	
 }
