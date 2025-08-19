@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bootstrap.study.attendance.dto.CommuteDTO;
@@ -37,6 +38,14 @@ public class CommuteController {
 		
 		return "/commute/commute_list";
 	}
+	
+	// 출근버튼
+	@PostMapping("/checkIn")
+	public String checkIn(@RequestParam String empId) {
+		commuteService.checkIn(empId);
+		return "출근 기록 저장";
+	}
+	
 	
 	// 내 근태내역 관리
 	@GetMapping("/attendanceList")
