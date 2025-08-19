@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bootstrap.study.attendance.mapper.CommuteMapper">
+
+	<!-- 출근현황 리스트 조회 -->
+	<select id="selectAllCommute" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+		SELECT
+            commute_id     AS commuteId,
+            check_in_time  AS checkInTime,
+            check_out_time AS checkOutTime,
+            emp_id         AS empId,
+            work_status    AS workStatus,
+            created_at     AS createdAt,
+            updated_at     AS updatedAt
+        FROM commute
+	</select>
+</mapper>
