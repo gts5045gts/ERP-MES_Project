@@ -4,7 +4,7 @@
       layout:decorate="~{layouts/layout}">
 <head>
     <th:block layout:fragment="style">
-
+		<link rel="stylesheet" th:href="@{/personnel/css/orgChart.css}" />
     </th:block>
 
 </head>
@@ -17,15 +17,15 @@
 			<section class="section">
 				<div class="card shadow mb-4">
 					<div class="card-header py-3">
-						<h5 class="m-0 font-weight-bold">조직도</h5>
+						<h4 class="m-0 font-weight-bold">조직도</h4>
 					</div>
 
 					<!-- Content Area -->
 					<div class="card-body">
-						<div class="d-flex" style="gap: 10px;">
+						<div class="d-flex" style="gap: 20px;">
 							<!-- 좌측 영역: 부서 목록 -->
 							<div class="dept-list">
-       							<select id="deptSelect" size="5" >
+       							<select id="deptSelect" size="4" >
            							<option th:each="dept : ${departments}"
                    							th:value="${dept.id}"
                    							th:text="${dept.name}">
@@ -34,7 +34,7 @@
    							</div>
 
 							<!-- 테이블 -->
-							<div class="flex-grow-1" style="display: block; max-height: 700px; overflow-y: auto; width: 100%; height: auto;">
+							<div class="flex-grow-1 personnel-table-container">
 								<table class="table table-bsordered">
 									<thead>
 										<tr class="empTable">
@@ -57,9 +57,6 @@
 										 </tr>					
 									</tbody>
 								</table>
-								
-								
-								
 							</div>
 						</div>
 
