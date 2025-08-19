@@ -15,8 +15,11 @@ import com.bootstrap.study.groupware.dto.NoticeDTO;
 import com.bootstrap.study.groupware.entity.Notice;
 import com.bootstrap.study.groupware.repository.NoticeRepository;
 
+import lombok.extern.log4j.Log4j2;
+
 @Controller
 @RequestMapping("/notice")
+@Log4j2
 public class NoticeController {
 
     @Autowired
@@ -26,8 +29,14 @@ public class NoticeController {
     // URL: http://localhost:8080/notice
     @GetMapping({"", "/"})
     public String notice(Model model) {
+    	log.info("NoticeController notice()");
+    	// 1. 전체 공지사항을 조회하여 모델에 추가
         List<Notice> notices = noticeRepository.findAll();
         model.addAttribute("notices", notices);
+
+        // 2. 부서별 공지사항을 조회하여 모델에 추가
+        List<Notice> deptNotices = noticeRepository.findByNotType("부서별"); 
+        model.addAttribute("deptNotices", deptNotices);
         return "gw/notice"; // ✅ notice.html 파일을 반환
     }
 
@@ -35,6 +44,7 @@ public class NoticeController {
     // URL: http://localhost:8080/notice/write
     @GetMapping("/ntcWrite")
     public String ntcWrite(Model model) {
+    	log.info("NoticeController ntcWrite()");
         model.addAttribute("noticeDTO", new NoticeDTO());
         return "gw/ntcWrite"; // ✅ ntcWrite.html 파일을 반환
     }
@@ -43,6 +53,7 @@ public class NoticeController {
     // URL: http://localhost:8080/notice/save
     @PostMapping("/save")
     public String saveNotice(NoticeDTO noticeDTO) {
+    	log.info("NoticeController saveNotice()");
         Notice notice = new Notice();
         notice.setEmpId(Long.valueOf(noticeDTO.getEmpId()));
         notice.setNotTitle(noticeDTO.getNotTitle());
