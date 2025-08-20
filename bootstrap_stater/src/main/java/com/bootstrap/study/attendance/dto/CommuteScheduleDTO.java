@@ -1,6 +1,5 @@
 package com.bootstrap.study.attendance.dto;
 
-
 import java.time.LocalDateTime;
 
 import lombok.Builder;
@@ -18,8 +17,7 @@ public class CommuteScheduleDTO {
 	private LocalDateTime workStartTime;
 	private LocalDateTime workEndTime;
 	private LocalDateTime applyStartDate;
-	
-	
+
 	@Builder
 	public CommuteScheduleDTO(Long scheduleId, LocalDateTime workStartTime, LocalDateTime workEndTime,
 			LocalDateTime applyStartDate) {
@@ -28,16 +26,5 @@ public class CommuteScheduleDTO {
 		this.workEndTime = workEndTime;
 		this.applyStartDate = applyStartDate;
 	}
-	
-	
+
 }
-
-
-
-
-
-
-
-
-
-
