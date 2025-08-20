@@ -1,6 +1,14 @@
 package com.bootstrap.study.personnel.repository;
 
+<<<<<<< HEAD
 import java.util.List;
+=======
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.bootstrap.study.personnel.entity.Personnel;
+
+public interface PersonnelRepository extends JpaRepository<Personnel,Long> {
+>>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,5 +1,6 @@
 package com.bootstrap.study.personnel.service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,8 +24,20 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 생성
 @Log4j2
+=======
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.bootstrap.study.personnel.entity.Personnel;
+import com.bootstrap.study.personnel.mapper.PersonnelMapper;
+import com.bootstrap.study.personnel.repository.PersonnelRepository;
+
+@Service
+>>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 public class PersonnelService {
 
+<<<<<<< HEAD
 	private final PersonnelRepository personnelRepository;
 	private final DepartmentRepository departmentRepository;
 	private final PositionRepository positionRepository;
@@ -109,4 +122,27 @@ public class PersonnelService {
 		
 	}
 
+=======
+	private final PersonnelMapper personnelMapper;
+	private final PersonnelRepository personnelRepository;
+	
+	public PersonnelService(PersonnelMapper personnelMapper, PersonnelRepository personnelRepository) {
+		this.personnelMapper = personnelMapper;
+		this.personnelRepository = personnelRepository;
+	}
+
+	public List<Personnel> getPersonList() {
+		
+		
+//		return personnelRepository.;
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	
+>>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 }
