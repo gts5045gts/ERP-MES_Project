@@ -41,7 +41,7 @@
 												<td th:text="${stat.count}">순번</td>
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 												<td th:text="${notice.notContent}">공지 내용</td>
@@ -89,7 +89,7 @@
 
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 
@@ -107,35 +107,48 @@
 				</div>
 			</div>
 		</div>
-	</th:block>
-<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog"
-    aria-labelledby="noticeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="noticeModalLabel">공지사항 상세 내용</h5>
-                <button class="close" type="button" data-dismiss="modal"
-                    aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h4 id="modalTitle"></h4>
-                <p>
-                    <small class="text-muted mr-3" id="modalAuthor"></small><small
-                        class="text-muted" id="modalDate"></small>
-                </p>
-                <hr>
-                <pre id="modalContent"></pre>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button"
-                    data-dismiss="modal">닫기</button>
-            </div>
-        </div>
-    </div>
+		<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog"
+	aria-labelledby="noticeModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="noticeModalLabel">공지사항 상세 내용</h5>
+				<button class="close" type="button" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="readModeContent">
+					<h4 id="modalTitle"></h4>
+					<p>
+						<small class="text-muted mr-3" id="modalAuthor"></small><small
+							class="text-muted" id="modalDate"></small>
+					</p>
+					<hr>
+					<pre id="modalContent"></pre>
+				</div>
+
+				<form id="editForm" style="display:none;" action="/notice/ntcUpdate" method="post">
+					<input type="hidden" id="editNoticeId" name="notId"> 
+					<div class="form-group">
+						<label for="editTitle">제목</label>
+						<input type="text" class="form-control" id="editTitle" name="notTitle">
+					</div>
+					<div class="form-group">
+						<label for="editContent">내용</label>
+						<textarea class="form-control" id="editContent" name="notContent" rows="5"></textarea>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> 
+				<a href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
+				<button type="submit" class="btn btn-primary" id="saveEditBtn" form="editForm" style="display:none;">수정 완료</button>
+				<button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+			</div>
+		</div>
+	</div>
 </div>
-	<th:block layout:fragment="scripts">
-		<script src="/bootstrap/js/groupware/notice.js"></script>
 	</th:block>
 </html>
