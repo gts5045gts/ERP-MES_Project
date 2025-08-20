@@ -8,18 +8,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
-
 
 @Controller
 @RequestMapping("/attendence")
 public class CommuteController {
 
 	private final CommuteService commuteService;
-	
+
 	public CommuteController(CommuteService commuteService) {
 		this.commuteService = commuteService;
 	}
@@ -28,21 +28,28 @@ public class CommuteController {
 	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
 	public String getComuuteList(Model model) {
-		
+
 		List<CommuteDTO> commuteDTOList = commuteService.getCommuteList();
-		
+
 		model.addAttribute("commuteDTOList", commuteDTOList);
-		
+
 		System.out.println(commuteDTOList);
-		
+
 		return "/commute/commute_list";
 	}
-	
+
+	// 출근버튼
+	@PostMapping("/checkIn")
+	public String checkIn(@RequestParam String empId) {
+		commuteService.checkIn(empId);
+		return "출근 기록 저장";
+	}
+
 	// 내 근태내역 관리
 	@GetMapping("/attendanceList")
 	public String getAttendanceList() {
-		
+
 		return "/commute/table";
 	}
-	
+
 }

@@ -41,30 +41,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedModalEmployee = null;
 
     // Dropdown options data (Should be loaded from backend API)
-    const ALL_POSITIONS = ['사원', '대리', '과장', '차장', '부장', '이사', '상무', '전무', '부사장', '사장'];
-    const ALL_DEPARTMENTS = ['영업팀', '마케팅팀', '개발팀', '인사팀', '재무팀', '디자인팀', '기획팀', '홍보팀'];
-    const ORDER_TYPES = ['승진', '전보'];
 
     // --- Mock Data (To be replaced by actual backend API calls) ---
     // Added 'id' field for unique identification, important for backend operations
     let mockPersonnelOrders = [ // 'let'으로 변경하여 삭제 등 수정 가능하게 함
-        { id: 1, employeeId: '2025010092', employeeName: '김국민', orderType: '승진', orderDate: '2025-08-13', position: '상무', department: '국내영업팀', createdAt: '2025-08-13' },
-        { id: 2, employeeId: 'EMP002', employeeName: '이영희', orderType: '승진', orderDate: '2023-03-01', position: '대리', department: '마케팅팀', createdAt: '2023-02-20' },
-        { id: 3, employeeId: 'EMP003', employeeName: '박민수', orderType: '전보', orderDate: '2023-04-10', position: '과장', department: '개발팀', createdAt: '2023-04-01' },
-        { id: 4, employeeId: 'EMP004', employeeName: '최유리', orderType: '승진', orderDate: '2023-05-20', position: '사원', department: '인사팀', createdAt: '2023-05-15' },
-        { id: 5, employeeId: 'EMP005', employeeName: '강호동', orderType: '전보', orderDate: '2023-06-01', position: '부장', department: '재무팀', createdAt: '2023-05-25' },
-        { id: 6, employeeId: 'EMP006', employeeName: '윤아름', orderType: '승진', orderDate: '2023-07-05', position: '대리', department: '영업팀', createdAt: '2023-06-28' },
+
     ];
 
     // Modal employees Mock Data
     const mockEmployees = [
-        { id: 101, empNo: '25070028', name: '이현수', department: '재무팀', position: '이사', phone: '010-5435-1234', email: 'leehs@example.com' },
-        { id: 102, empNo: '25070027', name: '고석현', department: '개발팀', position: '부장', phone: '010-1489-1234', email: 'kohsh@example.com' },
-        { id: 103, empNo: '25070026', name: '최유정', department: '생산팀', position: '대리', phone: '010-6789-0123', email: 'choiyj@example.com' },
-        { id: 104, empNo: '25070025', name: '김민준', department: '영업팀', position: '사원', phone: '010-1111-2222', email: 'kimmin@example.com' },
-        { id: 105, empNo: '25070024', name: '박서준', department: '마케팅팀', position: '과장', phone: '010-3333-4444', email: 'parkseo@example.com' },
-        { id: 106, empNo: '25070023', name: '정은지', department: '인사팀', position: '대리', phone: '010-5555-6666', email: 'jungej@example.com' },
-        { id: 107, empNo: '25070022', name: '하하하', department: '총무팀', position: '사원', phone: '010-7777-8888', email: 'haha@example.com' },
+        
     ];
     // --- // Mock Data ---
 

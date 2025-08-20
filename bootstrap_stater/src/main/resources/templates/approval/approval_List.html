@@ -5,239 +5,504 @@
 
 <head>
     <th:block layout:fragment="style">
-        <style>
-            .table-compact th,
-            .table-compact td {
-                padding: 0.5rem; /* 셀 안쪽 여백 줄이기 */
-                vertical-align: middle; /* 내용 세로 중앙 정렬 */
-            }
-        </style>
-    </th:block>
+    <style>
+	        .table-compact th,
+	        .table-compact td {
+	            padding: 0.5rem;
+	            vertical-align: middle;
+	        }
+	        
+	        /* 결재 상태 전용 배지 스타일 */
+	        .approval-status-badge {
+	            font-size: 0.8rem;
+	            padding: 0.4rem 0.8rem;
+	            border-radius: 20px;
+	            font-weight: 500;
+	            display: inline-block;
+	            text-align: center;
+	            min-width: 60px;
+	        }
+	        
+	        /* 승인 - 연한 파랑 */
+	        .approval-status-approved {
+	            background-color: #d1ecf1 !important;
+	            color: #0c5460 !important;
+	            border: 1px solid #bee5eb;
+	        }
+	        
+	        /* 대기 - 연한 노랑 */
+	        .approval-status-pending {
+	            background-color: #fff3cd !important;
+	            color: #856404 !important;
+	            border: 1px solid #ffeaa7;
+	        }
+	        
+	        /* 반려 - 연한 빨강 */
+	        .approval-status-rejected {
+	            background-color: #f8d7da !important;
+	            color: #721c24 !important;
+	            border: 1px solid #f5c6cb;
+	        }
+	        
+	        /* 미정 - 회색 */
+	        .approval-status-unknown {
+	            background-color: #e2e3e5 !important;
+	            color: #383d41 !important;
+	            border: 1px solid #d6d8db;
+	        }
+	        
+	        /* 호버 효과 */
+	        .approval-status-badge:hover {
+	            transform: scale(1.05);
+	            transition: transform 0.2s ease;
+	            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	        }
+	        
+	        /* 모달 스타일 */
+	        .modal-header {
+	            background-color: #4e73df;
+	            color: white;
+	        }
+	        
+	        .info-row {
+	            margin-bottom: 15px;
+	            padding: 10px;
+	            background-color: #f8f9fc;
+	            border-radius: 5px;
+	        }
+	        
+	        .info-label {
+	            font-weight: bold;
+	            color: #5a5c69;
+	            margin-bottom: 5px;
+	        }
+	        
+	        .info-value {
+	            color: #3a3b45;
+	            font-size: 14px;
+	        }
+	    </style>
+	</th:block>
 </head>
 
 <body>
-<th:block layout:fragment="content">
-    <div class="container-fluid">
+    <th:block layout:fragment="content">
+        <div class="container-fluid">
 
-        <h1 class="h3 mb-4 text-gray-800">인사 결재 목록</h1>
+            <h1 class="h3 mb-4 text-gray-800">인사 결재 목록</h1>
 
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <form onsubmit="return false;">
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <input type="date" class="form-control" value="2025-07-13">
-                                <span class="input-group-text">~</span>
-                                <input type="date" class="form-control" value="2025-08-12">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <form onsubmit="return false;">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="date" class="form-control" value="2025-07-13">
+                                    <span class="input-group-text">~</span>
+                                    <input type="date" class="form-control" value="2025-08-12">
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <select class="form-control">
+                                    <option selected>결재유형</option>
+                                    <option value="1">출장</option>
+                                    <option value="2">인사발령</option>
+                                    <option value="3">휴가</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <select class="form-control">
+                                    <option selected>부서</option>
+                                    <option value="1">생산</option>
+                                    <option value="2">인사</option>
+                                    <option value="3">재무</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <select class="form-control">
+                                    <option selected>직급</option>
+                                    <option value="1">사원</option>
+                                    <option value="2">주임</option>
+                                    <option value="3">대리</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 ml-auto">
+                                <input type="text" class="form-control" id="drafterNameInput" placeholder="기안자 입력 후 검색">
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-primary" id="searchButton" type="button">검색</button>
                             </div>
                         </div>
-                        <div class="col-md-1">
-                            <select class="form-control">
-                                <option selected>결재유형</option>
-                                <option value="1">출장</option>
-                                <option value="2">인사발령</option>
-                                <option value="3">휴가</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <select class="form-control">
-                                <option selected>부서</option>
-                                <option value="1">생산</option>
-                                <option value="2">인사</option>
-                                <option value="3">재무</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <select class="form-control">
-                                <option selected>직급</option>
-                                <option value="1">사원</option>
-                                <option value="2">주임</option>
-                                <option value="3">대리</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 ml-auto">
-                            <input type="text" class="form-control" placeholder="이름 또는 사원번호">
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-primary" type="submit">검색</button>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${status == 'all' ? 'active' : ''}" href="#" id="tab-all">전체결재</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${status == 'pending' ? 'active' : ''}" href="#" id="tab-pending">결재대기</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${status == 'completed' ? 'active' : ''}" href="#" id="tab-completed">결재완료</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-				    <table class="table table-hover text-center table-compact" id="dataTable" width="100%" cellspacing="0">
-				        <thead>
-				            <tr>
-				                <th>결재번호</th>
-				                <th>결재 유형</th>
-				                <th>기안자</th>
-				                <th>부서</th>
-				                <th>기안일</th>
-				                <th>현재/최종 결재자</th>
-				                <th>상태</th>
-				                <th>관리</th>
-				            </tr>
-				        </thead>
-				        <tbody>
-				            <tr>
-				                <td>104</td>
-				                <td>휴가 신청서</td>
-				                <td>이연수</td>
-				                <td>재무팀</td>
-				                <td>2025-08-07</td>
-				                <td>이광우</td>
-				                <td><span class="font-weight-bold text-primary">승인</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				            <tr>
-				                <td>103</td>
-				                <td>지출결의서</td>
-				                <td>팔다니엘</td>
-				                <td>경영지원팀</td>
-				                <td>2025-08-06</td>
-				                <td>이광우</td>
-				                <td><span class="font-weight-bold text-danger">반려</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				            <tr>
-				                <td>102</td>
-				                <td>인사발령</td>
-				                <td>김사용</td>
-				                <td>개발팀</td>
-				                <td>2025-08-05</td>
-				                <td>김이사 (나)</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-                                <td><button type="button" class="btn btn-primary btn-sm" onclick="openApprovalPopup()">결재하기</button></td>
-				            </tr>
-				
-				            <tr>
-				                <td>101</td>
-				                <td>근무기록 수정</td>
-				                <td>박영수</td>
-				                <td>생산팀</td>
-				                <td>2025-08-04</td>
-				                <td>이부장</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-				                <td>-</td>
-				            </tr>
-				            
-				            <tr>
-				                <td>100</td>
-				                <td>프로젝트 품의서</td>
-				                <td>김개발</td>
-				                <td>개발팀</td>
-				                <td>2025-08-03</td>
-				                <td>박상무</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				        </tbody>
-				    </table>
-				</div>
-
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${status == 'all' ? 'active' : ''}" href="#" id="tab-all">전체결재</a>
                         </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">다음</a>
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${status == 'pending' ? 'active' : ''}" href="#" id="tab-pending">결재대기</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${status == 'completed' ? 'active' : ''}" href="#" id="tab-completed">결재완료</a>
                         </li>
                     </ul>
-                </nav>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-center table-compact" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>결재순번</th>
+                                    <th>문서제목</th>
+                                    <th>기안자</th>
+                                    <th>부서명</th>
+                                    <th>생성일</th>
+                                    <th>결재 완료일자</th>
+                                    <th>상태</th>
+                                    <th>결재여부</th>
+                                </tr>
+                            </thead>
+                            
+                            <!-- ㅇㅇ -->
+                            <tbody>
+						    <tr th:each="appr : ${approvalList}">
+						        <td th:text="${appr.stepNo}">1</td> <!-- 결재순번 -->
+						        <td th:text="${appr.title}">휴가 신청서</td> <!-- 문서제목 -->
+						        <td th:text="${appr.drafterName}">이연수</td> <!-- 기안자 -->
+						        <td th:text="${appr.department}">재무팀</td> <!-- 부서명 -->
+						        <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td> <!-- 생성일 -->
+						        <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td> <!-- 결재일자 -->
+						        <td>
+								    <span th:text="${appr.statusLabel}" 
+								          th:class="'approval-status-badge ' + 
+								                   ${appr.statusLabel == '승인' ? 'approval-status-approved' : 
+								                     appr.statusLabel == '대기' ? 'approval-status-pending' : 
+								                     appr.statusLabel == '반려' ? 'approval-status-rejected' : 
+								                     'approval-status-unknown'}">대기</span>
+								</td>
+						        <td>
+						            <button th:if="${appr.statusLabel == '대기'}"
+						                    type="button" class="btn btn-primary btn-sm"
+						                    th:onclick="'openApprovalModal(' + ${appr.reqId} + ')'">결재하기</button>
+						        </td>
+						    </tr>
+						</tbody>
+                        </table>
+                    </div>
+
+                    <nav aria-label="Page navigation">
+					    <ul class="pagination justify-content-center">
+					        <!-- 이전 버튼 -->
+					        <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
+					            <a class="page-link" 
+					               th:href="${hasPrevious} ? '/approval/approval_list?page=' + ${currentPage - 1} : '#'" 
+					               tabindex="-1">이전</a>
+					        </li>
+					        
+					        <!-- 페이지 번호들 -->
+					        <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:if="${totalPages > 0}">
+					            <li class="page-item" th:classappend="${i == currentPage} ? 'active'">
+					                <a class="page-link" th:href="'/approval/approval_list?page=' + ${i}" th:text="${i + 1}">1</a>
+					            </li>
+					        </th:block>
+					        
+					        <!-- 다음 버튼 -->
+					        <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
+					            <a class="page-link" 
+					               th:href="${hasNext} ? '/approval/approval_list?page=' + ${currentPage + 1} : '#'">다음</a>
+					        </li>
+					    </ul>
+					    
+					    <!-- 페이지 정보 표시 -->
+					    <div class="text-center mt-2">
+					        <small class="text-muted">
+					            총 <span th:text="${totalElements}">0</span>건 중 
+					            <span th:text="${currentPage * 5 + 1}">1</span> - 
+					            <span th:text="${(currentPage + 1) * 5 > totalElements ? totalElements : (currentPage + 1) * 5}">5</span>건 표시
+					        </small>
+					    </div>
+					</nav>
+                </div>
             </div>
         </div>
-    </div>
-</th:block>
 
-<th:block layout:fragment="script">
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    
-    // [수정된 부분 2] 함수와 URL을 아주 단순하게 변경
-    function openApprovalPopup() {
-        // 컨트롤러에 만든 단순한 주소를 여기에 그대로 적어줘
-        const popupUrl = '/approval/showDraftingForm'; 
-        const popupName = 'approvalPopup';
-        const popupWidth = 900;
-        const popupHeight = 700;
-        const left = (window.screen.width / 2) - (popupWidth / 2);
-        const top = (window.screen.height / 2) - (popupHeight / 2);
-        const popupOptions = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
-        
-        window.open(popupUrl, popupName, popupOptions);
-    }
+        <div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-labelledby="approvalModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="approvalModalLabel">
+                            <i class="fas fa-clipboard-check"></i> 결재 문서 상세
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modalLoading" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">로딩중...</span>
+                            </div>
+                            <p class="mt-2">결재 정보를 불러오는 중입니다...</p>
+                        </div>
 
-    // 아래 부분은 기존 코드 그대로
-    document.addEventListener('DOMContentLoaded', function () {
-        const tabAll = document.getElementById('tab-all');
-        const tabPending = document.getElementById('tab-pending');
-        const tabCompleted = document.getElementById('tab-completed');
-        const tableRows = document.querySelectorAll('#dataTable tbody tr');
-        const allTabs = [tabAll, tabPending, tabCompleted];
-        function filterTable(status) {
-            tableRows.forEach(function (row) {
-                const statusCell = row.querySelector('td:nth-child(7)');
-                const statusText = statusCell ? statusCell.querySelector('span').textContent.trim() : '';
-                if (status === 'pending') {
-                    row.style.display = (statusText === '대기' || statusText === '진행중') ? 'table-row' : 'none';
-                } else if (status === 'completed') {
-                    row.style.display = (statusText === '승인' || statusText === '반려') ? 'table-row' : 'none';
+                        <div id="modalContent" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">결재번호</div>
+                                        <div class="info-value" id="modal-reqId">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">결재 유형</div>
+                                        <div class="info-value" id="modal-reqType">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">기안자</div>
+                                        <div class="info-value" id="modal-drafterName">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-row">
+                                        <div class="info-label">부서</div>
+                                        <div class="info-value" id="modal-department">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="info-row">
+                                        <div class="info-label">기안일</div>
+                                        <div class="info-value" id="modal-createAt">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="info-row">
+                                        <div class="info-label">제목</div>
+                                        <div class="info-value" id="modal-title">-</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="info-row">
+                                        <div class="info-label">내용</div>
+                                        <div class="info-value" id="modal-content-detail" style="min-height: 100px; white-space: pre-wrap;">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="modalError" style="display: none;" class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            결재 정보를 불러오는데 실패했습니다. 다시 시도해주세요.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-success" id="approveBtn">승인</button>
+                        <button type="button" class="btn btn-danger" id="rejectBtn">반려</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+    <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            // 팝업 열기 함수 (기존)
+            function openApprovalPopup() {
+                const popupUrl = '/approval/showDraftingForm';
+                const popupName = 'approvalPopup';
+                const popupWidth = 900;
+                const popupHeight = 700;
+                const left = (window.screen.width / 2) - (popupWidth / 2);
+                const top = (window.screen.height / 2) - (popupHeight / 2);
+                const popupOptions = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
+                
+                window.open(popupUrl, popupName, popupOptions);
+            }
+
+            // 새로 추가: 결재 모달 열기 함수
+            function openApprovalModal(reqId) {
+                console.log('결재 모달 열기 - 결재번호:', reqId);
+                
+                $('#approvalModal').modal('show');
+                
+                showModalLoading();
+                
+                fetch(`/approval/api/detail/${reqId}`)
+                    .then(response => {
+                        console.log('서버 응답 상태:', response.status);
+                        if (!response.ok) {
+                            throw new Error('서버 응답 오류: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('서버에서 받은 데이터:', data);
+                        displayModalContent(data);
+                    })
+                    .catch(error => {
+                        console.error('에러 발생:', error);
+                        showModalError();
+                    });
+            }
+
+            // 모달 로딩 상태 보여주기
+            function showModalLoading() {
+                document.getElementById('modalLoading').style.display = 'block';
+                document.getElementById('modalContent').style.display = 'none';
+                document.getElementById('modalError').style.display = 'none';
+            }
+
+            // 모달에 실제 데이터 표시하기
+            function displayModalContent(data) {
+                console.log('모달에 데이터 표시 완료');
+                
+                document.getElementById('modal-reqId').textContent = data.reqId || '-';
+                document.getElementById('modal-reqType').textContent = data.reqType || '-';
+                document.getElementById('modal-drafterName').textContent = data.drafterName || '-';
+                document.getElementById('modal-department').textContent = data.department || '-';
+                document.getElementById('modal-title').textContent = data.title || '-';
+                // HTML id가 중복되어서 수정 (modal-content -> modal-content-detail)
+                document.getElementById('modal-content-detail').textContent = data.content || '-';
+                
+                // 날짜 포맷팅
+                if (data.createAt) {
+                    const createDate = new Date(data.createAt);
+                    document.getElementById('modal-createAt').textContent = createDate.toLocaleDateString('ko-KR');
                 } else {
-                    row.style.display = 'table-row';
+                    document.getElementById('modal-createAt').textContent = '-';
                 }
+
+                document.getElementById('modalLoading').style.display = 'none';
+                document.getElementById('modalContent').style.display = 'block';
+                document.getElementById('modalError').style.display = 'none';
+            }
+
+            // 모달 에러 상태 보여주기
+            function showModalError() {
+                document.getElementById('modalLoading').style.display = 'none';
+                document.getElementById('modalContent').style.display = 'none';
+                document.getElementById('modalError').style.display = 'block';
+            }
+
+            // --- 여기부터가 핵심! ---
+            document.addEventListener('DOMContentLoaded', function () {
+                // 탭 필터링 로직 (기존 코드)
+                const tabAll = document.getElementById('tab-all');
+                const tabPending = document.getElementById('tab-pending');
+                const tabCompleted = document.getElementById('tab-completed');
+                const allTabs = [tabAll, tabPending, tabCompleted];
+                
+                // tableRows를 여기서 한 번만 선언해서 같이 사용할게!
+                const tableRows = document.querySelectorAll('#dataTable tbody tr');
+                
+                function filterTable(status) {
+                    tableRows.forEach(function (row) {
+                        // "조회된 문서가 없습니다" 행은 필터링에서 제외
+                        if (row.cells.length === 1 && row.cells[0].colSpan === 8) {
+                            return;
+                        }
+                        
+                        const statusCell = row.querySelector('td:nth-child(7)');
+                        if (!statusCell) return;
+                        
+                        const statusTextSpan = statusCell.querySelector('span');
+                        if (!statusTextSpan) return;
+                        
+                        const statusText = statusTextSpan.textContent.trim();
+                        
+                        if (status === 'pending') {
+                            row.style.display = (statusText === '대기') ? '' : 'none';
+                        } else if (status === 'completed') {
+                            row.style.display = (statusText === '승인' || statusText === '반려') ? '' : 'none';
+                        } else {
+                            row.style.display = '';
+                        }
+                    });
+                }
+                
+                function updateActiveTab(clickedTab) {
+                    allTabs.forEach(tab => tab.classList.remove('active'));
+                    clickedTab.classList.add('active');
+                }
+                
+                tabAll.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabAll); filterTable('all'); });
+                tabPending.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabPending); filterTable('pending'); });
+                tabCompleted.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabCompleted); filterTable('completed'); });
+                
+
+                // --- 기안자 이름으로 검색하는 로직 추가 ---
+                const drafterNameInput = document.getElementById('drafterNameInput');
+                const searchButton = document.getElementById('searchButton');
+                
+                function searchByDrafter() {
+                    // 1. 입력된 검색어를 가져와서 앞뒤 공백 제거하고 소문자로 변경
+                    const searchTerm = drafterNameInput.value.trim().toLowerCase();
+                    
+                    // 2. 테이블의 모든 행을 순회
+                    tableRows.forEach(function (row) {
+                        // "조회된 문서가 없습니다" 행은 검색에서 제외
+                        if (row.cells.length === 1 && row.cells[0].colSpan === 8) {
+                            return;
+                        }
+
+                        // 3. 각 행의 3번째 셀(기안자)을 찾음
+                        const drafterCell = row.querySelector('td:nth-child(3)');
+                        
+                        if (drafterCell) {
+                            const drafterName = drafterCell.textContent.trim().toLowerCase();
+                            
+                            // 4. 기안자 이름에 검색어가 포함되어 있는지 확인
+                            if (drafterName.includes(searchTerm)) {
+                                row.style.display = ''; // 포함되어 있으면 행을 보여줌
+                            } else {
+                                row.style.display = 'none'; // 포함되어 있지 않으면 행을 숨김
+                            }
+                        }
+                    });
+                }
+
+                // 5. 검색 버튼 클릭 시 searchByDrafter 함수 실행
+                searchButton.addEventListener('click', searchByDrafter);
+                
+                // (보너스) 입력창에서 엔터 키를 눌러도 검색 실행
+                drafterNameInput.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        searchByDrafter();
+                    }
+                });
+
+
+                // 승인/반려 버튼 이벤트 (기존 코드)
+                document.getElementById('approveBtn').addEventListener('click', function() {
+                    alert('승인 기능은 추후 구현 예정입니다.');
+                });
+                
+                document.getElementById('rejectBtn').addEventListener('click', function() {
+                    alert('반려 기능은 추후 구현 예정입니다.');
+                });
             });
-        }
-        function updateActiveTab(clickedTab) {
-            allTabs.forEach(function(tab) {
-                tab.classList.remove('active');
-            });
-            clickedTab.classList.add('active');
-        }
-        tabAll.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('all');
-        });
-        tabPending.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('pending');
-        });
-        tabCompleted.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('completed');
-        });
-        updateActiveTab(tabAll);
-        filterTable('all');
-    });
-    /*]]>*/
-</script>
-</th:block>
+            /*]]>*/
+        </script>
+    </th:block>
 </body>
 </html>

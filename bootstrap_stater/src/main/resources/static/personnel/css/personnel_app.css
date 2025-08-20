@@ -124,19 +124,6 @@ body {
     color: white; /* 흰색 텍스트 */
     border-color: #0d6efd; /* 파란색 테두리 */
 }
-/* 수정 가능한 셀의 input/select 스타일 (주석 처리 또는 제거 가능) */
-/* .editable-cell input, .editable-cell select {
-    width: 100%;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 5px 8px;
-    box-sizing: border-box;
-} */
-/* 체크박스 열 너비 조정 (이제 체크박스 없음) */
-/* .table th:first-child, .table td:first-child {
-    width: 40px;
-    text-align: center;
-} */
 
 /* 모달 관련 스타일 */
 #registerModal .modal-dialog {
