@@ -1,18 +1,9 @@
 package com.bootstrap.study.personnel.controller;
 
-<<<<<<< HEAD
 import java.util.Collections;
 import java.util.List;
-=======
-import java.util.List;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 
-<<<<<<< HEAD
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,11 +18,8 @@ import com.bootstrap.study.personnel.dto.PositionDTO;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.RequiredArgsConstructor;
-=======
 import com.bootstrap.study.personnel.entity.Personnel;
-import com.bootstrap.study.personnel.service.PersonnelService;
 
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 import lombok.extern.log4j.Log4j2;
 
 @Controller
@@ -39,23 +27,12 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class PersonnelController {
-<<<<<<< HEAD
 
 	private final PersonnelService personnelService;
-
-=======
-	private final PersonnelService personnelService;
 	
-	public PersonnelController(PersonnelService personnelService) {
-		this.personnelService = personnelService;
-	}
-	
-	
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 	@GetMapping("/current")
 	public String current(Model model) {
 		log.info("PersonnelController current()");
-<<<<<<< HEAD
 
 		return "/hrn/personnelCurrent";
 	}
@@ -83,16 +60,9 @@ public class PersonnelController {
 		personnelService.personRegist(personnelDTO);
 		
 		
-		
-		
-		
-=======
 	
-		List<Personnel> personList = personnelService.getPersonList(); 
 		
 		
-//		model.addAttribute("personList", personList);
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 		
 		return "/hrn/personnelCurrent";
 	}
