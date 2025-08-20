@@ -24,8 +24,9 @@ public class Personnel {
     @JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "dept_id")
     private Department department; // 부서명
     
-    @Column(nullable = false, name = "emp_position")
-    private String position; // 직책
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "emp_position", referencedColumnName = "pos_id")
+    private Position position; // 직급명
     
     @Column(nullable = false, name = "emp_name")
     private String name; // 이름.

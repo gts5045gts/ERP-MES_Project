@@ -17,7 +17,7 @@ public class PersonnelDTO {
 	//private Long id;
     private String empId;
     private String name;
-    private String position;
+    private String positionName;
     private String phone;
     private String email;
     private String deptName; // 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
@@ -29,7 +29,7 @@ public class PersonnelDTO {
         return PersonnelDTO.builder()
                 .empId(personnel.getEmpId())
                 .name(personnel.getName())
-                .position(personnel.getPosition())
+                .positionName(personnel.getPosition() != null ? personnel.getDepartment().getDeptName() : null)
                 .phone(personnel.getPhone())
                 .email(personnel.getEmail())
                 .deptName(personnel.getDepartment() != null ? personnel.getDepartment().getDeptName() : null)

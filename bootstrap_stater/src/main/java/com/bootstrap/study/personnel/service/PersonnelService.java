@@ -48,7 +48,7 @@ public class PersonnelService {
     	PersonnelDTO dto = new PersonnelDTO();
         dto.setEmpId(personnel.getEmpId()); 
         dto.setDeptName(personnel.getDepartment().getDeptName());
-        dto.setPosition(personnel.getPosition());
+        dto.setPositionName(personnel.getPosition().getPosName());
         dto.setName(personnel.getName());
         dto.setPhone(personnel.getPhone());
         dto.setEmail(personnel.getEmail());
