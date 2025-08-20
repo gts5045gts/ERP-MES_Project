@@ -5,6 +5,10 @@ import lombok.extern.log4j.Log4j2;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,11 +45,28 @@ public class ApprController {
     
     // 결재목록
     @GetMapping("/approval_list")
-    public String approvalList(@RequestParam(value = "status", required = false, defaultValue = "all") String status, Model model) {
-        // Service에 실제로 있는 메소드 이름인 'getApprovalList'로 바꿔주세요!
-        List<ApprDTO> approvalList = apprService.getApprovalList(); 
+    public String approvalList(
+            @RequestParam(value = "status", required = false, defaultValue = "all") String status,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            Model model) {
         
-        model.addAttribute("approvalList", approvalList);
+        System.out.println(">>> Controller 시작 - 페이지: " + page);
+        
+        // 페이징 설정 (1페이지당 5개)
+        Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createAt"));
+        
+        Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable);
+        System.out.println(">>> 조회된 페이지 정보 - 현재페이지: " + approvalPage.getNumber() + 
+                          ", 전체페이지: " + approvalPage.getTotalPages() + 
+                          ", 전체데이터: " + approvalPage.getTotalElements());
+        
+        model.addAttribute("approvalList", approvalPage.getContent());
+        model.addAttribute("currentPage", approvalPage.getNumber());
+        model.addAttribute("totalPages", approvalPage.getTotalPages());
+        model.addAttribute("totalElements", approvalPage.getTotalElements());
+        model.addAttribute("hasPrevious", approvalPage.hasPrevious());
+        model.addAttribute("hasNext", approvalPage.hasNext());
+        
         return "approval/approval_list";    
     }
  	
