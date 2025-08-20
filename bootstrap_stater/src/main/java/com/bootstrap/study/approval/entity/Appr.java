@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.bootstrap.study.approval.constant.ApprStatus;
+//import com.bootstrap.study.approval.constant.ApprStatus;
 
 @Entity
 @Table(name = "approval")
@@ -45,9 +45,9 @@ public class Appr {
 	@LastModifiedBy
 	private LocalDateTime updateAt;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
- 	private ApprStatus status;
+//	@Enumerated(EnumType.STRING)
+//	@Column(nullable = false)
+// 	private ApprStatus status;
  	
  	private int currentStep;
  	
