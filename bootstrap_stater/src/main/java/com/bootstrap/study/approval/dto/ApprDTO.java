@@ -1,13 +1,13 @@
 package com.bootstrap.study.approval.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.bootstrap.study.approval.constant.ApprStatus;
 
 import com.bootstrap.study.approval.entity.Appr;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +41,9 @@ public class ApprDTO {
  	private Integer currentStep;
  	
  	private Integer totStep;
+ 	
+ 	private List<ApprLineDTO> ApprLineDTOList;
+ 	private List<ApprDetailDTO> ApprDetailDTOList;
 
  	@Builder
 	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDateTime createAt,

@@ -57,7 +57,7 @@
 				    </div>
 				    <div class="panel-body">
 				      <form class="form-horizontal" th:action="@{/appr}" th:object="${apprDTO}" method="post" enctype="multipart/form-data">
-				      <input type="hidden" th:field="*{reqType}" class="form-control"><!-- 문서타입 -->
+				      <input type="hidden1" th:field="*{reqType}" class="form-control" placeholder="문서타입"><!-- 문서타입 -->
 				        
 				        <div class="form-group">
 						  <label class="col-sm-2 control-label" for="createAt">기안일</label>
@@ -71,17 +71,6 @@
 						  </div>
 						</div>
 				        
-				       <!--  <div class="input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text">
-									<i class="far fa-calendar-alt"></i>
-								</span>
-							</div>
-							<input type="text" class="form-control float-right" id="reservation" name="DAYS" readonly="readonly">
-							<input type="hidden" id="startDate" name="START_DATE">
-							<input type="hidden" id="endDate" name="END_DATE">
-						</div> -->
-				
 				        <div class="form-group">
 				          <label class="col-sm-2 control-label">문서제목</label>
 				          <div class="col-sm-8">
@@ -89,13 +78,6 @@
 				          </div>
 				        </div>
 				
-				        <!-- <div class="form-group">
-				          <label class="col-sm-2 control-label">결재라인</label>
-				          <div class="col-sm-8">
-				            <input type="text" class="form-control" placeholder="결재라인" disabled>
-				          </div>
-				        </div>
-				        -->		
 				        <div class="form-group">
 				          <label class="col-sm-2 control-label">결재자</label>
 				          <div class="col-sm-8">
@@ -104,28 +86,20 @@
 				          </div>
 				        </div>
 				
-				
-				        <div class="form-group">
-				          <label class="col-sm-2 control-label">결재문서</label>
-				          <div class="col-sm-8">
-				            <a href="#" class="btn btn-link">전표 출력물</a>
-				          </div>
-				        </div>
-				
 				        <div class="form-group">
 				          <label class="col-sm-2 control-label">휴가 종류</label>
-				          <div class="col-sm-4">
-				            <input type="text" th:field="*{reqType}" class="form-control" placeholder="구분">
+				          <div class="col-sm-2">
+				            <select class="form-control" th:field="*{reqType}">
+								<!-- 타임리프 템플릿 페이지에서 자바 클래스(enum 포함)를 직접 참조하는 방법 -->
+								<!-- ${T(패키지명.클래스명).메서드명()} -->
+								<!-- enum 타입의 values() 메서드 호출하여 모든 enum 값을 목록으로 표시(반복문 활용) -->
+								<!-- value 속성값은 반복 시 전달받은 enum 값을 그대로 사용, text 속성값은 enum 값의 label 필드값 사용 -->
+								<option th:each="rtype : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
+										th:value="${rtype}"
+										th:text="${rtype.label}"></option>
+							</select>
 				          </div>
-				          
-				          <!-- <label class="col-sm-2 control-label">출력양식</label>
-				          <div class="col-sm-4">
-				            <select name="output_format" class="form-control">
-				              <option value="default">기본양식(결재문서 별도 인쇄)</option>
-				            </select>
-				          </div> -->
 				        </div>
-				        
 				        
 				        <div class="form-group">
 						  <label class="col-sm-2 control-label" for="">기간 및 일시</label>
@@ -150,12 +124,35 @@
 						
 						<div class="form-group">
 				          <label class="col-sm-2 control-label">반차 여부</label>
+				          	<div class="col-sm-8">
+					          	<div class="input-group">
+					          	
+							        <input type="radio" th:field="*{ApprDetailDTOList[0].halfType}" value="STARTMORNING" class="halfTypeRadio" /> 시작 오전 반차
+<input type="radio" th:field="*{ApprDetailDTOList[1].halfType}" value="STARTAFTERNOON" class="halfTypeRadio" /> 시작 오후 반차
+<input type="radio" th:field="*{ApprDetailDTOList[2].halfType}" value="ENDMORNING" class="halfTypeRadio" /> 종료 오전 반차
+<input type="radio" th:field="*{ApprDetailDTOList[3].halfType}" value="ENDAFTERNOON" class="halfTypeRadio" /> 종료 오후 반차
+
+<script>
+  const radios = document.querySelectorAll('.halfTypeRadio');
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      radios.forEach(r => {
+        if(r !== radio) r.checked = false;
+      });
+    });
+  });
+</script>
+
+				          		</div>
+    				        </div>
+				        </div>
+				        
+				        <div class="form-group">
+				          <label class="col-sm-2 control-label">연차 일수</label>
 				          <div class="col-sm-8">
 				            <a href="#" class="btn btn-info">추가</a>
 				          </div>
 				        </div>
-				        
-				        
 				        
 				        <div class="form-group">
 				          <label class="col-sm-2 control-label">첨부</label>
