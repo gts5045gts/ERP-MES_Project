@@ -1,6 +1,7 @@
 package com.bootstrap.study.approval.service;
 
 import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +45,15 @@ public class ApprService {
         log.info(">>>>>> DTO로 변환 후 최종 반환 건수: " + apprDtoList.size() + "건");
 
         return apprDtoList;
+    }
+    
+    @Transactional(readOnly = true)
+    public ApprFullDTO getApprovalDetail(Long reqId) {
+        // ID로 Appr 엔티티를 찾고, 없으면 예외 발생
+        Appr appr = apprRepository.findById(reqId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId));
+        
+        // Entity를 ApprFullDTO로 변환하여 반환
+        return ApprFullDTO.fromEntity(appr);
     }
 }
