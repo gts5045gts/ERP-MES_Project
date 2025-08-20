@@ -13,7 +13,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
 <link href="/personnel/css/personnel.regist.css" rel="stylesheet" type="text/css">
-<link href="/personnel/css/personnel.regist2.css" rel="stylesheet" type="text/css">
     
 </head>
 <body>
@@ -33,39 +32,52 @@
 								<i class="fa-solid fa-pen"></i> 기본정보</h1>
 						</div>
 
-						<form action="employeeregist" id="registForm" name="registForm" method="post" enctype="multipart/form-data">
+						<form th:action="@{/personnel/registPro}" id="registForm" name="registForm" method="post" enctype="multipart/form-data">
 							<table class="eTable">
 								<tbody>
 									<tr>
+									
+									
 										<!--******************* 사진 *******************-->
+										<!-- 
 										<td rowspan="3" class="text-center">
 											<div class="photo-wrapper1">
 												<img id="pFIle" name="pFIle" alt="">
 											</div>
 										</td>
+										 -->
 										<!-- 이름 -->
 										<th scope="row" class="custom-th">
 											<label for="emp_nm" class="form-label">이름</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_nm" name="emp_nm"></td>
+											<input type="text" class="form-control w-75" id="emp_nm" name="name"></td>
+										
+										<th scope="row" class="custom-th">
+											<label for="emp_pass" class="form-label">비밀번호</label></th>
+										<td colspan="3" class="custom-td">
+											<input type="text" class="form-control w-75" id="emp_pass" name="passwd"></td>
 
 										<!-- 전화번호 -->
 										<th scope="row" class="custom-th">
 											<label for="emp_ph" class="form-label">전화번호</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_ph" name="emp_ph">
+											<input type="text" class="form-control w-75" id="emp_ph" name="phone">
 											<span id="checkPhoneResult"></span>
 										</td>
 
 										<!-- 생년월일 -->
+										<!--
 										<th scope="row" class="custom-th">
 											<label for="emp_bd" class="form-label">생년월일</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_bd" name="emp_bd" placeholder="생년월일 6자리 (예:950211)" maxlength="6"></td>
+											<input type="text" class="form-control w-75" id="emp_bd" name="emp_bd" placeholder="생년월일 6자리 (예:950211)" maxlength="6">
+										</td>
+										-->
 									</tr>
-
 									<tr>
 										<!-- 성별 -->
+										
+										<!-- 
 										<th scope="row" class="custom-th">
 											<label for="emp_sb" class="form-label">성별</label></th>
 										<td colspan="3" class="custom-td">
@@ -78,45 +90,52 @@
 													<label class="form-check-label" for="emp_sb_f">여</label>
 											</div>
 										</td>
+										 -->
+										 
+										 
 										<!-- 이메일 -->
 										<th scope="row">
 											<label for="emp_em" class="form-label">이메일</label></th>
 										<td colspan="3">
-											<input type="text" class="form-control w-75" id="emp_em" name="emp_em" placeholder="aaa@naver.com">
+											<input type="text" class="form-control w-75" id="emp_em" name="email" placeholder="aaa@naver.com">
 											<span id="checkEmailResult"></span>
 										</td>
 										<!-- 재직현황 -->
+										
+										<!-- 
 										<th scope="row">
 											<label for="emp_yn" class="form-label">재직현황</label></th>
 										<td colspan="3">
 											<select id="emp_yn" name="emp_yn" class="form-select w-75">
-												<option value="재직" selected="">재직</option>
-												<option value="휴직" disabled="">휴직</option>
-												<option value="퇴사" disabled="">퇴사</option>
+												
 											</select>
 										</td>
+										 -->
+										
 									</tr>
 								</tbody>
 								<tbody>
 									<tr>
 										<!-- ******************첨부파일*************************-->
+										<!-- 
+										
 										<td rowspan="3" class="text-center">
 											<div class="photo-wrapper-regist">
 												<input class="form-control" type="file" id="emp_pi" name="file1" onchange="employeePhoto(event);">
 											</div>
 										</td>
-
+ -->
 										<!-- 부서명 -->
 										<th scope="row" class="custom-th">
 											<label for="dep_nm" class="form-label">부서명</label></th>
 										<td colspan="3">
-											<select id="dep_nm" name="dep_nm" class="form-select w-75">
-												<option value="">부서명을 선택하세요</option>
-												<option value="인사팀">인사팀</option>
-												<option value="총무팀">총무팀</option>
-												<option value="개발팀">개발팀</option>
-												<option value="경영지원팀">경영지원팀</option>
-												<option value="영업팀">영업팀</option>
+											<select id="dep_nm" name="deptName" class="form-select w-75">
+											
+												<option value="">부서명을 선택하세요</option> 
+												<th:block th:each="departments : ${departments}">
+													<option th:value="${departments.id}" th:text="${departments.name}">
+												</th:block>
+												
 											</select>
 										</td>
 
@@ -124,20 +143,19 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_gd" class="form-label">직책</label></th>
 										<td colspan="3">
-											<select id="emp_gd" name="emp_gd" class="form-select w-75">
+											<select id="emp_gd" name="position" class="form-select w-75">
 												<option value="">직책을 선택하세요</option>
-												<option value="사장">사장</option>
-												<option value="이사">이사</option>
-												<option value="부장">부장</option>
-												<option value="차장">차장</option>
-												<option value="과장">과장</option>
-												<option value="대리">대리</option>
-												<option value="사원">사원</option>
+												<th:block th:each="position : ${position}">
+													<option th:value="${position.id}" th:text="${position.name}">
+												</th:block>
 											</select>
 										</td>
 										<!-- 보안등급 -->
+										<!-- 
 										<th scope="row" class="custom-th">
-											<label for="emp_lv" class="form-label">보안등급</label></th>
+											<label for="emp_lv" class="form-label">보안등급</label>
+										</th>
+										
 										<td colspan="3">
 											<select id="emp_lv" name="emp_lv" class="form-select w-75">
 												<option value="">보안등급을 선택하세요</option>
@@ -147,38 +165,42 @@
 												<option value="4" disabled="">(4)관리자</option>
 											</select>
 										</td>
+									-->
+									
 									</tr>
-
+										<!-- 우편번호 
 									<tr>
-										<!-- 우편번호 -->
 										<th scope="row">
 											<label for="emp_pc" class="form-label">우편번호</label></th>
 										<td colspan="3">
 											<input type="text" class="form-control w-75" id="emp_pc" name="emp_pc"></td>
 										<td colspan="3">
-											<button type="button" class="btn btn_main_color" id="btnSearchAddress">주소검색</button>
+											<button type="button" class="btn btn-primary btn-sm" id="btnSearchAddress">주소검색</button>
 										</td>
 									</tr>
-
+									-->
+									<!--
 									<tr>
-										<!-- 기본주소 -->
+										 기본주소
 										<th scope="row" class="custom-th">
 											<label for="emp_ad" class="form-label">기본주소</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="emp_ad" name="emp_ad"></td>
-										<!-- 상세주소 -->
+											 -->
+										<!-- 상세주소 
 										<th scope="row" class="custom-th">
 											<label for="emp_ba" class="form-label">상세주소</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="emp_ba" name="emp_ba"></td>
 									</tr>
+									-->
 								</tbody>
 							</table>
 						
 							<br> <br>
 							<div align="right">
-								<button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
-								<button type="submit" class="btn btn_main_color" id="registerBtn">등록</button>
+								<button type="button" class="btn btn-primary btn-sm" onclick="history.back()">취소</button>
+								<button type="submit" class="btn btn-primary btn-sm" id="registerBtn">등록</button>
 							</div>
 						</form>
 

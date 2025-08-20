@@ -3,17 +3,17 @@ package com.bootstrap.study.personnel.controller;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.personnel.dto.DepartmentDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PositionDTO;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,11 +35,35 @@ public class PersonnelController {
 	}
 
 	@GetMapping("/regist")
-	public String regist() {
+	public String regist(Model model) {
 		log.info("PersonnelController regist()");
+		
+		List<DepartmentDTO> departments = personnelService.getAllDepartments();
+		model.addAttribute("departments", departments);
+		
+		List<PositionDTO> position = personnelService.getAllPositions();
+		model.addAttribute("position", position);
+		
+		log.info("position" + position.toString());
+		log.info("departments" + departments.toString());
+		
 
 		return "/hrn/personnelRegist";
 	}
+	@PostMapping("/registPro")
+	public String registPro(PersonnelDTO personnelDTO) {
+		log.info("등록할 사원 정보 : " + personnelDTO.toString());
+		
+		personnelService.personRegist(personnelDTO);
+		
+		
+		
+		
+		
+		
+		return "/hrn/personnelCurrent";
+	}
+	
 
 	@GetMapping("/app")
 	public String app() {
