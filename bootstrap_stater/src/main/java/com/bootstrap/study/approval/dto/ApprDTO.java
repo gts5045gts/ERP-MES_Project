@@ -41,7 +41,13 @@ public class ApprDTO {
  	private Integer currentStep;
  	
  	private Integer totStep;
-
+ 	
+ 	// ============== [ 추가된 필드 ] ==============
+    private String drafterName;     // 기안자 이름
+    private String department;      // 기안자 부서
+    private String currentApprover; // 현재 결재자 이름
+    // ===========================================
+ 	
  	@Builder
 	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDateTime createAt,
 			LocalDateTime updateAt, ApprStatus status, Integer currentStep, Integer totStep) {

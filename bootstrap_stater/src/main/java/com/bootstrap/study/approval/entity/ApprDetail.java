@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -28,8 +29,9 @@ import lombok.Setter;
 public class ApprDetail {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "det_id", updatable = false)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "approval_detail_seq_generator")
+    @SequenceGenerator(name="approval_detail_seq_generator", sequenceName="approval_detail_seq", allocationSize=1)
+    @Column(name = "det_id", updatable = false)
 	private Long id;
 	
 	@Temporal(TemporalType.DATE)

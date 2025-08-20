@@ -1,6 +1,6 @@
 package com.bootstrap.study.approval.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +22,9 @@ import com.bootstrap.study.approval.constant.ApprStatus;
 public class Appr {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(updatable = false)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "approval_seq_generator")
+    @SequenceGenerator(name="approval_seq_generator", sequenceName="approval_seq", allocationSize=1)
+    @Column(updatable = false)
 	private Long reqId;
 
 	@Column(nullable = false, length = 20)

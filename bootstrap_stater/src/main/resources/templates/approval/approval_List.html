@@ -83,78 +83,46 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-				    <table class="table table-hover text-center table-compact" id="dataTable" width="100%" cellspacing="0">
-				        <thead>
-				            <tr>
-				                <th>결재번호</th>
-				                <th>결재 유형</th>
-				                <th>기안자</th>
-				                <th>부서</th>
-				                <th>기안일</th>
-				                <th>현재/최종 결재자</th>
-				                <th>상태</th>
-				                <th>관리</th>
-				            </tr>
-				        </thead>
-				        <tbody>
-				            <tr>
-				                <td>104</td>
-				                <td>휴가 신청서</td>
-				                <td>이연수</td>
-				                <td>재무팀</td>
-				                <td>2025-08-07</td>
-				                <td>이광우</td>
-				                <td><span class="font-weight-bold text-primary">승인</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				            <tr>
-				                <td>103</td>
-				                <td>지출결의서</td>
-				                <td>팔다니엘</td>
-				                <td>경영지원팀</td>
-				                <td>2025-08-06</td>
-				                <td>이광우</td>
-				                <td><span class="font-weight-bold text-danger">반려</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				            <tr>
-				                <td>102</td>
-				                <td>인사발령</td>
-				                <td>김사용</td>
-				                <td>개발팀</td>
-				                <td>2025-08-05</td>
-				                <td>김이사 (나)</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-                                <td><button type="button" class="btn btn-primary btn-sm" onclick="openApprovalPopup()">결재하기</button></td>
-				            </tr>
-				
-				            <tr>
-				                <td>101</td>
-				                <td>근무기록 수정</td>
-				                <td>박영수</td>
-				                <td>생산팀</td>
-				                <td>2025-08-04</td>
-				                <td>이부장</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-				                <td>-</td>
-				            </tr>
-				            
-				            <tr>
-				                <td>100</td>
-				                <td>프로젝트 품의서</td>
-				                <td>김개발</td>
-				                <td>개발팀</td>
-				                <td>2025-08-03</td>
-				                <td>박상무</td>
-				                <td><span class="font-weight-bold text-success">대기</span></td>
-				                <td>-</td>
-				            </tr>
-				
-				        </tbody>
-				    </table>
-				</div>
+                    <table class="table table-hover text-center table-compact" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            <th>결재번호</th>
+                            <th>결재 유형</th>
+                            <th>기안자</th>
+                            <th>부서</th>
+                            <th>기안일</th>
+                            <th>현재/최종 결재자</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="appr : ${approvalList}">
+                                <td th:text="${appr.reqId}">104</td>
+                                <td th:text="${appr.reqType}">휴가 신청서</td>
+                                <td th:text="${appr.drafterName}">이연수</td>
+                                <td th:text="${appr.department}">재무팀</td>
+                                <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
+                                <td th:text="${appr.currentApprover}">이광우</td>
+                                <td>
+                                    <th:block th:switch="${appr.status}">
+                                        <span th:case="${T(com.bootstrap.study.approval.constant.ApprStatus).FINISHED}" class="font-weight-bold text-primary">완료</span>
+                                        <span th:case="${T(com.bootstrap.study.approval.constant.ApprStatus).REQUESTED}" class="font-weight-bold text-success">대기</span>
+                                        <span th:case="${T(com.bootstrap.study.approval.constant.ApprStatus).PROCESSING}" class="font-weight-bold text-warning">진행중</span>
+                                        </th:block>
+                                </td>
+                                <td>
+                                    <button th:if="${appr.status == T(com.bootstrap.study.approval.constant.ApprStatus).REQUESTED}"
+                                            type="button" class="btn btn-primary btn-sm" onclick="openApprovalPopup()">결재하기</button>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(approvalList)}">
+                                <td colspan="8" class="text-center py-5">조회된 결재 문서가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                        </table>
+                </div>
 
                 <nav aria-label="Page navigation">
                     <ul class="pagination justify-content-center">
@@ -175,66 +143,57 @@
 </th:block>
 
 <th:block layout:fragment="script">
-<script th:inline="javascript">
+    <script th:inline="javascript">
     /*<![CDATA[*/
     
-    // [수정된 부분 2] 함수와 URL을 아주 단순하게 변경
     function openApprovalPopup() {
-        // 컨트롤러에 만든 단순한 주소를 여기에 그대로 적어줘
-        const popupUrl = '/approval/showDraftingForm'; 
+        const popupUrl = '/approval/showDraftingForm';
         const popupName = 'approvalPopup';
         const popupWidth = 900;
         const popupHeight = 700;
         const left = (window.screen.width / 2) - (popupWidth / 2);
         const top = (window.screen.height / 2) - (popupHeight / 2);
         const popupOptions = `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`;
-        
+
         window.open(popupUrl, popupName, popupOptions);
     }
 
-    // 아래 부분은 기존 코드 그대로
     document.addEventListener('DOMContentLoaded', function () {
         const tabAll = document.getElementById('tab-all');
         const tabPending = document.getElementById('tab-pending');
         const tabCompleted = document.getElementById('tab-completed');
-        const tableRows = document.querySelectorAll('#dataTable tbody tr');
         const allTabs = [tabAll, tabPending, tabCompleted];
+        
+        // 현재 URL의 파라미터를 기반으로 탭을 활성화하는 로직이 필요하지만
+        // 우선은 자바스크립트 필터링은 그대로 두겠습니다.
+        // TODO: 아래 필터링 로직 대신 각 탭 클릭 시 서버에 status 값을 보내 재조회하는 방식으로 변경하는 것이 좋습니다.
+        
+        const tableRows = document.querySelectorAll('#dataTable tbody tr');
         function filterTable(status) {
             tableRows.forEach(function (row) {
                 const statusCell = row.querySelector('td:nth-child(7)');
-                const statusText = statusCell ? statusCell.querySelector('span').textContent.trim() : '';
+                if (!statusCell) return;
+                
+                const statusText = statusCell.querySelector('span').textContent.trim();
+                
                 if (status === 'pending') {
-                    row.style.display = (statusText === '대기' || statusText === '진행중') ? 'table-row' : 'none';
+                    row.style.display = (statusText === '대기' || statusText === '진행중') ? '' : 'none';
                 } else if (status === 'completed') {
-                    row.style.display = (statusText === '승인' || statusText === '반려') ? 'table-row' : 'none';
+                    row.style.display = (statusText === '완료') ? '' : 'none';
                 } else {
-                    row.style.display = 'table-row';
+                    row.style.display = '';
                 }
             });
         }
+        
         function updateActiveTab(clickedTab) {
-            allTabs.forEach(function(tab) {
-                tab.classList.remove('active');
-            });
+            allTabs.forEach(tab => tab.classList.remove('active'));
             clickedTab.classList.add('active');
         }
-        tabAll.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('all');
-        });
-        tabPending.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('pending');
-        });
-        tabCompleted.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateActiveTab(this);
-            filterTable('completed');
-        });
-        updateActiveTab(tabAll);
-        filterTable('all');
+
+        tabAll.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabAll); filterTable('all'); });
+        tabPending.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabPending); filterTable('pending'); });
+        tabCompleted.addEventListener('click', (e) => { e.preventDefault(); updateActiveTab(tabCompleted); filterTable('completed'); });
     });
     /*]]>*/
 </script>
