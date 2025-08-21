@@ -1,6 +1,7 @@
 package com.bootstrap.study.attendance.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,45 +9,38 @@ import org.springframework.stereotype.Service;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.mapper.CommuteMapper;
+import com.bootstrap.study.attendance.mapper.CommuteScheduleMapper;
 
 @Service
 public class CommuteService {
 
 	private final CommuteMapper commuteMapper;
+	private final CommuteScheduleMapper commuteScheduleMapper;
 	
-	public CommuteService(CommuteMapper commuteMapper) {
+	public CommuteService(CommuteMapper commuteMapper, CommuteScheduleMapper commuteScheduleMapper) {
 		this.commuteMapper = commuteMapper;
+		this.commuteScheduleMapper = commuteScheduleMapper;
 	}
 
 
 	// 출근현황 리스트
-	public List<CommuteDTO> getCommuteList() {
-		
-		List<CommuteDTO> commuteDTOList = commuteMapper.selectAllCommute();
-		System.out.println("commuteDTOList : " + commuteDTOList);
-		
-		if(!commuteDTOList.isEmpty()) {
-			System.out.println("첫번째 항목 : " + commuteDTOList.get(0));
-		}
-		
-		return null;
+	public List<CommuteDTO> getCommuteList(String empId) {
+		return commuteMapper.getCommuteList(empId);
 	}
 
 
-	public void checkIn(String empId) {
-		CommuteScheduleDTO schedule = commuteMapper.getSchedule();
+	// 출근버튼
+	public CommuteDTO checkIn(String empId) {
+		
+		LocalDateTime now = LocalDateTime.now();
 		
 		// 근무 기준
-		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime workStart = schedule.getWorkStartTime();
+		CommuteScheduleDTO schedule = commuteScheduleMapper.getCurrentSchedule();
+		LocalTime startTime = schedule.getWorkStartTime().toLocalTime(); // db에서 가져온 출근시작시간
+		LocalTime nowTime = LocalDateTime.now().toLocalTime(); // 현재시간
 		
-		// 출근 상태 판별
-		String workStatus;
-		if(now.isAfter(workStart)) {
-			workStatus = "지각";
-		} else {
-			workStatus = "출근";
-		}
+		// 지각 여부 판별
+		String workStatus = nowTime.isAfter(startTime) ? "지각" : "출근";
 		
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
@@ -54,7 +48,9 @@ public class CommuteService {
 		commute.setWorkStatus(workStatus);
 		
 		commuteMapper.insertCommute(commute);
+		System.out.println("commute : " + commute);
 		
+		return commute;
 	}
 
 }

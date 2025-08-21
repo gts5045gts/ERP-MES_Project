@@ -11,11 +11,9 @@ import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 public interface CommuteMapper {
 
 	// 출퇴근리스트
-	List<CommuteDTO> selectAllCommute();
-
-	// 출근버튼
-	CommuteScheduleDTO getSchedule();
-
+	List<CommuteDTO> getCommuteList(String empId);
+	
 	// 출근했을때 데이터 commute_record 테이블에 저장
 	void insertCommute(CommuteDTO commute);
+
 }

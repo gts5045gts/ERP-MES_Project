@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
@@ -20,6 +21,7 @@ import com.bootstrap.study.attendance.service.CommuteService;
 public class CommuteController {
 
 	private final CommuteService commuteService;
+	private final String emp_id = "2025081901"; 
 	
 	public CommuteController(CommuteService commuteService) {
 		this.commuteService = commuteService;
@@ -28,11 +30,11 @@ public class CommuteController {
 
 	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
-	public String getComuuteList(Model model) {
-		
-		List<CommuteDTO> commuteDTOList = commuteService.getCommuteList();
+	public String getCommuteList(Model model) {
+		List<CommuteDTO> commuteDTOList = commuteService.getCommuteList(emp_id);
 		
 		model.addAttribute("commuteDTOList", commuteDTOList);
+//		model.addAttribute("empId", empId);
 		
 		System.out.println(commuteDTOList);
 		
@@ -40,10 +42,10 @@ public class CommuteController {
 	}
 	
 	// 출근버튼
+	@ResponseBody
 	@PostMapping("/checkIn")
-	public String checkIn(@RequestParam String empId) {
-		commuteService.checkIn(empId);
-		return "출근 기록 저장";
+	public CommuteDTO checkIn() {
+		return commuteService.checkIn(emp_id);
 	}
 	
 	
