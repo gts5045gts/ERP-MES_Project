@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bootstrap.study.personnel.dto.DepartmentDTO;
@@ -31,6 +32,7 @@ public class PersonnelService {
 	private final PersonnelRepository personnelRepository;
 	private final DepartmentRepository departmentRepository;
 	private final PositionRepository positionRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	// 모든 부서를 조회하여 DTO 리스트로 반환
 	public List<DepartmentDTO> getAllDepartments() {
@@ -95,11 +97,9 @@ public class PersonnelService {
 		
 		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
 		position.setPosId(personnelDTO.getPosId());		//직급 아이디 직급타입의 변수에 저장
-		
-		
-		
 		department.setDeptId(personnelDTO.getDeptId());
 		
+		String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
 		
 		log.info("사원등록 정보: " + personnelDTO.toString());
 		
@@ -108,7 +108,7 @@ public class PersonnelService {
 		personnel.setEmpId(personnelDTO.getEmpId());
 		personnel.setName(personnelDTO.getName());
 		personnel.setEmail(personnelDTO.getEmail());
-		personnel.setPasswd(personnelDTO.getPasswd());
+		personnel.setPasswd(encodedPassword);
 		personnel.setPhone(personnelDTO.getPhone());
 		personnel.setDepartment(department);
 		personnel.setPosition(position);
