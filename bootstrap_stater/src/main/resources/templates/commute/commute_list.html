@@ -19,35 +19,45 @@
             <div class="mb-3">
             	<button id="checkInBtn" class="btn btn-primary" th:data-empid="${empId}">출근</button>
             </div>
-	                
+	        
+	        <!-- 근태 리스트 테이블 -->        
 	        <!-- DataTales Example -->
 	        <div class="card shadow mb-4">
 	            <div class="card-header py-3">
-	                <h6 class="m-0 font-weight-bold text-primary">근태관리 출퇴근현황</h6>
+	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6>
 	            </div>
 	            <div class="card-body">
 	                <div class="table-responsive">
-	                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
 	                        <thead>
 		                        <tr>
 		                            <th>근태코드</th>
 		                            <th>출근시간</th>
 		                            <th>퇴근시간</th>
 		                            <th>사원 아이디</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
 		                            <th>근무상태</th>
 		                        </tr>
 	                        </thead>
-	                        <tbody id="commuteTable">
-		                        <tr th:each="c : ${commuteDTOList}">
+	                        <tbody>
+		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable">
 		                            <td th:text="${c.commuteId}"></td>
 		                            <td th:text="${c.checkInTime}"></td>
 		                            <td th:text="${c.checkOutTime}"></td>
 		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
 		                            <td th:text="${c.workStatus}"></td>
 		                        </tr>
 	                        </tbody>
 	                        <tfoot>
 		                        <tr>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
 		                            <th>1</th>
 		                            <th>1</th>
 		                            <th>1</th>
@@ -66,41 +76,31 @@
 	</th:block>
 	<th:block layout:fragment="script">
 		<script>
-			$("#checkInBtn").click(function() {
-				console.log("출근 버튼 클릭됨")
+// 			$("#checkInBtn").click(function() {
+// 				console.log("출근 버튼 클릭됨")
 				
-// 				$.ajax({
-// 					url: "/attendance/checkIn",
-// 					type: "POST",
-// 					dataType: "json",
-// 					success: function(data) {
-						
-// 						if(!data) { // CommuteDTO 데이터가 null이라면
-// 							console.error("서버에서 출근 기록을 받지 못했습니다.");
-// 							return;
-// 						}
-						
-// 						// checkOutTime 이게 널이면 빈문자열로 처리
-// 						const checkOutTime = data.checkOutTime ? data.checkOutTime : "";
-						
-// 						let row =
-// 					}
+// 				let empId = $(this).data("empid");
+				
+// 				$.post("/attendance/checkIn", {empId: empId}, function(data) {
+// 		            if(!data) return;
+				
+// 		            $("#commuteTable tbody").empty();
+		            
+// 					let row = `<tr>
+// 					    <td>${data.commuteId}</td>            
+// 					    <td>${data.checkInTime || ''}</td>        
+// 					    <td>${data.checkOutTime || ''}</td>        
+// 					    <td>${data.empId}</td>                     
+// 					    <td>${data.empName}</td>                   
+// 					    <td>${data.deptName}</td>                 
+// 					    <td>${data.posName}</td>                   
+// 					    <td>${data.workStatus || ''}</td>
+// 					</tr>`;
+				
+// 					$("#commuteTable tbody").append(row);
+// 					locoation.reload();
 // 				});
-				
-				
-				
-				
-				$.post("/attendance/checkIn", function(data) {
-					let row = `<tr>
-						<td>${data.commuteId}</td>
-						<td>${data.checkInTime}</td>
-						<td>${data.checkOutTime || ''}</td>
-						<td>${data.empId}</td>
-						<td>${data.workStatus}</td>
-					</tr>`;
-					$("#commuteTable").prepend(row);
-				});
-			});
+// 			});
 		</script>
 	</th:block>
 </body>
