@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 public class ApprLine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "approval_line_seq_generator")
+    @SequenceGenerator(name="approval_line_seq_generator", sequenceName="approval_line_seq", allocationSize=1)
     @Column(name = "line_id", updatable = false)
     private	Long id;
 

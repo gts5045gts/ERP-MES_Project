@@ -42,6 +42,28 @@ public class ApprDTO {
  	
  	private Integer totStep;
  	
+ 	// ============== [ 추가된 필드 ] ==============
+    private String drafterName;     // 기안자 이름
+    private String department;      // 기안자 부서
+    private String currentApprover; // 현재 결재자 이름
+    // ㅇㅇ
+    private LocalDateTime decDate; // 결재일자 추가
+    private String decision; // 결재 상태 (PENDING, ACCEPT, DENY)
+    private Integer stepNo; // 결재순번 추가
+    // ===========================================
+    // ㅇㅇ
+    // 상태를 한글로 변환하는 메서드 추가
+    public String getStatusLabel() {
+        if ("PENDING".equals(decision) || decision == null) {
+            return "대기";
+        } else if ("ACCEPT".equals(decision)) {
+            return "승인";
+        } else if ("DENY".equals(decision)) {
+            return "반려";
+        }
+        return "미정";
+    }
+    
  	private List<ApprLineDTO> ApprLineDTOList;
  	private List<ApprDetailDTO> ApprDetailDTOList;
 
