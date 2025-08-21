@@ -22,7 +22,6 @@ public class CommonCodeDTO {
 	private String comId; // 코드
 	private String comNm; // 코드명
 	private String useYn; // 사용여부
-	private Integer comOrder; // 정렬순서
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime createdAt; // 등록일
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")

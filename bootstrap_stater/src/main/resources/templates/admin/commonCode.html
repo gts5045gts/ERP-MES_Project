@@ -21,8 +21,8 @@
                                 <h6 class="m-0 font-weight-bold">상위공통코드</h6>
 							<div>
 								<button type="button" class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#commonCodeModal">등록</button>
-								<button type="button" class="btn btn-secondary btn-sm">수정</button>
-								<button type="button" class="btn btn-danger btn-sm">삭제</button>
+								<button type="button" class="btn btn-secondary btn-sm" id="btnEditCode">수정</button>
+								<button type="button" class="btn btn-danger btn-sm" id="btnDeleteCode">삭제</button>
 							</div>
 						</div>
 						<div class="col-6" style="padding: 10px 0 5px 12px;">
@@ -35,7 +35,7 @@
 							<div class="table-responsive">
 								<table id ="bigTable" class="table table-bordered">
 									<thead>
-										<tr>
+										<tr class="mainTitle">
 											<th>코드</th>
 											<th>코드명</th>
 											<th>사용여부</th>
@@ -45,8 +45,8 @@
 									<tbody id="commonTableBody">
 										<tr th:each="code, iterStat : ${codes}" class="master-row" th:data-id="${code.comId}">
 											<td th:text="${code.comId}"></td>
-											<td th:text="${code.comNm}"></td>
-											<td th:text="${code.useYn}"></td>
+											<td th:text="${code.comNm}" class="comNm-cell"></td>
+											<td th:text="${code.useYn}" class="useYn-cell"></td>
 											<td th:text="${code.createdAt != null ? #temporals.format(code.createdAt, 'yyyy-MM-dd') : ''}"></td>
 										</tr>
 									</tbody>
@@ -72,13 +72,14 @@
 							<input type="search" id="codeDetailSearch" />
 						</div>
 					 </div>
-                     <div class="card-body" id="detailArea">
+                     <div class="card-body" id="detailArea" style="display:none;">
                      	<table id ="smallTable" class="table table-bordered">
 							<thead>
 								<tr>
 									<th>코드</th>
 									<th>코드명</th>
 									<th>사용여부</th>
+									<th>정렬순서</th>
 									<th>등록일시</th>
 								</tr>
 							</thead>
@@ -99,22 +100,21 @@
 				<div class="modal-body">
 					<form id="commonCodeForm" th:action="@{/admin/comRegist}" th:object="${commonCodeDTO}" method="post">
 						<div class="mb-3">
-							<label for="recipient-name" class="col-form-label">코드</label>
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드</label>
 							<input type="text" th:field="*{comId}" class="form-control" id="comId" required>
 						</div>
 						<div class="mb-3">
-							<label for="recipient-name" class="col-form-label">코드명</label>
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드명</label>
 							<input type="text" th:field="*{comNm}" class="form-control" id="comNm"  required>
 						</div>
-						<label for="recipient-name" class="col-form-label">사용여부</label>
+						<label for="recipient-name" class="col-form-label" style="font-size: 15px;">사용여부</label>
 						<select class="useCodeAt" th:field="*{useYn}">
-							<option value="C" selected>사용여부</option>
-							<option value="Y">Y</option>
-							<option value="N">N</option>
+							<option value="Y">사용</option>
+							<option value="N">미사용</option>
 						</select>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
-							<button type="submit" class="btn btn-primary btn-sm">등록</button>
+							<button type="button" class="btn btn-dark btn-sm" data-bs-dismiss="modal">닫기</button>
+							<button type="submit" class="btn btn-success btn-sm">저장</button>
 						</div>
 					</form>
 				</div>
@@ -130,28 +130,31 @@
 					<h5 class="modal-title" id="commonCodeDetailModalLabel">상세공통코드 등록</h5>
 				</div>
 				<div class="modal-body">
-					<form id="commonCodeDetailForm" th:action="@{/admin/comDtRegist}" th:object="${commonDetailCodeDTO}" method="post">
+					<form id="commonCodeDetailForm" th:object="${commonDetailCodeDTO}" method="post">
 						<div class="mb-3">
-							<label for="recipient-name" class="col-form-label">부모코드</label>
-							<input type="text" th:field="*{comId}" class="form-control" id="parentComId" required>
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">부모코드</label>
+							<input type="text" th:field="*{comId}" class="form-control" id="parentComId" readonly>
 						</div>
 						<div class="mb-3">
-							<label for="recipient-name" class="col-form-label">코드</label>
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드</label>
 							<input type="text" th:field="*{comDtId}" class="form-control" id="comDtId" required>
 						</div>
 						<div class="mb-3">
-							<label for="recipient-name" class="col-form-label">코드명</label>
-							<input type="text" th:field="*{comDtNm}" class="form-control" id="comDtNm"  required>
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드명</label>
+							<input type="text" th:field="*{comDtNm}" class="form-control" id="comDtNm" required>
 						</div>
-						<label for="recipient-name" class="col-form-label">사용여부</label>
+						<div class="mb-3">
+							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">정렬순서</label>
+							<input type="text" th:field="*{comDtOrder}" class="form-control" id="comDtOrder" required>
+						</div>
+						<label for="recipient-name" class="col-form-label" style="font-size: 15px;">사용여부</label>
 						<select class="useCodeAt" th:field="*{useYn}">
-							<option value="C" selected>사용여부</option>
-							<option value="Y">Y</option>
-							<option value="N">N</option>
+							<option value="Y">사용</option>
+							<option value="N">미사용</option>
 						</select>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
-							<button type="submit" class="btn btn-primary btn-sm">등록</button>
+							<button type="button" class="btn btn-dark btn-sm" data-bs-dismiss="modal">닫기</button>
+							<button type="submit" class="btn btn-success btn-sm">저장</button>
 						</div>
 					</form>
 				</div>
@@ -168,6 +171,7 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 	<script src="https://kit.fontawesome.com/60c9dd1eea.js" crossorigin="anonymous"></script>
 	<script src="/bootstrap/js/admin/commonCode.js"></script>
+	<script src="/bootstrap/js/admin/commonCodeList.js"></script>
 </th:block>
 </body>
 </html>

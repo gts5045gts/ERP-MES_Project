@@ -34,7 +34,7 @@
   width: 55%;
 }
 
-#codeSearch:focus {
+#codeSearch:focus, #codeDetailSearch:focus {
 	border-color: #4e73df !important; /* 연한 파란색 */
 	outline: none !important;
 	box-shadow: 0 0 4px 1px rgba(102, 170, 255, 0.3) !important; /* 작고 연한 파란 그림자 */
@@ -54,8 +54,18 @@
     margin-left: auto;
 }
 
+.mainTitle {
+    background-color: #ebf5fd;
+    color: #878787;
+}
+
 /* 모달 창*/
 .useCodeAt {
 	border: 1px solid #ccc;
  	border-radius: 4px;
+ 	color: #000000bd;
 }
+
+.modal-title {
+    font-size: 17px;
+    font-weight: 500;}
