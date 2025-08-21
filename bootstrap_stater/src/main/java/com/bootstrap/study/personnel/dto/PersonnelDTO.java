@@ -17,22 +17,31 @@ public class PersonnelDTO {
 	//private Long id;
     private String empId;
     private String name;
-    private String positionName;
+    private String posName;
     private String phone;
     private String email;
     private String deptName; // 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
+    private String joinDate; // 입사일
     
-    private Long deptId;
+//    private Long deptId;
 
     // Entity -> DTO 변환을 위한 정적 팩토리 메서드
     public static PersonnelDTO fromEntity(Personnel personnel) {
         return PersonnelDTO.builder()
                 .empId(personnel.getEmpId())
                 .name(personnel.getName())
-                .positionName(personnel.getPosition() != null ? personnel.getDepartment().getDeptName() : null)
+                .posName(personnel.getPosition() != null ? personnel.getPosition().getPosName() : null)
                 .phone(personnel.getPhone())
                 .email(personnel.getEmail())
                 .deptName(personnel.getDepartment() != null ? personnel.getDepartment().getDeptName() : null)
+                .joinDate(personnel.getJoinDate())
                 .build();
     }
+    
+//    public static PersonnelDTO emp(Personnel personnel) {
+//    	
+//    	
+//    	
+//    	return null;
+//    }
 }

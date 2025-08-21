@@ -43,16 +43,26 @@ public class PersonnelService {
                 .collect(Collectors.toList());
     }
     
-    // Employee 엔티티를 EmployeeDTO로 변환하는 private 메소드
+    // Employee 엔티티를 PersonnelDTO로 변환하는 private 메소드
     private PersonnelDTO convertToDto(Personnel personnel) {
     	PersonnelDTO dto = new PersonnelDTO();
         dto.setEmpId(personnel.getEmpId()); 
         dto.setDeptName(personnel.getDepartment().getDeptName());
-        dto.setPositionName(personnel.getPosition().getPosName());
+        dto.setPosName(personnel.getPosition().getPosName());
         dto.setName(personnel.getName());
         dto.setPhone(personnel.getPhone());
         dto.setEmail(personnel.getEmail());
         return dto;
     }
+    
+    // 인사현황 페이지에 필요한 전체 직원 목록을 조회하는 메서드
+ 	public List<PersonnelDTO> getAllPersonnels() {
+ 		
+ 		// Personnel 엔티티 목록을 가져와서 DTO로 변환
+ 		List<Personnel> personnelList = personnelRepository.findAll();
+ 		return personnelList.stream()
+ 				.map(PersonnelDTO::fromEntity)
+ 				.collect(Collectors.toList());
+ 	}
 
 }

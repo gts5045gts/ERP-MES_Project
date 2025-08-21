@@ -3,7 +3,6 @@ package com.bootstrap.study.personnel.controller;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,15 +23,22 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class PersonnelController {
-	
     private final PersonnelService personnelService;
     
 	@GetMapping("/current")
-	public String current() {
-		log.info("PersonnelController current()");
+	public String current(Model model) {
+		List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
+		model.addAttribute("personnels", personnels);
 		
 		return "/hrn/personnelCurrent";
 	}
+	
+	@GetMapping("/api/personnels")
+    public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
+        List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
+        
+        return ResponseEntity.ok(personnels);
+    }
 	
 	@GetMapping("/regist")
 	public String regist() {
@@ -76,7 +82,6 @@ public class PersonnelController {
     @GetMapping("/employees")
     public ResponseEntity<List<PersonnelDTO>> getPersonnels(@RequestParam("deptId") Long deptId) {
         List<PersonnelDTO> personnels = personnelService.getEmployeesByDepartmentId(deptId);
-		log.info("+++++++++++++++++++ employee");
 
         return ResponseEntity.ok(personnels);
     }

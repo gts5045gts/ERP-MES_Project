@@ -29,7 +29,7 @@ public class Personnel {
     private Position position; // 직급명
     
     @Column(nullable = false, name = "emp_name")
-    private String name; // 이름.
+    private String name; // 이름
     
     @Column(nullable = false, name = "emp_phone")
     private String phone; // 전화번호
@@ -37,5 +37,7 @@ public class Personnel {
     @Column(nullable = false, name = "emp_email")
     private String email; // 이메일
 
+    @Column(name = "emp_join_date")
+    private String joinDate; // 입사일
 
 }
