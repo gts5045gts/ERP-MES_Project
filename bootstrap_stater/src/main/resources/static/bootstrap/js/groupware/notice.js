@@ -45,7 +45,7 @@ $(document).ready(function() {
 		$('#editForm').hide();
 	});
 
-	// ⭐수정 버튼 클릭 시 모달 모드 전환 이벤트
+	// 수정 버튼 클릭 시 모달 모드 전환 이벤트
 	$('#editNoticeBtn').on('click', function() {
 		var noticeId = $(this).attr('data-id');
 		var title = $('#modalTitle').text();

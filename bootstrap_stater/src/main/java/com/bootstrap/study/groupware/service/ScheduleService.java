@@ -25,4 +25,14 @@ public class ScheduleService {
 	public Schedule findById(Long schId) {
 		return scheduleRepository.findById(schId).orElse(null);
 	}
+
+	public void deleteSchedule(Long schId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateSchedule(Schedule schedule) {
+		// TODO Auto-generated method stub
+		
+	}
 }

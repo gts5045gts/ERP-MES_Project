@@ -122,4 +122,28 @@ public class ScheduleController {
         log.info("Requesting schedule detail for ID: {}", schId);
         return scheduleService.findById(schId);
     }
+    
+ // 일정 수정 
+    @PostMapping("/update")
+    @ResponseBody
+    public Map<String, Object> updateSchedule(@RequestBody Schedule schedule) {
+        log.info("ScheduleController updateSchedule()", schedule);
+        scheduleService.updateSchedule(schedule);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "일정이 성공적으로 수정되었습니다.");
+        return response;
+    }
+
+    // 일정 삭제 
+    @PostMapping("/delete/{schId}")
+    @ResponseBody
+    public Map<String, Object> deleteSchedule(@PathVariable("schId") Long schId) {
+        log.info("ScheduleController deleteSchedule() for ID: {}", schId);
+        scheduleService.deleteSchedule(schId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "일정이 성공적으로 삭제되었습니다.");
+        return response;
+    }
 }
