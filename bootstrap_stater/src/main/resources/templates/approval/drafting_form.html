@@ -64,10 +64,10 @@
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">결재자</label>
 								<div class="col-sm-8">
-									<p class="text-gray-600 mb-3">아래 버튼을 클릭하면 SB Admin 2/Bootstrap 4 모달(레이어 창)이 표시됩니다.</p>
+									<p class="text-gray-600 mb-3">결재자 이름 표시되는 자리 (기안자, 결재자) 최대 3명</p>
 									<a href="#" class="btn btn-primary btn-icon-split" data-toggle="modal" data-target="#layerModal">
 										<span class="icon text-white-50"><i class="fas fa-external-link-alt"></i></span>
-										<span class="text">레이어 열기</span>
+										<span class="text">결재자 검색</span>
 									</a>
 								</div>
 							</div>
@@ -140,7 +140,7 @@
 							<div class="form-group row">
 								<div class="col-sm-10 offset-sm-2">
 									<button type="submit" class="btn btn-primary">저장/결재(F7)</button>
-									<button type="button" class="btn btn-secondary">닫기</button>
+									<button type="button" class="btn btn-secondary" onclick="window.close();">닫기</button>
 								</div>
 							</div>
 
@@ -162,16 +162,42 @@
 
 <!-- Modal -->
 <div class="modal fade" id="layerModal" tabindex="-1" role="dialog" aria-labelledby="layerModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered" role="document">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
 		<div class="modal-content">
 			<div class="modal-header bg-primary py-3">
-				<h5 class="modal-title text-white" id="layerModalLabel"><i class="fas fa-info-circle mr-2"></i>SB Admin 2 레이어</h5>
+				<h5 class="modal-title text-white" id="layerModalLabel"><i class="fas fa-info-circle mr-2"></i>결재자 입력</h5>
 				<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div class="modal-body">
-				<p class="mb-2">이것은 SB Admin 2 테마 감성의 Bootstrap 4 모달 레이어입니다.</p>
+				<p class="mb-2">결재라인</p>
+				<div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                        	<th></th>
+                            <th>결재자</th>
+                            <th>소속부서</th>
+                            <th>순서</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="i : ${#numbers.sequence(1,3)}">
+				            <td>
+				                <input type="checkbox">
+				            </td>
+				            <td>
+				                <input type="text">
+				            </td>
+				            <td>
+				            </td>
+				            <td>
+				            </td>
+				        </tr>
+                        </tbody>
+                    </table>
+                </div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
