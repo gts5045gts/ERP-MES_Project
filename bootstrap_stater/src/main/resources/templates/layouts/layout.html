@@ -9,7 +9,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-<title>SB Admin 2 - Dashboard</title>
+    <title>부산 아아티윌</title>
 
 <link href="/bootstrap/vendor/fontawesome-free/css/all.min.css"
 	rel="stylesheet" type="text/css" />
@@ -26,11 +26,13 @@
 
 </head>
 <body id="page-top">
-	<th:block th:include="~{fragments/header}"></th:block>
+    <!-- Page Wrapper -->
+        <th:block th:insert="~{fragments/header}"></th:block>
 
 	<th:block layout:fragment="content"></th:block>
 
-	<footer th:include="~{fragments/footer}"></footer>
+    <!--  공통 푸터 -->
+    <footer th:insert="~{fragments/footer}"></footer>
 
 	<script src="/bootstrap/vendor/jquery/jquery.min.js"></script>
     <script src="/bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -49,8 +51,10 @@
     <script src="/bootstrap/js/groupware/notice.js"></script>
     <script src="/bootstrap/js/groupware/schedule.js"></script>
 
-    <th:block layout:fragment="scripts">
-    </th:block>
+	<script src="/bootstrap/js/demo/chart-bar-demo.js"></script>
+
+<!-- 개별 페이지 자바스크립트 영역 -->
+<th:block layout:fragment="script"></th:block>
 
 </body>
 </html>

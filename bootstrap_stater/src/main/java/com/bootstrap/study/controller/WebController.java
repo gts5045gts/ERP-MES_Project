@@ -1,35 +1,35 @@
 package com.bootstrap.study.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class WebController {
 	
-	@GetMapping("/")
-    public String main(){
+	@RequestMapping("/")
+	public String main() {
 
-        return "main";
-    }
-	
-	@GetMapping("/index")
-    public String login(){
+		return "index";
+	}
 
-        return "index";
-    }
-	
+	@RequestMapping("login")
+	public String login() {
+
+		return "login";
+	}
+
 	@RequestMapping("register")
-    public String regist(){
+	public String regist() {
 
-        return "register";
-    }
-	
+		return "register";
+	}
+
 	@RequestMapping("blank")
-    public String blank(){
+	public String blank() {
 
-        return "blank";
-    }
+		return "blank";
+	}
 
 }

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout_commute}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+		<style>
+		  table {
+		    border-collapse: collapse;
+		    width: 100%;
+		    font-family: Arial, sans-serif;
+		  }
+		
+		  th, td {
+		    border: 1px solid #d1d7dd; /* 더 연한 연파랑-회색 중간 연한 회색 */
+		    padding: 8px;
+		    text-align: center;
+		  }
+		
+		  th {
+		    background-color: #dce3e9; /* 훨씬 더 연한 중간 톤 */
+		    color: #333; /* 흰색 대신 약간 어두운 글자색으로 가독성 유지 */
+		  }
+		
+		  tr:nth-child(even) {
+		    background-color: #f0f3f6; /* 아주 연한 파랑-회색 */
+		  }
+		
+		  hr {
+		    border: none;
+		    border-top: 1px solid #d1d7dd;
+		    margin: 4px 0;
+		  }
+		</style>
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <h1 class="h3 mb-4 text-gray-800">Blank Page</h1>
+    </div>
+    <!-- /.container-fluid -->
+</th:block>
+	<section layout:fragment="content">
+		<h3>출퇴근확인</h3>
+<!-- 		<table border="1"> -->
+<!-- 			<tr> -->
+<!-- 				<th>날짜</th> -->
+<!-- 				<th>사번</th> -->
+<!-- 				<th>부서</th> -->
+<!-- 				<th>직책</th> -->
+<!-- 				<th>이름</th> -->
+<!-- 				<th>출근시간</th> -->
+<!-- 				<th>퇴근시간</th> -->
+<!-- 				<th>근무상태</th> -->
+<!-- 			</tr> -->
+<!-- 			<tr th:each="itemDTO : ${itemDTOList}" th:object="${itemDTO}"> -->
+<!-- 				<td th:text="*{id}"></td> -->
+<!-- 				<td th:text="*{itemNm}"></td> -->
+<!-- 				<td th:text="*{price}"></td> -->
+<!-- 				<td th:text="*{stockQty}"></td> -->
+<!-- 				<td th:text="*{regTime}"></td> -->
+<!-- 				<td th:text="*{regTime}"></td> -->
+<!-- 				<td th:text="*{regTime}"></td> -->
+<!-- 			</tr> -->
+<!-- 		</table> -->
+		<table border="1">
+			<tr>
+				<th>날짜</th>
+				<th>사번</th>
+				<th>부서</th>
+				<th>직책</th>
+				<th>이름</th>
+				<th>출근시간</th>
+				<th>퇴근시간</th>
+				<th>근무상태</th>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+				<td>1</td>
+			</tr>
+		</table>
+	</section>
+<th:block layout:fragment="script">
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+
+        <!-- Page Heading -->
+        <h1 class="h3 mb-2 text-gray-800">기안서작성</h1>
+        <p class="mb-4">검색창</p>
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">기안서 작성</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                            <th>정렬순서</th>
+                            <th>양식명</th>
+                            <th>구분</th>
+                            <th>결재문서</th>
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            <th>정렬순서</th>
+                            <th>양식명</th>
+                            <th>구분</th>
+                            <th>결재문서</th>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        <tr>
+                            <td>00</td>
+                            <td>
+                                <a class=""
+                                   data-toggle="modal"
+                                   href="#" onclick="location.href='drafting_form.html'"
+                                   th:onclick="window.open('/approval/new', 'window_name', 'width=1138, height=642, location=no, status=no, scrollbars=yes')">
+                                    휴가신청서
+                                </a>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /.container-fluid -->
+
+</th:block>
+
+<th:block layout:fragment="script">
+
+</th:block>
+</body>
+</html>
