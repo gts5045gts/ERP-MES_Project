@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,6 +86,8 @@ public class ScheduleController {
                 event.put("title", schedule.getSchTitle());
                 event.put("start", schedule.getStarttimeAt());
                 event.put("end", schedule.getEndtimeAt());
+                event.put("schType", schedule.getSchType());
+                event.put("empId", schedule.getEmpId());
                 // 추가 필드가 있다면 여기에 포함
                 return event;
             })
@@ -111,5 +114,12 @@ public class ScheduleController {
             })
             .collect(Collectors.toList());
         return events;
+    }
+    
+    @GetMapping("/{schId}")
+    @ResponseBody
+    public Schedule getScheduleDetail(@PathVariable("schId") Long schId) {
+        log.info("Requesting schedule detail for ID: {}", schId);
+        return scheduleService.findById(schId);
     }
 }

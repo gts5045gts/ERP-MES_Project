@@ -61,7 +61,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- 모달코드 -->
+		<!-- 간편일정 등록 모달코드 -->
 		<div class="modal fade" id="addScheduleModal" tabindex="-1"
 			role="dialog" aria-labelledby="addScheduleModalLabel"
 			aria-hidden="true">
@@ -83,19 +83,24 @@
 
 							<div class="form-group">
 								<label for="modalContent">일정 내용</label>
-								<textarea class="form-control" id="modalContent" name="schContent"
-									rows="4"></textarea>
+								<textarea class="form-control" id="modalContent"
+									name="schContent" rows="4"></textarea>
 							</div>
 
 							<div class="form-group">
 								<label for="modalStartDate">시작일</label> <input type="date"
 									class="form-control" id="modalStartDate" name="startDate"
-									required>
+									required> <label for="modalStartTime">시작시간</label> <input
+									type="time" class="form-control" id="modalStartTime"
+									name="starttimeAt" required>
 							</div>
 
 							<div class="form-group">
 								<label for="modalEndDate">종료일</label> <input type="date"
 									class="form-control" id="modalEndDate" name="endDate" required>
+								<label for="modalEndTime">종료시간</label> <input type="time"
+									class="form-control" id="modalEndTime" name="endtimeAt"
+									required>
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -104,6 +109,48 @@
 								data-dismiss="modal">닫기</button>
 						</div>
 					</form>
+				</div>
+			</div>
+		</div>
+		<!-- 모달 상세조회 -->
+		<div class="modal fade" id="scheduleDetailModal" tabindex="-1"
+			role="dialog" aria-labelledby="scheduleDetailModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="scheduleDetailModalLabel">일정 상세</h5>
+						<button class="close" type="button" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">×</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>제목</label>
+							<p id="detailTitle" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>내용</label>
+							<p id="detailContent" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>시작일</label>
+							<p id="detailStartDate" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>종료일</label>
+							<p id="detailEndDate" class="form-control-static"></p>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> 
+						<a href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
+						<button type="submit" class="btn btn-primary" id="saveEditBtn"
+							form="editForm" style="display: none;">수정 완료</button>
+						<button class="btn btn-secondary" type="button"
+							data-dismiss="modal">닫기</button>
+					</div>
 				</div>
 			</div>
 		</div>

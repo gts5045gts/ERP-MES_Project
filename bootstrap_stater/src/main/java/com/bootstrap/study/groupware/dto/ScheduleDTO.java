@@ -1,5 +1,6 @@
 package com.bootstrap.study.groupware.dto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.bootstrap.study.groupware.entity.Schedule;
@@ -17,8 +18,8 @@ public class ScheduleDTO {
     private String schTitle;
     private String schContent;
     private String schType;
-    private Date starttimeAt;
-    private Date endtimeAt;
+    private LocalDateTime starttimeAt;
+    private LocalDateTime endtimeAt;
     private Date createAt;
     private Date updateAt;
 

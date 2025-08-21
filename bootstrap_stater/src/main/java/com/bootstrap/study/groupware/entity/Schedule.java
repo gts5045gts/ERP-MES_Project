@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -40,10 +41,10 @@ public class Schedule {
     private String schType;
     
     @Column(name = "STARTTIME_AT")
-    private Date starttimeAt;
+    private LocalDateTime starttimeAt;
     
     @Column(name = "ENDTIME_AT")
-    private Date endtimeAt;
+    private LocalDateTime endtimeAt;
     
     @CreationTimestamp
     @Column(name = "CREATE_AT")
