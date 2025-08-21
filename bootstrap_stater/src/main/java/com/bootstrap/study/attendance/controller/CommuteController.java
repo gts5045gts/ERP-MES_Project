@@ -2,6 +2,7 @@ package com.bootstrap.study.attendance.controller;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -16,7 +17,7 @@ import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
 
 @Controller
-@RequestMapping("/attendence")
+@RequestMapping("/attendance")
 public class CommuteController {
 
 	private final CommuteService commuteService;
@@ -29,11 +30,16 @@ public class CommuteController {
 		
 	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
-	public String getComuuteList(Model model) {
-		List<CommuteDTO> commuteDTOList = commuteService.getCommuteList(emp_id);
+	public String getComuuteList(@RequestParam(name = "date", required = false) String date, Model model) {
+		String  queryDate = (date != null) ? date : LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		
+		List<CommuteDTO> commuteDTOList = commuteService.getDeptCommuteList(emp_id, queryDate);
 		model.addAttribute("commuteDTOList", commuteDTOList);
+		model.addAttribute("queryDate", queryDate);
+		model.addAttribute("empId", emp_id);
 
-		System.out.println(commuteDTOList);		
+		System.out.println("commuteDTOList : " + commuteDTOList);		
+		System.out.println("queryDate : " + queryDate);		
 
 		return "/commute/commute_list";
 	}

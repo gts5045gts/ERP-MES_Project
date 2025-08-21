@@ -20,6 +20,9 @@ public class CommuteDTO {
 	private String workStatus;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private String empName;
+	private String deptName;
+	private String posName;
 
 	@Builder
 	public CommuteDTO(Long commuteId, LocalDateTime checkInTime, LocalDateTime checkOutTime, String empId,

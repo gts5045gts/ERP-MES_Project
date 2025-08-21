@@ -2,7 +2,9 @@ package com.bootstrap.study.attendance.service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -23,8 +25,12 @@ public class CommuteService {
 	}
 
 	// 출근현황 리스트
-	public List<CommuteDTO> getCommuteList(String empId) {
-		return commuteMapper.getCommuteList(empId);
+	public List<CommuteDTO> getDeptCommuteList(String empId, String queryDate) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("empId", empId);
+		params.put("date", queryDate);
+		
+		return commuteMapper.getDeptCommuteList(params);
 	}
 
 	// 출근버튼
