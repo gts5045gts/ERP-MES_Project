@@ -16,18 +16,16 @@ public class CommuteService {
 
 	private final CommuteMapper commuteMapper;
 	private final CommuteScheduleMapper commuteScheduleMapper;
-	
+
 	public CommuteService(CommuteMapper commuteMapper, CommuteScheduleMapper commuteScheduleMapper) {
 		this.commuteMapper = commuteMapper;
 		this.commuteScheduleMapper = commuteScheduleMapper;
 	}
 
-
 	// 출근현황 리스트
 	public List<CommuteDTO> getCommuteList(String empId) {
 		return commuteMapper.getCommuteList(empId);
 	}
-
 
 	// 출근버튼
 	public CommuteDTO checkIn(String empId) {
@@ -46,11 +44,12 @@ public class CommuteService {
 		commute.setEmpId(empId);
 		commute.setCheckInTime(now);
 		commute.setWorkStatus(workStatus);
-		
+
 		commuteMapper.insertCommute(commute);
 		System.out.println("commute : " + commute);
 		
 		return commute;
+
 	}
 
 }

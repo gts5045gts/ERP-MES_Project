@@ -1,6 +1,5 @@
 package com.bootstrap.study.attendance.dto;
 
-
 import java.time.LocalDateTime;
 
 import lombok.Builder;
@@ -21,8 +20,7 @@ public class CommuteDTO {
 	private String workStatus;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-	
-	
+
 	@Builder
 	public CommuteDTO(Long commuteId, LocalDateTime checkInTime, LocalDateTime checkOutTime, String empId,
 			String workStatus, LocalDateTime createdAt, LocalDateTime updatedAt) {
@@ -34,15 +32,5 @@ public class CommuteDTO {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
-	
+
 }
-
-
-
-
-
-
-
-
-
-
