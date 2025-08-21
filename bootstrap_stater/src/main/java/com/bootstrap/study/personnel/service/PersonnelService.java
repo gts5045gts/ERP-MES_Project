@@ -1,6 +1,5 @@
 package com.bootstrap.study.personnel.service;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
