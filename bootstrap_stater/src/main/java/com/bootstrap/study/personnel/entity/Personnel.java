@@ -1,5 +1,9 @@
 package com.bootstrap.study.personnel.entity;
 
+import java.sql.Timestamp;
+
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,33 +12,85 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import oracle.sql.TIMESTAMP;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "employee")
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
 public class Personnel {
 
+	// 사원번호
 	@Id
-	@Column(nullable = false, unique = true, name = "emp_id")
-	private String empId; // 사원번호
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "dept_id")
-    private Department department; // 부서명
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_position", referencedColumnName = "pos_id")
-    private Position position; // 직급명
-    
-    @Column(nullable = false, name = "emp_name")
-    private String name; // 이름.
-    
-    @Column(nullable = false, name = "emp_phone")
-    private String phone; // 전화번호
+	@Column(nullable = false, name = "emp_id")
+	private String empId; 
+	
+	// 이름
+	@Column(nullable = false, name = "emp_name")
+	private String name; 
 
+	// 사원 비밀번호
+	@Column(nullable = false, unique = true, name = "emp_passwd")
+	private String passwd; 
+
+	// 주민번호
+	@Column(nullable = false, name = "emp_resid")
+	private String resident;
+	
+	// 우편번호
+	@Column(nullable = false, name = "emp_addr_num")
+	private String addrNum;		
+	
+	// 주소 
+	@Column(nullable = false, name = "emp_addr1")
+	private String addr1;
+	
+	// 상세주소
+	@Column(nullable = false, name = "emp_addr2")
+	private String addr2;
+	
+	 // 이메일
 	@Column(nullable = false, name = "emp_email")
-	private String email; // 이메일
+	private String email;
 
+	// 전화번호
+	@Column(nullable = false, name = "emp_phone")
+	private String phone; 
+	
+	// 입사일
+	@Column(nullable = false, name = "emp_join_date")
+	private String joinDate;	
+	
+	// 퇴사일	
+	@Column(nullable = false, name = "emp_resign_date")
+	private String resignDate;	
+	
+	// 수정일
+	@UpdateTimestamp
+	@Column(nullable = false, name = "update_at")
+	private Timestamp update;	
+	
+	// 재직상태
+	@Column(nullable = false, name = "emp_status")
+	private String status;		
+	
+	// 부서
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "dept_id")
+	private Department department; 
+	
+	// 직급
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_position", referencedColumnName = "pos_id")
+	private Position position; // 직책
+	
+
+	
+	
+	
 }
