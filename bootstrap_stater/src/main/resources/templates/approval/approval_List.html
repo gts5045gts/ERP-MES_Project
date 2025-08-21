@@ -81,6 +81,14 @@
 	            color: #3a3b45;
 	            font-size: 14px;
 	        }
+	        
+	         /* 모달 크기 */
+	        #approvalModal .modal-body,
+		    #approvalModal .modal-header,
+		    #approvalModal .modal-footer {
+		        padding-top: 10px;
+		        padding-bottom: 10px;
+		    }
 	    </style>
 	</th:block>
 </head>
@@ -236,7 +244,7 @@
         </div>
 
         <div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-labelledby="approvalModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="approvalModalLabel">
