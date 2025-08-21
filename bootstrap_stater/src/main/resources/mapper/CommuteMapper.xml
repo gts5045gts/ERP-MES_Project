@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bootstrap.study.attendance.mapper.CommuteMapper">
+
+	<!-- 출근현황 리스트 조회 -->
+	<select id="getCommuteList" parameterType="String" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+		SELECT
+            commute_id,
+            check_in_time,
+            check_out_time,
+            emp_id,
+            work_status,
+            created_at,
+            updated_at
+        FROM commute_record
+        WHERE emp_id = #{empId}
+        ORDER BY commute_id DESC
+	</select>
+	
+	<!-- 출근상태 commute_record에 저장 -->
+	<insert id="insertCommute" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+		INSERT INTO commute_record (check_in_time, check_out_time, emp_id, work_status, created_at, updated_at)
+		VALUES (#{checkInTime}, #{checkOutTime, jdbcType=TIMESTAMP}, #{empId}, #{workStatus}, SYSDATE, SYSDATE)
+	</insert>
+</mapper>
