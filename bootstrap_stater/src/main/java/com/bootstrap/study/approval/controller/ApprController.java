@@ -3,6 +3,7 @@ package com.bootstrap.study.approval.controller;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.approval.dto.ApprDetailDTO;
+import com.bootstrap.study.approval.dto.ApprEmpDTO;
 
 @Controller
 @RequestMapping("/approval")
@@ -42,8 +45,7 @@ public class ApprController {
     	    	
         return "approval/drafting_form";
     }
-    
-    
+
     // 결재목록
     @GetMapping("/approval_list")
     public String approvalList(
@@ -86,6 +88,14 @@ public class ApprController {
  	    System.out.println("단순 폼 보여주기 요청 성공!");
  	    return"approval/drafting_form"; 
  	}
+    
+    //결재자 검색
+    @GetMapping("/empSearch")
+    @ResponseBody
+    public List<ApprEmpDTO> searchUser(@RequestParam("name") String name) {
+   
+        return apprService.getApprEmployee(name);
+    }
  	
  	
  	

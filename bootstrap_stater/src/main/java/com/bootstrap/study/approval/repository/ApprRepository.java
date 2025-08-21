@@ -1,11 +1,14 @@
 package com.bootstrap.study.approval.repository;
 
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.personnel.entity.Personnel;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -31,4 +34,10 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		    ORDER BY a.create_at DESC, al.step_no ASC
 		    """, nativeQuery = true)
     List<Object[]> findApprovalListWithJoin();
+    
+//    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE LOWER(e.emp_name) LIKE LOWER(CONCAT('%', :keyword, '%'))", nativeQuery = true)
+//    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE e.emp_name LIKE CONCAT('%', :keyword, '%')", nativeQuery = true)
+    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE e.emp_name LIKE ':keyword'", nativeQuery = true)
+    List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);
+    
 }

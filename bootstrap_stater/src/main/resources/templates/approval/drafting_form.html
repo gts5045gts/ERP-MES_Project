@@ -178,12 +178,29 @@
                         <tr>
                         	<th></th>
                             <th>결재자</th>
-                            <th>소속부서</th>
                             <th>순서</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="i : ${#numbers.sequence(1,3)}">
+                        <tr>
+				            <td>
+				                <input type="checkbox">
+				            </td>
+				            <td>
+				                <div class="form-group position-relative">
+								  <label for="userSearch">결재자 검색</label>
+								  <input type="text" id="userSearch" class="form-control" placeholder="이름 입력">
+								
+								  <!-- 결과 표시 영역 -->
+								  <div id="searchResult" class="list-group position-absolute w-100" style="z-index:999;"></div>
+								</div>
+				            </td>
+				            <td>
+				            </td>
+				            <td>
+				            </td>
+				        </tr>
+                        <tr th:each="i : ${#numbers.sequence(1,2)}">
 				            <td>
 				                <input type="checkbox">
 				            </td>
@@ -235,7 +252,53 @@
 				['view', ['fullscreen', 'codeview', 'help']]
 			]
 		});
-	});
+		
+		$("#userSearch").on("keyup", function () {
+		    let keyword = $(this).val();
+
+		    if (keyword.length < 2) {
+		      $("#searchResult").empty(); 
+		      return;
+		    }
+
+		    $.ajax({
+		      url: "/approval/empSearch",   // DB 검색 API
+		      method: "GET",
+		      data: { name: keyword },
+		      success: function (data) {
+		    	  console.log(data)
+		        $("#searchResult").empty();
+
+		        if (data.length > 0) {
+		          data.forEach(user => {
+		            let item = `
+		              <a href="#" class="list-group-item list-group-item-action"
+		                 data-id="${user.id}" data-name="${user.name}" data-dept="${user.dept}" data-pos="${user.position}">
+		                <div><strong>${user.name}</strong></div>
+		                <small class="text-muted">${user.dept} / ${user.position}</small>
+		              </a>`;
+		            $("#searchResult").append(item);
+		          });
+		        } else {
+		          $("#searchResult").append('<div class="list-group-item text-muted">검색 결과 없음</div>');
+		        }
+		      }
+		    });
+		  });
+		    
+		 // 리스트 클릭 시 input 채우기
+	    $(document).on("click", "#searchResult a", function (e) {
+	        e.preventDefault();
+	        let name = $(this).data("name");
+	        let dept = $(this).data("dept");
+	        let pos  = $(this).data("pos");
+
+	        $("#userSearch").val(`${name} (${dept} / ${pos})`);
+	        $("#searchResult").empty();
+	      });
+		});
+	
+	
 </script>
 
 </body>

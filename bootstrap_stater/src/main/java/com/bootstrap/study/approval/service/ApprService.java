@@ -1,9 +1,13 @@
 package com.bootstrap.study.approval.service;
 
 import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprEmpDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2; // Log4j2 임포트 추가!
 
@@ -114,4 +118,17 @@ public class ApprService {
         
         return new PageImpl<>(pagedList, pageable, allDtoList.size());
     }
+
+    //결재자 리스트 조회
+    @Transactional(readOnly = true)
+	public List<ApprEmpDTO> getApprEmployee(String keyword) {
+		return apprRepository.findByNameContainingIgnoreCase("%" + keyword + "%")
+                .stream()
+                .map(ApprEmpDTO::fromEntity)
+                .collect(Collectors.toList());
+		
+//		return null;
+    }
+
+	
 }
