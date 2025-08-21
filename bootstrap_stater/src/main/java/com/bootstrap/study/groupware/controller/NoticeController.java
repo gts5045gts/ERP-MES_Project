@@ -31,8 +31,8 @@ public class NoticeController {
 
     // 공지사항 목록 페이지를 보여주는 메서드
     @GetMapping("")
-    public String notice(Model model) {
-    	log.info("NoticeController notice()");
+    public String noticeList(Model model) {
+    	log.info("NoticeController noticeList()");
     	// 1. 전체 공지사항을 조회하여 모델에 추가
         List<Notice> notices = noticeRepository.findAll();
         model.addAttribute("notices", notices);

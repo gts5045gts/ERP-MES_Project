@@ -23,7 +23,7 @@ import jakarta.persistence.Table;
 @NoArgsConstructor
 public class Schedule {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "SCH_ID")
     private Long schId;
 

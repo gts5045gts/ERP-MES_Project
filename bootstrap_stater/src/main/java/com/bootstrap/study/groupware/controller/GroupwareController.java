@@ -22,27 +22,12 @@ public class GroupwareController {
 //		return "/gw/notice";
 //	}
 	
-	@GetMapping("/schedule")
-	public String schedule() {
-		log.info("GroupwareController aSchedule()");
-		
-		return "/gw/schedule";
-	}
-	
-//	@GetMapping("/ntcWrite")
-//	public String ntcWrite() {
-//		log.info("GroupwareController ntcWrite()");
+//	@GetMapping("/schedule")
+//	public String schedule() {
+//		log.info("GroupwareController aSchedule()");
 //		
-//		return "/gw/ntcWrite";
+//		return "/gw/schedule";
 //	}
-	
-	@GetMapping("/schWrite")
-	public String schWrite() {
-		log.info("GroupwareController schWrite()");
-		
-		return "/gw/schWrite";
-	}
-	
 	
 	@GetMapping("/document")
 	public String document() {
