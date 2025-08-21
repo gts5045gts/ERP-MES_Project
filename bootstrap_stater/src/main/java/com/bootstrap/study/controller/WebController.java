@@ -11,13 +11,13 @@ public class WebController {
 	@RequestMapping("/")
 	public String main() {
 
-		return "index";
+		return "main";
 	}
 
-	@RequestMapping("login")
+	@RequestMapping("index")
 	public String login() {
 
-		return "login";
+		return "index";
 	}
 
 	@RequestMapping("register")
