@@ -59,14 +59,13 @@
 
 										<!-- 전화번호 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_ph" class="form-label">주민번호</label></th>
+											<label for="emp_ph" class="form-label">전화번호</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="emp_ph" name="phone">
 											<span id="checkPhoneResult"></span>
 										</td>
 
 										<!-- 생년월일 -->
-<<<<<<< HEAD
 										<!--
 										<th scope="row" class="custom-th">
 											<label for="emp_bd" class="form-label">생년월일</label></th>
@@ -74,19 +73,7 @@
 											<input type="text" class="form-control w-75" id="emp_bd" name="emp_bd" placeholder="생년월일 6자리 (예:950211)" maxlength="6">
 										</td>
 										-->
-=======
-										<th scope="row">
-											<label for="emp_em" class="form-label">이메일</label>
-										</th>
-										<td colspan="3">
-											<input type="text" class="form-control w-75" id="emp_em" name="emp_em" placeholder="aaa@naver.com">
-											<span id="checkEmailResult"></span>
-										</td>
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
-									</tr>
-									<tr>
 										<!-- 성별 -->
-<<<<<<< HEAD
 										
 										<!-- 
 										<th scope="row" class="custom-th">
@@ -104,20 +91,12 @@
 										 -->
 										 
 										 
-=======
 									
->>>>>>> branch 'pkh' of https://github.com/gts5045gts/ERP-MES_Project.git
 										<!-- 이메일 -->
 										<th scope="row">
 											<label for="emp_em" class="form-label">이메일</label></th>
 										<td colspan="3">
 											<input type="text" class="form-control w-75" id="emp_em" name="email" placeholder="aaa@naver.com">
-											<span id="checkEmailResult"></span>
-										</td>
-										<th scope="row">
-											<label for="emp_em" class="form-label">입사일</label></th>
-										<td colspan="3">
-											<input type="text" class="form-control w-75" id="emp_em" name="emp_em" placeholder="aaa@naver.com">
 											<span id="checkEmailResult"></span>
 										</td>
 										<!-- 재직현황 -->
@@ -149,7 +128,7 @@
 										<th scope="row" class="custom-th">
 											<label for="dep_nm" class="form-label">부서명</label></th>
 										<td colspan="3">
-											<select id="dep_nm" name="deptName" class="form-select w-75">
+											<select id="dep_nm" name="deptId" class="form-select w-75">
 											
 												<option value="">부서명을 선택하세요</option> 
 												<th:block th:each="departments : ${departments}">
@@ -163,7 +142,7 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_gd" class="form-label">직책</label></th>
 										<td colspan="3">
-											<select id="emp_gd" name="position" class="form-select w-75">
+											<select id="emp_gd" name="posId" class="form-select w-75">
 												<option value="">직책을 선택하세요</option>
 												<th:block th:each="position : ${position}">
 													<option th:value="${position.id}" th:text="${position.name}">

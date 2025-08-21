@@ -1,5 +1,7 @@
 package com.bootstrap.study.personnel.dto;
 
+import java.sql.Timestamp;
+
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import lombok.AllArgsConstructor;
@@ -29,7 +31,7 @@ public class PersonnelDTO {
 	private String phone;		// 전화번호
 	private String joinDate;	// 입사일
 	private String resignDate;	// 퇴사일	
-	private TIMESTAMP update;	// 수정일
+	private Timestamp update;	// 수정일
 	private String status;		// 재직상태
 	
 

@@ -1,5 +1,7 @@
 package com.bootstrap.study.personnel.entity;
 
+import java.sql.Timestamp;
+
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
@@ -71,7 +73,7 @@ public class Personnel {
 	// 수정일
 	@UpdateTimestamp
 	@Column(nullable = false, name = "update_at")
-	private TIMESTAMP update;	
+	private Timestamp update;	
 	
 	// 재직상태
 	@Column(nullable = false, name = "emp_status")
