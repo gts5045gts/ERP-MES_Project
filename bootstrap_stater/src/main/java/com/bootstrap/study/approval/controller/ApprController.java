@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
+import com.bootstrap.study.approval.dto.ApprDetailDTO;
 
 @Controller
 @RequestMapping("/approval")
