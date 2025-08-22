@@ -35,17 +35,16 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		    """, nativeQuery = true)
     List<Object[]> findApprovalListWithJoin();
 
+    
+    //로그인 되면 본인을 제외한 값만 가져와야함 현재는 임의로 1로 해놓음
     @Query(value = "" +
-			"SELECT " +
-			"e.emp_id," +
-			"e.emp_name," +
-			"d.dept_name" +
-			" FROM " +
+			"SELECT * FROM " +
 			"C##TEAM1.employee e " +
 			"JOIN " +
-			"C##TEAM1.test_dept d " +
-			"ON e.emp_dept_id = d.dept_id " +
-			"WHERE e.emp_name LIKE %:keyword%" +
+			"C##TEAM1.test_dept d ON e.emp_dept_id = d.dept_id " +
+			"JOIN " +
+			"C##TEAM1.test_position p ON e.emp_position = p.pos_id " +
+			"WHERE e.emp_name LIKE %:keyword% and e.emp_id <> 2025082215"  +
 			"",
 			nativeQuery = true)
 	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);

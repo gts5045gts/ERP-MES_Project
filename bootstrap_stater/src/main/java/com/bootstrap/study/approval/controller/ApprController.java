@@ -93,7 +93,6 @@ public class ApprController {
     @GetMapping("/empSearch")
     @ResponseBody
     public List<ApprEmpDTO> searchUser(@RequestParam("name") String name) {
-   
         return apprService.getApprEmployee(name);
     }
 }
