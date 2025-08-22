@@ -1,4 +1,4 @@
-package com.bootstrap.study.config;
+package com.bootstrap.study.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +29,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/")
                 .loginProcessingUrl("/login")
+                .usernameParameter("empId")
+                .passwordParameter("empPasswd")
                 .defaultSuccessUrl("/index", true)
                 .permitAll()
             )
@@ -40,26 +42,26 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-            .userDetailsService(userDetailsService())
-            .passwordEncoder(passwordEncoder())
-            .and()
-            .build();
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+//        return http.getSharedObject(AuthenticationManagerBuilder.class)
+//            .userDetailsService(userDetailsService())
+//            .passwordEncoder(passwordEncoder())
+//            .and()
+//            .build();
+//    }
 
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-    	UserDetails user = User.builder()
-    		    .username("1234")
-    		    .password(new BCryptPasswordEncoder().encode("1234"))  
-    		    .roles("USER")
-    		    .build();
-
-        return new InMemoryUserDetailsManager(user);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//    	UserDetails user = User.builder()
+//    		    .username("1234")
+//    		    .password(new BCryptPasswordEncoder().encode("1234"))  
+//    		    .roles("USER")
+//    		    .build();
+//
+//        return new InMemoryUserDetailsManager(user);
+//    }
 
 
 
