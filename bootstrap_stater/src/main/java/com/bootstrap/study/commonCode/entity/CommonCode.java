@@ -1,6 +1,8 @@
 package com.bootstrap.study.commonCode.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -9,9 +11,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +36,6 @@ public class CommonCode {
 	@Column(nullable = false, length = 1)
 	private String useYn; // 사용여부
 	
-	private Integer comOrder; // 정렬순서
 	
 	@CreatedDate
 	@Column(updatable = false)
@@ -43,4 +43,8 @@ public class CommonCode {
 	
 	@LastModifiedDate
 	private LocalDateTime updatedAt; // 수정일 
+	
+	@OneToMany(mappedBy = "comId")
+    private List<CommonDetailCode> detailCodes = new ArrayList<>();
+	
 }

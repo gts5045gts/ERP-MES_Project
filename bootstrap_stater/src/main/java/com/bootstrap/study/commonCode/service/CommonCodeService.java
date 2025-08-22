@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.bootstrap.study.commonCode.dto.CommonCodeDTO;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonCode;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
-import com.bootstrap.study.commonCode.mapper.CommonCodeMapper;
 import com.bootstrap.study.commonCode.repository.CommonCodeRepository;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 
@@ -21,13 +21,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommonCodeService {
 	
-	private final CommonCodeMapper comMapper;
 	private final CommonCodeRepository comRepository;
 	private final CommonDetailCodeRepository comDetailRepository;
 	
 
 // =======================================================================================
 
+// ========================================= 조회 ==============================================
 
 
 	// 코드 조회 
@@ -38,10 +38,14 @@ public class CommonCodeService {
 	
 	// 상세코드 조회
 	public List<CommonDetailCode> findByComId(String comId) {
-		return comDetailRepository.findByComId_ComId(comId);
+		CommonCode commonCode = comRepository.findById(comId)
+		        .orElseThrow(() -> new IllegalArgumentException("해당 공통코드가 존재하지 않습니다: " + comId));
+
+		return comDetailRepository.findByComIdOrderByComDtOrderAsc(commonCode);
 	}
 
-
+// ========================================= 등록 ===========================================
+	
 	// 공통코드 등록
 	public CommonCode registCode(@Valid CommonCodeDTO codeDTO) {
 		CommonCode comCode = codeDTO.toEntity();
@@ -67,6 +71,71 @@ public class CommonCodeService {
 
 
 
+// ========================================= 삭제 ===========================================
+
+	// 공통 코드 삭제
+	@Transactional
+	public String comDelete(String comId) {
+		CommonCode commonCode = comRepository.findById(comId)
+		            .orElseThrow(() -> new IllegalArgumentException("해당 공통코드가 존재하지 않습니다: " + comId));
+		
+		if (!commonCode.getDetailCodes().isEmpty()) {
+		    return "하위 상세코드가 존재하여 삭제할 수 없습니다.";
+		}
+
+		comRepository.delete(commonCode);
+		return "삭제가 완료되었습니다."; // 추가
+	}
+
 	
+	
+	// 상세 코드 삭제
+	@Transactional
+	public String deleteDtCode(String comDtId) {
+		CommonDetailCode dtCode = comDetailRepository.findById(comDtId)
+	                .orElseThrow(() -> new IllegalArgumentException("해당 상세코드가 존재하지 않습니다: " + comDtId));
+		
+		comDetailRepository.delete(dtCode);
+		return "삭제가 완료되었습니다.";
+	}
+	
+
+
+	
+	
+// ================================================ 수정 ===========================================
+	
+	
+	// 공통 코드 수정
+	@Transactional
+	public void updateCode(String comId, String comNm, String useYn) {
+		CommonCode code = comRepository.findById(comId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상세코드가 존재하지 않습니다: " + comId));
+		
+		code.setComNm(comNm);
+		code.setUseYn(useYn);
+		
+	}
+	
+	
+	// 상세코드 수정
+	 @Transactional
+	 public void updateDtCode(String comDtId, Integer comDtOrder, String comDtNm, String useYn) {
+        // 상세공통코드 조회
+        CommonDetailCode dtCode = comDetailRepository.findById(comDtId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상세코드가 존재하지 않습니다: " + comDtId));
+
+        // 값 수정
+        dtCode.setComDtNm(comDtNm);
+        dtCode.setComDtOrder(comDtOrder);
+        dtCode.setUseYn(useYn);
+    }
+
+	
+	
+
+
+
+
 	
 }
