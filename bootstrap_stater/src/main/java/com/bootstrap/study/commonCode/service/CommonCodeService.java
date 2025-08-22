@@ -11,7 +11,6 @@ import com.bootstrap.study.commonCode.dto.CommonCodeDTO;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonCode;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
-import com.bootstrap.study.commonCode.mapper.CommonCodeMapper;
 import com.bootstrap.study.commonCode.repository.CommonCodeRepository;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommonCodeService {
 	
-	private final CommonCodeMapper comMapper;
 	private final CommonCodeRepository comRepository;
 	private final CommonDetailCodeRepository comDetailRepository;
 	
