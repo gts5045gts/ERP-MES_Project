@@ -22,10 +22,5 @@ public class Position {
 	
 	@Column(name ="pos_name")
 	private String posName;
-	
-	
-	
-	
-	
-	
+
 }

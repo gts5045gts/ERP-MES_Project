@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.bootstrap.study.personnel.entity.Position;
 
-public interface PositionRepository  extends JpaRepository<Position, Long>{
+public interface PositionRepository extends JpaRepository<Position, Long>{
 
 }

@@ -1,7 +1,5 @@
 package com.bootstrap.study.personnel.dto;
 
-import java.sql.Timestamp;
-
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import lombok.AllArgsConstructor;
@@ -10,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import oracle.sql.TIMESTAMP;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -34,15 +32,14 @@ public class PersonnelDTO {
 	private Timestamp update;	// 수정일
 	private String status;		// 재직상태
 	
-
 	// 부서 직급 정보
 	private Long posId;			// 직급
 	private String posName;		
 	private Long deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
-	private String deptName;   	
+	private String deptName;
 
 	// Entity -> DTO 변환을 위한 정적 팩토리 메서드
-	public static PersonnelDTO fromEntity(Personnel personnel) {
+    public static PersonnelDTO fromEntity(Personnel personnel) {
 		return PersonnelDTO.builder().empId(personnel.getEmpId()).name(personnel.getName()).passwd(personnel.getPasswd())
 				.resident(personnel.getResident()).addrNum(personnel.getAddrNum()).addr1(personnel.getAddr1()).addr2(personnel.getAddr2())
 				.email(personnel.getEmail()).phone(personnel.getPhone()).joinDate(personnel.getJoinDate()).resignDate(personnel.getResignDate())
@@ -53,4 +50,6 @@ public class PersonnelDTO {
 				.posName(personnel.getPosition() != null ? personnel.getPosition().getPosName() : null)
 				.build();
 	}
+
 }
+
