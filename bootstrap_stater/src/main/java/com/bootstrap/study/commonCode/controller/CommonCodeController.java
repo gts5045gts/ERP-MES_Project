@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bootstrap.study.commonCode.dto.CommonCodeDTO;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
+import com.bootstrap.study.commonCode.entity.CommonCode;
+import com.bootstrap.study.commonCode.repository.CommonCodeRepository;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 
 import jakarta.validation.Valid;
@@ -33,8 +35,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class CommonCodeController {
 	
 	private final CommonCodeService comService;
+	private final CommonCodeRepository comRepository;
 
 //===========================================================================
+	
+	
 
 	// 화면이동
 	@GetMapping("/commonCode")
@@ -128,7 +133,25 @@ public class CommonCodeController {
 	    return "해당 코드가 수정되었습니다";
 	}
 	
+
+//================================== 검색 =========================================	 
 	
+	// 공통코드 검색
+	@GetMapping("/comSearch")
+	@ResponseBody
+	public List<CommonCodeDTO> comSearch(@RequestParam("keyword") String keyword) {
+		
+		return comService.searchCode(keyword);
+	}
+	
+	// 상세코드 검색
+	@GetMapping("/comDtSearch")
+	@ResponseBody
+	public List<CommonDetailCodeDTO> comDtSearch(@RequestParam("keyword") String keyword) {
+		
+		 return comService.searchDtCode(keyword);
+		
+	}
 	
 	
 	
