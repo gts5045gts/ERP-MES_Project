@@ -44,7 +44,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 			"C##TEAM1.test_dept d ON e.emp_dept_id = d.dept_id " +
 			"JOIN " +
 			"C##TEAM1.test_position p ON e.emp_position = p.pos_id " +
-			"WHERE e.emp_name LIKE %:keyword% and e.emp_id <> 2025082215"  +
+			"WHERE e.emp_name LIKE %:keyword% and e.emp_id <> 2025082229"  +
 			"",
 			nativeQuery = true)
 	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);

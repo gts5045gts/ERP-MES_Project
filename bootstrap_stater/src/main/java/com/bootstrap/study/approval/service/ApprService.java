@@ -1,5 +1,6 @@
 package com.bootstrap.study.approval.service;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprEmpDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
@@ -49,7 +50,8 @@ public class ApprService {
 	            }
 	            dto.setDecision((String) result[5]); // decision
 	            dto.setReqId(((Number) result[6]).longValue()); // req_id
-	            dto.setReqType((String) result[7]); // req_type
+                //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
+	            dto.setReqType((ApprReqType) result[7]); // req_type
 	            dto.setEmpId((String) result[8]); // emp_id
 	            dto.setCurrentStep((Integer) result[9]); // current_step
 	            
@@ -96,8 +98,9 @@ public class ApprService {
                         dto.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime()); 
                     }
                     dto.setDecision((String) result[5]); 
-                    dto.setReqId(((Number) result[6]).longValue()); 
-                    dto.setReqType((String) result[7]); 
+                    dto.setReqId(((Number) result[6]).longValue());
+                    //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
+                    dto.setReqType((ApprReqType) result[7]);
                     dto.setEmpId((String) result[8]); 
                     dto.setCurrentStep((Integer) result[9]); 
                     dto.setDepartment("인사부"); 
