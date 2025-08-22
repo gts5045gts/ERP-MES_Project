@@ -24,6 +24,8 @@ $('#codeSearch').on('keyup', function() {
 	});
 });
 
+
+// 상세코드 검색
 $('#codeDetailSearch').on('keyup', function() {
 	const keyword = $(this).val().trim();
 	$.ajax({
