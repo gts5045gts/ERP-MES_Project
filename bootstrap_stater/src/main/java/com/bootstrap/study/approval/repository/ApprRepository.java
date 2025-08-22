@@ -34,10 +34,19 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		    ORDER BY a.create_at DESC, al.step_no ASC
 		    """, nativeQuery = true)
     List<Object[]> findApprovalListWithJoin();
-    
-//    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE LOWER(e.emp_name) LIKE LOWER(CONCAT('%', :keyword, '%'))", nativeQuery = true)
-//    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE e.emp_name LIKE CONCAT('%', :keyword, '%')", nativeQuery = true)
-    @Query(value = "SELECT * FROM C##TEAM1.employee e WHERE e.emp_name LIKE ':keyword'", nativeQuery = true)
-    List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);
-    
+
+    @Query(value = "" +
+			"SELECT " +
+			"e.emp_id," +
+			"e.emp_name," +
+			"d.dept_name" +
+			" FROM " +
+			"C##TEAM1.employee e " +
+			"JOIN " +
+			"C##TEAM1.test_dept d " +
+			"ON e.emp_dept_id = d.dept_id " +
+			"WHERE e.emp_name LIKE %:keyword%" +
+			"",
+			nativeQuery = true)
+	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);
 }

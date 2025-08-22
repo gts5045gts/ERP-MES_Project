@@ -28,9 +28,6 @@ import java.util.stream.Collectors;
 public class ApprService {
 
     private final ApprRepository apprRepository;
-    // TODO: 직원 정보 조회를 위해 EmployeeRepository 등이 필요합니다.
-    // private final EmployeeRepository employeeRepository;
-
 
     // ㅇㅇ
 	@Transactional(readOnly = true)
@@ -122,12 +119,10 @@ public class ApprService {
     //결재자 리스트 조회
     @Transactional(readOnly = true)
 	public List<ApprEmpDTO> getApprEmployee(String keyword) {
-		return apprRepository.findByNameContainingIgnoreCase("%" + keyword + "%")
+		return apprRepository.findByNameContainingIgnoreCase(keyword)
                 .stream()
                 .map(ApprEmpDTO::fromEntity)
                 .collect(Collectors.toList());
-		
-//		return null;
     }
 
 	

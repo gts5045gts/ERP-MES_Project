@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import oracle.sql.TIMESTAMP;
+//import oracle.sql.TIMESTAMP;
 
 @Getter
 @Setter
