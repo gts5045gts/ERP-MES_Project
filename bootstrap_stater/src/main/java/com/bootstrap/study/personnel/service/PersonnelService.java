@@ -85,34 +85,31 @@ public class PersonnelService {
 
 		//현재 날짜
 		LocalDate today = LocalDate.now();
-        // yyyyMMdd 포맷 지정
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");		//ex) 20250821 형태로 저장
-		String todayStr = today.format(formatter);									//현재 날짜 String타입으로 저장 
 		
+        // yyyyMMdd 포맷 지정
+		DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");		
+		String todayStr = today.format(formatter1);									//joinDate 넣어줄 타입 변환 Date값	
+	
+		DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");		//ex) 20250821 형태로 저장
+		String empDate = today.format(formatter2);									//현재 날짜 String타입으로 저장
+
+		//사원번호 생성
 		List<Personnel> personnelList = personnelRepository.findAll();
 		Long count = (long) (personnelList.size() + 1);								//전체 사원수 +1 ex)2+1 
-		String employeeId = todayStr + String.format("%02d", count);				//count 표시 형식 ex) 03
+		String employeeId = empDate + String.format("%02d", count);				//count 표시 형식 ex) 03
 																					//현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
 		
 		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
-		position.setPosId(personnelDTO.getPosId());		//직급 아이디 직급타입의 변수에 저장
-		
-		
-		
-		department.setDeptId(personnelDTO.getDeptId());
+		personnelDTO.setResignDate(todayStr);
 		
 		
 		log.info("사원등록 정보: " + personnelDTO.toString());
 		
 		Personnel personnel = new Personnel();
-		personnel.setUpdate(new Timestamp(System.currentTimeMillis()));
-		personnel.setEmpId(personnelDTO.getEmpId());
-		personnel.setName(personnelDTO.getName());
-		personnel.setEmail(personnelDTO.getEmail());
-		personnel.setPasswd(personnelDTO.getPasswd());
-		personnel.setPhone(personnelDTO.getPhone());
-		personnel.setDepartment(department);
-		personnel.setPosition(position);
+		
+		personnel = personnel.fromDTO(personnelDTO);
+		log.info("사원등록 정보: " + personnel.fromDTO(personnelDTO).toString());
+
 		personnelRepository.save(personnel);
 		
 		
