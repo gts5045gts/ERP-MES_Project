@@ -14,6 +14,6 @@
             work_status    AS workStatus,
             created_at     AS createdAt,
             updated_at     AS updatedAt
-        FROM commute
+        FROM commute_record
 	</select>
 </mapper>

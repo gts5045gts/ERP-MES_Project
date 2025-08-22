@@ -6,16 +6,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Entity
+@ToString
 @Table(name = "test_dept")
 public class Department {
 	@Id
-    @Column(name = "dept_id")
-    private Long deptId;
+	@Column(name = "dept_id")
+	private Long deptId;
 
-    @Column(name = "dept_name")
-    private String deptName;
+	@Column(name = "dept_name")
+	private String deptName;
 }
