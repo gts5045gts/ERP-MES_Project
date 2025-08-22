@@ -1,6 +1,6 @@
 package com.bootstrap.study.approval.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime; 
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.bootstrap.study.approval.constant.ApprStatus;
+//import com.bootstrap.study.approval.constant.ApprStatus;
 
 @Entity
 @Table(name = "approval")
@@ -22,8 +22,9 @@ import com.bootstrap.study.approval.constant.ApprStatus;
 public class Appr {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(updatable = false)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "approval_seq_generator")
+    @SequenceGenerator(name="approval_seq_generator", sequenceName="approval_seq", allocationSize=1)
+    @Column(updatable = false)
 	private Long reqId;
 
 	@Column(nullable = false, length = 20)
@@ -45,9 +46,9 @@ public class Appr {
 	@LastModifiedBy
 	private LocalDateTime updateAt;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
- 	private ApprStatus status;
+//	@Enumerated(EnumType.STRING)
+//	@Column(nullable = false)
+// 	private ApprStatus status;
  	
  	private int currentStep;
  	
