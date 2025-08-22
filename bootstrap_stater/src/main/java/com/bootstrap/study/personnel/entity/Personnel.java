@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import oracle.sql.TIMESTAMP;
 
 @Entity
 @Table(name = "employee")
@@ -90,6 +91,37 @@ public class Personnel {
 	private Position position; // 직책
 	
 
+	public static Personnel fromDTO(PersonnelDTO peronnelDTO) {
+		
+		Department department = new Department();
+		department.setDeptId(peronnelDTO.getDeptId());
+		department.setDeptName(peronnelDTO.getDeptName());
+		Position position = new Position();
+		position.setPosId(peronnelDTO.getPosId());
+		position.setPosName(peronnelDTO.getPosName());
+		
+		Personnel personnel = new Personnel();
+		personnel.setEmpId(peronnelDTO.getEmpId());
+		personnel.setName(peronnelDTO.getName());
+		personnel.setPasswd(peronnelDTO.getPasswd());
+		personnel.setResident(peronnelDTO.getResident());
+		personnel.setAddrNum(peronnelDTO.getAddrNum());
+		personnel.setAddr1(peronnelDTO.getAddr1());
+		personnel.setAddr2(peronnelDTO.getAddr2());
+		personnel.setEmail(peronnelDTO.getEmail());
+		personnel.setPhone(peronnelDTO.getPhone());
+		personnel.setJoinDate(peronnelDTO.getJoinDate());
+		personnel.setResignDate(peronnelDTO.getResignDate());
+		personnel.setUpdate(peronnelDTO.getUpdate());
+		personnel.setStatus(peronnelDTO.getStatus());
+		personnel.setName(peronnelDTO.getName());
+		personnel.setName(peronnelDTO.getName());
+		personnel.setDepartment(department);
+		personnel.setPosition(position);
+		
+		
+		return personnel;
+	}
 	
 	
 	
