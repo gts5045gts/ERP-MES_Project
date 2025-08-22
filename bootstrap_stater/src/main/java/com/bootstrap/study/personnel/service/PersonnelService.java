@@ -86,9 +86,8 @@ public class PersonnelService {
 		//현재 날짜
 		LocalDate today = LocalDate.now();
 		
-        // yyyyMMdd 포맷 지정
-		DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");		
-		String todayStr = today.format(formatter1);									//joinDate 넣어줄 타입 변환 Date값	
+        
+		String todayStr = personnelDTO.getJoinDate();									//joinDate 넣어줄 타입 변환 Date값	
 	
 		DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");		//ex) 20250821 형태로 저장
 		String empDate = today.format(formatter2);									//현재 날짜 String타입으로 저장
@@ -100,7 +99,6 @@ public class PersonnelService {
 																					//현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
 		
 		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
-		personnelDTO.setJoinDate(todayStr);
 		
 		
 		log.info("사원등록 정보: " + personnelDTO.toString());
