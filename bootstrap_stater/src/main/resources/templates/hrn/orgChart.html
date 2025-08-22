@@ -50,7 +50,7 @@
 										<tr th:each="personnel : ${personnels}">
 										    <td th:text="${personnel.empId}"></td>
 										    <td th:text="${personnel.deptName}"></td>
-										    <td th:text="${personnel.position}"></td>
+										    <td th:text="${personnel.posName}"></td>
 										    <td th:text="${personnel.name}"></td>
 										    <td th:text="${personnel.phone}"></td>
 										    <td th:text="${personnel.email}"></td>
@@ -96,7 +96,7 @@
                             <tr>
                                 <td>${personnel.empId}</td>
                                 <td>${personnel.deptName}</td>
-                                <td>${personnel.position}</td>
+                                <td>${personnel.posName}</td>
                                 <td>${personnel.name}</td>
                                 <td>${personnel.phone}</td>
                                 <td>${personnel.email}</td>

@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+
 import lombok.ToString;
 
 @Getter
@@ -21,10 +22,5 @@ public class Position {
 	
 	@Column(name ="pos_name")
 	private String posName;
-	
-	
-	
-	
-	
-	
+
 }

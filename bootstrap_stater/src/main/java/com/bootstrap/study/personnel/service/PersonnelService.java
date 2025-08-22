@@ -1,11 +1,13 @@
+
 package com.bootstrap.study.personnel.service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,102 +23,132 @@ import com.bootstrap.study.personnel.repository.PositionRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import oracle.sql.TIMESTAMP;
-
 
 @Service
 @RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 생성
 @Log4j2
 public class PersonnelService {
-
+	
 	private final PersonnelRepository personnelRepository;
-	private final DepartmentRepository departmentRepository;
-	private final PositionRepository positionRepository;
-	private final PasswordEncoder passwordEncoder;
+    private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    // 모든 부서를 조회하여 DTO 리스트로 반환
+    public List<DepartmentDTO> getAllDepartments() {
+        List<Department> departments = departmentRepository.findAll();
+        return departments.stream()
+                .map(dept -> {
+                    DepartmentDTO dto = new DepartmentDTO();
+                    dto.setId(dept.getDeptId());
+                    dto.setName(dept.getDeptName());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 
-	// 모든 부서를 조회하여 DTO 리스트로 반환
-	public List<DepartmentDTO> getAllDepartments() {
-		List<Department> departments = departmentRepository.findAll();
-		
-		return departments.stream().map(dept -> {
-			DepartmentDTO dto = new DepartmentDTO();
-			dto.setId(dept.getDeptId());
-			dto.setName(dept.getDeptName());
-			return dto;
-		}).collect(Collectors.toList());
-	}
-
-	// 특정 부서의 직원 목록을 조회하여 DTO 리스트로 반환
-	public List<PersonnelDTO> getEmployeesByDepartmentId(Long deptId) {
-		List<Personnel> personnels = personnelRepository.findByDepartment_DeptId(deptId);
-		return personnels.stream().map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
-				.collect(Collectors.toList());
-	}
-
-	// Employee 엔티티를 EmployeeDTO로 변환하는 private 메소드
-	private PersonnelDTO convertToDto(Personnel personnel) {
-		PersonnelDTO dto = new PersonnelDTO();
-		dto.setEmpId(personnel.getEmpId());
-		dto.setDeptName(personnel.getDepartment().getDeptName());
-		dto.setPosName(personnel.getPosition().getPosName());
-		dto.setName(personnel.getName());
-		dto.setPhone(personnel.getPhone());
-		dto.setEmail(personnel.getEmail());
-		return dto;
-	}
-
-	public List<PositionDTO> getAllPositions() {
+    // 특정 부서의 직원 목록을 조회하여 DTO 리스트로 반환
+    public List<PersonnelDTO> getEmployeesByDepartmentId(Long deptId) {
+        List<Personnel> personnels = personnelRepository.findByDepartment_DeptId(deptId);
+        return personnels.stream()
+                .map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
+                .collect(Collectors.toList());
+    }
+    
+    // Employee 엔티티를 PersonnelDTO로 변환하는 private 메소드
+    private PersonnelDTO convertToDto(Personnel personnel) {
+    	PersonnelDTO dto = new PersonnelDTO();
+        dto.setEmpId(personnel.getEmpId()); 
+        dto.setDeptName(personnel.getDepartment().getDeptName());
+        dto.setPosName(personnel.getPosition().getPosName());
+        dto.setName(personnel.getName());
+        dto.setPhone(personnel.getPhone());
+        dto.setEmail(personnel.getEmail());
+        return dto;
+    }
+    
+    // 인사현황 페이지에 필요한 전체 직원 목록을 조회하는 메서드
+ 	public List<PersonnelDTO> getAllPersonnels() {
+ 		
+ 		// Personnel 엔티티 목록을 가져와서 DTO로 변환
+ 		List<Personnel> personnelList = personnelRepository.findAll();
+ 		return personnelList.stream()
+ 				.map(PersonnelDTO::fromEntity)
+ 				.collect(Collectors.toList());
+ 	}
+ 	
+ 	public List<PositionDTO> getAllPositions() {
 		List<Position> positionList = positionRepository.findAll();
-		
-		
-		
+
 		return positionList.stream().map(result -> {
 			PositionDTO dto = new PositionDTO();
 			dto.setId(result.getPosId());
 			dto.setName(result.getPosName());
 			return dto;
 		}).collect(Collectors.toList());
-		
-		
 	}
+ 	
+ 	public void personRegist(PersonnelDTO personnelDTO) {
+ 		Department department = new Department();   // 부서 
+ 	      Position position = new Position();         // 직급
 
-	public void personRegist(PersonnelDTO personnelDTO) {
-		Department department = new Department();	// 부서 
-		Position position = new Position();			// 직급
+ 	      //현재 날짜
+ 	      LocalDate today = LocalDate.now();
+ 	      
+ 	        // yyyyMMdd 포맷 지정
+ 	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
+ 	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
+ 	   
+ 	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
+ 	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
 
-		//현재 날짜
-		LocalDate today = LocalDate.now();
-        // yyyyMMdd 포맷 지정
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");		//ex) 20250821 형태로 저장
-		String todayStr = today.format(formatter);									//현재 날짜 String타입으로 저장 
-		
-		List<Personnel> personnelList = personnelRepository.findAll();
-		Long count = (long) (personnelList.size() + 1);								//전체 사원수 +1 ex)2+1 
-		String employeeId = todayStr + String.format("%02d", count);				//count 표시 형식 ex) 03
-																					//현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
-		
-		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
-		position.setPosId(personnelDTO.getPosId());		//직급 아이디 직급타입의 변수에 저장
-		department.setDeptId(personnelDTO.getDeptId());
-		
-		String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
-		
-		log.info("사원등록 정보: " + personnelDTO.toString());
-		
-		Personnel personnel = new Personnel();
-		personnel.setUpdate(new Timestamp(System.currentTimeMillis()));
-		personnel.setEmpId(personnelDTO.getEmpId());
-		personnel.setName(personnelDTO.getName());
-		personnel.setEmail(personnelDTO.getEmail());
-		personnel.setPasswd(encodedPassword);
-		personnel.setPhone(personnelDTO.getPhone());
-		personnel.setDepartment(department);
-		personnel.setPosition(position);
-		personnelRepository.save(personnel);
-		
-		
-		
-		
+ 	      //사원번호 생성
+ 	      List<Personnel> personnelList = personnelRepository.findAll();
+ 	      Long count = (long) (personnelList.size() + 1);                        //전체 사원수 +1 ex)2+1 
+ 	      String employeeId = empDate + String.format("%02d", count);            //count 표시 형식 ex) 03
+ 	                                                               //현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
+ 	      
+ 	      personnelDTO.setEmpId(employeeId);            //부서 아이디 부서타입의 변수에 저장
+ 	      personnelDTO.setJoinDate(todayStr);
+ 	      String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
+ 	   	  personnelDTO.setPasswd(encodedPassword);
+ 	      
+ 	      log.info("사원등록 정보: " + personnelDTO.toString());
+ 	      
+ 	      Personnel personnel = new Personnel();
+ 	      
+ 	      personnel = personnel.fromDTO(personnelDTO);
+ 	      log.info("사원등록 정보: " + personnel.fromDTO(personnelDTO).toString());
+
+ 	      personnelRepository.save(personnel);
+
 	}
+ 	
+ 	// 특정 사원 상세 정보 조회
+ 	public Optional<PersonnelDTO> getPersonnelDetails(String empId) {
+ 	    Optional<Personnel> personnelOpt = personnelRepository.findById(empId);
+ 	    return personnelOpt.map(personnel -> {
+ 	        PersonnelDTO dto = PersonnelDTO.fromEntity(personnel);
+ 	        dto.setDeptId(personnel.getDepartment().getDeptId());
+ 	        dto.setPosId(personnel.getPosition().getPosId());
+ 	        return dto;
+ 	    });
+ 	}
+
+ 	// 사원 정보 수정
+ 	public void updatePersonnel(PersonnelDTO personnelDTO) {
+ 	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
+ 	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
+
+ 	    // DTO에서 받은 정보로 엔티티 업데이트
+ 	    personnel.setName(personnelDTO.getName());
+ 	    personnel.setPasswd(personnelDTO.getPasswd());
+ 	    personnel.setPhone(personnelDTO.getPhone());
+ 	    personnel.setEmail(personnelDTO.getEmail());
+
+ 	    personnelRepository.save(personnel);
+ 	}
+ 	
 
 }
+
