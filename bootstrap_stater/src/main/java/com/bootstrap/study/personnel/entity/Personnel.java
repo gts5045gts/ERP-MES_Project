@@ -113,8 +113,7 @@ public class Personnel {
 		personnel.setName(peronnelDTO.getName());
 		personnel.setDepartment(department);
 		personnel.setPosition(position);
-		
-		
+
 		return personnel;
 	}
 

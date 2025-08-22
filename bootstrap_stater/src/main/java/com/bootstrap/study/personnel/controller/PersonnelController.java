@@ -2,6 +2,7 @@ package com.bootstrap.study.personnel.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.personnel.dto.DepartmentDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -41,6 +43,43 @@ public class PersonnelController {
         return ResponseEntity.ok(personnels);
     }
 	
+	@GetMapping("/detailInfo")
+    public String detailInfo(@RequestParam("empId") String empId, Model model) {
+        // Service를 통해 해당 사원의 상세 정보를 가져와 모델에 추가
+        Optional<PersonnelDTO> personnelOpt = personnelService.getPersonnelDetails(empId);
+        
+        if (personnelOpt.isPresent()) {
+            model.addAttribute("personnel", personnelOpt.get());
+        } else {
+            // 사원 정보가 없을 경우 리스트 페이지로 리다이렉트
+            return "redirect:/personnel/current";
+        }
+
+        // 부서 및 직책 리스트도 모델에 추가 (select 박스 생성을 위해 필요)
+        List<DepartmentDTO> departments = personnelService.getAllDepartments();
+        model.addAttribute("departments", departments);
+
+        List<PositionDTO> position = personnelService.getAllPositions();
+        model.addAttribute("position", position);
+
+        return "/hrn/personnelDetailInfo";
+    }
+
+    // 인사현황 -> 상세조회 버튼 -> 정보 수정시 수행 
+    @PostMapping("/updatePro")
+    public String updatePro(PersonnelDTO personnelDTO, RedirectAttributes redirectAttributes) {
+        log.info("수정할 사원 정보 : " + personnelDTO.toString());
+        
+        try {
+            personnelService.updatePersonnel(personnelDTO);
+            redirectAttributes.addFlashAttribute("message", "사원 정보가 성공적으로 수정되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "사원 정보 수정에 실패했습니다.");
+        }
+        
+        return "redirect:/personnel/current";
+    }
+	
 	@GetMapping("/regist")
 	public String regist(Model model) {
 		log.info("PersonnelController regist()");
@@ -54,8 +93,10 @@ public class PersonnelController {
 		log.info("position" + position.toString());
 		log.info("departments" + departments.toString());
 		
+
 		return "/hrn/personnelRegist";
 	}
+	
 	@PostMapping("/registPro")
 	public String registPro(PersonnelDTO personnelDTO) {
 		log.info("등록할 사원 정보 : " + personnelDTO.toString());
@@ -103,5 +144,7 @@ public class PersonnelController {
 
         return ResponseEntity.ok(personnels);
     }
+    
+    
 
 }

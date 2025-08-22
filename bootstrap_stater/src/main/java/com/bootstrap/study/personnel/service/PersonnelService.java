@@ -1,9 +1,9 @@
 package com.bootstrap.study.personnel.service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -69,7 +69,7 @@ public class PersonnelService {
  		// Personnel 엔티티 목록을 가져와서 DTO로 변환
  		List<Personnel> personnelList = personnelRepository.findAll();
  		return personnelList.stream()
- 				.map(PersonnelDTO::fromEntityCurrent)
+ 				.map(PersonnelDTO::fromEntity)
  				.collect(Collectors.toList());
  	}
  	
@@ -85,39 +85,63 @@ public class PersonnelService {
 	}
  	
  	public void personRegist(PersonnelDTO personnelDTO) {
-		Department department = new Department();	// 부서 
-		Position position = new Position();			// 직급
+ 		Department department = new Department();   // 부서 
+ 	      Position position = new Position();         // 직급
 
-		//현재 날짜
-		LocalDate today = LocalDate.now();
-        // yyyyMMdd 포맷 지정
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");		//ex) 20250821 형태로 저장
-		String todayStr = today.format(formatter);									//현재 날짜 String타입으로 저장 
-		
-		List<Personnel> personnelList = personnelRepository.findAll();
-		Long count = (long) (personnelList.size() + 1);								//전체 사원수 +1 ex)2+1 
-		String employeeId = todayStr + String.format("%02d", count);				//count 표시 형식 ex) 03
-																					//현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
-		
-		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
-		position.setPosId(personnelDTO.getPosId());		//직급 아이디 직급타입의 변수에 저장
-		
-		department.setDeptId(personnelDTO.getDeptId());
+ 	      //현재 날짜
+ 	      LocalDate today = LocalDate.now();
+ 	      
+ 	        // yyyyMMdd 포맷 지정
+ 	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
+ 	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
+ 	   
+ 	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
+ 	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
 
-		log.info("사원등록 정보: " + personnelDTO.toString());
-		
-		Personnel personnel = new Personnel();
-		personnel.setUpdate(new Timestamp(System.currentTimeMillis()));
-		personnel.setEmpId(personnelDTO.getEmpId());
-		personnel.setJoinDate(todayStr);
-		personnel.setName(personnelDTO.getName());
-		personnel.setEmail(personnelDTO.getEmail());
-		personnel.setPasswd(personnelDTO.getPasswd());
-		personnel.setPhone(personnelDTO.getPhone());
-		personnel.setDepartment(department);
-		personnel.setPosition(position);
-		personnelRepository.save(personnel);
+ 	      //사원번호 생성
+ 	      List<Personnel> personnelList = personnelRepository.findAll();
+ 	      Long count = (long) (personnelList.size() + 1);                        //전체 사원수 +1 ex)2+1 
+ 	      String employeeId = empDate + String.format("%02d", count);            //count 표시 형식 ex) 03
+ 	                                                               //현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
+ 	      
+ 	      personnelDTO.setEmpId(employeeId);            //부서 아이디 부서타입의 변수에 저장
+ 	      personnelDTO.setJoinDate(todayStr);
+ 	      
+ 	      log.info("사원등록 정보: " + personnelDTO.toString());
+ 	      
+ 	      Personnel personnel = new Personnel();
+ 	      
+ 	      personnel = personnel.fromDTO(personnelDTO);
+ 	      log.info("사원등록 정보: " + personnel.fromDTO(personnelDTO).toString());
+
+ 	      personnelRepository.save(personnel);
 
 	}
+ 	
+ 	// 특정 사원 상세 정보 조회
+ 	public Optional<PersonnelDTO> getPersonnelDetails(String empId) {
+ 	    Optional<Personnel> personnelOpt = personnelRepository.findById(empId);
+ 	    return personnelOpt.map(personnel -> {
+ 	        PersonnelDTO dto = PersonnelDTO.fromEntity(personnel);
+ 	        dto.setDeptId(personnel.getDepartment().getDeptId());
+ 	        dto.setPosId(personnel.getPosition().getPosId());
+ 	        return dto;
+ 	    });
+ 	}
+
+ 	// 사원 정보 수정
+ 	public void updatePersonnel(PersonnelDTO personnelDTO) {
+ 	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
+ 	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
+
+ 	    // DTO에서 받은 정보로 엔티티 업데이트
+ 	    personnel.setName(personnelDTO.getName());
+ 	    personnel.setPasswd(personnelDTO.getPasswd());
+ 	    personnel.setPhone(personnelDTO.getPhone());
+ 	    personnel.setEmail(personnelDTO.getEmail());
+
+ 	    personnelRepository.save(personnel);
+ 	}
+ 	
 
 }

@@ -48,7 +48,6 @@
                                 </tr>
                             </thead>
                             <tbody id="personnelTableBody">
-                                <!-- Thymeleaf를 사용하여 초기 데이터 렌더링 (조직도와 동일한 방식) -->
                                 <tr th:each="personnel : ${personnels}">
                                     <td th:text="${personnel.joinDate}"></td>
                                     <td th:text="${personnel.empId}"></td>
@@ -57,13 +56,12 @@
                                     <td th:text="${personnel.deptName}"></td>
                                     <td th:text="${personnel.phone}"></td>
                                     <td th:text="${personnel.email}"></td>
-                                    <td><button class="btn btn-primary btn-sm">상세조회</button></td>
+    								<td><a th:href="@{/personnel/detailInfo(empId=${personnel.empId})}" class="btn btn-primary btn-sm">상세조회</a></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- 페이지네이션 컨트롤은 JavaScript에서 동적으로 생성될 것입니다. -->
                     <div id="pagination" class="pagination-controls d-flex justify-content-end"></div>
 
                 </div>
