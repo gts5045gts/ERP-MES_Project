@@ -1,9 +1,12 @@
 package com.bootstrap.study.attendance.controller;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +24,7 @@ import com.bootstrap.study.attendance.service.CommuteService;
 public class CommuteController {
 
 	private final CommuteService commuteService;
-	private final String emp_id = "2025081901"; 
+	private final String empId = "2025081901"; 
 	
 	public CommuteController(CommuteService commuteService) {
 		this.commuteService = commuteService;
@@ -30,16 +33,18 @@ public class CommuteController {
 		
 	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
-	public String getComuuteList(@RequestParam(name = "date", required = false) String date, Model model) {
-		String  queryDate = (date != null) ? date : LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+	public String getComuuteList(Model model) {
+		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 		
-		List<CommuteDTO> commuteDTOList = commuteService.getDeptCommuteList(emp_id, queryDate);
+	    Map<String, Object> paramMap = new HashMap<>();
+	    paramMap.put("empId", empId);
+	    paramMap.put("today", today);
+		
+		List<CommuteDTO> commuteDTOList = commuteService.getDeptCommuteList(paramMap);
 		model.addAttribute("commuteDTOList", commuteDTOList);
-		model.addAttribute("queryDate", queryDate);
-		model.addAttribute("empId", emp_id);
 
 		System.out.println("commuteDTOList : " + commuteDTOList);		
-		System.out.println("queryDate : " + queryDate);		
+		System.out.println("today : " + today);		
 
 		return "/commute/commute_list";
 	}
@@ -48,7 +53,7 @@ public class CommuteController {
 	@ResponseBody
 	@PostMapping("/checkIn")
 	public CommuteDTO checkIn() {
-		return commuteService.checkIn(emp_id);
+		return commuteService.checkIn(empId);
 	}
 
 	// 내 근태내역 관리

@@ -5,40 +5,43 @@
 <mapper namespace="com.bootstrap.study.attendance.mapper.CommuteMapper">
 
 	<!-- 출근현황 리스트 조회 -->
-	<resultMap id="CommuteResultMap" type="com.bootstrap.study.attendance.dto.CommuteDTO">
-		<id property="commuteId" column="commute_id"/>
-		<result property="checkInTime" column="check_in_time" />
-		<result property="checkOutTime" column="check_out_time" />
-		<result property="empId" column="emp_id" />
-		<result property="workStatus" column="work_status" />
-		<result property="empName" column="emp_name" />
-		<result property="depName" column="dep_name" />
-		<result property="posName" column="pos_name" />
-	</resultMap>
-	<select id="getDeptCommuteList" parameterType="map" resultMap="CommuteResultMap">
-		SELECT
-            c.commute_id,
-            c.check_in_time,
-            c.check_out_time,
-            c.emp_id,
-            c.work_status,
-            c.created_at,
-            c.updated_at,
-            e.emp_name,
-            d.dept_name,
-            p.pos_name
-        FROM employee e
-        JOIN test_dept d ON e.emp_dept_id = d.dept_id
-        JOIN test_position p ON e.emp_position = p.pos_id
-        LEFT JOIN commute_record c
-        	ON c.emp_id = e.emp_id
-			AND TO_CHAR(c.check_in_time, 'YYYY-MM-DD') = #{date, jdbcType=VARCHAR}        
-        WHERE e.emp_dept_id = (
-        	SELECT emp_dept_id
-        	FROM employee
-        	WHERE emp_id = #{empId}
-        )
-        ORDER BY e.emp_name
+<!-- 	<resultMap id="CommuteResultMap" type="com.bootstrap.study.attendance.dto.CommuteDTO"> -->
+<!-- 		<id property="commuteId" column="commute_id"/> -->
+<!-- 		<result property="checkInTime" column="check_in_time" /> -->
+<!-- 		<result property="checkOutTime" column="check_out_time" /> -->
+<!-- 		<result property="empId" column="emp_id" /> -->
+<!-- 		<result property="workStatus" column="work_status" /> -->
+<!-- 		<result property="empName" column="emp_name" /> -->
+<!-- 		<result property="depName" column="dep_name" /> -->
+<!-- 		<result property="posName" column="pos_name" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="getDeptCommuteList" resultMap="CommuteResultMap"> -->
+	<select id="getDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	   <![CDATA[
+	   SELECT 
+	       c.commute_id,
+	       c.check_in_time,
+	       c.check_out_time,
+	       c.emp_id,
+	       c.work_status,
+	       c.created_at,
+	       c.updated_at,
+	       e.emp_name,
+	       d.dept_name,
+	       p.pos_name
+	   FROM employee e
+	   JOIN test_dept d ON e.emp_dept_id = d.dept_id
+	   JOIN test_position p ON e.emp_position = p.pos_id
+	   LEFT JOIN commute_record cs
+	       ON e.emp_id = c.emp_id
+	       AND TRUNC(c.check_in_time) = TRUNC(TO_DATE(#{today}, 'YYYY-MM-DD'))
+	   WHERE e.emp_dept_id = (
+	       SELECT emp_dept_id
+	       FROM employee
+	       WHERE emp_id = #{empId}
+	   )
+	   ORDER BY e.emp_name
+	   ]]>
 	</select>
 
 	

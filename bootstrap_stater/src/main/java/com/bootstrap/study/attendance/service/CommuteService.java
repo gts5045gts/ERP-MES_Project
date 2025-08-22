@@ -1,5 +1,6 @@
 package com.bootstrap.study.attendance.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -25,12 +26,10 @@ public class CommuteService {
 	}
 
 	// 출근현황 리스트
-	public List<CommuteDTO> getDeptCommuteList(String empId, String queryDate) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("empId", empId);
-		params.put("date", queryDate);
+//	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
+	public List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap) {
 		
-		return commuteMapper.getDeptCommuteList(params);
+		return commuteMapper.getDeptCommuteList(paramMap);
 	}
 
 	// 출근버튼

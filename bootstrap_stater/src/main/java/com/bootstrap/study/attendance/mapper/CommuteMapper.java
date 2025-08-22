@@ -13,7 +13,7 @@ import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 public interface CommuteMapper {
 
 	// 출퇴근리스트
-	List<CommuteDTO> getDeptCommuteList(Map<String, Object> params);
+	List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap);
 	
 	// 출근버튼 눌렀을때 데이터 commute_record 테이블에 저장
 	int insertCommute(CommuteDTO commute);

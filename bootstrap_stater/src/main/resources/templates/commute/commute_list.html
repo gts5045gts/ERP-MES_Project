@@ -42,7 +42,7 @@
 		                        </tr>
 	                        </thead>
 	                        <tbody>
-		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable">
+		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
 		                            <td th:text="${c.commuteId}"></td>
 		                            <td th:text="${c.checkInTime}"></td>
 		                            <td th:text="${c.checkOutTime}"></td>
