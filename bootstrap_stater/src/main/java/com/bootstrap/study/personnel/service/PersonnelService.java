@@ -91,10 +91,8 @@ public class PersonnelService {
  	      //현재 날짜
  	      LocalDate today = LocalDate.now();
  	      
- 	        // yyyyMMdd 포맷 지정
- 	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
- 	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
- 	   
+ 	      String todayStr = personnelDTO.getJoinDate();							//joinDate 넣어줄 타입 변환 Date값   
+ 	      
  	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
  	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
 
