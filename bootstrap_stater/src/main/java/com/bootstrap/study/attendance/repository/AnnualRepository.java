@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.bootstrap.study.attendance.entity.Annual;
 
 @Repository
-public interface AnnualRepository extends JpaRepository<Annual, String>{
+public interface AnnualRepository extends JpaRepository<Annual, Long>{
 
 }
