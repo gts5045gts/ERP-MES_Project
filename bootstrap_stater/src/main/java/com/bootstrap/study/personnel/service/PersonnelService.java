@@ -100,7 +100,7 @@ public class PersonnelService {
 																					//현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
 		
 		personnelDTO.setEmpId(employeeId);				//부서 아이디 부서타입의 변수에 저장
-		personnelDTO.setResignDate(todayStr);
+		personnelDTO.setJoinDate(todayStr);
 		
 		
 		log.info("사원등록 정보: " + personnelDTO.toString());
