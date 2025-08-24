@@ -15,7 +15,11 @@ public interface CommuteMapper {
 	// 출퇴근리스트
 	List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap);
 	
+	// 오늘 출근 기록이 있는지 확인
+	int getTodayCheckInCount(String empId);
+	
 	// 출근버튼 눌렀을때 데이터 commute_record 테이블에 저장
 	int insertCommute(CommuteDTO commute);
+
 
 }

@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,7 +25,7 @@ import com.bootstrap.study.attendance.service.CommuteService;
 public class CommuteController {
 
 	private final CommuteService commuteService;
-	private final String empId = "2025081901"; 
+	private final String empId = "2025082229"; 
 	
 	public CommuteController(CommuteService commuteService) {
 		this.commuteService = commuteService;
@@ -52,7 +53,8 @@ public class CommuteController {
 	// 출근버튼
 	@ResponseBody
 	@PostMapping("/checkIn")
-	public CommuteDTO checkIn() {
+	public CommuteDTO checkIn(@RequestBody Map<String, String> request) {
+		String empId = request.get("empId");
 		return commuteService.checkIn(empId);
 	}
 
