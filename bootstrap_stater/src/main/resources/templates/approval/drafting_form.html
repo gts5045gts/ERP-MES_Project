@@ -83,9 +83,13 @@
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">양식 종류</label>
 								<div class="col-sm-2">
-									<select class="form-control selected-req-type" th:field="*{reqType}">
+									<select class="form-control selected-req-type">
 										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
-												th:value="${reqType}" th:text="${reqType.label}"></option>
+												th:value="${reqType}"
+												th:text="${reqType.label}"
+												th:selected="${reqType} == ${selectedRole}"
+												>
+										</option>
 									</select>
 								</div>
 							</div>
@@ -187,9 +191,24 @@
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
 
 <script>	
-	$(function () {
+	$(function () {		
+		let selectedRole = '[[${selectedRole}]]';
+		
+		if (selectedRole === 'VACATION')
+		{
+			$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', false);
+			$(".vac").show();
+		}
+		else
+		{
+			$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', true);
+			$(".vac").hide();
+		}
+		
 		$('#createAtPicker, #startDate, #endDate').datetimepicker({
-			format: 'YYYY-MM-DD',
+			format: 'yyyy-MM-DD',
+			defaultDate: new Date(),
+			todayBtn: true,
 			locale: 'ko'
 		});
 
@@ -307,8 +326,6 @@
 				$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', true);
 				$(".vac").hide();
 			}
-
-
 		});
 	});
 	

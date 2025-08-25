@@ -2,6 +2,7 @@ package com.bootstrap.study.approval.controller;
 
 import lombok.extern.log4j.Log4j2;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
@@ -39,10 +41,13 @@ public class ApprController {
         return "/approval/appr_doc_list";
     }
 
-    @GetMapping("/new")
-    public String draftingForm(Model model){
+    @GetMapping("/new/{reqTypeVal}")
+    public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model){
+    	
     	model.addAttribute("apprDTO", new ApprDTO());
-    	    	
+    	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
+//    	model.addAttribute("nowDate", LocalDateTime.now());
+        
         return "approval/drafting_form";
     }
 
