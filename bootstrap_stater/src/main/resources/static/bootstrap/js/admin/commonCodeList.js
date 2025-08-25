@@ -25,13 +25,19 @@ $('#codeSearch').on('keyup', function() {
 });
 
 
+
 // 상세코드 검색
 $('#codeDetailSearch').on('keyup', function() {
 	const keyword = $(this).val().trim();
+	let dataObj = { parentId: selectedParentId };
+    if (keyword) {
+        dataObj.keyword = keyword; // 검색어가 있을 때만 추가
+    }
+	
 	$.ajax({
 		url: '/admin/comDtSearch',
 		method: 'GET',
-		data: { keyword: keyword},
+		data: dataObj,
 		success: function(data) {
 			let html = '';
 			if(data.length === 0){

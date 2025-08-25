@@ -147,9 +147,10 @@ public class CommonCodeController {
 	// 상세코드 검색
 	@GetMapping("/comDtSearch")
 	@ResponseBody
-	public List<CommonDetailCodeDTO> comDtSearch(@RequestParam("keyword") String keyword) {
+	public List<CommonDetailCodeDTO> comDtSearch(@RequestParam("parentId") String parentId , 
+			@RequestParam(value = "keyword", required = false) String keyword) {
 		
-		 return comService.searchDtCode(keyword);
+		 return comService.searchDtCode(parentId, keyword);
 		
 	}
 	
