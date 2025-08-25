@@ -33,9 +33,9 @@ public class PersonnelDTO {
 	private String status;		// 재직상태
 	
 	// 부서 직급 정보
-	private Long posId;			// 직급
+	private String posId;			// 직급
 	private String posName;		
-	private Long deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
+	private String deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
 	private String deptName;
 
 	// Entity -> DTO 변환을 위한 정적 팩토리 메서드
@@ -44,10 +44,10 @@ public class PersonnelDTO {
 				.resident(personnel.getResident()).addrNum(personnel.getAddrNum()).addr1(personnel.getAddr1()).addr2(personnel.getAddr2())
 				.email(personnel.getEmail()).phone(personnel.getPhone()).joinDate(personnel.getJoinDate()).resignDate(personnel.getResignDate())
 				.update(personnel.getUpdate())
-				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getDeptName()  : null)
-				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getDeptId() : null)
-				.posId(personnel.getPosition() != null ? personnel.getPosition().getPosId() : null)
-				.posName(personnel.getPosition() != null ? personnel.getPosition().getPosName() : null)
+				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getComDtId()  : null)
+				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getComDtNm() : null)
+				.posId(personnel.getPosition() != null ? personnel.getPosition().getComDtId() : null)
+				.posName(personnel.getPosition() != null ? personnel.getPosition().getComDtNm() : null)
 				.build();
 	}
 
