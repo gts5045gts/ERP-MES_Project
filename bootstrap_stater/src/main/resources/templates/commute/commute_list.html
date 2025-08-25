@@ -14,44 +14,50 @@
 	
 	        <!-- Page Heading -->
 	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
-	        <p class="mb-4">검색창</p>
+	        
+	        <!-- 출근버튼 -->
+            <div class="mb-3">
+            	<button id="checkInBtn" class="btn btn-primary" th:data-empid="${empId}">출근</button>
+            </div>
+	        
+	        <!-- 근태 리스트 테이블 -->        
 	        <!-- DataTales Example -->
 	        <div class="card shadow mb-4">
 	            <div class="card-header py-3">
-	                <h6 class="m-0 font-weight-bold text-primary">근태관리 출퇴근현황</h6>
-	                <button id="checkInBtn" class="Split Button Seconday">출근</button>
+	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6>
 	            </div>
 	            <div class="card-body">
 	                <div class="table-responsive">
-	                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
 	                        <thead>
 		                        <tr>
-<!-- 		                            <th>날짜</th> -->
-<!-- 		                            <th>사번</th> -->
-<!-- 		                            <th>부서</th> -->
-<!-- 		                            <th>직책</th> -->
-<!-- 		                            <th>이름</th> -->
-<!-- 		                            <th>출근시간</th> -->
-<!-- 		                            <th>퇴근시간</th> -->
-<!-- 		                            <th>근무상태</th> -->
 		                            <th>근태코드</th>
 		                            <th>출근시간</th>
 		                            <th>퇴근시간</th>
 		                            <th>사원 아이디</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
 		                            <th>근무상태</th>
 		                        </tr>
 	                        </thead>
-	                        <tbody id="commuteTable">
-		                        <tr th:each="c : ${commuteDTOList}">
+	                        <tbody>
+		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
 		                            <td th:text="${c.commuteId}"></td>
 		                            <td th:text="${c.checkInTime}"></td>
 		                            <td th:text="${c.checkOutTime}"></td>
 		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
 		                            <td th:text="${c.workStatus}"></td>
 		                        </tr>
 	                        </tbody>
 	                        <tfoot>
 		                        <tr>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
 		                            <th>1</th>
 		                            <th>1</th>
 		                            <th>1</th>
@@ -70,20 +76,8 @@
 	</th:block>
 	<th:block layout:fragment="script">
 		<script>
-			$("#checkInBtn").click(function() {
-				console.log("출근 버튼 클릭됨")
-				$.post("/attendence/checkIn", function(data) {
-					let row = `<tr>
-						<td>${data.commuteId}</td>
-						<td>${data.checkInTime}</td>
-						<td>${data.checkOutTime || ''}</td>
-						<td>${data.empId}</td>
-						<td>${data.workStatus}</td>
-					</tr>`;
-					$("#commuteTable").prepend(row);
-				});
-			});
-		</script>
+
+ 		</script>
 	</th:block>
 </body>
 </html>
