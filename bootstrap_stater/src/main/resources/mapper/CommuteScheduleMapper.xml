@@ -12,6 +12,6 @@
 		    work_end_time,
 		    apply_start_date
 		FROM commute_schedule
-		WHERE ROWNUM = 1;
+		WHERE ROWNUM = 1
 	</select>
 </mapper>
