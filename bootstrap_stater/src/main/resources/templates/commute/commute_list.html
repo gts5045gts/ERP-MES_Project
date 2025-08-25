@@ -1,138 +1,83 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout_commute}">
+      layout:decorate="~{layouts/layout}">
 <head>
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
-		<style>
-		  table {
-		    border-collapse: collapse;
-		    width: 100%;
-		    font-family: Arial, sans-serif;
-		  }
-		
-		  th, td {
-		    border: 1px solid #d1d7dd; /* 더 연한 연파랑-회색 중간 연한 회색 */
-		    padding: 8px;
-		    text-align: center;
-		  }
-		
-		  th {
-		    background-color: #dce3e9; /* 훨씬 더 연한 중간 톤 */
-		    color: #333; /* 흰색 대신 약간 어두운 글자색으로 가독성 유지 */
-		  }
-		
-		  tr:nth-child(even) {
-		    background-color: #f0f3f6; /* 아주 연한 파랑-회색 */
-		  }
-		
-		  hr {
-		    border: none;
-		    border-top: 1px solid #d1d7dd;
-		    margin: 4px 0;
-		  }
-		</style>
     </th:block>
 </head>
 <body>
-<th:block layout:fragment="content">
-    <!-- Begin Page Content -->
-    <div class="container-fluid">
-        <!-- Page Heading -->
-        <h1 class="h3 mb-4 text-gray-800">Blank Page</h1>
-    </div>
-    <!-- /.container-fluid -->
-</th:block>
-	<section layout:fragment="content">
-		<h3>출퇴근확인</h3>
-<!-- 		<table border="1"> -->
-<!-- 			<tr> -->
-<!-- 				<th>날짜</th> -->
-<!-- 				<th>사번</th> -->
-<!-- 				<th>부서</th> -->
-<!-- 				<th>직책</th> -->
-<!-- 				<th>이름</th> -->
-<!-- 				<th>출근시간</th> -->
-<!-- 				<th>퇴근시간</th> -->
-<!-- 				<th>근무상태</th> -->
-<!-- 			</tr> -->
-<!-- 			<tr th:each="itemDTO : ${itemDTOList}" th:object="${itemDTO}"> -->
-<!-- 				<td th:text="*{id}"></td> -->
-<!-- 				<td th:text="*{itemNm}"></td> -->
-<!-- 				<td th:text="*{price}"></td> -->
-<!-- 				<td th:text="*{stockQty}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 			</tr> -->
-<!-- 		</table> -->
-		<table border="1">
-			<tr>
-				<th>날짜</th>
-				<th>사번</th>
-				<th>부서</th>
-				<th>직책</th>
-				<th>이름</th>
-				<th>출근시간</th>
-				<th>퇴근시간</th>
-				<th>근무상태</th>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-		</table>
-	</section>
-<th:block layout:fragment="script">
+	<th:block layout:fragment="content">
+	    <div class="container-fluid">
+	
+	        <!-- Page Heading -->
+	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
+	        
+	        <!-- 출근버튼 -->
+            <div class="mb-3">
+            	<button id="checkInBtn" class="btn btn-primary" th:data-empid="${empId}">출근</button>
+            </div>
+	        
+	        <!-- 근태 리스트 테이블 -->        
+	        <!-- DataTales Example -->
+	        <div class="card shadow mb-4">
+	            <div class="card-header py-3">
+	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6>
+	            </div>
+	            <div class="card-body">
+	                <div class="table-responsive">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
+	                        <thead>
+		                        <tr>
+		                            <th>근태코드</th>
+		                            <th>출근시간</th>
+		                            <th>퇴근시간</th>
+		                            <th>사원 아이디</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
+		                            <th>근무상태</th>
+		                        </tr>
+	                        </thead>
+	                        <tbody>
+		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
+		                            <td th:text="${c.commuteId}"></td>
+		                            <td th:text="${c.checkInTime}"></td>
+		                            <td th:text="${c.checkOutTime}"></td>
+		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
+		                            <td th:text="${c.workStatus}"></td>
+		                        </tr>
+	                        </tbody>
+	                        <tfoot>
+		                        <tr>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                            <th>1</th>
+		                        </tr>
+	                        </tfoot>
+	                    </table>
+	                </div>
+	            </div>
+	        </div>
+	
+	    </div>
+	    <!-- /.container-fluid -->
+	
+	</th:block>
+	<th:block layout:fragment="script">
+		<script>
 
-</th:block>
+ 		</script>
+	</th:block>
 </body>
 </html>
