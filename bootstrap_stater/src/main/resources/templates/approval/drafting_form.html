@@ -28,22 +28,19 @@
 	<div id="content-wrapper" class="d-flex flex-column">
 		<div id="content">
 			<div class="container-fluid">
-
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
 						<h6 class="m-0 font-weight-bold">기안서작성 | 연차신청서</h6>
 					</div>
 					<div class="card-body">
-
-						<form th:action="@{/appr}" th:object="${apprDTO}" method="post" enctype="multipart/form-data">
-
+						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
 							<!-- 기안일 -->
 							<div class="form-group row">
 								<label for="createAt" class="col-sm-2 col-form-label">기안일</label>
 								<div class="col-sm-4">
 									<div class="input-group date" id="createAtPicker" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" id="createAt"
-											   th:field="*{createAt}" data-target="#createAtPicker" readonly required>
+										<input type="text" class="form-control datetimepicker-input" id="requestAt"
+											   th:field="*{requestAt}" data-target="#createAtPicker" readonly required>
 										<div class="input-group-append" data-target="#createAtPicker" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -69,12 +66,11 @@
 									</div>
 									<!-- 선택된 결재자 표시 영역 -->
 									<div id="selectedUsers" class="mt-2">
-										<button type="button" class="btn btn-sm btn-outline-success m-1" data-id="2025082229">인사하위레벨(본인)</button>
+										<button type="button" class="btn btn-sm btn-outline-success m-1" data-id="2025082501">인사하위관리자 (인사팀 / 사원)</button>
 									</div>
-
 									<!-- hidden input 담을 영역 -->
 									<div id="hiddenEmpIds">
-										<input type="hidden" name="empIds[]" value="2025082229">
+										<input type="hidden" name="empIds[]" value="2025082501">
 									</div>
 								</div>
 							</div>
@@ -83,11 +79,11 @@
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">양식 종류</label>
 								<div class="col-sm-2">
-									<select class="form-control selected-req-type">
+									<select class="form-control selected-req-type" name="reqType">
 										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
 												th:value="${reqType}"
 												th:text="${reqType.label}"
-												th:selected="${reqType} == ${selectedRole}"
+												th:selected="${reqType.name() == selectedRole.name()}"
 												>
 										</option>
 									</select>
@@ -98,19 +94,19 @@
 							<div class="form-group row vac">
 								<label class="col-sm-2 col-form-label">휴가 종류</label>
 								<div class="col-sm-2">
-									<select class="form-control" th:field="*{reqType}">
-										<option th:each="rtype : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
-												th:value="${rtype}" th:text="${rtype.label}"></option>
+									<select class="form-control" th:field="${apprDetailDTO.vacType}">
+										<option th:each="vacType : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
+												th:value="${vacType}" th:text="${vacType.label}"></option>
 									</select>
 								</div>
 							</div>
 
 							<!-- 기간 및 일시 -->
 							<div class="form-group row vac">
-								<label class="col-sm-2 col-form-label">기간 및 일시</label>
+								<label class="col-sm-2 col-form-label">기간</label>
 								<div class="col-sm-3">
 									<div class="input-group date" id="startDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#startDate" readonly required>
+										<input type="text" class="form-control datetimepicker-input" th:field="${apprDetailDTO.startDate}" data-target="#startDate" readonly required>
 										<div class="input-group-append" data-target="#startDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -118,7 +114,7 @@
 								</div>
 								<div class="col-sm-3">
 									<div class="input-group date" id="endDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#endDate" readonly required>
+										<input type="text" class="form-control datetimepicker-input" th:field="${apprDetailDTO.endDate}" data-target="#endDate" readonly required>
 										<div class="input-group-append" data-target="#endDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -170,11 +166,10 @@
 							<div class="form-group row">
 								<label for="summernote" class="col-sm-2 col-form-label">에디터 내용</label>
 								<div class="col-sm-8">
-									<textarea id="summernote" class="form-control" th:field="*{content}" required></textarea>
+									<textarea id="summernote" class="form-control" th:field="*{content}"></textarea>
 								</div>
 							</div>
 						</form>
-
 					</div>
 				</div>
 			</div>
@@ -215,6 +210,7 @@
 		$('#summernote').summernote({
 			tabsize: 2,
 			height: 200,
+			focus: true,
 			toolbar: [
 				['style', ['style']],
 				['font', ['bold', 'underline', 'clear']],
@@ -291,7 +287,7 @@
 	     // 버튼 추가 (Chip)
   		    let $btn = $(`
   		      <button type="button" class="btn btn-sm btn-outline-secondary m-1 selected-user" data-id="${id}">
-  		        ${name} <span aria-hidden="true">&times;</span>
+  		        ${name} (${dept}/${pos}) <span aria-hidden="true">&times;</span>
   		      </button>
   		    `);
   		    $("#selectedUsers").append($btn);
@@ -327,7 +323,18 @@
 				$(".vac").hide();
 			}
 		});
+		
+		$('#apprForm').on('submit', function(e) {
+		  var content = $('#summernote').summernote('code');
+		  /* if (!content || content === '<p><br></p>') {
+		    alert('내용을 입력해주세요.');
+		    e.preventDefault();  // 제출 중단
+		    return false;
+		  } */
+		  $('#summernote').val(content);  // textarea에 Summernote 내용 복사
+		});
 	});
+	
 	
 	
 	

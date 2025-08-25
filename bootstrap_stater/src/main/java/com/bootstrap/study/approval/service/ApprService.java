@@ -9,6 +9,7 @@ import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2; // Log4j2 임포트 추가!
 
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,15 @@ import java.util.stream.Collectors;
 @Log4j2 // 로그를 사용하기 위한 어노테이션 추가!
 public class ApprService {
 
-    private final ApprRepository apprRepository;
+	private final ApprRepository apprRepository;
+	private final ApprLineService apprLineService;
+	
+	
+//	public ApprService(ApprRepository apprRepository, ApprLineService apprLineService) {
+//		this.apprRepository = apprRepository;
+//		this.apprLineService = apprLineService;
+//	}
+    
 
     // ㅇㅇ
 	@Transactional(readOnly = true)
@@ -53,7 +63,7 @@ public class ApprService {
                 //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
 	            dto.setReqType((ApprReqType) result[7]); // req_type
 	            dto.setEmpId((String) result[8]); // emp_id
-	            dto.setCurrentStep((Integer) result[9]); // current_step
+//	            dto.setCurrentStep((Integer) result[9]); // current_step
 	            
 	            // 임시 데이터
 	            dto.setDepartment("인사부"); 
@@ -102,7 +112,7 @@ public class ApprService {
                     //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
                     dto.setReqType((ApprReqType) result[7]);
                     dto.setEmpId((String) result[8]); 
-                    dto.setCurrentStep((Integer) result[9]); 
+//                    dto.setCurrentStep((Integer) result[9]); 
                     dto.setDepartment("인사부"); 
                     dto.setCurrentApprover("김이사");
                     return dto;
@@ -127,6 +137,23 @@ public class ApprService {
                 .map(ApprEmpDTO::fromEntity)
                 .collect(Collectors.toList());
     }
+
+	public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds) throws IOException{
+		
+		Appr appr = apprDTO.toEntity();
+		
+		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
+		appr.setEmpId("2025082501");
+		appr.setTotStep(empIds.length);
+		//createAt 가 기본으로 안들어감
+		apprRepository.save(appr);
+		
+		apprLineService.registApprLine(appr, empIds);
+		
+		return appr.getReqId();
+	}
+
+	
 
 	
 }

@@ -1,5 +1,6 @@
 package com.bootstrap.study.approval.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime; 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,8 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.bootstrap.study.approval.constant.ApprStatus;
 
 //import com.bootstrap.study.approval.constant.ApprStatus;
 
@@ -38,6 +41,9 @@ public class Appr {
 
 	@Column(length = 4000)
 	private String content;
+	
+	@Column(nullable = false)
+	private LocalDate requestAt;
 
 	@CreatedDate
 	@Column(updatable = false)
@@ -46,11 +52,11 @@ public class Appr {
 	@LastModifiedBy
 	private LocalDateTime updateAt;
 
-//	@Enumerated(EnumType.STRING)
-//	@Column(nullable = false)
-// 	private ApprStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+ 	private ApprStatus status = ApprStatus.REQUESTED;
  	
- 	private int currentStep;
+// 	private int currentStep;
  	
  	private int totStep;
 
@@ -61,12 +67,13 @@ public class Appr {
     @OneToMany(mappedBy = "appr", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprDetail> apprDetails = new ArrayList<ApprDetail>();
 
-	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
+//	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
+		public Appr(String empId, String reqType, String title, String content, int totStep) {
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
 		this.content = content;
-		this.currentStep = currentStep;
+//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
 }

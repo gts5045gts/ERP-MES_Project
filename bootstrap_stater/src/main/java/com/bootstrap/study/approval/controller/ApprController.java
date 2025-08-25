@@ -2,6 +2,7 @@ package com.bootstrap.study.approval.controller;
 
 import lombok.extern.log4j.Log4j2;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -25,6 +29,9 @@ import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
+import jakarta.validation.Valid;
+
 import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprEmpDTO;
 
@@ -45,9 +52,9 @@ public class ApprController {
     public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model){
     	
     	model.addAttribute("apprDTO", new ApprDTO());
+    	model.addAttribute("apprDetailDTO", new ApprDetailDTO());
     	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
-//    	model.addAttribute("nowDate", LocalDateTime.now());
-        
+    	        
         return "approval/drafting_form";
     }
 
@@ -100,4 +107,15 @@ public class ApprController {
     public List<ApprEmpDTO> searchUser(@RequestParam("name") String name) {
         return apprService.getApprEmployee(name);
     }
+    
+    @PostMapping("/save")
+    public String registAppr(@ModelAttribute("apprDTO") @Valid ApprDTO apprDTO, @RequestParam("empIds") String[] empIds, BindingResult bindingResult, Model model) throws IOException {
+        	
+    	apprService.registAppr(apprDTO, empIds);
+    	
+    	return null;
+        
+//    	 model.addAttribute("closePopup", true);
+//	     return "approval/done"; // done.html 뷰
+    }    
 }
