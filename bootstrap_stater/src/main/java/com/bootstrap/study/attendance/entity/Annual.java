@@ -38,11 +38,10 @@ public class Annual {
 	@Column(nullable = false, length = 4)
 	private String annYear; // 사용연도 
 	
-	 
+	@Column
 	private Double annUse = 0.0; // 사용연차
 
-	private Double annRemain = 0.0; // 잔여연차
-
+	@Column
 	private Double annTotal = 0.0; // 총연차 
 	
 	@CreatedDate
