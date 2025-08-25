@@ -59,10 +59,31 @@ public class CommuteService {
 		commute.setWorkStatus(workStatus);
 		System.out.println("commute : " + commute);
 
-		commuteMapper.insertCommute(commute);
+		commuteMapper.insertCommuteCheckIn(commute);
 		
 		return commute;
+	}
 
+	// 퇴근버튼
+	public CommuteDTO checkOut(String empId) {
+		
+		// 오늘 출근 기록이 있는지 확인
+		int count = commuteMapper.getTodayCheckOutCount(empId);
+		System.out.println("count : " + count);
+		if (count > 0) {
+			throw new IllegalStateException("이미 오늘 퇴근 기록이 존재합니다.");
+		}
+		
+	    LocalDateTime now = LocalDateTime.now();
+		
+		CommuteDTO commute = new CommuteDTO();
+		commute.setEmpId(empId);
+		commute.setCheckOutTime(now);
+		commute.setWorkStatus("퇴근");
+		
+		commuteMapper.insertCommuteCheckOut(commute);
+		
+		return commute;
 	}
 
 }
