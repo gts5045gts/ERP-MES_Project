@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @EnableWebSecurity
 public class SecurityConfig {
 	
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(); 
@@ -37,7 +38,7 @@ public class SecurityConfig {
     	return httpSecurity
         .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index", "/bootstrap/**").permitAll()
+                .requestMatchers("/", "/index","/bootstrap/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -61,5 +62,25 @@ public class SecurityConfig {
 					)
     		.build();
     }
+//    @Bean
+//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+//        return http.getSharedObject(AuthenticationManagerBuilder.class)
+//            .userDetailsService(userDetailsService())
+//            .passwordEncoder(passwordEncoder())
+//            .and()
+//            .build();
+//    }
+//
+//
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//    	UserDetails user = User.builder()
+//    		    .username("1234")
+//    		    .password(new BCryptPasswordEncoder().encode("1234"))  
+//    		    .roles("USER")
+//    		    .build();
+//
+//        return new InMemoryUserDetailsManager(user);
+//    }
 
 }

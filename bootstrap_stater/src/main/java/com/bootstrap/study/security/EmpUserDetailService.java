@@ -29,6 +29,7 @@ public class EmpUserDetailService implements UserDetailsService {
 		
 		PersonnelLoginDTO personnelLoginDTO = ModelMapperUtils.convertObjectByMap(personnel, PersonnelLoginDTO.class);
 		
+		log.info("로그인객체 : " + personnelLoginDTO.toString());
 		return personnelLoginDTO;
 	}
 
