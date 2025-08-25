@@ -34,6 +34,7 @@ import jakarta.validation.Valid;
 
 import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprEmpDTO;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/approval")
@@ -107,15 +108,23 @@ public class ApprController {
     public List<ApprEmpDTO> searchUser(@RequestParam("name") String name) {
         return apprService.getApprEmployee(name);
     }
-    
+
     @PostMapping("/save")
+    @ResponseBody
     public String registAppr(@ModelAttribute("apprDTO") @Valid ApprDTO apprDTO, @RequestParam("empIds") String[] empIds, BindingResult bindingResult, Model model) throws IOException {
-        	
-    	apprService.registAppr(apprDTO, empIds);
-    	
-    	return null;
-        
-//    	 model.addAttribute("closePopup", true);
-//	     return "approval/done"; // done.html 뷰
+
+        if (bindingResult.hasErrors()) {
+            ApprReqType reqType = apprDTO.getReqType();
+            return "approval/new/" + reqType;
+        }
+
+    	Long apprId = apprService.registAppr(apprDTO, empIds);
+
+        //결재 리스트로 이동되게 변경해야함.
+        return "<script>" +
+                "alert('신청 완료되었습니다.');" +
+                "parent.location.reload();"+
+                "window.close();" +
+                "</script>";
     }    
 }

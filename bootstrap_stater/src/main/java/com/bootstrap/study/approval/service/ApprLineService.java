@@ -22,6 +22,7 @@ public class ApprLineService {
     public ApprLineService(ApprLineRepository apprLineRepository) {
         this.apprLineRepository = apprLineRepository;
     }
+
 	public void registApprLine(Appr appr, String[] empIds) throws IOException{
 		
 		List<ApprLine> apprLines = new ArrayList<ApprLine>();
@@ -40,6 +41,5 @@ public class ApprLineService {
 		}
 		
 		apprLineRepository.saveAll(apprLines);
-		
 	}
 }

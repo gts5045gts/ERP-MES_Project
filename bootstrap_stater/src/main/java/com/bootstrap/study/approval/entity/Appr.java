@@ -68,7 +68,7 @@ public class Appr {
     private List<ApprDetail> apprDetails = new ArrayList<ApprDetail>();
 
 //	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
-		public Appr(String empId, String reqType, String title, String content, int totStep) {
+	public Appr(String empId, String reqType, String title, String content, int totStep) {
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;

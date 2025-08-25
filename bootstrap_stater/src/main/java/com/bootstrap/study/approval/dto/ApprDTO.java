@@ -29,7 +29,7 @@ public class ApprDTO {
 	
 	private ApprReqType reqType;
 	
-	@NotBlank(message = "제목은 필수 입력값입니다!") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
+	@NotBlank(message = "제목은 필수 입력값입니다.") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
 	private String title;
 	
 	private String content;
