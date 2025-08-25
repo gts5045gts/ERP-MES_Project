@@ -8,5 +8,5 @@ import com.bootstrap.study.personnel.entity.Personnel;
 
 public interface PersonnelRepository extends JpaRepository<Personnel, String> {
 	// 부서 ID로 직원 조회
-	List<Personnel> findByDepartment_DeptId(Long deptId);
+	List<Personnel> findByDepartment_ComDtId(String deptId);
 }

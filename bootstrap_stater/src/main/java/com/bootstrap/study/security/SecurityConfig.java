@@ -61,5 +61,25 @@ public class SecurityConfig {
 					)
     		.build();
     }
+//    @Bean
+//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+//        return http.getSharedObject(AuthenticationManagerBuilder.class)
+//            .userDetailsService(userDetailsService())
+//            .passwordEncoder(passwordEncoder())
+//            .and()
+//            .build();
+//    }
+//
+//
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//       UserDetails user = User.builder()
+//              .username("1234")
+//              .password(new BCryptPasswordEncoder().encode("1234"))  
+//              .roles("USER")
+//              .build();
+//
+//        return new InMemoryUserDetailsManager(user);
+//    }
 
 }

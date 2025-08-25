@@ -27,6 +27,7 @@ import lombok.ToString;
 public class CommonCode {
 
 	@Id
+	@Column(name = "com_id")
 	private String comId; // 코드
 	
 	@Column(nullable = false, length = 50)

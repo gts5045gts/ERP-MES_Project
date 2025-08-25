@@ -23,7 +23,7 @@ import lombok.ToString;
 @Table(name = "COMMON_DT_CODE")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "comId") 
 @EntityListeners(AuditingEntityListener.class)
 public class CommonDetailCode {
 
@@ -32,6 +32,7 @@ public class CommonDetailCode {
 	private CommonCode comId; // 코드(fk)
 	
 	@Id
+	@Column(name = "com_dt_id")
 	private String comDtId; // 상세코드(pk)
 	
 	@Column(nullable = false, length = 50)
