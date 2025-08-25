@@ -18,23 +18,23 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 	// ㅇㅇ
 	// JOIN 쿼리를 네이티브 쿼리로 추가
 	@Query(value = """
-		    SELECT
-		        al.step_no,
-		        a.title,
-		        e.emp_name,
-		        a.create_at,
-		        al.dec_date,
-		        al.decision,
-		        a.req_id,
-		        a.req_type,
-		        a.emp_id,
-		        a.current_step
-		    FROM approval_line al
-		    JOIN approval a ON al.req_id = a.req_id
-		    JOIN employee e ON a.emp_id = e.emp_id
-		    ORDER BY a.create_at DESC, al.step_no ASC
-		    """, nativeQuery = true)
-    List<Object[]> findApprovalListWithJoin();
+		SELECT
+		    al.step_no,
+		    a.title,
+		    e.emp_name,
+		    a.request_at, 
+		    al.dec_date,
+		    al.decision,
+		    a.req_id,
+		    a.req_type,
+		    a.emp_id,
+		    a.tot_step as current_step
+		FROM approval_line al
+		JOIN approval a ON al.req_id = a.req_id
+		JOIN employee e ON a.emp_id = e.emp_id
+		ORDER BY a.request_at DESC, al.step_no ASC  
+		""", nativeQuery = true)
+		List<Object[]> findApprovalListWithJoin();
     
     
     //0821

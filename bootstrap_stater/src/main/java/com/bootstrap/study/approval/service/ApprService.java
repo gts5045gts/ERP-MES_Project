@@ -60,7 +60,7 @@ public class ApprService {
         List<Object[]> allResults = apprRepository.findApprovalListWithJoin();
         List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
         
-        // ✨ 상태별 + 사용자별 필터링
+        // 상태별 + 사용자별 필터링
         List<ApprDTO> filteredList = filterByStatusAndUser(allDtoList, status, userId);
         
         // 페이징 처리
@@ -119,16 +119,42 @@ public class ApprService {
     }
     
     
-    // Object[] 배열을 ApprDTO로 변환
+    // Object[] 배열을 ApprDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprDTO convertToApprDTO(Object[] result) {
         ApprDTO dto = new ApprDTO();
         dto.setStepNo((Integer) result[0]);
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
-        dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime());
         
+        // REQUEST_AT 처리 - result[3]
+        Object requestAtObj = result[3];
+        if (requestAtObj == null) {
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        } else if (requestAtObj instanceof java.sql.Date) {
+            // DATE 타입을 LocalDateTime으로 변환
+            java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
+            dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
+        } else if (requestAtObj instanceof java.sql.Timestamp) {
+            dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+        } else {
+            log.warn("알 수 없는 날짜 타입: {}, 현재 시간으로 대체", requestAtObj.getClass().getName());
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        }
+        
+        // DEC_DATE 처리
         if (result[4] != null) {
-            dto.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime());
+            Object decDateObj = result[4];
+            if (decDateObj instanceof oracle.sql.TIMESTAMPTZ) {
+                try {
+                    oracle.sql.TIMESTAMPTZ timestamptz = (oracle.sql.TIMESTAMPTZ) decDateObj;
+                    dto.setDecDate(timestamptz.timestampValue().toLocalDateTime());
+                } catch (Exception e) {
+                    log.warn("DEC_DATE TIMESTAMPTZ 변환 실패: {}", e.getMessage());
+                    dto.setDecDate(null);
+                }
+            } else if (decDateObj instanceof java.sql.Timestamp) {
+                dto.setDecDate(((java.sql.Timestamp) decDateObj).toLocalDateTime());
+            }
         }
         
         dto.setDecision((String) result[5]);
@@ -145,13 +171,28 @@ public class ApprService {
     }
     
     
-    // Object[] 배열을 ApprFullDTO로 변환
+    // Object[] 배열을 ApprFullDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprFullDTO convertToApprFullDTO(Object[] result) {
         ApprFullDTO dto = new ApprFullDTO();
         dto.setReqId(((Number) result[6]).longValue());
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
-        dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime());
+        
+        // REQUEST_AT 처리 - result[3]
+        Object requestAtObj = result[3];
+        if (requestAtObj == null) {
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        } else if (requestAtObj instanceof java.sql.Date) {
+            // DATE 타입을 LocalDateTime으로 변환
+            java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
+            dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
+        } else if (requestAtObj instanceof java.sql.Timestamp) {
+            dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+        } else {
+            log.warn("ApprFullDTO 알 수 없는 날짜 타입: {}, 현재 시간으로 대체", requestAtObj.getClass().getName());
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        }
+        
         dto.setReqType((String) result[7]);
         dto.setEmpId((String) result[8]);
         dto.setDepartment(DEFAULT_DEPARTMENT);
