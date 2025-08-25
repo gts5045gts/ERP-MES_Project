@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ApprHalfType {
 	//시작일, 종료일, 오전 오후인지 구분
-	STARTMORNING("오전 반차"),
-    STARTAFTERNOON("오후 반차"),
-	ENDMORNING("오전 반차"),
-    ENDAFTERNOON("오후 반차");
+	STARTMORNING("시작일 오전"),
+    STARTAFTERNOON("시작일 오후"),
+	ENDMORNING("종료일 오전"),
+    ENDAFTERNOON("종료일 오후");
 
 	private final String label;
 
