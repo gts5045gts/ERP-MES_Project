@@ -1,0 +1,175 @@
+@charset "UTF-8";
+
+
+/* 인사현황 */
+#trList th {
+	background-color: #27296D;
+	color:white;
+}
+
+
+#empList, #trList{
+	text-align: center;	
+}
+
+
+#empsize {
+	height: 100vh;
+}
+
+
+
+/* 인사 상세조회 */
+
+.detail-title h1 {
+	font-size: 22px;
+    font-weight: bold;
+	margin-top: -1%;
+}
+
+
+#emp_id {
+	background-color: #e9ecef; /* 비활성화된 느낌 */
+    color: #888; /* 흐릿한 글씨 */
+    cursor: not-allowed; /* 클릭 불가능한 느낌 */
+    pointer-events: none; /* 클릭 막기 */
+}
+
+
+.form-control.w-75.pa,
+.form-control.w-75.hd,
+.form-control.w-75.rd {
+	background-color: #e9ecef; /* 비활성화된 느낌 */
+    color: #888; /* 흐릿한 글씨 */
+    cursor: not-allowed; /* 클릭 불가능한 느낌 */
+    pointer-events: none; /* 클릭 막기 */
+}
+
+
+
+.form-check-inline input[type="radio"] {
+   	margin-top: 11px; 
+   }
+   
+.form-check-label {
+   	margin-top: 8px; 
+}
+
+.col-sm-1 {
+	 text-align: center; /* 텍스트 중앙 정렬 */
+	 font-weight: bold; /* 글씨 굵게 */
+	 padding: 5px 10px;      /* 내부 여백 추가 */
+}
+
+.col-sm-4 {
+    display: flex;  /* Flexbox 적용 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: center; /* 가로 중앙 정렬 (선택) */   
+}
+   
+.col-sm-9 {
+	display: flex;  /* Flexbox 적용 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: center; /* 가로 중앙 정렬 (선택) */
+}
+
+.OriginInput {
+	 width: 230px; /* 원하는 길이로 조정 */
+	 margin-left: 150px;
+}
+	
+
+
+
+/* 인사등록 */
+
+.regist_title h1 {
+	font-size: 22px;
+    font-weight: bold;
+	margin-top: -1%;
+}
+
+.form-check-inline input[type="radio"] {
+  	margin-top: 11px; 
+  	}
+  
+.form-check-label {
+  	margin-top: 8px; 
+  	}
+
+
+.photo-wrapper1 {
+  	width: 220px;
+   	height: 220px;
+   	overflow: hidden;
+   	border-radius: 10%; /* 이미지 원형 처리 */ 
+  	border: 2px solid lightgray;
+  	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  	display: inline-block;
+  	margin-left: 20px;
+  	
+} 
+
+.photo-wrapper-regist {
+  	width: 230px;
+   	height: 200px;
+   	overflow: hidden;
+  	border: none;
+  	display: inline-block;
+  	margin-left: 20px;
+  	position: relative;
+} 
+
+.photo-wrapper2 input {
+    position: absolute;  /* input은 절대 위치로 보이게 설정 */
+    visibility: visible; /* input은 보이게 설정 */
+    font-size: 14px;
+}
+
+.file-upload-wrapper {
+  width: 80%;
+}
+
+
+
+.eTable {
+    border-collapse: collapse; /* 테두리 겹치기 */
+    width: 100%; /* 전체 너비 사용 */
+}
+
+.custom-th {
+	border: none;
+/* 	padding: 15px 10px; */
+	
+}
+
+.custom-td {
+	border: none;
+	
+}
+
+.custom-th-r {
+	border: none;
+	padding: 15px 10px;
+	
+}
+
+
+/* 페이징 */
+#pageList {
+    text-align: center;
+}
+
+#pageList strong {
+    margin: 0 2px; /* 좌우 5px 간격 */
+    padding: 2px 5px; /* 내부 여백 */
+}
+
+.pageNum {
+	margin: 0 2px;
+	padding: 2px 5px;
+}
+
+
+
+  

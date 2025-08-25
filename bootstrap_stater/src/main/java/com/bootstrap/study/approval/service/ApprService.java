@@ -1,0 +1,159 @@
+package com.bootstrap.study.approval.service;
+
+import com.bootstrap.study.approval.constant.ApprReqType;
+import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprEmpDTO;
+import com.bootstrap.study.approval.dto.ApprFullDTO;
+import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2; // Log4j2 임포트 추가!
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+@Log4j2 // 로그를 사용하기 위한 어노테이션 추가!
+public class ApprService {
+
+	private final ApprRepository apprRepository;
+	private final ApprLineService apprLineService;
+	
+	
+//	public ApprService(ApprRepository apprRepository, ApprLineService apprLineService) {
+//		this.apprRepository = apprRepository;
+//		this.apprLineService = apprLineService;
+//	}
+    
+
+    // ㅇㅇ
+	@Transactional(readOnly = true)
+	public List<ApprDTO> getApprovalList() {
+	// 네이티브 쿼리 실행
+	List<Object[]> results = apprRepository.findApprovalListWithJoin();
+	log.info(">>>>>> DB에서 조회된 결재 라인 건수: " + results.size() + "건");
+	
+	// Object[] 결과를 ApprDTO로 변환
+	List<ApprDTO> apprDtoList = results.stream()
+	        .map(result -> {
+	            ApprDTO dto = new ApprDTO();
+	            dto.setStepNo((Integer) result[0]); // step_no
+	            dto.setTitle((String) result[1]); // title
+	            dto.setDrafterName((String) result[2]); // emp_name
+	            dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime()); // create_at
+	            if (result[4] != null) {
+	                dto.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime()); // dec_date
+	            }
+	            dto.setDecision((String) result[5]); // decision
+	            dto.setReqId(((Number) result[6]).longValue()); // req_id
+                //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
+	            dto.setReqType((ApprReqType) result[7]); // req_type
+	            dto.setEmpId((String) result[8]); // emp_id
+//	            dto.setCurrentStep((Integer) result[9]); // current_step
+	            
+	            // 임시 데이터
+	            dto.setDepartment("인사부"); 
+	            dto.setCurrentApprover("김이사");
+	            
+	            return dto;
+	        })
+	        .collect(Collectors.toList());
+	
+	log.info(">>>>>> DTO 변환 후 최종 반환 건수: " + apprDtoList.size() + "건");
+	    return apprDtoList;
+	}
+    
+    @Transactional(readOnly = true)
+    public ApprFullDTO getApprovalDetail(Long reqId) {
+        // ID로 Appr 엔티티를 찾고, 없으면 예외 발생
+        Appr appr = apprRepository.findById(reqId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId));
+        
+        // Entity를 ApprFullDTO로 변환하여 반환
+        return ApprFullDTO.fromEntity(appr);
+    }
+    
+    // 페이징처리@@@@@
+    @Transactional(readOnly = true)
+    public Page<ApprDTO> getApprovalList(Pageable pageable) {
+        System.out.println(">>> ApprService 페이징 처리 - 페이지: " + pageable.getPageNumber() + ", 사이즈: " + pageable.getPageSize());
+        
+        // 네이티브 쿼리로 전체 데이터 조회
+        List<Object[]> allResults = apprRepository.findApprovalListWithJoin();
+        System.out.println(">>> 전체 데이터 건수: " + allResults.size());
+        
+        // DTO로 변환
+        List<ApprDTO> allDtoList = allResults.stream()
+                .map(result -> {
+                    ApprDTO dto = new ApprDTO();
+                    dto.setStepNo((Integer) result[0]); 
+                    dto.setTitle((String) result[1]); 
+                    dto.setDrafterName((String) result[2]); 
+                    dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime()); 
+                    if (result[4] != null) {
+                        dto.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime()); 
+                    }
+                    dto.setDecision((String) result[5]); 
+                    dto.setReqId(((Number) result[6]).longValue());
+                    //양식타입 constant 설정함 공통문서 생성시 변경가능성 있음
+                    dto.setReqType((ApprReqType) result[7]);
+                    dto.setEmpId((String) result[8]); 
+//                    dto.setCurrentStep((Integer) result[9]); 
+                    dto.setDepartment("인사부"); 
+                    dto.setCurrentApprover("김이사");
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        
+        // 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allDtoList.size());
+        
+        List<ApprDTO> pagedList = allDtoList.subList(start, end);
+        System.out.println(">>> 현재 페이지 데이터 건수: " + pagedList.size());
+        
+        return new PageImpl<>(pagedList, pageable, allDtoList.size());
+    }
+
+    //결재자 리스트 조회
+    @Transactional(readOnly = true)
+	public List<ApprEmpDTO> getApprEmployee(String keyword) {
+		return apprRepository.findByNameContainingIgnoreCase(keyword)
+                .stream()
+                .map(ApprEmpDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+	public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds) throws IOException{
+		
+		Appr appr = apprDTO.toEntity();
+		
+		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
+		appr.setEmpId("2025082501");
+		appr.setTotStep(empIds.length);
+		//createAt 가 기본으로 안들어감
+		apprRepository.save(appr);
+		
+		apprLineService.registApprLine(appr, empIds);
+		
+		return appr.getReqId();
+	}
+
+	
+
+	
+}
