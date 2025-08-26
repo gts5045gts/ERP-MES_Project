@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NoticeRepository extends JpaRepository<Notice, Long> {
 	 List<Notice> findByNotType(String notType);
+	 
+	 List<Notice> findByEmpDeptIdAndNotType(String empDeptId, String notType);
 }

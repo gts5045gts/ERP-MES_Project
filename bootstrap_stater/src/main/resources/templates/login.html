@@ -58,10 +58,8 @@
 										</div>
 										<div class="form-group">
 											<div class="custom-control custom-checkbox small">
-												<input type="checkbox" class="custom-control-input"
-													id="rememberId"> <label
-													class="custom-control-label" for="customCheck">사원번호
-													기억하기</label>
+											<input type="checkbox" name="remember-id" th:checked="${rememberId != null}">
+												사원번호기억하기
 											</div>
 										</div>
 										<button type="submit"
