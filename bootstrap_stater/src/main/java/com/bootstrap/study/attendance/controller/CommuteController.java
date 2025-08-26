@@ -41,7 +41,9 @@ public class CommuteController {
 		
 	// 출퇴근관리 리스트
 	@GetMapping("/commuteList")
-	public String getComuuteList(Model model) {
+	public String getComuuteList(Model model,
+	        @RequestParam(name = "startDate", required = false) String startDate,
+	        @RequestParam(name = "endDate", required = false) String endDate) {
 		
 		// 로그인한 사용자 객체 꺼내기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -57,18 +59,31 @@ public class CommuteController {
 //	        return "redirect:/login";
 	        return "/commute/commute_list";
 	    }
+	    // ==============================================================================
 		
-		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-		
+	    // 기본값은 오늘
+	    LocalDate today = LocalDate.now();
+	    if (startDate == null || startDate.isEmpty()) startDate = today.toString();
+	    if (endDate == null || endDate.isEmpty()) endDate = today.toString();
+	    
+	    // startDate랑 endDate가 오늘날짜인지 판별하기
+	    boolean isTodaySearch = LocalDate.parse(startDate).isEqual(today) && LocalDate.parse(endDate).isEqual(today);
+	    
 	    Map<String, Object> paramMap = new HashMap<>();
 	    paramMap.put("empId", empId);
-	    paramMap.put("today", today);
+	    paramMap.put("startDate", startDate);
+	    paramMap.put("endDate", endDate);
+	    paramMap.put("isTodaySearch", isTodaySearch);
+	    
+//		System.out.println("startDate : " + startDate);		
+//		System.out.println("endDate : " + endDate);		
 		
 		List<CommuteDTO> commuteDTOList = commuteService.getDeptCommuteList(paramMap);
 		model.addAttribute("commuteDTOList", commuteDTOList);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("endDate", endDate);
 
 		System.out.println("commuteDTOList : " + commuteDTOList);		
-		System.out.println("today : " + today);		
 
 		return "/commute/commute_list";
 	}
@@ -128,12 +143,46 @@ public class CommuteController {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
 		}
 	}
+	
 
-	// 내 근태내역 관리
-	@GetMapping("/attendanceList")
-	public String getAttendanceList() {
+	// 관리자 근태관리
+	@GetMapping("/adminCommute")
+	public String getAttendanceList(@RequestParam(name = "startDate", required = false) String startDate,
+									@RequestParam(name = "endtDate", required = false) String endDate,
+									Model model) {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		return "/commute/table";
+	    String empId = null; // 변수 초기화
+
+	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+	        System.out.println("로그인 사용자 ID: " + empId);
+	    } else {
+	        // 로그인 안 된 상태라면 로그인 페이지로
+//	        return "redirect:/login";
+	        return "/commute/commute_list"; // 추후에 메인사이트로 이동하게끔 변경
+	    }
+	    // ==============================================================================
+	    // 기본값은 오늘
+	    LocalDate today = LocalDate.now();
+	    if (startDate == null || startDate.isEmpty()) startDate = today.toString();
+	    if (endDate == null || endDate.isEmpty()) endDate = today.toString();
+	    
+	    Map<String, Object> paramMap = new HashMap<>();
+	    paramMap.put("empId", empId);
+	    paramMap.put("startDate", startDate);
+	    paramMap.put("endDate", endDate);
+	    
+		List<CommuteDTO> commuteDTOList = commuteService.getAdminDeptCommuteList(paramMap);
+		model.addAttribute("commuteDTOList", commuteDTOList);
+		model.addAttribute("startDate", startDate);
+		model.addAttribute("endDate", endDate);
+	    
+	    
+		return "/commute/admin_commute_list";
 	}
 
 }

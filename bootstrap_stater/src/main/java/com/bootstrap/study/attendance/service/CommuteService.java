@@ -32,6 +32,7 @@ public class CommuteService {
 		return commuteMapper.getDeptCommuteList(paramMap);
 	}
 
+
 	// 출근버튼
 	public CommuteDTO checkIn(String empId) {
 		
@@ -44,7 +45,7 @@ public class CommuteService {
 		
 		// 근무 기준시간 조회
 		CommuteScheduleDTO schedule = commuteScheduleMapper.getCurrentSchedule();
-//		System.out.println("schedule : " + schedule);
+		System.out.println("schedule : " + schedule);
 		
 		// 지각 여부 판별
 		LocalTime startTime = schedule.getWorkStartTime().toLocalTime(); // db에서 가져온 출근시작시간
@@ -85,5 +86,13 @@ public class CommuteService {
 		
 		return commute;
 	}
+	
+	// 관리자 근태관리 리스트
+//	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
+	public List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap) {
+		System.out.println("paramMap : " + paramMap);
+		return commuteMapper.getAdminDeptCommuteList(paramMap);
+	}
+	
 
 }
