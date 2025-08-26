@@ -30,7 +30,7 @@ public class PersonnelDTO {
 	private String joinDate;	// 입사일
 	private String resignDate;	// 퇴사일	
 	private Timestamp update;	// 수정일
-	private String status;		// 재직상태
+//	private String status;		// 재직상태 수정
 	
 	// 부서 직급 정보
 	private String posId;			// 직급
@@ -38,6 +38,12 @@ public class PersonnelDTO {
 	private String deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
 	private String deptName;
 
+	
+	//추가 한 컬럼	
+	private String levId;		//보안등급 아이디값
+	private String levName;		//보안등급 이름
+	private String staId;		//재직현황 아이디값
+	private String staName;		//재직현항 이름
 	// Entity -> DTO 변환을 위한 정적 팩토리 메서드
     public static PersonnelDTO fromEntity(Personnel personnel) {
 		return PersonnelDTO.builder().empId(personnel.getEmpId()).name(personnel.getName()).passwd(personnel.getPasswd())
@@ -48,6 +54,11 @@ public class PersonnelDTO {
 				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getComDtNm() : null)
 				.posId(personnel.getPosition() != null ? personnel.getPosition().getComDtId() : null)
 				.posName(personnel.getPosition() != null ? personnel.getPosition().getComDtNm() : null)
+				//추가한 부분 보안등급 (Level)
+				.levId(personnel.getLevel() != null ? personnel.getLevel().getComDtId() : null)
+				.levName(personnel.getLevel() != null ? personnel.getLevel().getComDtNm() : null)
+				.staId(personnel.getStatus() != null ? personnel.getLevel().getComDtId() : null)
+				.staName(personnel.getStatus() != null ? personnel.getLevel().getComDtId() : null)
 				.build();
 	}
 

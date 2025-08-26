@@ -75,9 +75,9 @@ public class Personnel {
 	@Column(nullable = false, name = "update_at")
 	private Timestamp update;
 
-	// 재직상태
-	@Column(nullable = false, name = "emp_status")
-	private String status;
+//	// 재직상태
+//	@Column(nullable = false, name = "emp_status")
+//	private String status;
 
 	// 부서
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -89,6 +89,21 @@ public class Personnel {
 	@JoinColumn(nullable = false, name = "emp_position", referencedColumnName = "com_dt_id")
 	private CommonDetailCode position; // 직책
 
+	
+	//추가한 컬럼 보안등급---------------------------
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_level_id", referencedColumnName = "com_dt_id")
+	private CommonDetailCode level;
+	
+	
+//	재직현황
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_status", referencedColumnName = "com_dt_id")
+	private CommonDetailCode status;
+	
+	
+	
 	public static Personnel fromDTO(PersonnelDTO peronnelDTO) {
 		
 		CommonDetailCode department = new CommonDetailCode();
@@ -98,12 +113,22 @@ public class Personnel {
 		position.setComDtId(peronnelDTO.getPosId());
 		position.setComDtNm(peronnelDTO.getPosName());
 		
+		//추가한 부분 보안등급 관련
+		CommonDetailCode lelvel = new CommonDetailCode();
+		lelvel.setComDtId(peronnelDTO.getLevId());
+		lelvel.setComDtId(peronnelDTO.getLevName());
+		
+		//재직현황
+		CommonDetailCode status = new CommonDetailCode();
+		status.setComDtId(peronnelDTO.getLevId());
+		status.setComDtNm(peronnelDTO.getLevName());
+		
 		Personnel personnel = new Personnel();
 		personnel.setEmpId(peronnelDTO.getEmpId());
 		personnel.setName(peronnelDTO.getName());
 		personnel.setPasswd(peronnelDTO.getPasswd());
 		personnel.setResident(peronnelDTO.getResident());
-		personnel.setAddrNum(peronnelDTO.getAddrNum());
+		personnel.setAddrNum(peronnelDTO.getAddrNum());	
 		personnel.setAddr1(peronnelDTO.getAddr1());
 		personnel.setAddr2(peronnelDTO.getAddr2());
 		personnel.setEmail(peronnelDTO.getEmail());
@@ -111,12 +136,12 @@ public class Personnel {
 		personnel.setJoinDate(peronnelDTO.getJoinDate());
 		personnel.setResignDate(peronnelDTO.getResignDate());
 		personnel.setUpdate(peronnelDTO.getUpdate());
-		personnel.setStatus(peronnelDTO.getStatus());
 		personnel.setName(peronnelDTO.getName());
 		personnel.setName(peronnelDTO.getName());
 		personnel.setDepartment(department);
 		personnel.setPosition(position);
-
+		personnel.setStatus(status);
+		personnel.setLevel(lelvel);
 		return personnel;
 	}
 }

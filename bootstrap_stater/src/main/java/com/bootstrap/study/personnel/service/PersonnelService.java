@@ -58,7 +58,7 @@ public class PersonnelService {
     }
 
     // 재직 상황 리스트 
-    public List<CommonDetailCodeDTO> getAllStatus() {
+    public List<CommonDetailCodeDTO> getStatus() {
     	
     	List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
     	
@@ -71,6 +71,30 @@ public class PersonnelService {
     	return position;
     	
     	
+    }
+    public List<CommonDetailCodeDTO> getAllStatus() {
+    	
+    	List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> position = comList.stream()
+    			.filter(result -> "STA".equals(result.getComId().getComId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return position;
+    	
+    	
+    }
+    public List<CommonDetailCodeDTO> getAllLevel() {
+    	
+    	List<CommonDetailCode> levList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> level = levList.stream()
+    			.filter(result -> "AUT".equals(result.getComId().getComId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return level;
     }
     
     
@@ -144,8 +168,6 @@ public class PersonnelService {
  	    Optional<Personnel> personnelOpt = personnelRepository.findById(empId);
  	    return personnelOpt.map(personnel -> {
  	        PersonnelDTO dto = PersonnelDTO.fromEntity(personnel);
- 	        dto.setDeptId(personnel.getDepartment().getComDtId());
- 	        dto.setPosId(personnel.getPosition().getComDtId());
  	        return dto;
  	    });
  	}
@@ -163,6 +185,7 @@ public class PersonnelService {
 
  	    personnelRepository.save(personnel);
  	}
+
 
  	
 
