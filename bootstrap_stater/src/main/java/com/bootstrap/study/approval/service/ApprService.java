@@ -1,9 +1,18 @@
 package com.bootstrap.study.approval.service;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
+import com.bootstrap.study.approval.dto.ApprLineDTO;
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.approval.entity.ApprDetail;
+import com.bootstrap.study.approval.entity.ApprLine;
 import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +32,9 @@ import java.util.stream.Collectors;
 @Log4j2
 public class ApprService {
 
-    private final ApprRepository apprRepository;
-    
+	private final ApprRepository apprRepository;
+	private final ApprLineService apprLineService;
+	
     // 상수 정의
     private static final String DEFAULT_DEPARTMENT = "인사부";
     private static final String DEFAULT_APPROVER = "김이사";
@@ -177,9 +188,8 @@ public class ApprService {
         
         dto.setDecision((String) result[5]);
         dto.setReqId(((Number) result[6]).longValue());
-        dto.setReqType((String) result[7]);
+        dto.setReqType((ApprReqType) result[7]);
         dto.setEmpId((String) result[8]);
-        dto.setCurrentStep((Integer) result[9]);
         
         // 임시 데이터 설정
         dto.setDepartment(DEFAULT_DEPARTMENT);
@@ -297,4 +307,46 @@ public class ApprService {
         return apprRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId));
     }
+
+    //결재자 리스트 조회
+    @Transactional(readOnly = true)
+	public List<PersonnelDTO> getApprEmployee(String keyword) {
+		return apprRepository.findByNameContainingIgnoreCase(keyword)
+                .stream()
+                .map(PersonnelDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+	public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds) throws IOException{
+		
+		Appr appr = apprDTO.toEntity();
+		
+		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
+		appr.setEmpId("2025082501");
+		appr.setTotStep(empIds.length);
+		
+		int index = 1;
+		for (String empId : empIds) {
+		    ApprLine line = new ApprLine();
+		    line.setApprId(empId);
+		    line.setStepNo(index++);
+		    appr.addLine(line);  // Appr이 직접 관리
+		}
+		
+		for (ApprDetailDTO dto : apprDTO.getApprDetailDTOList()) {
+		    ApprDetail detail = new ApprDetail();
+		    detail.setVacType(dto.getVacType());
+		    detail.setStartDate(dto.getStartDate());
+		    detail.setEndDate(dto.getEndDate());
+		    detail.setHalfType(dto.getHalfType());
+		    appr.addDetail(detail);  // 연관관계 메서드
+		}
+//		System.out.println("Details size = " + appr.getApprDetails().size());
+		apprRepository.save(appr);
+		
+//		apprLineService.registApprLine(appr, empIds);
+				
+		return appr.getReqId();
+	}
+	
 }

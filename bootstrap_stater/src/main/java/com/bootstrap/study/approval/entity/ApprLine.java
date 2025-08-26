@@ -38,6 +38,6 @@ public class ApprLine {
     private	String	comments;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "req_id")
+    @JoinColumn(name = "req_id", nullable = false)
     private Appr appr;
 }

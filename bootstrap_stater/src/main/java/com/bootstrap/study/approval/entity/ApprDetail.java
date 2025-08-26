@@ -49,6 +49,6 @@ public class ApprDetail {
 	private	ApprHalfType halfType;
 		
 	@ManyToOne
-	@JoinColumn(name = "req_id")
+	@JoinColumn(name = "req_id", nullable = false)
 	private	Appr appr;
 }
