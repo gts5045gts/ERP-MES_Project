@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bootstrap.study.attendance.mapper.CommuteMapper">
+
+	<!-- 출근현황 리스트 조회 -->
+<!-- 	<resultMap id="CommuteResultMap" type="com.bootstrap.study.attendance.dto.CommuteDTO"> -->
+<!-- 		<id property="commuteId" column="commute_id"/> -->
+<!-- 		<result property="checkInTime" column="check_in_time" /> -->
+<!-- 		<result property="checkOutTime" column="check_out_time" /> -->
+<!-- 		<result property="empId" column="emp_id" /> -->
+<!-- 		<result property="workStatus" column="work_status" /> -->
+<!-- 		<result property="empName" column="emp_name" /> -->
+<!-- 		<result property="depName" column="dep_name" /> -->
+<!-- 		<result property="posName" column="pos_name" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="getDeptCommuteList" resultMap="CommuteResultMap"> -->
+
+	<!-- 오늘날짜 기준으로 부서전체인원 셀렉 -->
+	<select id="getDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	   SELECT 
+	       c.commute_id,
+	       c.check_in_time,
+	       c.check_out_time,
+	       c.emp_id,
+	       c.work_status,
+	       c.created_at,
+	       c.updated_at,
+	       e.emp_name,
+	       d.dept_name,
+	       p.pos_name
+	   FROM employee e
+	   JOIN test_dept d ON e.emp_dept_id = d.dept_id
+	   JOIN test_position p ON e.emp_position = p.pos_id
+	   LEFT JOIN commute_record c
+	       ON e.emp_id = c.emp_id
+	       AND TRUNC(c.check_in_time) = TO_DATE(#{today}, 'YYYY-MM-DD')
+	   WHERE e.emp_dept_id = (
+	       SELECT emp_dept_id
+	       FROM employee
+	       WHERE emp_id = #{empId}
+	   )
+	   ORDER BY e.emp_name
+	</select>
+
+
+	<!-- 출근 기록이 있는지 확인 -->
+	<select id="getTodayCheckInCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_in_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 출근상태 commute_record에 저장 -->
+	<insert id="insertCommuteCheckIn" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    INSERT INTO commute_record (
+	        check_in_time,
+	        check_out_time,
+	        emp_id,
+	        work_status,
+	        created_at,
+	        updated_at
+	    ) VALUES (        
+	        #{checkInTime},              
+	        NULL,                        
+	        #{empId},                   
+	        #{workStatus},               
+	        SYSDATE,                    
+	        SYSDATE                      
+	    )
+	</insert>
+	
+	
+	<!-- 퇴근 기록이 있는지 확인 -->
+	<select id="getTodayCheckOutCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_out_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 퇴근상태 commute_record에 저장 -->
+	<insert id="insertCommuteCheckOut" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    INSERT INTO commute_record (
+	        check_in_time,
+	        check_out_time,
+	        emp_id,
+	        work_status,
+	        created_at,
+	        updated_at
+	    ) VALUES (        
+	        NULL,              
+	        #{checkOutTime},                        
+	        #{empId},                   
+	        #{workStatus},               
+	        SYSDATE,                    
+	        SYSDATE                      
+	    )
+	</insert>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

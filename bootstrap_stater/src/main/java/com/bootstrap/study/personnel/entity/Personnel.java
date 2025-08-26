@@ -4,13 +4,12 @@ import java.sql.Timestamp;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -19,7 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-
+@ToString
 @Getter
 @Setter
 @Entity
@@ -82,22 +81,22 @@ public class Personnel {
 
 	// 부서
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "dept_id")
-	private Department department;
+	@JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "com_dt_id")
+	private CommonDetailCode department;
 
 	// 직급
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(nullable = false, name = "emp_position", referencedColumnName = "pos_id")
-	private Position position; // 직책
+	@JoinColumn(nullable = false, name = "emp_position", referencedColumnName = "com_dt_id")
+	private CommonDetailCode position; // 직책
 
 	public static Personnel fromDTO(PersonnelDTO peronnelDTO) {
 		
-		Department department = new Department();
-		department.setDeptId(peronnelDTO.getDeptId());
-		department.setDeptName(peronnelDTO.getDeptName());
-		Position position = new Position();
-		position.setPosId(peronnelDTO.getPosId());
-		position.setPosName(peronnelDTO.getPosName());
+		CommonDetailCode department = new CommonDetailCode();
+		department.setComDtId(peronnelDTO.getDeptId());
+		department.setComDtNm(peronnelDTO.getDeptName());
+		CommonDetailCode position = new CommonDetailCode();
+		position.setComDtId(peronnelDTO.getPosId());
+		position.setComDtNm(peronnelDTO.getPosName());
 		
 		Personnel personnel = new Personnel();
 		personnel.setEmpId(peronnelDTO.getEmpId());
