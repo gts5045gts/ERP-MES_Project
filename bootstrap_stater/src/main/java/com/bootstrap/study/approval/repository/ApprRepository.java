@@ -26,8 +26,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		        al.decision,
 		        a.req_id,
 		        a.req_type,
-		        a.emp_id,
-		        a.current_step
+		        a.emp_id
 		    FROM C##TEAM1.approval_line al
 		    JOIN C##TEAM1.approval a ON al.req_id = a.req_id
 		    JOIN C##TEAM1.employee e ON a.emp_id = e.emp_id
