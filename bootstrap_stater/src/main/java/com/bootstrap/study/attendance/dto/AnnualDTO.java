@@ -21,6 +21,7 @@ public class AnnualDTO {
 	private String empId; // 사원Id 
 	private String annYear; // 사용연도 
 	private Double annUse = 0.0; // 사용연차
+	private Double annRemain = 0.0; // 잔여연차
 	private Double annTotal = 0.0; // 총연차
 	private LocalDateTime createdAt; // 등록일
 	private LocalDateTime updatedAt; // 수정일

@@ -42,6 +42,9 @@ public class Annual {
 	private Double annUse = 0.0; // 사용연차
 
 	@Column
+	private Double annRemain = 0.0; // 잔여연차
+	
+	@Column
 	private Double annTotal = 0.0; // 총연차 
 	
 	@CreatedDate
