@@ -55,8 +55,8 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 	    )
 	    """, nativeQuery = true)
 	int updateApprovalLineDecision(@Param("reqId") Long reqId, 
-	                              @Param("decision") String decision,
-	                              @Param("comments") String comments);
+	                               @Param("decision") String decision,
+	                               @Param("comments") String comments);
     // 0826
     // 결재 문서 상태 업데이트 메서드 추가
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -67,7 +67,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
         WHERE req_id = :reqId
         """, nativeQuery = true)
     int updateApprovalStatus(@Param("reqId") Long reqId, 
-                            @Param("status") String status);
+                             @Param("status") String status);
     
     // 해당 문서의 모든 결재가 완료되었는지 확인
     @Query(value = """

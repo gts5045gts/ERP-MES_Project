@@ -278,6 +278,8 @@ public class ApprService {
     private void processApprovalDecision(Long reqId, String comments, String decision, String actionName) {
         String safeComments = sanitizeComments(comments);
         
+        log.info("processApprovalDecision - reqId: {}, decision: {}, comments: [{}]", reqId, decision, safeComments);
+        
         int updatedRows = apprRepository.updateApprovalLineDecision(reqId, decision, safeComments);
         
         log.info("업데이트된 행 수: {}", updatedRows);

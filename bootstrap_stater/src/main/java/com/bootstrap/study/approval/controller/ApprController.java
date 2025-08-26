@@ -98,7 +98,7 @@ public class ApprController {
     @PostMapping("/api/approve/{reqId}")
     @ResponseBody
     public ResponseEntity<String> approveRequest(@PathVariable("reqId") Long reqId,
-                                                @RequestBody(required = false) Map<String, String> requestBody) {
+                                                 @RequestBody(required = false) Map<String, String> requestBody) {
         return processApproval(reqId, requestBody, "APPROVE");
     }
     
@@ -106,7 +106,7 @@ public class ApprController {
     @PostMapping("/api/reject/{reqId}")
     @ResponseBody 
     public ResponseEntity<String> rejectRequest(@PathVariable("reqId") Long reqId,
-                                              @RequestBody(required = false) Map<String, String> requestBody) {
+                                                @RequestBody(required = false) Map<String, String> requestBody) {
         return processApproval(reqId, requestBody, "REJECT");
     }
     
