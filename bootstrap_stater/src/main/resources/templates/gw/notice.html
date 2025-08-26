@@ -31,6 +31,7 @@
 										<thead>
 											<tr>
 												<th>순 번</th>
+												<th>공지 유형</th>
 												<th>공지 제목</th>
 												<th>공지 내용</th>
 												<th>작성자</th>
@@ -40,6 +41,7 @@
 										<tbody>
 											<tr th:each="notice, stat : ${notices}">
 												<td th:text="${stat.count}">순번</td>
+												<td th:text="${notice.notType}">부서명</th>
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
 													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
@@ -145,6 +147,7 @@
 							</div>
 						</form>
 					</div>
+					
 					<div class="modal-footer">
 						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> <a
 							href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>

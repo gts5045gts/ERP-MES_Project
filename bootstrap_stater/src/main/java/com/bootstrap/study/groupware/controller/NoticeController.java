@@ -52,6 +52,7 @@ public class NoticeController {
 
 		// 2. 현재 로그인한 사용자 정보 가져오기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    String currentUserId = null; // ✅ 현재 로그인 사용자의 ID를 담을 변수
 
 		// 사용자 정보에서 부서 ID를 담을 변수
 		String empDeptId = null;
@@ -60,6 +61,7 @@ public class NoticeController {
 		// 사용자가 로그인되어 있고, UserDetails 객체가 PersonnelLoginDTO 타입인지 확인
 		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
 			PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
+			currentUserId = personnelLoginDTO.getEmpId();
 			empDeptId = personnelLoginDTO.getEmpDeptId();
 			// 부서 ID로 부서명을 조회하는 로직
 			// 이전에 CommonCodeService에 추가한 메서드를 활용해야 합니다.
@@ -76,10 +78,11 @@ public class NoticeController {
 		List<Notice> deptNotices = new ArrayList<Notice>();
 		if (empDeptName != null) {
 			// "부서별" 타입의 공지사항 중, 현재 사용자의 부서ID와 일치하는 목록을 조회
-			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(empDeptName, empDeptName);
+			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(empDeptId,empDeptName);
 		}
 		model.addAttribute("deptNotices", deptNotices);
 		model.addAttribute("empDeptName", empDeptName);
+		model.addAttribute("currentUserId", currentUserId);
 
 		return "gw/notice";
 	}
@@ -91,27 +94,42 @@ public class NoticeController {
 
 		// 1. 로그인한 사용자 정보 가져오기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String empId = null; // ✅ String 타입으로 유지
-		String empName = null;
+	    String empId = null;
+	    String empName = null;
+	    String empDeptName = null;
 
 		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
 			PersonnelLoginDTO userDetails = (PersonnelLoginDTO) authentication.getPrincipal();
 			empId = userDetails.getEmpId();
 			empName = userDetails.getName();
+			empDeptName = commonCodeService.getCommonDetailCode(userDetails.getEmpDeptId()).getComDtNm();
 		}
+		// 드롭다운에 표시할 공지 유형 목록 생성
+	    List<String> noticeTypes = new ArrayList<>();
+	    
+	    if ("관리자".equals(empName)) { 
+	        noticeTypes.add("전체공지");
+	        
+	        // 관리자는 전체 부서 목록을 가져와 드롭다운에 추가
+	        List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
+	        for (CommonDetailCode dept : allDepartments) {
+	            noticeTypes.add(dept.getComDtNm());
+	        }
+	    } else if (empDeptName != null) {
+	        // 일반 사용자는 본인 부서만 추가
+	        noticeTypes.add(empDeptName);
+	    }
+	    
+	    // 모델에 데이터 추가
+	    NoticeDTO noticeDTO = new NoticeDTO();
+	    noticeDTO.setEmpId(empName);
+	    
+	    model.addAttribute("noticeDTO", noticeDTO);
+	    model.addAttribute("noticeTypes", noticeTypes); // ✅ 공지 유형 목록 추가
+	    model.addAttribute("empName", empName);
+	    model.addAttribute("departments", commonCodeService.findByComId("DEP")); // ✅ 모든 부서 목록은 그대로 모델에 추가
 
-		// 2. 부서 목록(공통코드) 조회
-		List<CommonDetailCode> departments = commonCodeService.findByComId("DEP");
-
-		// 3. 모델에 데이터 추가
-		NoticeDTO noticeDTO = new NoticeDTO();
-		noticeDTO.setEmpId(empName); // NoticeDTO는 String 타입의 empId를 가짐
-
-		model.addAttribute("noticeDTO", noticeDTO);
-		model.addAttribute("departments", departments);
-		model.addAttribute("empName", empName);
-
-		return "gw/ntcWrite";
+	    return "gw/ntcWrite";
 	}
 
 	// 공지사항 등록 폼에서 데이터가 제출되면 호출되는 메서드

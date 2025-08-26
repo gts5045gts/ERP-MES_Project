@@ -30,12 +30,11 @@
 								class="form-control"></textarea>
 						</div>
 						<div class="form-group">
-							<label for="notType">유형</label> <select th:field="*{notType}"
-								id="notType" class="form-control">
-								<option value="">-- 부서를 선택하세요 --</option>
-								<option th:each="dept : ${departments}"
-									th:value="${dept.comDtNm}" th:text="${dept.comDtNm}"></option>
-							</select>
+						    <label for="notType">유형</label>
+						    <select th:field="*{notType}" id="notType" class="form-control">
+						        <option value="">-- 유형을 선택하세요 --</option>
+						        <option th:each="type : ${noticeTypes}" th:value="${type}" th:text="${type}"></option>
+						    </select>
 						</div>
 
 						<div class="form-group">

@@ -11,13 +11,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NoticeRepository extends JpaRepository<Notice, Long> {
+	// notType 필드(예: '전체공지', '부서별')를 기준으로 공지사항을 조회
     List<Notice> findByNotType(String notType);
 
-    // JPQL을 사용하여 Notice와 Personnel을 조인
-    @Query("SELECT n FROM Notice n JOIN n.employee e WHERE e.department.comDtId = :empDeptId AND n.notType = :notType")
-    List<Notice> findByEmpDeptIdAndNotType(@Param("empDeptId") String empDeptId, @Param("notType") String notType); 
-    
-    @Query("SELECT n FROM Notice n JOIN n.employee p WHERE p.department.comDtNm = :empDeptName AND n.notType = :notType")
-    List<Notice> findByEmpDeptNameAndNotType(@Param("empDeptName") String empDeptName, @Param("notType") String notType);
+    // 부서 ID와 공지 유형을 기준으로 공지사항을 조회
+    @Query("SELECT n FROM Notice n JOIN n.employee e JOIN e.department d WHERE d.comDtId = :empDeptId AND n.notType = :notType")
+    List<Notice> findByEmpDeptIdAndNotType(@Param("empDeptId") String empDeptId, @Param("notType") String notType);
 }
 

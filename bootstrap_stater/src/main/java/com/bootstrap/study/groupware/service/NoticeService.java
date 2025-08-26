@@ -17,6 +17,17 @@ public class NoticeService {
         this.noticeRepository = noticeRepository;
     }
     
+ // ✅ 로그인 사용자가 공지 작성자인지 확인하는 메서드
+    public boolean isAuthor(String currentUserId, Long noticeId) {
+        Optional<Notice> noticeOptional = noticeRepository.findById(noticeId);
+        if (noticeOptional.isPresent()) {
+            Notice notice = noticeOptional.get();
+            // 공지사항 작성자의 empId와 현재 로그인한 사용자의 ID를 비교
+            return notice.getEmployee().getEmpId().equals(currentUserId);
+        }
+        return false;
+    }
+    
     // 공지 수정
     public void updateNotice(Notice notice) {
     	Optional<Notice> existingNoticeOptional = noticeRepository.findById(notice.getNotId());
