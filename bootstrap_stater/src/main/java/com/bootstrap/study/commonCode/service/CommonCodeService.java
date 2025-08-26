@@ -28,7 +28,13 @@ public class CommonCodeService {
 // =======================================================================================
 
 // ========================================= 조회 ==============================================
-
+	
+	// 부서 ID(comDtId)로 상세 코드(부서)를 조회하는 메서드
+	// 지금 부서명으로 안나오고 해당 등록된 코드로 나와서 부서id로 해당 부서이름 불러오는 코드 추가함
+	// ex) 인사팀 으로 나와야하는데 DEP001로 나옴.
+	public CommonDetailCode getCommonDetailCode(String comDtId) {
+	    return comDetailRepository.findById(comDtId).orElse(null);
+	}
 
 	// 코드 조회 
 	public List<CommonCode> findAllCodes() {

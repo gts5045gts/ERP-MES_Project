@@ -15,7 +15,7 @@ import lombok.Setter;
 public class NoticeDTO {
 	
     private Long notId;
-    private Personnel empId;
+    private String empId;
     private String notTitle;
     private String notContent;
     private String notType;
@@ -25,7 +25,7 @@ public class NoticeDTO {
     // Entity -> DTO 변환 생성자
     public NoticeDTO(Notice notice) {
         this.notId = notice.getNotId();
-        this.empId = notice.getEmployee();
+        this.empId = notice.getEmployee().getEmpId();
         this.notTitle = notice.getNotTitle();
         this.notContent = notice.getNotContent();
         this.notType = notice.getNotType();
