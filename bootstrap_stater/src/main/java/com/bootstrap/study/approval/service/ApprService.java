@@ -188,7 +188,7 @@ public class ApprService {
         
         dto.setDecision((String) result[5]);
         dto.setReqId(((Number) result[6]).longValue());
-        dto.setReqType((ApprReqType) result[7]);
+        dto.setReqType(ApprReqType.valueOf((String) result[7]));
         dto.setEmpId((String) result[8]);
         
         // 임시 데이터 설정
