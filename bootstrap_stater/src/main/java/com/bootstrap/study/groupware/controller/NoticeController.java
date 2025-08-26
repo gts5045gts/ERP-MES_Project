@@ -76,7 +76,7 @@ public class NoticeController {
 		List<Notice> deptNotices = new ArrayList<Notice>();
 		if (empDeptName != null) {
 			// "부서별" 타입의 공지사항 중, 현재 사용자의 부서ID와 일치하는 목록을 조회
-			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(empDeptName, "부서별");
+			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(empDeptName, empDeptName);
 		}
 		model.addAttribute("deptNotices", deptNotices);
 		model.addAttribute("empDeptName", empDeptName);
