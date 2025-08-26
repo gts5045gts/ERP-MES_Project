@@ -179,7 +179,7 @@ public class ApprController {
     public String registAppr(@ModelAttribute("apprDTO") @Valid ApprDTO apprDTO, @RequestParam("empIds") String[] empIds, BindingResult bindingResult, Model model) throws IOException {
 
         if (bindingResult.hasErrors()) {
-            ApprReqType reqType = apprDTO.getReqType();
+        	String reqType = apprDTO.getReqType();
             return "approval/new/" + reqType;
         }
         

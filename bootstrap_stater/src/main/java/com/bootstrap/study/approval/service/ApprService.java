@@ -188,7 +188,8 @@ public class ApprService {
         
         dto.setDecision((String) result[5]);
         dto.setReqId(((Number) result[6]).longValue());
-        dto.setReqType(ApprReqType.valueOf((String) result[7]));
+//        dto.setReqType(ApprReqType.valueOf((String) result[7]));
+        dto.setReqType((String) result[7]);
         dto.setEmpId((String) result[8]);
         
         // 임시 데이터 설정
@@ -287,8 +288,6 @@ public class ApprService {
     //승인/반려 공통 처리 로직
     private void processApprovalDecision(Long reqId, String comments, String decision, String actionName) {
         String safeComments = sanitizeComments(comments);
-        
-        log.info("processApprovalDecision - reqId: {}, decision: {}, comments: [{}]", reqId, decision, safeComments);
         
         int updatedRows = apprRepository.updateApprovalLineDecision(reqId, decision, safeComments);
         
