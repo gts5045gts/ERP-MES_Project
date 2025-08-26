@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class WebController {
 	
 	@RequestMapping("/")
+	public String login() {
+
+		return "login";
+	}
+
+	@RequestMapping("main")
 	public String main() {
 
 		return "main";
-	}
-
-	@RequestMapping("index")
-	public String login() {
-
-		return "index";
 	}
 
 	@RequestMapping("register")

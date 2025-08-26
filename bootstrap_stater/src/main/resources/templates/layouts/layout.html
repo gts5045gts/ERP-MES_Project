@@ -27,12 +27,12 @@
 </head>
 <body id="page-top">
 	<!-- Page Wrapper -->
-	<th:block th:insert="~{fragments/header :: header}"></th:block>
+	<th:block th:insert="~{fragments/header}"></th:block>
 
 	<th:block layout:fragment="content"></th:block>
 
 	<!--  공통 푸터 -->
-	<footer th:insert="~{fragments/footer :: footer}"></footer>
+	<footer th:insert="~{fragments/footer}"></footer>
 
 	<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
 	<script th:src="@{/bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>

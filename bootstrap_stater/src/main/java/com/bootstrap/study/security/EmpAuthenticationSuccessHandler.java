@@ -34,7 +34,7 @@ public class EmpAuthenticationSuccessHandler implements AuthenticationSuccessHan
 		
 		response.addCookie(cookie); // 응답 객체에 쿠키추가
 		
-		response.sendRedirect("/index"); // 메인페이지로 리다이렉트
+		response.sendRedirect("/main"); // 메인페이지로 리다이렉트
 	}
 
 }
