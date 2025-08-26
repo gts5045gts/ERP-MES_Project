@@ -1,8 +1,10 @@
 package com.bootstrap.study.approval.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
 
 import com.bootstrap.study.approval.entity.Appr;
@@ -25,12 +27,14 @@ public class ApprDTO {
 	
 	private String empId;
 	
-	private String reqType;
+	private ApprReqType reqType;
 	
-	@NotBlank(message = "제목은 필수 입력값입니다!") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
+	@NotBlank(message = "제목은 필수 입력값입니다.") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
 	private String title;
 	
 	private String content;
+	
+	private LocalDate requestAt;
 	
 	private LocalDateTime createAt;
 	
@@ -38,7 +42,7 @@ public class ApprDTO {
 	
  	private ApprStatus status = ApprStatus.REQUESTED;
  	
- 	private Integer currentStep;
+// 	private Integer currentStep;
  	
  	private Integer totStep;
  	
@@ -67,20 +71,21 @@ public class ApprDTO {
     }
     
  	private List<ApprLineDTO> ApprLineDTOList;
- 	private List<ApprDetailDTO> ApprDetailDTOList;
+ 	private List<ApprDetailDTO> apprDetailDTOList;
 
  	@Builder
-	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDateTime createAt,
-			LocalDateTime updateAt, ApprStatus status, Integer currentStep, Integer totStep) {
+	public ApprDTO(Long reqId, String empId, ApprReqType reqType, String title, String content, LocalDate requestAt, LocalDateTime createAt,
+			LocalDateTime updateAt, ApprStatus status, Integer totStep) {
 		this.reqId = reqId;
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
 		this.content = content;
+		this.requestAt = requestAt;
 		this.createAt = createAt;
 		this.updateAt = updateAt;
 		this.status = status;
-		this.currentStep = currentStep;
+//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
 

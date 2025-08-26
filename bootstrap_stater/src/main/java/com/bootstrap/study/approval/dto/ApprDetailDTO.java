@@ -1,5 +1,6 @@
 package com.bootstrap.study.approval.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.modelmapper.ModelMapper;
@@ -19,9 +20,10 @@ import lombok.ToString;
 @ToString
 public class ApprDetailDTO {
 	
+	private	Long detId;
 	private	Long reqId;
-	private	LocalDateTime startDate;
-	private	LocalDateTime endDate;
+	private	LocalDate startDate;
+	private	LocalDate endDate;
 	private	ApprVacType vacType;
 	private	ApprHalfType halfType;
 	private	LocalDateTime complateDate;
