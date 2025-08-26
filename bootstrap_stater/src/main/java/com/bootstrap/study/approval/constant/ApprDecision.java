@@ -1,6 +1,6 @@
 package com.bootstrap.study.approval.constant;
 
-import lombok.Getter;
+import lombok.Getter; 
 import lombok.RequiredArgsConstructor;
 
 @Getter

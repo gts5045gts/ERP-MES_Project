@@ -39,22 +39,42 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
     
     //0821
    	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
+	@Query(value = """
+	    UPDATE approval_line 
+	    SET decision = :decision, 
+	        dec_date = SYSDATE,
+	        comments = :comments
+	    WHERE req_id = :reqId 
+	    AND (decision = 'PENDING' OR decision IS NULL)  	-- NULL도 포함
+	    AND step_no = (
+	        SELECT MIN(step_no) 
+	        FROM approval_line 
+	        WHERE req_id = :reqId 
+	        AND (decision = 'PENDING' OR decision IS NULL)  -- NULL도 포함
+	    )
+	    """, nativeQuery = true)
+	int updateApprovalLineDecision(@Param("reqId") Long reqId, 
+	                              @Param("decision") String decision,
+	                              @Param("comments") String comments);
+    // 0826
+    // 결재 문서 상태 업데이트 메서드 추가
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
-        UPDATE approval_line 
-        SET decision = :decision, 
-            dec_date = SYSDATE,
-            comments = :comments
+        UPDATE approval 
+        SET status = :status,
+            update_at = SYSDATE
+        WHERE req_id = :reqId
+        """, nativeQuery = true)
+    int updateApprovalStatus(@Param("reqId") Long reqId, 
+                            @Param("status") String status);
+    
+    // 해당 문서의 모든 결재가 완료되었는지 확인
+    @Query(value = """
+        SELECT COUNT(*) 
+        FROM approval_line 
         WHERE req_id = :reqId 
         AND decision = 'PENDING'
-        AND step_no = (
-            SELECT MIN(step_no) 
-            FROM approval_line 
-            WHERE req_id = :reqId 
-            AND decision = 'PENDING'
-        )
         """, nativeQuery = true)
-    int updateApprovalLineDecision(@Param("reqId") Long reqId, 
-                                  @Param("decision") String decision,
-                                  @Param("comments") String comments);
+    int countPendingApprovals(@Param("reqId") Long reqId);
 }

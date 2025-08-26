@@ -92,12 +92,24 @@ public class ApprService {
         
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
-    
+    // 0826
     //승인 처리 (코멘트 포함)
     @Transactional
     public void approveRequestWithComments(Long reqId, String comments) {
         log.info("승인 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+        
+        // 현재 단계 승인 처리
         processApprovalDecision(reqId, comments, "ACCEPT", "승인");
+        
+        // 남은 대기 결재가 있는지 확인
+        int pendingCount = apprRepository.countPendingApprovals(reqId);
+        
+        if (pendingCount == 0) {
+            // 모든 결재 완료 -> FINISHED로 변경
+            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
+            apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        }
+        
         log.info("승인 처리 완료 - reqId: {}", reqId);
     }
     
@@ -105,7 +117,13 @@ public class ApprService {
     @Transactional
     public void rejectRequestWithComments(Long reqId, String comments) {
         log.info("반려 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+        
         processApprovalDecision(reqId, comments, "DENY", "반려");
+        
+        // 반려되면 즉시 FINISHED로
+        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
+        apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        
         log.info("반려 처리 완료 - reqId: {}", reqId);
     }
     
