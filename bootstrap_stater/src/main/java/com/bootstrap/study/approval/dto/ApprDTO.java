@@ -54,7 +54,9 @@ public class ApprDTO {
     // ㅇㅇ
     // 상태를 한글로 변환하는 메서드 추가
     public String getStatusLabel() {
-        if ("PENDING".equals(decision) || decision == null) {
+    	// 0826
+        // decision이 null, 빈 문자열, 또는 PENDING이면 "대기"
+        if (decision == null || decision.trim().isEmpty() || "PENDING".equals(decision)) {
             return "대기";
         } else if ("ACCEPT".equals(decision)) {
             return "승인";
