@@ -14,13 +14,9 @@ import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
-import com.bootstrap.study.personnel.dto.PositionDTO;
-import com.bootstrap.study.personnel.entity.Department;
 import com.bootstrap.study.personnel.entity.Personnel;
-import com.bootstrap.study.personnel.entity.Position;
-import com.bootstrap.study.personnel.repository.DepartmentRepository;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
-import com.bootstrap.study.personnel.repository.PositionRepository;import com.mysql.cj.xdevapi.Result;
+import com.mysql.cj.xdevapi.Result;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,8 +27,6 @@ import lombok.extern.log4j.Log4j2;
 public class PersonnelService {
 	
 	private final PersonnelRepository personnelRepository;
-    private final DepartmentRepository departmentRepository;
-    private final PositionRepository positionRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonDetailCodeRepository commonDetailCodeRepository;
     
