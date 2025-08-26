@@ -311,19 +311,19 @@ public class ApprService {
 
     //결재자 리스트 조회
     @Transactional(readOnly = true)
-	public List<PersonnelDTO> getApprEmployee(String keyword) {
-		return apprRepository.findByNameContainingIgnoreCase(keyword)
+    public List<PersonnelDTO> getApprEmployee(String keyword, String currentEmpId) {
+        return apprRepository.findByNameContainingIgnoreCase(keyword, currentEmpId)
                 .stream()
                 .map(PersonnelDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-	public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds) throws IOException{
+    public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds, String loginEmpId) throws IOException{
 		
 		Appr appr = apprDTO.toEntity();
 		
 		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
-		appr.setEmpId("2025082501");
+		appr.setEmpId(loginEmpId);
 		appr.setTotStep(empIds.length);
 		
 		int index = 1;

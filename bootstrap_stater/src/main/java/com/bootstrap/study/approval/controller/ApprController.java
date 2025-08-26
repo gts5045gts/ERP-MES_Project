@@ -173,21 +173,27 @@ public class ApprController {
         model.addAttribute("currentStatus", status);
     }
  	
-
+    // 0826 - 기존 하드코딩된 "2025082501" 대신 실제 로그인 사용자 정보 사용
     @PostMapping("/save")
     @ResponseBody
-    public String registAppr(@ModelAttribute("apprDTO") @Valid ApprDTO apprDTO, @RequestParam("empIds") String[] empIds, BindingResult bindingResult, Model model) throws IOException {
+    public String registAppr(@ModelAttribute("apprDTO") @Valid ApprDTO apprDTO, 
+                            @RequestParam("empIds") String[] empIds, 
+                            BindingResult bindingResult, 
+                            Model model,
+                            Authentication authentication) throws IOException {  // Authentication 추가
 
         if (bindingResult.hasErrors()) {
-        	String reqType = apprDTO.getReqType();
+            String reqType = apprDTO.getReqType();
             return "approval/new/" + reqType;
         }
-        
-        if (apprDTO.getApprDetailDTOList() == null) {
-			apprDTO.setApprDetailDTOList(new ArrayList<>());
-		}
 
-    	Long apprId = apprService.registAppr(apprDTO, empIds);
+        if (apprDTO.getApprDetailDTOList() == null) {
+            apprDTO.setApprDetailDTOList(new ArrayList<>());
+        }
+
+        // 로그인한 사용자 ID 가져와서 Service에 전달
+        String loginEmpId = authentication.getName();
+        Long apprId = apprService.registAppr(apprDTO, empIds, loginEmpId);  // 3개 파라미터
 
         //결재 리스트로 이동되게 변경해야함.
         return "<script>" +
