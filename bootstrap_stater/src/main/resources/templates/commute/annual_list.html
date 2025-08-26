@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+		<link rel="stylesheet" th:href="@{/bootstrap/css/annual/annual.css}" />
+		<!-- Toast UI Grid CSS -->
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-8">
+				<div class="card shadow mb-4">
+					<div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #f3f4f7;">
+						<h6 class="m-0 font-weight-bold">연차사용내역</h6>
+					</div>
+					<div class="card-body" id="MyAnnArea">
+						<table id ="MyAnnAreaTable" class="table table-bordered">
+							<thead>
+								<tr>
+									<th>이름</th>
+									<th>연차 산정 기간</th>
+									<th>총 연차일수</th>
+									<th>사용 연차일수</th>
+									<th>잔여 연차 일수</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${myAnn != null}">
+									<td th:text="${myAnn.empName}"></td>
+	            					<td th:text="${myAnn.annYear}"></td>
+	            					<td th:text="${myAnn.annTotal}"></td>
+	            					<td th:text="${myAnn.annUse}"></td>
+	            					<td th:text="${myAnn.annRemain}"></td>
+								</tr>
+								<tr th:if="${myAnn == null}">
+									<td colspan="5" class="text-center">연차 데이터가 없습니다.</td>
+								</tr>
+							</tbody>
+						</table>
+                     </div>
+				</div>
+			</div>
+		  
+			<div class="col-4">
+				<div class="card shadow mb-4">
+					<div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #f3f4f7;">
+						<h6 class="m-0 font-weight-bold">오늘의 연차사원</h6>
+                    </div>
+                     <div class="card-body" id="todayAnnArea">
+                     	<table id ="todayAnnTable" class="table table-bordered">
+							
+						</table>
+                     </div>
+                 </div>
+             </div>
+		</div>	  
+	</div>
+
+	<div class="card-body">
+		<div class="annHeader">
+			<h5 class="m-0 font-weight-bold">사원 연차 내역</h5>
+		</div>
+		<div class="col-3" style="padding: 10px 0 5px 0px;">
+			<div class="filterAnn">
+				<label for="AnnSearch" class="AnnSearch">검색</label>
+				<input type="search" id="AnnSearch" />
+			</div>
+		</div>
+		<div id="grid"></div>
+	</div>  
+	
+
+   
+</th:block>
+
+<th:block layout:fragment="script">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+	<script src="https://kit.fontawesome.com/60c9dd1eea.js" crossorigin="anonymous"></script>
+	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	<script src="/bootstrap/js/annual/annual.js"></script>
+</th:block>
+</body>
+</html>
