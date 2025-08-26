@@ -1,7 +1,6 @@
 package com.bootstrap.study.groupware.service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -45,9 +44,5 @@ public class NoticeService {
 		noticeRepository.deleteById(id);
 	}
 	
-	public List<Notice> getDeptNoticesByDeptId(String empDeptId) {
-	    // "부서별" 타입의 공지사항 중, 현재 사용자의 부서ID와 일치하는 목록을 조회
-	    return noticeRepository.findByEmpDeptIdAndNotType(empDeptId, "부서별");
-	}
 
 }

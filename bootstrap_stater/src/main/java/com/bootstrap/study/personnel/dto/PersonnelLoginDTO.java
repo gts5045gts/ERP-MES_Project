@@ -19,6 +19,7 @@ public class PersonnelLoginDTO implements UserDetails {
 	private String empId;
 	private String name;		
 	private String passwd;
+	private String empDeptId;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
