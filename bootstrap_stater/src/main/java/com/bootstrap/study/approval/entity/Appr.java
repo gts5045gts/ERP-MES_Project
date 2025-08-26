@@ -60,7 +60,7 @@ public class Appr {
  	
  	private int totStep;
 
- 	@OneToMany(mappedBy = "appr", fetch = FetchType.LAZY)
+ 	@OneToMany(mappedBy = "appr", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprLine> appLines = new ArrayList<ApprLine>();
  	
  	 // 새로 추가하는 ApprDetail 연결
@@ -76,4 +76,15 @@ public class Appr {
 //		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
+	
+	public void addLine(ApprLine line) {
+	    this.appLines.add(line);
+	    line.setAppr(this);
+	}
+	
+	 // 연관관계 편의 메서드
+    public void addDetail(ApprDetail detail) {
+        this.apprDetails.add(detail);
+        detail.setAppr(this);
+    }
 }

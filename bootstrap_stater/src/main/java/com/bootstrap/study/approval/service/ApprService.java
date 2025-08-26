@@ -2,9 +2,13 @@ package com.bootstrap.study.approval.service;
 
 import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprEmpDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
+import com.bootstrap.study.approval.dto.ApprLineDTO;
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.approval.entity.ApprDetail;
+import com.bootstrap.study.approval.entity.ApprLine;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
@@ -33,12 +37,6 @@ public class ApprService {
 	private final ApprRepository apprRepository;
 	private final ApprLineService apprLineService;
 	
-	
-//	public ApprService(ApprRepository apprRepository, ApprLineService apprLineService) {
-//		this.apprRepository = apprRepository;
-//		this.apprLineService = apprLineService;
-//	}
-    
 
     // ㅇㅇ
 	@Transactional(readOnly = true)
@@ -145,11 +143,28 @@ public class ApprService {
 		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
 		appr.setEmpId("2025082501");
 		appr.setTotStep(empIds.length);
-		//createAt 가 기본으로 안들어감
+		
+		int index = 1;
+		for (String empId : empIds) {
+		    ApprLine line = new ApprLine();
+		    line.setApprId(empId);
+		    line.setStepNo(index++);
+		    appr.addLine(line);  // Appr이 직접 관리
+		}
+		
+		for (ApprDetailDTO dto : apprDTO.getApprDetailDTOList()) {
+		    ApprDetail detail = new ApprDetail();
+		    detail.setVacType(dto.getVacType());
+		    detail.setStartDate(dto.getStartDate());
+		    detail.setEndDate(dto.getEndDate());
+		    detail.setHalfType(dto.getHalfType());
+		    appr.addDetail(detail);  // 연관관계 메서드
+		}
+//		System.out.println("Details size = " + appr.getApprDetails().size());
 		apprRepository.save(appr);
 		
-		apprLineService.registApprLine(appr, empIds);
-		
+//		apprLineService.registApprLine(appr, empIds);
+				
 		return appr.getReqId();
 	}
 

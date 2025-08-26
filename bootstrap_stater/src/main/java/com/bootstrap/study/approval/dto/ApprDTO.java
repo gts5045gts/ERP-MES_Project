@@ -69,7 +69,7 @@ public class ApprDTO {
     }
     
  	private List<ApprLineDTO> ApprLineDTOList;
- 	private List<ApprDetailDTO> ApprDetailDTOList;
+ 	private List<ApprDetailDTO> apprDetailDTOList;
 
  	@Builder
 	public ApprDTO(Long reqId, String empId, ApprReqType reqType, String title, String content, LocalDate requestAt, LocalDateTime createAt,

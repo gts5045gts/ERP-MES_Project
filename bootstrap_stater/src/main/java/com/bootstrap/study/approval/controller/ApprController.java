@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,6 @@ public class ApprController {
     public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model){
     	
     	model.addAttribute("apprDTO", new ApprDTO());
-    	model.addAttribute("apprDetailDTO", new ApprDetailDTO());
     	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
     	        
         return "approval/drafting_form";
@@ -117,13 +117,16 @@ public class ApprController {
             ApprReqType reqType = apprDTO.getReqType();
             return "approval/new/" + reqType;
         }
+        
+        if (apprDTO.getApprDetailDTOList() == null) {
+			apprDTO.setApprDetailDTOList(new ArrayList<>());
+		}
 
     	Long apprId = apprService.registAppr(apprDTO, empIds);
 
         //결재 리스트로 이동되게 변경해야함.
         return "<script>" +
                 "alert('신청 완료되었습니다.');" +
-                "parent.location.reload();"+
                 "window.close();" +
                 "</script>";
     }    
