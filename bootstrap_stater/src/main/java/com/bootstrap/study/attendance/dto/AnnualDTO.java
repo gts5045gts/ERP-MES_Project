@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.modelmapper.ModelMapper;
 
 import com.bootstrap.study.attendance.entity.Annual;
+import com.bootstrap.study.personnel.entity.Personnel;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,14 @@ public class AnnualDTO {
 	private LocalDateTime createdAt; // 등록일
 	private LocalDateTime updatedAt; // 수정일
 	
+	private String empName; // 사원이름
+	private String depName; // 부서(공통코드)
+	private String empPos; // 직책 (공통코드)
+	private String joinDate; // 입사일
+
+	
+	
+	
 	// 변환
 	public static ModelMapper modelMapper = new ModelMapper();
 	
@@ -37,6 +46,20 @@ public class AnnualDTO {
 		return modelMapper.map(annual, AnnualDTO.class);
 		
 	}
+
+	public AnnualDTO(Annual annual, Personnel personnel) {
+        this.empId = annual.getEmpId();
+        this.annYear = annual.getAnnYear();
+        this.annUse = annual.getAnnUse();
+        this.annRemain = annual.getAnnTotal() - annual.getAnnUse();
+        this.annTotal = annual.getAnnTotal();
+        this.createdAt = annual.getCreatedAt();
+        this.updatedAt = annual.getUpdatedAt();
+        this.empName = personnel.getName();
+        this.depName = personnel.getDepartment().getComDtNm();
+        this.empPos = personnel.getPosition().getComDtNm();
+        this.joinDate = personnel.getJoinDate();
+    }
 	
 	
 }

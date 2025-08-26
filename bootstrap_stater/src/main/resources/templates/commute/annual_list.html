@@ -32,6 +32,18 @@
 									<th>잔여 연차 일수</th>
 								</tr>
 							</thead>
+							<tbody>
+								<tr th:if="${myAnn != null}">
+									<td th:text="${myAnn.empName}"></td>
+	            					<td th:text="${myAnn.annYear}"></td>
+	            					<td th:text="${myAnn.annTotal}"></td>
+	            					<td th:text="${myAnn.annUse}"></td>
+	            					<td th:text="${myAnn.annRemain}"></td>
+								</tr>
+								<tr th:if="${myAnn == null}">
+									<td colspan="5" class="text-center">연차 데이터가 없습니다.</td>
+								</tr>
+							</tbody>
 						</table>
                      </div>
 				</div>
