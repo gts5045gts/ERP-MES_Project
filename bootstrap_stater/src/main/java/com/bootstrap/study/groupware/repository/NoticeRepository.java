@@ -20,3 +20,4 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
     @Query("SELECT n FROM Notice n JOIN n.employee p WHERE p.department.comDtNm = :empDeptName AND n.notType = :notType")
     List<Notice> findByEmpDeptNameAndNotType(@Param("empDeptName") String empDeptName, @Param("notType") String notType);
 }
+
