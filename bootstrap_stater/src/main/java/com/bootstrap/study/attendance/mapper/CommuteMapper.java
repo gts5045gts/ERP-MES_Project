@@ -25,7 +25,7 @@ public interface CommuteMapper {
 	int getTodayCheckOutCount(String empId);
 
 	// 퇴근버튼 눌렀을때 퇴근시간 commute_record에 저장
-	void insertCommuteCheckOut(CommuteDTO commute);
+	void updateCommuteCheckOut(CommuteDTO commute);
 
 
 }

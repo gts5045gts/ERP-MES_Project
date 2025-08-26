@@ -88,12 +88,12 @@ public class CommuteController {
 
 	    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 	    String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-	    System.out.println("로그인 사용자 ID: " + empId);
+//	    System.out.println("로그인 사용자 ID: " + empId);
 
 	    // 출근 처리
 	    try {
 	        CommuteDTO commuteCheckIn = commuteService.checkIn(empId);
-	        System.out.println("commute : " + commuteCheckIn);
+//	        System.out.println("commuteCheckIn : " + commuteCheckIn);
 	        return ResponseEntity.ok(commuteCheckIn);
 	    } catch (IllegalStateException e) {
 	        // 이미 출근 기록 있을 경우 409 Conflict 반환
@@ -116,12 +116,12 @@ public class CommuteController {
 		
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-		System.out.println("로그인 사용자 ID: " + empId);
+//		System.out.println("로그인 사용자 ID: " + empId);
 		
 		// 퇴근 처리
 		try {
 			CommuteDTO commuteCheckOut = commuteService.checkOut(empId);
-			System.out.println("commute : " + commuteCheckOut);
+//			System.out.println("commuteCheckOut : " + commuteCheckOut);
 			return ResponseEntity.ok(commuteCheckOut);
 		} catch (IllegalStateException e) {
 			// 이미 출근 기록 있을 경우 409 Conflict 반환

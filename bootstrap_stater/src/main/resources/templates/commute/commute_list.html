@@ -28,7 +28,7 @@
 <!-- 	            	<input type="date"> -->
 <!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
-				    <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6>
+				    <h6 class="m-0 font-weight-bold text-primary">나의 부서인원 전체 근퇴현황</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
 				        <input type="date" class="form-control form-control-sm">
@@ -41,10 +41,10 @@
 	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
 	                        <thead>
 		                        <tr>
-		                            <th>근태코드</th>
+		                            <th>날짜</th>
 		                            <th>출근시간</th>
 		                            <th>퇴근시간</th>
-		                            <th>사원 아이디</th>
+		                            <th>사번</th>
 		                            <th>사원 이름</th>
 		                            <th>부서</th>
 		                            <th>직책</th>
@@ -53,9 +53,9 @@
 	                        </thead>
 	                        <tbody>
 		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
-		                            <td th:text="${c.commuteId}"></td>
-		                            <td th:text="${c.checkInTime}"></td>
-		                            <td th:text="${c.checkOutTime}"></td>
+		                            <td th:text="${c.commuteDate}"></td>
+									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
+									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
 		                            <td th:text="${c.empId}"></td>
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
@@ -63,18 +63,18 @@
 		                            <td th:text="${c.workStatus}"></td>
 		                        </tr>
 	                        </tbody>
-	                        <tfoot>
-		                        <tr>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                            <th>1</th>
-		                        </tr>
-	                        </tfoot>
+<!-- 	                        <tfoot> -->
+<!-- 		                        <tr> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                            <th>1</th> -->
+<!-- 		                        </tr> -->
+<!-- 	                        </tfoot> -->
 	                    </table>
 	                </div>
 	            </div>
@@ -138,14 +138,13 @@
 	    });
 	});
 	
-	
 	// 퇴근 버튼
 	document.addEventListener("DOMContentLoaded", function() {
 // 		console.log("버튼 클릭!");
 		
 	    const checkOutBtn = document.getElementById("checkOutBtn");
 	
-	    checkInBtn.addEventListener("click", function() {
+	    checkOutBtn.addEventListener("click", function() {
 	        // 확인 팝업
 	        if (!confirm("퇴근하시겠습니까?")) return;
 	
@@ -170,7 +169,7 @@
 	        })
 	        .then(data => {
 	            if (data) {
-	            	// data.checkInTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
+	            	// data.checkOutTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
 	                const rawTime = data.checkOutTime;
 	                const dateObj = new Date(rawTime);
 
@@ -182,7 +181,7 @@
 	                                  String(dateObj.getMinutes()).padStart(2, '0') + ":" +
 	                                  String(dateObj.getSeconds()).padStart(2, '0');
 	            	
-	                alert(`출근 완료: ${formatted}`);
+	                alert(`퇴근 완료: ${formatted}`);
 	                // 필요하면 리스트 새로고침
 	                location.reload();
 	            }
@@ -190,6 +189,8 @@
 	        .catch(err => console.error(err));
 	    });
 	});
+	
+
 	</script>
 	</th:block>
 </body>

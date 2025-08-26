@@ -23,6 +23,7 @@ public class CommuteDTO {
 	private String empName;
 	private String deptName;
 	private String posName;
+	private String commuteDate;
 
 	@Builder
 	public CommuteDTO(Long commuteId, LocalDateTime checkInTime, LocalDateTime checkOutTime, String empId,
