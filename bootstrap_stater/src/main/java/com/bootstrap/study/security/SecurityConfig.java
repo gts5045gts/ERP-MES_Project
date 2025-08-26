@@ -61,6 +61,8 @@ public class SecurityConfig {
 					)
     		.build();
     }
+    
+    // 인사 회원 첫 등록 시 사용 
 //    @Bean
 //    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
 //        return http.getSharedObject(AuthenticationManagerBuilder.class)

@@ -67,7 +67,7 @@ public class Personnel {
 	private String joinDate;
 
 	// 퇴사일
-	@Column(nullable = false, name = "emp_resign_date")
+	@Column(name = "emp_resign_date")
 	private String resignDate;
 
 	// 수정일

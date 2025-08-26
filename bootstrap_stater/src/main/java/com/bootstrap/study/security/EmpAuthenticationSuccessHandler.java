@@ -21,7 +21,7 @@ public class EmpAuthenticationSuccessHandler implements AuthenticationSuccessHan
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
-		// 아이디 기억하기 체크박스 체크 시 쿠키에 아이디(email) 저장
+//		 아이디 기억하기 체크박스 체크 시 쿠키에 아이디(email) 저장
 		String rememberId = request.getParameter("remember-id"); // 체크박스 파라미터값 가져오기
 		Cookie cookie = new Cookie("remember-id", URLEncoder.encode(authentication.getName(), "UTF-8"));
 		cookie.setPath("/"); // 애플리케이션 내에서 모든 경로 상에서 쿠키사용이 가능하도록 설정.
