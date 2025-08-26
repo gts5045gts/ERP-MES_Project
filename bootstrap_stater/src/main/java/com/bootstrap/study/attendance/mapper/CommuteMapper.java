@@ -18,8 +18,14 @@ public interface CommuteMapper {
 	// 오늘 출근 기록이 있는지 확인
 	int getTodayCheckInCount(String empId);
 	
-	// 출근버튼 눌렀을때 데이터 commute_record 테이블에 저장
-	int insertCommute(CommuteDTO commute);
+	// 출근버튼 눌렀을때 출근시간 commute_record 테이블에 저장
+	int insertCommuteCheckIn(CommuteDTO commute);
+
+	// 오늘 퇴근 기록이 있는지 확인
+	int getTodayCheckOutCount(String empId);
+
+	// 퇴근버튼 눌렀을때 퇴근시간 commute_record에 저장
+	void updateCommuteCheckOut(CommuteDTO commute);
 
 
 }

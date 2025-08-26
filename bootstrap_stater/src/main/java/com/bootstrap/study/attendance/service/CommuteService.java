@@ -37,14 +37,14 @@ public class CommuteService {
 		
 		// 오늘 출근 기록이 있는지 확인
 	    int count = commuteMapper.getTodayCheckInCount(empId);
-	    System.out.println("count : " + count);
+//	    System.out.println("count : " + count);
 	    if (count > 0) {
 	        throw new IllegalStateException("이미 오늘 출근 기록이 존재합니다.");
 	    }
 		
 		// 근무 기준시간 조회
 		CommuteScheduleDTO schedule = commuteScheduleMapper.getCurrentSchedule();
-		System.out.println("schedule : " + schedule);
+//		System.out.println("schedule : " + schedule);
 		
 		// 지각 여부 판별
 		LocalTime startTime = schedule.getWorkStartTime().toLocalTime(); // db에서 가져온 출근시작시간
@@ -57,12 +57,33 @@ public class CommuteService {
 		commute.setEmpId(empId);
 		commute.setCheckInTime(now);
 		commute.setWorkStatus(workStatus);
-		System.out.println("commute : " + commute);
+//		System.out.println("commute : " + commute);
 
-		commuteMapper.insertCommute(commute);
+		commuteMapper.insertCommuteCheckIn(commute);
 		
 		return commute;
+	}
 
+	// 퇴근버튼
+	public CommuteDTO checkOut(String empId) {
+		
+		// 오늘 퇴근 기록이 있는지 확인
+		int count = commuteMapper.getTodayCheckOutCount(empId);
+//		System.out.println("count : " + count);
+		if (count > 0) {
+			throw new IllegalStateException("이미 오늘 퇴근 기록이 존재합니다.");
+		}
+		
+	    LocalDateTime now = LocalDateTime.now();
+		
+		CommuteDTO commute = new CommuteDTO();
+		commute.setEmpId(empId);
+		commute.setCheckOutTime(now);
+		commute.setWorkStatus("퇴근");
+		
+		commuteMapper.updateCommuteCheckOut(commute);
+		
+		return commute;
 	}
 
 }

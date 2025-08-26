@@ -16,7 +16,6 @@ import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 

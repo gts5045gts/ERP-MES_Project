@@ -28,19 +28,23 @@
 	<div id="content-wrapper" class="d-flex flex-column">
 		<div id="content">
 			<div class="container-fluid">
+
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
 						<h6 class="m-0 font-weight-bold">기안서작성 | 연차신청서</h6>
 					</div>
 					<div class="card-body">
-						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
+
+						<form th:action="@{/appr}" th:object="${apprDTO}" method="post" enctype="multipart/form-data">
+							<input type="hidden" th:field="*{reqType}" />
+
 							<!-- 기안일 -->
 							<div class="form-group row">
 								<label for="createAt" class="col-sm-2 col-form-label">기안일</label>
 								<div class="col-sm-4">
 									<div class="input-group date" id="createAtPicker" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" id="requestAt"
-											   th:field="*{requestAt}" data-target="#createAtPicker" readonly required>
+										<input type="text" class="form-control datetimepicker-input" id="createAt"
+											   th:field="*{createAt}" data-target="#createAtPicker" readonly required>
 										<div class="input-group-append" data-target="#createAtPicker" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -59,54 +63,36 @@
 							<!-- 결재자 -->
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">결재자</label>
-								<div class="col-sm-2">
-									<div class="form-group position-relative">
-									  <input type="text" class="userSearch form-control" value="" placeholder="결재자 검색">
-									  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
-									</div>
+								<div class="col-sm-8">
+									<a href="#" class="btn btn-primary btn-icon-split btn-sm" data-toggle="modal" data-target="#layerModal">
+										<span class="icon text-white-50"><i class="fas fa-external-link-alt"></i></span>
+										<span class="text">결재자 검색</span>
+									</a>
 									<!-- 선택된 결재자 표시 영역 -->
-									<div id="selectedUsers" class="mt-2">
-										<button type="button" class="btn btn-sm btn-outline-success m-1" data-id="2025082501">인사하위관리자 (인사팀 / 사원)</button>
-									</div>
+									<div id="selectedUsers" class="mt-2"></div>
+									
 									<!-- hidden input 담을 영역 -->
-									<div id="hiddenEmpIds">
-										<input type="hidden" name="empIds[]" value="2025082501">
-									</div>
-								</div>
-							</div>
-
-							<!-- 공통문서타입 -->
-							<div class="form-group row">
-								<label class="col-sm-2 col-form-label">양식 종류</label>
-								<div class="col-sm-2">
-									<select class="form-control selected-req-type" name="reqType">
-										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
-												th:value="${reqType}"
-												th:text="${reqType.label}"
-												th:selected="${reqType.name() == selectedRole.name()}"
-												>
-										</option>
-									</select>
+									<div id="hiddenEmpIds"></div>
 								</div>
 							</div>
 
 							<!-- 휴가 종류 -->
-							<div class="form-group row vac">
+							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">휴가 종류</label>
 								<div class="col-sm-2">
-									<select class="form-control" th:field="*{apprDetailDTOList[0].vacType}">
-										<option th:each="vacType : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
-												th:value="${vacType}" th:text="${vacType.label}"></option>
+									<select class="form-control" th:field="*{reqType}">
+										<option th:each="rtype : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
+												th:value="${rtype}" th:text="${rtype.label}"></option>
 									</select>
 								</div>
 							</div>
 
 							<!-- 기간 및 일시 -->
-							<div class="form-group row vac">
-								<label class="col-sm-2 col-form-label">기간</label>
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">기간 및 일시</label>
 								<div class="col-sm-3">
 									<div class="input-group date" id="startDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{apprDetailDTOList[0].startDate}" data-target="#startDate" readonly required>
+										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#startDate" readonly required>
 										<div class="input-group-append" data-target="#startDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -114,7 +100,7 @@
 								</div>
 								<div class="col-sm-3">
 									<div class="input-group date" id="endDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{apprDetailDTOList[0].endDate}" data-target="#endDate" readonly required>
+										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#endDate" readonly required>
 										<div class="input-group-append" data-target="#endDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -123,18 +109,18 @@
 							</div>
 
 							<!-- 반차 여부 -->
-							<div class="form-group row vac">
+							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">반차 여부</label>
 								<div class="col-sm-8">
 									<div class="form-check form-check-inline" th:each="halfType : ${T(com.bootstrap.study.approval.constant.ApprHalfType).values()}">
-										<input class="form-check-input" type="radio" th:field="*{apprDetailDTOList[0].halfType}" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
+										<input class="form-check-input" type="radio" name="halfType" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
 										<label class="form-check-label" th:for="'halfType_' + ${halfType.name()}" th:text="${halfType.label}"></label>
 									</div>
 								</div>
 							</div>
 
 							<!-- 연차 일수 -->
-							<div class="form-group row vac">
+							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">연차 일수</label>
 								<div class="col-sm-2">
 									<small>잔여연차</small>
@@ -166,12 +152,71 @@
 							<div class="form-group row">
 								<label for="summernote" class="col-sm-2 col-form-label">에디터 내용</label>
 								<div class="col-sm-8">
-									<textarea id="summernote" class="form-control" th:field="*{content}"></textarea>
+									<textarea id="summernote" class="form-control" th:field="*{content}" required></textarea>
 								</div>
 							</div>
 						</form>
+
 					</div>
 				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="layerModal" tabindex="-1" role="dialog" aria-labelledby="layerModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header bg-primary py-3">
+				<h5 class="modal-title text-white" id="layerModalLabel"><i class="fas fa-info-circle mr-2"></i>결재자 입력</h5>
+				<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p class="mb-2">결재라인</p>
+				<div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                        	<th></th>
+                            <th>결재자</th>
+                            <!-- <th>순서</th> -->
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+				            <td>
+				                <input type="checkbox">
+				            </td>
+				            <td>
+				                <div class="form-group position-relative">
+								  <input type="text" name="lineName[]" class="userSearch form-control" value="기안신청자 (개발팀 / 사원)" placeholder="기안신청자칸" readonly>
+								  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
+								</div>
+				            </td>
+				            <!-- <td><input type="text" value="1" readonly></td> -->
+				        </tr>
+                        <tr th:each="i : ${#numbers.sequence(2,3)}">
+				            <td>
+				                <input type="checkbox" class="modal-user-check mr-2" data-id="" data-name="" data-dept="" data-pos="">
+				            </td>
+				            <td>
+				                <div class="form-group position-relative">
+								  <input type="text" class="userSearch form-control" placeholder="이름 입력">
+								  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
+								</div>
+				            </td>
+				            <!-- <td><input type="text" th:value="${i}" readonly></td> -->
+				        </tr>
+                        </tbody>
+                    </table>
+                </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+				<button type="button" class="btn btn-primary" id="btnConfirm">확인</button>
 			</div>
 		</div>
 	</div>
@@ -187,30 +232,14 @@
 
 <script>	
 	$(function () {
-		let selectedRole = '[[${selectedRole}]]';
-		
-		if (selectedRole === 'VACATION')
-		{
-			$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', false);
-			$(".vac").show();
-		}
-		else
-		{
-			$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', true);
-			$(".vac").hide();
-		}
-		
 		$('#createAtPicker, #startDate, #endDate').datetimepicker({
-			format: 'yyyy-MM-DD',
-			defaultDate: new Date(),
-			todayBtn: true,
+			format: 'YYYY-MM-DD',
 			locale: 'ko'
 		});
 
 		$('#summernote').summernote({
 			tabsize: 2,
 			height: 200,
-			focus: true,
 			toolbar: [
 				['style', ['style']],
 				['font', ['bold', 'underline', 'clear']],
@@ -261,45 +290,73 @@
 	        e.preventDefault();
 	        
 	        let $item = $(this);
+	        let $row  = $item.closest("tr");  // 현재 클릭된 행 찾기
 	        let $result = $item.closest(".searchResult");
-
+	        let $input = $result.siblings(".userSearch");
+	        
 	        let id = $(this).data("id");
 	        let name = $(this).data("name");
 	        let dept = $(this).data("dept");
 	        let pos  = $(this).data("pos");
 
-			// 중복 방지
-			if ($("#hiddenEmpIds input[value='" + id + "']").length > 0) {
-				alert("이미 선택된 결재자입니다.");
-				$result.empty();
-				$(".userSearch").val("");
-				return false;
-			}
+	        $input.val(`${name} (${dept} / ${pos})`);
+	     // td 안 체크박스 선택
+	        let $check = $row.find("td:first input[type='checkbox']");
 
-			// 참여 제한
-			if ($('input[name="empIds[]"]').length > 2) {
-				alert("결재자는 2명까지 선택가능합니다.");
-				$result.empty();
-				$(".userSearch").val("");
-				return false;
-			}
+	        // 체크박스에 값 세팅
+	        $check.attr({
+	            "data-id": id,
+	            "data-name": name,
+	            "data-dept": dept,
+	            "data-pos": pos
+	        }).prop("checked", true);
+	        
+	        $result.empty();
+		});
+		 
+	 // 확인 버튼 → 부모창에 추가
+	    $("#btnConfirm").on("click", function () {
+	    	
+   		  let checked = $(".modal-user-check:checked"); // 부모창에서 체크된 row만 반영	
+    	  
+    	  if (checked.length === 0) {
+   		    alert("결재자를 선택하세요.");
+   		    return false;
+   		  }
+    		
+    	  checked.each(function () {
+    		  
+  		    let empId = $(this).data("id");
+  		    let name  = $(this).data("name");
+  		  	let dept  = $(this).data("dept");
+  	    	let pos   = $(this).data("pos");
+  	   
+  		    // 중복 방지
+  		    if ($("#hiddenEmpIds input[value='" + empId + "']").length > 0) {
+ 		      alert("이미 선택된 결재자가 있습니다.");
+  		      return false; 
+  		    }
 
-	     // 버튼 추가 (Chip)
+  		    // 버튼 추가 (Chip)
   		    let $btn = $(`
-  		      <button type="button" class="btn btn-sm btn-outline-secondary m-1 selected-user" data-id="${id}">
-  		        ${name} (${dept}/${pos}) <span aria-hidden="true">&times;</span>
+  		      <button type="button" class="btn btn-sm btn-outline-secondary m-1 selected-user" data-id="${empId}">
+  		        ${name} <span aria-hidden="true">&times;</span>
   		      </button>
   		    `);
   		    $("#selectedUsers").append($btn);
   		    
   			// hidden input 추가
-  		  	let $hidden = $(`<input type="hidden" name="empIds[]" value="${id}">`);
+  		  	let $hidden = $(`<input type="hidden" name="empIds[]" value="${empId}">`);
   		  	$("#hiddenEmpIds").append($hidden);
   		  	
-	        $result.empty();
-			$(".userSearch").val("");
-		});
-		
+   		  });
+
+	      // 모달 닫기
+	      $("#layerModal").modal("hide");
+	      $(".userSearch").val("");
+	      $(".searchResult").empty();
+	      selectedEmp = null;
+	    });
 
 	    // 버튼 클릭 시 삭제
 	    $(document).on("click", ".selected-user", function () {
@@ -307,33 +364,11 @@
 	      $(this).remove();
 	      $("#hiddenEmpIds input[value='" + empId + "']").remove();
 	    });
-
-		// 양식타입 변경
-		$(document).on("change", ".selected-req-type", function () {
-			let sel_val = $(this).val();
-
-			if (sel_val === 'VACATION')
-			{
-				$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', false);
-				$(".vac").show();
-			}
-			else
-			{
-				$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', true);
-				$(".vac").hide();
-			}
-		});
-		
-		$('#apprForm').on('submit', function(e) {
-		  var content = $('#summernote').summernote('code');
-		  /* if (!content || content === '<p><br></p>') {
-		    alert('내용을 입력해주세요.');
-		    e.preventDefault();  // 제출 중단
-		    return false;
-		  } */
-		  $('#summernote').val(content);  // textarea에 Summernote 내용 복사
-		});
+	   
 	});
+	
+	
+	
 </script>
 
 </body>

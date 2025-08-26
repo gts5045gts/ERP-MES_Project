@@ -19,30 +19,36 @@
 
 	<!-- 오늘날짜 기준으로 부서전체인원 셀렉 -->
 	<select id="getDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
-	   SELECT 
-	       c.commute_id,
-	       c.check_in_time,
-	       c.check_out_time,
-	       c.emp_id,
-	       c.work_status,
-	       c.created_at,
-	       c.updated_at,
-	       e.emp_name,
-	       d.dept_name,
-	       p.pos_name
-	   FROM employee e
-	   JOIN test_dept d ON e.emp_dept_id = d.dept_id
-	   JOIN test_position p ON e.emp_position = p.pos_id
-	   LEFT JOIN commute_record c
-	       ON e.emp_id = c.emp_id
-	       AND TRUNC(c.check_in_time) = TO_DATE(#{today}, 'YYYY-MM-DD')
-	   WHERE e.emp_dept_id = (
-	       SELECT emp_dept_id
-	       FROM employee
-	       WHERE emp_id = #{empId}
-	   )
-	   ORDER BY e.emp_name
+		SELECT 
+		    c.commute_id,
+		    c.check_in_time,
+		    c.check_out_time,
+		    c.emp_id,
+		    c.work_status,
+		    c.created_at,
+		    c.updated_at,
+		    e.emp_name,
+		    d.COM_DT_NM AS dept_name,
+		    p.COM_DT_NM AS pos_name,
+		    TO_CHAR(TO_DATE(#{today}, 'YYYY-MM-DD'), 'YYYY-MM-DD') AS commute_date
+		FROM employee e
+		LEFT JOIN common_dt_code d 
+		    ON e.emp_dept_id = d.com_dt_id
+		   AND d.com_id = 'DEP'
+		LEFT JOIN common_dt_code p 
+		    ON e.emp_position = p.com_dt_id
+		   AND p.com_id = 'POS'
+		LEFT JOIN commute_record c 
+		    ON e.emp_id = c.emp_id
+		   AND TRUNC(c.check_in_time) = TO_DATE(#{today}, 'YYYY-MM-DD')
+		WHERE e.emp_dept_id = (
+		    SELECT emp_dept_id
+		    FROM employee
+		    WHERE emp_id = #{empId}
+		)
+		ORDER BY e.emp_name
 	</select>
+
 
 	<!-- 출근 기록이 있는지 확인 -->
 	<select id="getTodayCheckInCount" resultType="int">
@@ -54,7 +60,7 @@
 	
 	
 	<!-- 출근상태 commute_record에 저장 -->
-	<insert id="insertCommute" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	<insert id="insertCommuteCheckIn" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
 	    INSERT INTO commute_record (
 	        check_in_time,
 	        check_out_time,
@@ -71,4 +77,40 @@
 	        SYSDATE                      
 	    )
 	</insert>
+	
+	
+	<!-- 퇴근 기록이 있는지 확인 -->
+	<select id="getTodayCheckOutCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_out_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 퇴근상태 commute_record에 저장 -->
+	<update id="updateCommuteCheckOut" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    UPDATE commute_record
+	    SET check_out_time = #{checkOutTime},
+	        work_status = #{workStatus},
+	        updated_at = SYSDATE
+	    WHERE emp_id = #{empId}
+	      AND TRUNC(check_in_time) = TRUNC(SYSDATE)   
+	      AND check_out_time IS NULL
+	</update>
 </mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

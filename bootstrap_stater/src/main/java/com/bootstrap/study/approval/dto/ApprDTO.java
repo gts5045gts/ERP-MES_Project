@@ -1,8 +1,10 @@
 package com.bootstrap.study.approval.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
 
 import com.bootstrap.study.approval.entity.Appr;
@@ -27,10 +29,12 @@ public class ApprDTO {
 	
 	private String reqType;
 	
-	@NotBlank(message = "제목은 필수 입력값입니다!") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
+	@NotBlank(message = "제목은 필수 입력값입니다.") // 공백만 있거나, 길이가 0인 문자열, null 값을 허용하지 않음
 	private String title;
 	
 	private String content;
+	
+	private LocalDate requestAt;
 	
 	private LocalDateTime createAt;
 	
@@ -38,7 +42,7 @@ public class ApprDTO {
 	
  	private ApprStatus status = ApprStatus.REQUESTED;
  	
- 	private Integer currentStep;
+// 	private Integer currentStep;
  	
  	private Integer totStep;
  	
@@ -54,7 +58,9 @@ public class ApprDTO {
     // ㅇㅇ
     // 상태를 한글로 변환하는 메서드 추가
     public String getStatusLabel() {
-        if ("PENDING".equals(decision) || decision == null) {
+    	// 0826
+        // decision이 null, 빈 문자열, 또는 PENDING이면 "대기"
+        if (decision == null || decision.trim().isEmpty() || "PENDING".equals(decision)) {
             return "대기";
         } else if ("ACCEPT".equals(decision)) {
             return "승인";
@@ -65,20 +71,21 @@ public class ApprDTO {
     }
     
  	private List<ApprLineDTO> ApprLineDTOList;
- 	private List<ApprDetailDTO> ApprDetailDTOList;
+ 	private List<ApprDetailDTO> apprDetailDTOList;
 
  	@Builder
-	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDateTime createAt,
-			LocalDateTime updateAt, ApprStatus status, Integer currentStep, Integer totStep) {
+	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDate requestAt, LocalDateTime createAt,
+			LocalDateTime updateAt, ApprStatus status, Integer totStep) {
 		this.reqId = reqId;
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
 		this.content = content;
+		this.requestAt = requestAt;
 		this.createAt = createAt;
 		this.updateAt = updateAt;
 		this.status = status;
-		this.currentStep = currentStep;
+//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
 

@@ -1,5 +1,6 @@
 package com.bootstrap.study.approval.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime; 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-//import com.bootstrap.study.approval.constant.ApprStatus;
+import com.bootstrap.study.approval.constant.ApprStatus;
 
 @Entity
 @Table(name = "approval")
@@ -38,6 +39,9 @@ public class Appr {
 
 	@Column(length = 4000)
 	private String content;
+	
+	@Column(nullable = false)
+	private LocalDate requestAt;
 
 	@CreatedDate
 	@Column(updatable = false)
@@ -46,27 +50,38 @@ public class Appr {
 	@LastModifiedBy
 	private LocalDateTime updateAt;
 
-//	@Enumerated(EnumType.STRING)
-//	@Column(nullable = false)
-// 	private ApprStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+ 	private ApprStatus status = ApprStatus.REQUESTED;
  	
- 	private int currentStep;
- 	
+	@Column(name = "TOT_STEP")
  	private int totStep;
 
- 	@OneToMany(mappedBy = "appr", fetch = FetchType.LAZY)
+ 	@OneToMany(mappedBy = "appr", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprLine> appLines = new ArrayList<ApprLine>();
  	
  	 // 새로 추가하는 ApprDetail 연결
     @OneToMany(mappedBy = "appr", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprDetail> apprDetails = new ArrayList<ApprDetail>();
 
-	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
+//	public Appr(String empId, String reqType, String title, String content, int currentStep, int totStep) {
+	public Appr(String empId, String reqType, String title, String content, int totStep) {
 		this.empId = empId;
 		this.reqType = reqType;
 		this.title = title;
 		this.content = content;
-		this.currentStep = currentStep;
+//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
+	
+	public void addLine(ApprLine line) {
+	    this.appLines.add(line);
+	    line.setAppr(this);
+	}
+	
+	 // 연관관계 편의 메서드
+    public void addDetail(ApprDetail detail) {
+        this.apprDetails.add(detail);
+        detail.setAppr(this);
+    }
 }

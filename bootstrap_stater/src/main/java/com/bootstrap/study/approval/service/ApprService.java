@@ -1,9 +1,18 @@
 package com.bootstrap.study.approval.service;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
+import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
+import com.bootstrap.study.approval.dto.ApprLineDTO;
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.approval.entity.ApprDetail;
+import com.bootstrap.study.approval.entity.ApprLine;
 import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +32,9 @@ import java.util.stream.Collectors;
 @Log4j2
 public class ApprService {
 
-    private final ApprRepository apprRepository;
-    
+	private final ApprRepository apprRepository;
+	private final ApprLineService apprLineService;
+	
     // 상수 정의
     private static final String DEFAULT_DEPARTMENT = "인사부";
     private static final String DEFAULT_APPROVER = "김이사";
@@ -60,7 +71,7 @@ public class ApprService {
         List<Object[]> allResults = apprRepository.findApprovalListWithJoin();
         List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
         
-        // ✨ 상태별 + 사용자별 필터링
+        // 상태별 + 사용자별 필터링
         List<ApprDTO> filteredList = filterByStatusAndUser(allDtoList, status, userId);
         
         // 페이징 처리
@@ -92,12 +103,24 @@ public class ApprService {
         
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
-    
+    // 0826
     //승인 처리 (코멘트 포함)
     @Transactional
     public void approveRequestWithComments(Long reqId, String comments) {
         log.info("승인 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+        
+        // 현재 단계 승인 처리
         processApprovalDecision(reqId, comments, "ACCEPT", "승인");
+        
+        // 남은 대기 결재가 있는지 확인
+        int pendingCount = apprRepository.countPendingApprovals(reqId);
+        
+        if (pendingCount == 0) {
+            // 모든 결재 완료 -> FINISHED로 변경
+            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
+            apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        }
+        
         log.info("승인 처리 완료 - reqId: {}", reqId);
     }
     
@@ -105,7 +128,13 @@ public class ApprService {
     @Transactional
     public void rejectRequestWithComments(Long reqId, String comments) {
         log.info("반려 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+        
         processApprovalDecision(reqId, comments, "DENY", "반려");
+        
+        // 반려되면 즉시 FINISHED로
+        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
+        apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        
         log.info("반려 처리 완료 - reqId: {}", reqId);
     }
     
@@ -119,23 +148,49 @@ public class ApprService {
     }
     
     
-    // Object[] 배열을 ApprDTO로 변환
+    // Object[] 배열을 ApprDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprDTO convertToApprDTO(Object[] result) {
         ApprDTO dto = new ApprDTO();
         dto.setStepNo((Integer) result[0]);
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
-        dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime());
         
+        // REQUEST_AT 처리 - result[3]
+        Object requestAtObj = result[3];
+        if (requestAtObj == null) {
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        } else if (requestAtObj instanceof java.sql.Date) {
+            // DATE 타입을 LocalDateTime으로 변환
+            java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
+            dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
+        } else if (requestAtObj instanceof java.sql.Timestamp) {
+            dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+        } else {
+            log.warn("알 수 없는 날짜 타입: {}, 현재 시간으로 대체", requestAtObj.getClass().getName());
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        }
+        
+        // DEC_DATE 처리
         if (result[4] != null) {
-            dto.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime());
+            Object decDateObj = result[4];
+            if (decDateObj instanceof oracle.sql.TIMESTAMPTZ) {
+                try {
+                    oracle.sql.TIMESTAMPTZ timestamptz = (oracle.sql.TIMESTAMPTZ) decDateObj;
+                    dto.setDecDate(timestamptz.timestampValue().toLocalDateTime());
+                } catch (Exception e) {
+                    log.warn("DEC_DATE TIMESTAMPTZ 변환 실패: {}", e.getMessage());
+                    dto.setDecDate(null);
+                }
+            } else if (decDateObj instanceof java.sql.Timestamp) {
+                dto.setDecDate(((java.sql.Timestamp) decDateObj).toLocalDateTime());
+            }
         }
         
         dto.setDecision((String) result[5]);
         dto.setReqId(((Number) result[6]).longValue());
+//        dto.setReqType(ApprReqType.valueOf((String) result[7]));
         dto.setReqType((String) result[7]);
         dto.setEmpId((String) result[8]);
-        dto.setCurrentStep((Integer) result[9]);
         
         // 임시 데이터 설정
         dto.setDepartment(DEFAULT_DEPARTMENT);
@@ -145,13 +200,28 @@ public class ApprService {
     }
     
     
-    // Object[] 배열을 ApprFullDTO로 변환
+    // Object[] 배열을 ApprFullDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprFullDTO convertToApprFullDTO(Object[] result) {
         ApprFullDTO dto = new ApprFullDTO();
         dto.setReqId(((Number) result[6]).longValue());
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
-        dto.setCreateAt(((java.sql.Timestamp) result[3]).toLocalDateTime());
+        
+        // REQUEST_AT 처리 - result[3]
+        Object requestAtObj = result[3];
+        if (requestAtObj == null) {
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        } else if (requestAtObj instanceof java.sql.Date) {
+            // DATE 타입을 LocalDateTime으로 변환
+            java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
+            dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
+        } else if (requestAtObj instanceof java.sql.Timestamp) {
+            dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+        } else {
+            log.warn("ApprFullDTO 알 수 없는 날짜 타입: {}, 현재 시간으로 대체", requestAtObj.getClass().getName());
+            dto.setCreateAt(java.time.LocalDateTime.now());
+        }
+        
         dto.setReqType((String) result[7]);
         dto.setEmpId((String) result[8]);
         dto.setDepartment(DEFAULT_DEPARTMENT);
@@ -238,4 +308,46 @@ public class ApprService {
         return apprRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId));
     }
+
+    //결재자 리스트 조회
+    @Transactional(readOnly = true)
+    public List<PersonnelDTO> getApprEmployee(String keyword, String currentEmpId) {
+        return apprRepository.findByNameContainingIgnoreCase(keyword, currentEmpId)
+                .stream()
+                .map(PersonnelDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public Long registAppr(@Valid ApprDTO apprDTO, String[] empIds, String loginEmpId) throws IOException{
+		
+		Appr appr = apprDTO.toEntity();
+		
+		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
+		appr.setEmpId(loginEmpId);
+		appr.setTotStep(empIds.length);
+		
+		int index = 1;
+		for (String empId : empIds) {
+		    ApprLine line = new ApprLine();
+		    line.setApprId(empId);
+		    line.setStepNo(index++);
+		    appr.addLine(line);  // Appr이 직접 관리
+		}
+		
+		for (ApprDetailDTO dto : apprDTO.getApprDetailDTOList()) {
+		    ApprDetail detail = new ApprDetail();
+		    detail.setVacType(dto.getVacType());
+		    detail.setStartDate(dto.getStartDate());
+		    detail.setEndDate(dto.getEndDate());
+		    detail.setHalfType(dto.getHalfType());
+		    appr.addDetail(detail);  // 연관관계 메서드
+		}
+//		System.out.println("Details size = " + appr.getApprDetails().size());
+		apprRepository.save(appr);
+		
+//		apprLineService.registApprLine(appr, empIds);
+				
+		return appr.getReqId();
+	}
+	
 }

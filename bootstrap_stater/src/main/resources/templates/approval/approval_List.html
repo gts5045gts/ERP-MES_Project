@@ -200,8 +200,8 @@
                                 </td>
                                 <td>
                                     <button th:if="${appr.statusLabel == '대기'}"
-                                            type="button" class="btn btn-primary btn-sm"
-                                            th:onclick="'openApprovalModal(' + ${appr.reqId} + ')'">결재하기</button>
+                                            type="button" class="btn btn-primary btn-sm approval-btn"
+                                            th:data-req-id="${appr.reqId}">결재하기</button>
                                 </td>
                             </tr>
                             </tbody>
@@ -248,7 +248,7 @@
 
         <!-- 결재 모달 -->
         <div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-labelledby="approvalModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="approvalModalLabel">
@@ -350,8 +350,12 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
-                        <button type="button" class="btn btn-success" id="approveBtn">승인</button>
-                        <button type="button" class="btn btn-danger" id="rejectBtn">반려</button>
+                        <button type="button" class="btn btn-success" id="approveBtn" disabled>
+                            <i class="fas fa-check"></i> 승인
+                        </button>
+                        <button type="button" class="btn btn-danger" id="rejectBtn" disabled>
+                            <i class="fas fa-times"></i> 반려
+                        </button>
                     </div>
                 </div>
             </div>
@@ -360,7 +364,7 @@
 
     <th:block layout:fragment="script">
     <script th:inline="javascript">
-        // ===== 전역 변수 및 상수 =====
+        // 전역 변수 및 상수
         let currentReqId = null;
 
         const MODAL_ELEMENTS = {
@@ -391,7 +395,17 @@
             '반려': 'approval-status-rejected'
         };
 
-        // ===== 모달 상태 관리 함수들 =====
+        // 전역 함수로 openApprovalModal 정의
+        window.openApprovalModal = function(reqId) {
+            console.log('결재 모달 열기 시도:', reqId);
+            
+            if (!validateReqId(reqId)) return;
+            
+            initializeModal(reqId);
+            fetchApprovalDetail(reqId);
+        };
+
+        // 모달 상태 관리 함수들
         function showModalState(activeElement) {
             const elements = ['modalLoading', 'modalContent', 'modalError'];
             elements.forEach(elementId => {
@@ -404,26 +418,34 @@
 
         function showModalLoading() {
             showModalState('modalLoading');
+            // 버튼 비활성화
+            toggleActionButtons(false);
         }
 
         function showModalError() {
             showModalState('modalError');
+            // 버튼 비활성화
+            toggleActionButtons(false);
         }
 
         function showModalContent() {
             showModalState('modalContent');
+            // 버튼 활성화
+            toggleActionButtons(true);
         }
 
-        // ===== 모달 관련 함수들 =====
-        function openApprovalModal(reqId) {
-            if (!validateReqId(reqId)) return;
+        function toggleActionButtons(enabled) {
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
             
-            initializeModal(reqId);
-            fetchApprovalDetail(reqId);
+            if (approveBtn) approveBtn.disabled = !enabled;
+            if (rejectBtn) rejectBtn.disabled = !enabled;
         }
 
+        // 모달 관련 함수들
         function validateReqId(reqId) {
             if (!reqId) {
+                console.error('결재 번호가 없습니다.');
                 alert('결재 번호가 없습니다.');
                 return false;
             }
@@ -432,21 +454,28 @@
 
         function initializeModal(reqId) {
             currentReqId = reqId;
+            console.log('현재 결재 ID 설정:', currentReqId);
+            
             // 코멘트 입력창 초기화
             const commentsTextarea = document.getElementById('modal-comments');
             if (commentsTextarea) {
                 commentsTextarea.value = '';
             }
+            
             $('#approvalModal').modal('show');
             showModalLoading();
         }
 
         function fetchApprovalDetail(reqId) {
             const apiUrl = API_ENDPOINTS.detail(reqId);
+            console.log('API 호출 URL:', apiUrl);
             
             fetch(apiUrl)
                 .then(handleResponse)
-                .then(data => displayModalContent(data))
+                .then(data => {
+                    console.log('결재 상세 데이터:', data);
+                    displayModalContent(data);
+                })
                 .catch(error => {
                     console.error('결재 상세 조회 실패:', error);
                     showModalError();
@@ -454,6 +483,7 @@
         }
 
         function handleResponse(response) {
+            console.log('서버 응답 상태:', response.status);
             if (!response.ok) {
                 throw new Error(`서버 응답 오류: ${response.status}`);
             }
@@ -492,7 +522,7 @@
             }
         }
 
-        // ===== 승인/반려 처리 함수들 =====
+        // 승인/반려 처리 함수들
         function processApproval(action, endpoint, successMessage) {
             const actionKorean = action === 'approve' ? '승인' : '반려';
             
@@ -524,14 +554,20 @@
                 body: JSON.stringify({ comments })
             };
             
+            console.log('결재 처리 요청:', endpoint, requestOptions);
+            
             fetch(endpoint, requestOptions)
                 .then(response => {
+				    console.log('결재 처리 응답:', response.status);
 				    if (!response.ok) {
 				        throw new Error(`서버 응답 오류: ${response.status}`);
 				    }
 				    return response.text();
 				})
-                .then(() => handleApprovalSuccess(successMessage, actionKorean))
+                .then(result => {
+                    console.log('결재 처리 성공:', result);
+                    handleApprovalSuccess(successMessage, actionKorean);
+                })
                 .catch(error => handleApprovalError(error, actionKorean));
         }
 
@@ -546,12 +582,12 @@
             alert(`${actionKorean} 처리 중 오류가 발생했습니다.`);
         }
 
-        // ===== 테이블 업데이트 함수 =====
+        // 테이블 업데이트 함수
         function updateTableRow(reqId, newStatus) {
             const tableRows = document.querySelectorAll('#dataTable tbody tr');
             
             tableRows.forEach(row => {
-                const approveButton = row.querySelector(`button[onclick*="${reqId}"]`);
+                const approveButton = row.querySelector(`button[data-req-id="${reqId}"]`);
                 
                 if (approveButton) {
                     updateRowStatus(row, newStatus);
@@ -587,7 +623,7 @@
             }
         }
 
-        // ===== 검색 기능 =====
+        // 검색 기능
         function initializeSearch() {
             const drafterNameInput = document.getElementById('drafterNameInput');
             const searchButton = document.getElementById('searchButton');
@@ -621,12 +657,22 @@
             });
         }
 
-        // ===== 이벤트 리스너 등록 =====
+        // 이벤트 리스너 등록
         function initializeEventListeners() {
+            // 결재하기 버튼들에 이벤트 리스너 추가 (이벤트 위임)
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('approval-btn')) {
+                    const reqId = e.target.getAttribute('data-req-id');
+                    console.log('결재하기 버튼 클릭:', reqId);
+                    openApprovalModal(reqId);
+                }
+            });
+            
             // 승인 버튼
             const approveBtn = document.getElementById('approveBtn');
             if (approveBtn) {
                 approveBtn.addEventListener('click', () => {
+                    console.log('승인 버튼 클릭, 현재 reqId:', currentReqId);
                     processApproval(
                         'approve', 
                         API_ENDPOINTS.approve(currentReqId), 
@@ -639,6 +685,7 @@
             const rejectBtn = document.getElementById('rejectBtn');
             if (rejectBtn) {
                 rejectBtn.addEventListener('click', () => {
+                    console.log('반려 버튼 클릭, 현재 reqId:', currentReqId);
                     processApproval(
                         'reject', 
                         API_ENDPOINTS.reject(currentReqId), 
@@ -649,10 +696,15 @@
             
             // 검색 기능 초기화
             initializeSearch();
+            
+            console.log('모든 이벤트 리스너가 초기화되었습니다.');
         }
 
-        // ===== DOM 로드 완료 후 초기화 =====
-        document.addEventListener('DOMContentLoaded', initializeEventListeners);
+        // DOM 로드 완료 후 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM 로드 완료, 이벤트 리스너 초기화 시작');
+            initializeEventListeners();
+        });
     </script>
     </th:block>
 </body>
