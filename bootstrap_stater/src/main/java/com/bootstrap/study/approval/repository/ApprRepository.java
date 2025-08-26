@@ -75,7 +75,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
         """, nativeQuery = true)
     int countPendingApprovals(@Param("reqId") Long reqId);
     
- // 최소 STEP_NO 조회
+    // 최소 STEP_NO 조회
     @Query(value = """
         SELECT MIN(step_no) 
         FROM approval_line 
