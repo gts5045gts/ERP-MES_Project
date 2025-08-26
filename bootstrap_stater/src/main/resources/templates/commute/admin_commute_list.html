@@ -13,7 +13,7 @@
 	    <div class="container-fluid">
 	
 	        <!-- Page Heading -->
-	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
+	        <h1 class="h3 mb-2 text-gray-900">관리자 근태관리 출퇴근현황</h1>
 	        
 	        <!-- 출근버튼 -->
 	        
@@ -28,7 +28,7 @@
 <!-- 	            	<input type="date"> -->
 <!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
-				    <h6 class="m-0 font-weight-bold text-primary">나의 부서인원 전체 근퇴현황</h6>
+				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
@@ -196,7 +196,7 @@
 	document.getElementById("searchBtn").addEventListener("click", function() {
 	    const startDate = document.querySelector("input[name='startDate']").value;
 	    const endDate = document.querySelector("input[name='endDate']").value;
-	    window.location.href = `/attendance/commuteList?startDate=${startDate}&endDate=${endDate}`;
+	    window.location.href = `/attendance/adminCommute?startDate=${startDate}&endDate=${endDate}`;
 	});
 
 	</script>

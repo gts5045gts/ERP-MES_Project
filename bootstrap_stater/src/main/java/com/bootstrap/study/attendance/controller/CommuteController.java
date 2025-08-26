@@ -148,7 +148,7 @@ public class CommuteController {
 	// 관리자 근태관리
 	@GetMapping("/adminCommute")
 	public String getAttendanceList(@RequestParam(name = "startDate", required = false) String startDate,
-									@RequestParam(name = "endtDate", required = false) String endDate,
+									@RequestParam(name = "endDate", required = false) String endDate,
 									Model model) {
 		
 		// 로그인한 사용자 객체 꺼내기
