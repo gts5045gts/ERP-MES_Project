@@ -210,6 +210,11 @@
 								                     appr.statusLabel == '반려' ? 'approval-status-rejected' : 
 								                     'approval-status-unknown'}">대기</span>
 								</td>
+								<td>
+							        <button th:if="${currentStatus != 'my' and appr.statusLabel == '대기'}"
+							                type="button" class="btn btn-primary btn-sm approval-btn"
+							                th:data-req-id="${appr.reqId}">결재하기</button>
+							    </td>
                             </tr>
                             </tbody>
                         </table>

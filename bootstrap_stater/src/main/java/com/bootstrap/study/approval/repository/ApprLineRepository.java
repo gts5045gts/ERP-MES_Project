@@ -31,14 +31,16 @@ public interface ApprLineRepository extends JpaRepository<ApprLine,Long> {
                              @Param("decision") String decision,
                              @Param("comments") String comments);
     
-    // 0827 아직 결재 안 한 사람 수 확인
+    // 0827 아직 결재 안 한 사람 수 확인 (본인 제외하고 남은 결재자 수 확인)
     @Query(value = """
-        SELECT COUNT(*) 
-        FROM approval_line 
-        WHERE req_id = :reqId 
-        AND (decision IS NULL OR decision = 'PENDING')
-        """, nativeQuery = true)
-    int countRemainingApprovals(@Param("reqId") Long reqId);
+    	    SELECT COUNT(*) 
+    	    FROM approval_line al
+    	    JOIN approval a ON al.req_id = a.req_id
+    	    WHERE al.req_id = :reqId 
+    	    AND al.appr_id != a.emp_id  -- 기안자 본인 제외
+    	    AND (al.decision IS NULL OR al.decision = 'PENDING')
+    	    """, nativeQuery = true)
+	int countRemainingApprovals(@Param("reqId") Long reqId);
     
     // 0827 반려된 결재가 있는지 확인
     @Query(value = """
