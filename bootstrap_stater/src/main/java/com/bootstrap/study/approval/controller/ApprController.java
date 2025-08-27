@@ -32,6 +32,7 @@ import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
+import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 
@@ -58,12 +59,15 @@ public class ApprController {
     	
     	PersonnelLoginDTO principal = (PersonnelLoginDTO) authentication.getPrincipal();
     	String loginEmpId = principal.getEmpId();
-    	//연차 정보 가져와야함.
+    	//연차 정보
+    	Annual annual = apprService.getAnnualInfo(loginEmpId);
+    	double remain = annual.getAnnTotal() - annual.getAnnUse();
     	    	
     	model.addAttribute("apprDTO", new ApprDTO());
     	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
     	model.addAttribute("loginEmpId", loginEmpId);
     	model.addAttribute("principal", principal);
+    	model.addAttribute("remain", remain);
     	        
         return "approval/drafting_form";
     }

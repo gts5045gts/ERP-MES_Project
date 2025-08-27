@@ -42,8 +42,6 @@ public class ApprDTO {
 	
  	private ApprStatus status = ApprStatus.REQUESTED;
  	
-// 	private Integer currentStep;
- 	
  	private Integer totStep;
  	
  	// 0826
@@ -86,7 +84,6 @@ public class ApprDTO {
 		this.createAt = createAt;
 		this.updateAt = updateAt;
 		this.status = status;
-//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
 
