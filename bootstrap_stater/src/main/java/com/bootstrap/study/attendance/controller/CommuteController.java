@@ -1,5 +1,6 @@
 package com.bootstrap.study.attendance.controller;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -188,17 +189,20 @@ public class CommuteController {
 	    
 	    Map<String, Object> paramMap = new HashMap<>();
 	    paramMap.put("empId", empId);
-	    paramMap.put("startDate", startDate);
-	    paramMap.put("endDate", endDate);
+	    paramMap.put("startDate", Date.valueOf(startDate));
+	    paramMap.put("endDate", Date.valueOf(endDate));
+	    paramMap.put("deptId", deptId);
 		
 		model.addAttribute("startDate", startDate);
 		model.addAttribute("endDate", endDate);
 		System.out.println("startDate : " + startDate);
 		System.out.println("endDate : " + endDate);
+		System.out.println("deptId : " + deptId);
+		
 		
 		// 부서 조회
 	    List<AdminCommuteDTO> adminCommuteList;
-	    if("ALL".equals(deptId) || deptId == null) {
+	    if(deptId == null || deptId.isEmpty() || "ALL".equals(deptId)) {
 	    	adminCommuteList = commuteService.getAllDeptCommuteList(paramMap); // 전체 부서 조회
 	    } else {
 	    	adminCommuteList = commuteService.getSpecificDeptCommuteList(paramMap); // 특정 부서 조회
@@ -206,10 +210,6 @@ public class CommuteController {
 	    model.addAttribute("adminCommuteList", adminCommuteList);
 		
 	    System.out.println("adminCommuteList :" + adminCommuteList);
-		
-//		List<CommonDetailCodeDTO> commonStatus = commuteService.getCommonStatus();
-		
-//		model.addAttribute("commonStatus", commonStatus);
 	    
 	    
 		return "/commute/admin_commute_list";

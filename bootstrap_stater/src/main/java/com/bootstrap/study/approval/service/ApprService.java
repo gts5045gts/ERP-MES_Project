@@ -277,7 +277,13 @@ public class ApprService {
         
         // REQUEST_AT 처리 - result[5]로 수정
         Object requestAtObj = result[5];
-        // ... 날짜 처리 코드 ...
+        if (requestAtObj != null) {
+            if (requestAtObj instanceof java.sql.Date) {
+                dto.setCreateAt(((java.sql.Date) requestAtObj).toLocalDate().atStartOfDay());
+            } else if (requestAtObj instanceof java.sql.Timestamp) {
+                dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+            }
+        }
         
         dto.setReqType((String) result[9]);
         dto.setEmpId((String) result[10]);
