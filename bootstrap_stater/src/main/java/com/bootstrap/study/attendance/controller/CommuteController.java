@@ -22,8 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
+import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.servlet.http.HttpSession;
@@ -66,14 +68,11 @@ public class CommuteController {
 	    if (startDate == null || startDate.isEmpty()) startDate = today.toString();
 	    if (endDate == null || endDate.isEmpty()) endDate = today.toString();
 	    
-	    // startDate랑 endDate가 오늘날짜인지 판별하기
-	    boolean isTodaySearch = LocalDate.parse(startDate).isEqual(today) && LocalDate.parse(endDate).isEqual(today);
 	    
 	    Map<String, Object> paramMap = new HashMap<>();
 	    paramMap.put("empId", empId);
 	    paramMap.put("startDate", startDate);
 	    paramMap.put("endDate", endDate);
-	    paramMap.put("isTodaySearch", isTodaySearch);
 	    
 //		System.out.println("startDate : " + startDate);		
 //		System.out.println("endDate : " + endDate);		
@@ -149,6 +148,7 @@ public class CommuteController {
 	@GetMapping("/adminCommute")
 	public String getAttendanceList(@RequestParam(name = "startDate", required = false) String startDate,
 									@RequestParam(name = "endDate", required = false) String endDate,
+									@RequestParam(name = "deptId", required = false) String deptId,
 									Model model) {
 		
 		// 로그인한 사용자 객체 꺼내기
@@ -166,7 +166,22 @@ public class CommuteController {
 	        return "/commute/commute_list"; // 추후에 메인사이트로 이동하게끔 변경
 	    }
 	    // ==============================================================================
-	    // 기본값은 오늘
+	    
+//		List<CommuteDTO> commuteDTOList = commuteService.getAdminDeptCommuteList(paramMap);
+//		model.addAttribute("commuteDTOList", commuteDTOList);
+
+		// 공통코드로 된 해당 부서인원 값 셀렉트
+		List<CommonDetailCodeDTO> commonDept = commuteService.getCommonDept();
+		System.out.println("commonDept : " + commonDept);
+		CommonDetailCodeDTO allDept = new CommonDetailCodeDTO();
+		allDept.setComDtId("ALL");
+		allDept.setComDtNm("전체부서");
+		commonDept.add(0, allDept); // 셀렉박스의 리스트의 맨 앞(0번 인덱스)에 allDept를 넣기
+		
+		model.addAttribute("commonDept", commonDept);
+		model.addAttribute("selectedDept", deptId != null ? deptId : "ALL"); // 부서 셀렉박스 고정값
+		
+	    // 오늘 기준으로 값 들고오기
 	    LocalDate today = LocalDate.now();
 	    if (startDate == null || startDate.isEmpty()) startDate = today.toString();
 	    if (endDate == null || endDate.isEmpty()) endDate = today.toString();
@@ -175,11 +190,26 @@ public class CommuteController {
 	    paramMap.put("empId", empId);
 	    paramMap.put("startDate", startDate);
 	    paramMap.put("endDate", endDate);
-	    
-		List<CommuteDTO> commuteDTOList = commuteService.getAdminDeptCommuteList(paramMap);
-		model.addAttribute("commuteDTOList", commuteDTOList);
+		
 		model.addAttribute("startDate", startDate);
 		model.addAttribute("endDate", endDate);
+		System.out.println("startDate : " + startDate);
+		System.out.println("endDate : " + endDate);
+		
+		// 부서 조회
+	    List<AdminCommuteDTO> adminCommuteList;
+	    if("ALL".equals(deptId) || deptId == null) {
+	    	adminCommuteList = commuteService.getAllDeptCommuteList(paramMap); // 전체 부서 조회
+	    } else {
+	    	adminCommuteList = commuteService.getSpecificDeptCommuteList(paramMap); // 특정 부서 조회
+	    }
+	    model.addAttribute("adminCommuteList", adminCommuteList);
+		
+	    System.out.println("adminCommuteList :" + adminCommuteList);
+		
+//		List<CommonDetailCodeDTO> commonStatus = commuteService.getCommonStatus();
+		
+//		model.addAttribute("commonStatus", commonStatus);
 	    
 	    
 		return "/commute/admin_commute_list";

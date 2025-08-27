@@ -28,7 +28,7 @@
 <!-- 	            	<input type="date"> -->
 <!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
-				    <h6 class="m-0 font-weight-bold text-primary">나의 부서인원 전체 근퇴현황</h6>
+				    <h6 class="m-0 font-weight-bold text-primary">출근한 나의 부서인원 근태현황</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
@@ -62,21 +62,12 @@
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
-		                            <td th:text="${c.workStatus}"></td>
+		                            <td th:text="${c.workStatusNm}"></td>
 		                        </tr>
+		                            <tr th:if="${#lists.isEmpty(commuteDTOList)}">
+								        <td colspan="8" class="text-center text-muted">출근한 사람이 없습니다.</td>
+								    </tr>
 	                        </tbody>
-<!-- 	                        <tfoot> -->
-<!-- 		                        <tr> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                        </tr> -->
-<!-- 	                        </tfoot> -->
 	                    </table>
 	                </div>
 	            </div>

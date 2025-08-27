@@ -9,10 +9,13 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.mapper.CommuteMapper;
 import com.bootstrap.study.attendance.mapper.CommuteScheduleMapper;
+import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 @Service
 public class CommuteService {
@@ -45,14 +48,20 @@ public class CommuteService {
 		
 		// 근무 기준시간 조회
 		CommuteScheduleDTO schedule = commuteScheduleMapper.getCurrentSchedule();
-		System.out.println("schedule : " + schedule);
+//		System.out.println("schedule : " + schedule);
 		
 		// 지각 여부 판별
 		LocalTime startTime = schedule.getWorkStartTime().toLocalTime(); // db에서 가져온 출근시작시간
-		LocalDateTime now = LocalDateTime.now();
+		// db에는 날짜로만 insert 해도 결국 년/월/일이 다 입력 되기에 toLocalTime()을 써서 시간끼리만 비교해야함
 		LocalTime nowTime = LocalDateTime.now().toLocalTime(); // 현재시간
+		LocalDateTime now = LocalDateTime.now();
 		
-		String workStatus = nowTime.isAfter(startTime) ? "지각" : "출근";
+	    String workStatus;
+	    if (nowTime.isAfter(startTime)) {
+	        workStatus = "STA004"; // 지각
+	    } else {
+	        workStatus = "STA001"; // 출근
+	    }
 		
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
@@ -75,12 +84,14 @@ public class CommuteService {
 			throw new IllegalStateException("이미 오늘 퇴근 기록이 존재합니다.");
 		}
 		
+		
+		
 	    LocalDateTime now = LocalDateTime.now();
 		
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
 		commute.setCheckOutTime(now);
-		commute.setWorkStatus("퇴근");
+		commute.setWorkStatus("STA002");
 		
 		commuteMapper.updateCommuteCheckOut(commute);
 		
@@ -89,10 +100,31 @@ public class CommuteService {
 	
 	// 관리자 근태관리 리스트
 //	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
-	public List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap) {
-		System.out.println("paramMap : " + paramMap);
-		return commuteMapper.getAdminDeptCommuteList(paramMap);
+//	public List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap) {
+//		System.out.println("paramMap : " + paramMap);
+//		return commuteMapper.getAdminDeptCommuteList(paramMap);
+//	}
+
+	// 부서 공통코드
+	public List<CommonDetailCodeDTO> getCommonDept() {
+		List<CommonDetailCodeDTO> commonDept = commuteMapper.getCommonDept("DEP");
+		System.out.println("commonDept : " + commonDept);
+		return commonDept;
 	}
+
+	// 전체 부서 조회
+	public List<AdminCommuteDTO> getAllDeptCommuteList(Map<String, Object> paramMap) {
+		return commuteMapper.getAllDeptCommuteList(paramMap);
+	}
+	// 특정 부서 조회
+	public List<AdminCommuteDTO> getSpecificDeptCommuteList(Map<String, Object> paramMap) {
+		return commuteMapper.getSpecificDeptCommuteList(paramMap);
+	}
+
+	// 근무상태 공통코드
+//	public List<CommonDetailCodeDTO> getCommonStatus() {
+//		return commuteMapper.getCommonStatus();
+//	}
 	
 
 }

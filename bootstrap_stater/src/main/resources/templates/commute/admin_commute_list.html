@@ -31,6 +31,13 @@
 				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
+						<select id="dept" th:name="dept" class="form-control form-control-sm">
+						    <option th:each="dept : ${commonDept}" 
+						            th:value="${dept.comDtId}" 
+						            th:text="${dept.comDtNm}"
+						            th:selected="${dept.comId == selectedDept}">
+						    </option>
+						</select>
 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
 					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}">
 					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button>
@@ -54,7 +61,7 @@
 		                        </tr>
 	                        </thead>
 	                        <tbody>
-		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
+		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}">
 		                            <td th:text="${c.commuteDate}"></td>
 									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
 									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
@@ -62,21 +69,9 @@
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
-		                            <td th:text="${c.workStatus}"></td>
+		                            <td th:text="${c.workStatusNm}"></td>
 		                        </tr>
 	                        </tbody>
-<!-- 	                        <tfoot> -->
-<!-- 		                        <tr> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                            <th>1</th> -->
-<!-- 		                        </tr> -->
-<!-- 	                        </tfoot> -->
 	                    </table>
 	                </div>
 	            </div>
@@ -88,116 +83,24 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
-	// 출근 버튼
-	document.addEventListener("DOMContentLoaded", function() {
-// 		console.log("버튼 클릭!");
-		
-	    const checkInBtn = document.getElementById("checkInBtn");
 	
-	    checkInBtn.addEventListener("click", function() {
-	        // 확인 팝업
-	        if (!confirm("출근하시겠습니까?")) return;
+	console.log("버튼 클릭!");
 	
-	        fetch("/attendance/checkIn", {
-	            method: "POST",
-	            headers: { "Content-Type": "application/json" },
-	            body: JSON.stringify({}) // 바디 안넣으면 오류가 났음
-	        })
-	        .then(response => {
-	            if (response.status === 401) {
-	                alert("로그인이 필요합니다.");
-	                window.location.href = "/login";
-	                return;
-	            } else if (response.status === 409) {
-	                alert("이미 오늘 출근한 상태입니다.");
-	                window.location.href="/attendance/commuteList";
-	                return;
-	            } else if (!response.ok) {
-	                throw new Error("출근 처리 중 오류 발생");
-	            }
-	            return response.json();
-	        })
-	        .then(data => {
-	            if (data) {
-	            	// data.checkInTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
-	                const rawTime = data.checkInTime;
-	                const dateObj = new Date(rawTime);
-
-	                // yyyy-MM-dd HH:mm:ss 형식으로 변환
-	                const formatted = dateObj.getFullYear() + "-" +
-	                                  String(dateObj.getMonth() + 1).padStart(2, '0') + "-" +
-	                                  String(dateObj.getDate()).padStart(2, '0') + " " +
-	                                  String(dateObj.getHours()).padStart(2, '0') + ":" +
-	                                  String(dateObj.getMinutes()).padStart(2, '0') + ":" +
-	                                  String(dateObj.getSeconds()).padStart(2, '0');
-	            	
-	                alert(`출근 완료: ${formatted}`);
-	                // 필요하면 리스트 새로고침
-	                location.reload();
-	            }
-	        })
-	        .catch(err => console.error(err));
-	    });
-	});
-	
-	// 퇴근 버튼
-	document.addEventListener("DOMContentLoaded", function() {
-// 		console.log("버튼 클릭!");
-		
-	    const checkOutBtn = document.getElementById("checkOutBtn");
-	
-	    checkOutBtn.addEventListener("click", function() {
-	        // 확인 팝업
-	        if (!confirm("퇴근하시겠습니까?")) return;
-	
-	        fetch("/attendance/checkOut", {
-	            method: "POST",
-	            headers: { "Content-Type": "application/json" },
-	            body: JSON.stringify({}) // 바디 안넣으면 오류가 났음
-	        })
-	        .then(response => {
-	            if (response.status === 401) {
-	                alert("로그인이 필요합니다.");
-	                window.location.href = "/login";
-	                return;
-	            } else if (response.status === 409) {
-	                alert("이미 오늘 퇴근한 상태입니다.");
-	                window.location.href="/attendance/commuteList";
-	                return;
-	            } else if (!response.ok) {
-	                throw new Error("퇴근 처리 중 오류 발생");
-	            }
-	            return response.json();
-	        })
-	        .then(data => {
-	            if (data) {
-	            	// data.checkOutTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
-	                const rawTime = data.checkOutTime;
-	                const dateObj = new Date(rawTime);
-
-	                // yyyy-MM-dd HH:mm:ss 형식으로 변환
-	                const formatted = dateObj.getFullYear() + "-" +
-	                                  String(dateObj.getMonth() + 1).padStart(2, '0') + "-" +
-	                                  String(dateObj.getDate()).padStart(2, '0') + " " +
-	                                  String(dateObj.getHours()).padStart(2, '0') + ":" +
-	                                  String(dateObj.getMinutes()).padStart(2, '0') + ":" +
-	                                  String(dateObj.getSeconds()).padStart(2, '0');
-	            	
-	                alert(`퇴근 완료: ${formatted}`);
-	                // 필요하면 리스트 새로고침
-	                location.reload();
-	            }
-	        })
-	        .catch(err => console.error(err));
-	    });
-	});
-	
-	searchBtn
 	document.getElementById("searchBtn").addEventListener("click", function() {
 	    const startDate = document.querySelector("input[name='startDate']").value;
 	    const endDate = document.querySelector("input[name='endDate']").value;
-	    window.location.href = `/attendance/adminCommute?startDate=${startDate}&endDate=${endDate}`;
+	    const deptId = document.querySelector("#dept").value; // 선택된 부서 값
+	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
 	});
+	
+	
+// 	const deptSelect = document.querySelector("#dept");
+// 	deptSelect.addEventListener("change", function() {
+// 	    const startDate = document.querySelector("input[name='startDate']").value;
+// 	    const endDate = document.querySelector("input[name='endDate']").value;
+// 	    const deptId = this.value;
+// 	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
+// 	});
 
 	</script>
 	</th:block>

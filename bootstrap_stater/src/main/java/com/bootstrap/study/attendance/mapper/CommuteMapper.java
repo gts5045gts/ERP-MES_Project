@@ -6,13 +6,16 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
+import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
+import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 @Mapper
 public interface CommuteMapper {
 
-	// 출퇴근리스트
+	// 출퇴근리스트(오늘날짜)
 	List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap);
 	
 	// 오늘 출근 기록이 있는지 확인
@@ -28,6 +31,17 @@ public interface CommuteMapper {
 	void updateCommuteCheckOut(CommuteDTO commute);
 
 	// 관리자 근태관리 리스트
-	List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap);
+//	List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap);
+
+	// 부서 공통코드
+	List<CommonDetailCodeDTO> getCommonDept(String comId);
+
+	// 전체부서 인원(오늘날짜) - 공통코드 셀렉박스
+	List<AdminCommuteDTO> getAllDeptCommuteList(Map<String, Object> paramMap);
+	
+	// 특정부서 인원(오늘날짜) - 공통코드 셀렉박스
+	List<AdminCommuteDTO> getSpecificDeptCommuteList(Map<String, Object> paramMap);
+
+//	List<CommonDetailCodeDTO> getCommonStatus();
 
 }
