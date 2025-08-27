@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+	// body 태그에서 현재 로그인한 사용자 ID를 가져옴
+	var currentEmpId = $('body').data('current-emp-id');
+	var empDeptId = $('body').data('emp-dept-id');
+	var empDeptName = $('body').data('emp-dept-name');
+
 	var calendarEl1 = document.getElementById('calendar1');
 	if (calendarEl1) {
 		var calendar1 = new FullCalendar.Calendar(calendarEl1, {
@@ -18,16 +23,20 @@ document.addEventListener('DOMContentLoaded', function() {
 					url: '/schedule/holidays',
 					method: 'GET',
 					extraParams: function() {
-										    // events 함수와 달리 eventSources는 extraParams 함수를 지원합니다.
-										    // calendar1 객체가 존재할 때만 view 속성에 접근하도록 합니다.
-										    if (calendar1 && calendar1.view) {
-										        var title = calendar1.view.title;
-										        var year = title.split('년')[0];
-										        var month = title.split('년')[1].trim().replace('월', '');
-										        return { year: year, month: month };
-										    }
-										    return {};
-										},
+						if (calendar1 && calendar1.view) {
+							var title = calendar1.view.title;
+							var parts = title.split('년');
+							if (parts.length === 2) {
+								var year = parts[0];
+								var month = parts[1].trim().replace('월', '');
+								// ⭐ 년도와 월이 유효한 숫자인지 확인
+								if (!isNaN(parseInt(year)) && !isNaN(parseInt(month))) {
+									return { year: year, month: month };
+								}
+							}
+						}
+						return {};
+					},
 					className: 'holiday-event',
 					color: '#dc3545', // 부트스트랩의 'danger' 색상
 					editable: false
@@ -44,14 +53,40 @@ document.addEventListener('DOMContentLoaded', function() {
 				$.ajax({
 					url: '/schedule/' + eventId,
 					type: 'GET',
-					success: function(schedule) {
-						$('#detailTitle').text(schedule.schTitle);
-						$('#detailContent').text(schedule.schContent);
-						$('#detailStartDate').val(schedule.starttimeAt.substring(0, 10));
-						$('#detailStartTime').val(schedule.starttimeAt.substring(11, 16));
-						$('#detailEndDate').val(schedule.endtimeAt.substring(0, 10));
-						$('#detailEndTime').val(schedule.endtimeAt.substring(11, 16));
-						$('#scheduleDetailModal').modal('show');
+					success: function(response) {
+						if (response.success) {
+							var schedule = response.schedule;
+
+							console.log("로그인 사용자 ID:", typeof currentEmpId, currentEmpId);
+							console.log("일정 작성자 ID:", typeof schedule.empId, schedule.empId);
+							// 상세 정보 표시
+							$('#detailTitle').text(schedule.schTitle);
+							$('#detailContent').text(schedule.schContent);
+							$('#detailStartDate').text(schedule.starttimeAt);
+							$('#detailEndDate').text(schedule.endtimeAt);
+
+							// 수정 폼에 데이터 채우기
+							$('#editScheduleId').val(schedule.schId);
+							$('#editSchEmpId').val(schedule.empId);
+							$('#editTitle').val(schedule.schTitle);
+							$('#editContent').val(schedule.schContent);
+							// datetime-local 포맷에 맞게 변환
+							$('#editStartDate').val(schedule.starttimeAt.substring(0, 16));
+							$('#editEndDate').val(schedule.endtimeAt.substring(0, 16));
+
+							// ⭐ 권한에 따라 버튼 표시/숨김
+							if (String(schedule.empId) === String(currentEmpId)) {
+								$('#editScheduleBtn').show();
+								$('#deleteScheduleBtn').show();
+							} else {
+								$('#editScheduleBtn').hide();
+								$('#deleteScheduleBtn').hide();
+							}
+
+							$('#scheduleDetailModal').modal('show');
+						} else {
+							alert(response.message);
+						}
 					},
 					error: function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
@@ -73,22 +108,28 @@ document.addEventListener('DOMContentLoaded', function() {
 				// 1. 부서별 일정 데이터 소스
 				{
 					url: '/schedule/events/dept',
-					method: 'GET'
+					method: 'GET',
+					extraParams: function(fetchInfo) {
+						if (empDeptName) {
+							return { empDeptName: empDeptName };
+						}
+						return {};
+					}
 				},
 				// 2. 공휴일 데이터 소스
 				{
 					url: '/schedule/holidays',
 					method: 'GET',
 					extraParams: function() {
-										    // calendar2 객체가 존재할 때만 view 속성에 접근하도록 합니다.
-										    if (calendar2 && calendar2.view) {
-										        var title = calendar2.view.title;
-										        var year = title.split('년')[0];
-										        var month = title.split('년')[1].trim().replace('월', '');
-										        return { year: year, month: month };
-										    }
-										    return {};
-										},
+						// calendar2 객체가 존재할 때만 view 속성에 접근하도록 합니다.
+						if (calendar2 && calendar2.view) {
+							var title = calendar2.view.title;
+							var year = title.split('년')[0];
+							var month = title.split('년')[1].trim().replace('월', '');
+							return { year: year, month: month };
+						}
+						return {};
+					},
 					className: 'holiday-event',
 					color: '#dc3545',
 					editable: false
@@ -105,12 +146,37 @@ document.addEventListener('DOMContentLoaded', function() {
 				$.ajax({
 					url: '/schedule/' + eventId,
 					type: 'GET',
-					success: function(schedule) {
-						$('#detailTitle').text(schedule.schTitle);
-						$('#detailContent').text(schedule.schContent);
-						$('#detailStartDate').text(schedule.starttimeAt);
-						$('#detailEndDate').text(schedule.endtimeAt);
-						$('#scheduleDetailModal').modal('show');
+					success: function(response) {
+						if (response.success) {
+							var schedule = response.schedule;
+							// 상세 정보 표시
+							$('#detailTitle').text(schedule.schTitle);
+							$('#detailContent').text(schedule.schContent);
+							$('#detailStartDate').text(schedule.starttimeAt);
+							$('#detailEndDate').text(schedule.endtimeAt);
+
+							// 수정 폼에 데이터 채우기
+							$('#editScheduleId').val(schedule.schId);
+							$('#editSchEmpId').val(schedule.empId);
+							$('#editTitle').val(schedule.schTitle);
+							$('#editContent').val(schedule.schContent);
+							// datetime-local 포맷에 맞게 변환
+							$('#editStartDate').val(schedule.starttimeAt.substring(0, 16));
+							$('#editEndDate').val(schedule.endtimeAt.substring(0, 16));
+
+							// ⭐ 권한에 따라 버튼 표시/숨김
+							if (String(schedule.empId) === String(currentEmpId)) {
+								$('#editScheduleBtn').show();
+								$('#deleteScheduleBtn').show();
+							} else {
+								$('#editScheduleBtn').hide();
+								$('#deleteScheduleBtn').hide();
+							}
+
+							$('#scheduleDetailModal').modal('show');
+						} else {
+							alert(response.message);
+						}
 					},
 					error: function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
@@ -125,14 +191,48 @@ document.addEventListener('DOMContentLoaded', function() {
 	// 모달 관련 이벤트 처리
 	// =========================================================
 
+	// 모달이 열릴 때 이벤트
+	$('#addScheduleModal').on('show.bs.modal', function() {
+		$('#modalAuthor').val(currentEmpId);
+		$('#modalEmpId').val(currentEmpId);
+	});
+
+	// ⭐ 수정 버튼 클릭 이벤트
+	$('#editScheduleBtn').on('click', function() {
+		$('#readModeContent').hide();
+		$('#editScheduleForm').show();
+		$('#editScheduleBtn').hide();
+		$('#deleteScheduleBtn').hide();
+		$('#saveEditBtn').show();
+	});
+
+	// ⭐ 모달 닫힐 때 원래 상태로 초기화
+	$('#scheduleDetailModal').on('hidden.bs.modal', function() {
+		$('#readModeContent').show();
+		$('#editScheduleForm').hide();
+		$('#editScheduleBtn').show();
+		$('#deleteScheduleBtn').show();
+		$('#saveEditBtn').hide();
+	});
+
 	$('#addScheduleModal form').on('submit', function(e) {
 		e.preventDefault();
+		var startDate = $('#modalStartDate').val();
+		var endDate = $('#modalEndDate').val();
+		var schTypeVal;
+		if ($('#schType').length) { // #schType(드롭다운)이 존재하면
+		        schTypeVal = $('#schType').val();
+		    } else { 
+		        schTypeVal = $('input[name="schType"]').val(); // 숨겨진 필드의 값을 가져옴
+		    }
 
 		var formData = {
 			schTitle: $('#modalTitle').val(),
 			schContent: $('#modalContent').val(),
-			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
-			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val()
+			starttimeAt: startDate + 'T00:00:00', // 날짜 + 자정 시간
+			endtimeAt: endDate + 'T23:59:59',   // 날짜 + 하루의 마지막 시간
+			schType: schTypeVal,
+			empId: currentEmpId
 		};
 
 		$.ajax({
@@ -161,11 +261,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		e.preventDefault();
 
 		var formData = {
-			schId: $('#detailId').val(),
-			schTitle: $('#detailTitle').val(),
-			schContent: $('#detailContent').val(),
-			starttimeAt: $('#detailStartDate').val() + 'T' + $('#detailStartTime').val(),
-			endtimeAt: $('#detailEndDate').val() + 'T' + $('#detailEndTime').val()
+			schId: $('#editScheduleId').val(),
+			schTitle: $('#editTitle').val(),
+			schContent: $('#editContent').val(),
+			starttimeAt: $('#editStartDate').val(),
+			endtimeAt: $('#editEndDate').val(),
+			empId: $('#editSchEmpId').val() // 수정 시 empId 포함
 		};
 
 		$.ajax({
@@ -191,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	$('#deleteScheduleBtn').on('click', function() {
-		var eventId = $('#detailId').val();
+		var eventId = $('#editScheduleId').val(); // 숨겨진 폼에서 ID 가져오기
 
 		if (confirm('이 일정을 삭제하시겠습니까?')) {
 			$.ajax({
@@ -213,5 +314,42 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			});
 		}
+	});
+
+	// schWrite.html 페이지의 폼 제출 처리
+	$('#writeForm').on('submit', function(e) {
+		e.preventDefault(); // 기본 폼 제출 동작을 막음
+
+		// 폼 데이터 구성
+		var formData = {
+			schTitle: $('#modalTitle').val(),
+			schContent: $('#modalContent').val(),
+			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
+			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
+			// schType 필드를 가져와야 합니다.
+			// 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
+			schType: $('#schType').val() || $('#schType_hidden').val(),
+			empId: $('#modalEmpId').val() // 작성자 ID
+		};
+
+		// AJAX 요청
+		$.ajax({
+			url: '/schedule/save',
+			type: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify(formData),
+			success: function(response) {
+				if (response.success) {
+					alert('일정이 성공적으로 등록되었습니다.');
+					// 성공하면 일정 목록 페이지로 이동
+					window.location.href = '/schedule';
+				} else {
+					alert('일정 등록 실패: ' + response.message);
+				}
+			},
+			error: function() {
+				alert('일정 등록 중 오류가 발생했습니다.');
+			}
+		});
 	});
 });
