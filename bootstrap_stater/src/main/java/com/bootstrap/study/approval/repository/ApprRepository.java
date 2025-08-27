@@ -101,7 +101,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
                                    @Param("decision") String decision,
                                    @Param("comments") String comments);
 
-    //로그인 되면 본인을 제외한 값만 가져와야함 현재는 임의로 1로 해놓음
+    //사원 정보 가져오기
     @Query(value = "" +
     	    "SELECT * FROM " +
     	    "C##TEAM1.employee e " +
