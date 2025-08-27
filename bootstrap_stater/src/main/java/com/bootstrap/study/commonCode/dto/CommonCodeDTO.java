@@ -1,6 +1,7 @@
 package com.bootstrap.study.commonCode.dto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class CommonCodeDTO {
 	private String comNm; // 코드명
 	private String useYn; // 사용여부
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private LocalDateTime createdAt; // 등록일
+	private String createdAt; // 등록일
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt; // 수정일 
 	
@@ -36,7 +37,11 @@ public class CommonCodeDTO {
 	}
 	
 	public static CommonCodeDTO fromEntity(CommonCode commonCode) {
-		return modelMapper.map(commonCode, CommonCodeDTO.class);
+		CommonCodeDTO dto = modelMapper.map(commonCode, CommonCodeDTO.class);
+		if (commonCode.getCreatedAt() != null) {
+		    dto.setCreatedAt(commonCode.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+		}
+		return dto;
 	}
 	
 	
