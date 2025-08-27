@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @EnableWebSecurity
 public class SecurityConfig {
 	
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(); 
@@ -37,7 +38,7 @@ public class SecurityConfig {
     	return httpSecurity
         .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index", "/bootstrap/**").permitAll()
+                .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -45,7 +46,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login")
                 .usernameParameter("empId")
                 .passwordParameter("empPasswd")
-                .defaultSuccessUrl("/index", true)
+                .defaultSuccessUrl("/main", true)
                 .successHandler(new EmpAuthenticationSuccessHandler())
                 .permitAll()
             )

@@ -1,6 +1,7 @@
 package com.bootstrap.study.approval.repository;
 
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -17,29 +18,82 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
-	// ㅇㅇ
-	// JOIN 쿼리를 네이티브 쿼리로 추가
+	// 0827 내가 기안한 문서 조회
 	@Query(value = """
-		SELECT
-		    al.step_no,
-		    a.title,
-		    e.emp_name,
-		    a.request_at, 
-		    al.dec_date,
-		    al.decision,
-		    a.req_id,
-		    a.req_type,
-		    a.emp_id,
-		    a.tot_step as current_step
-		FROM approval_line al
-		JOIN approval a ON al.req_id = a.req_id
-		JOIN employee e ON a.emp_id = e.emp_id
-		ORDER BY a.request_at DESC, al.step_no ASC  
-		""", nativeQuery = true)
-		List<Object[]> findApprovalListWithJoin();
+	    SELECT
+	        al.step_no,           -- 0
+	        a.title,              -- 1
+	        e.emp_name,           -- 2
+	        dept.com_dt_nm,       -- 3
+	        pos.com_dt_nm,        -- 4
+	        a.request_at,         -- 5
+	        al.dec_date,          -- 6
+	        al.decision,          -- 7
+	        a.req_id,             -- 8
+	        a.req_type,           -- 9
+	        a.emp_id              -- 10
+	    FROM approval_line al
+	    JOIN approval a ON al.req_id = a.req_id
+	    JOIN employee e ON a.emp_id = e.emp_id
+	    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+	    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+	    WHERE a.emp_id = :loginId  -- 내가 기안자
+	    ORDER BY a.request_at DESC, al.step_no ASC
+	    """, nativeQuery = true)
+	List<Object[]> findMyDraftedApprovalList(@Param("loginId") String loginId);
+	
+	// 0827
+	// 인사 결재 목록 세부조회
+	@Query(value = """
+		    SELECT
+		        al.step_no,           -- 0
+		        a.title,              -- 1
+		        e.emp_name,           -- 2
+		        dept.com_dt_nm,       
+		        pos.com_dt_nm,        
+		        a.request_at,         
+		        al.dec_date,          
+		        al.decision,          
+		        a.req_id,             
+		        a.req_type,           
+		        a.emp_id              -- 10
+		    FROM approval_line al
+		    JOIN approval a ON al.req_id = a.req_id
+		    JOIN employee e ON a.emp_id = e.emp_id
+		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		    WHERE a.req_id = :reqId
+		    ORDER BY al.step_no ASC
+		    """, nativeQuery = true)
+		List<Object[]> findApprovalByReqId(@Param("reqId") Long reqId);
+	
+	// 0827
+	// 인사 결재 목록 조회
+	@Query(value = """
+		    SELECT
+		        al.step_no,           -- 0
+		        a.title,              -- 1
+		        e.emp_name,           -- 2
+		        dept.com_dt_nm,       -- 3
+		        pos.com_dt_nm,        -- 4
+		        a.request_at,         -- 5
+		        al.dec_date,          -- 6
+		        al.decision,          -- 7
+		        a.req_id,             -- 8
+		        a.req_type,           -- 9
+		        a.emp_id              -- 10
+		    FROM approval_line al
+		    JOIN approval a ON al.req_id = a.req_id
+		    JOIN employee e ON a.emp_id = e.emp_id
+		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		    WHERE al.appr_id = :loginId  -- 결재자
+		    ORDER BY a.request_at DESC, al.step_no ASC
+		    """, nativeQuery = true)
+		List<Object[]> findApprovalListWithJoin(@Param("loginId") String loginId);
+
     
-    
-    //0821
+    // 0821
    	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
 	@Transactional
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -101,16 +155,21 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
                                    @Param("decision") String decision,
                                    @Param("comments") String comments);
 
-    //로그인 되면 본인을 제외한 값만 가져와야함 현재는 임의로 1로 해놓음
+    //사원 정보 가져오기
     @Query(value = "" +
-			"SELECT * FROM " +
-			"C##TEAM1.employee e " +
-			"JOIN " +
-			"C##TEAM1.test_dept d ON e.emp_dept_id = d.dept_id " +
-			"JOIN " +
-			"C##TEAM1.test_position p ON e.emp_position = p.pos_id " +
-			"WHERE e.emp_name LIKE %:keyword% and e.emp_id <> 2025082501"  +
-			"",
-			nativeQuery = true)
-	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword);
+    	    "SELECT * FROM " +
+    	    "C##TEAM1.employee e " +
+    	    "JOIN " +
+    	    "C##TEAM1.common_dt_code d ON e.emp_dept_id = d.com_dt_id " +
+    	    "JOIN " +
+    	    "C##TEAM1.common_dt_code p ON e.emp_position = p.com_dt_id " +
+    	    "WHERE e.emp_name LIKE %:keyword% and e.emp_id <> :currentEmpId",  // 파라미터로 변경
+    	    nativeQuery = true)
+	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword, 
+	                                               @Param("currentEmpId") String currentEmpId);
+
+    //연차신청자 연차 정보 가져오기
+    @Query
+    ("SELECT a FROM Annual a where a.empId = :empId and a.annYear = :year")
+	Optional<Annual> findByAnnual(@Param("empId") String empId, @Param("year") int year);
 }

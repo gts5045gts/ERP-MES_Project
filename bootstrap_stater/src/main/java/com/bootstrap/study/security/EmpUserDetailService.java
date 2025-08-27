@@ -19,16 +19,20 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class EmpUserDetailService implements UserDetailsService {
 	private final PersonnelRepository personnelRepository;
-	
+
 	@Override
 	public UserDetails loadUserByUsername(String empId) throws UsernameNotFoundException {
 		log.info("EmpUserDetailService() : " + empId);
-		
+
 		Personnel personnel = personnelRepository.findById(empId)
-					.orElseThrow(() -> new UsernameNotFoundException(empId + " : 사용자 조회 실패"));
-		
+				.orElseThrow(() -> new UsernameNotFoundException(empId + " : 사용자 조회 실패"));
+
 		PersonnelLoginDTO personnelLoginDTO = ModelMapperUtils.convertObjectByMap(personnel, PersonnelLoginDTO.class);
-		
+		personnelLoginDTO.setEmpId(personnel.getEmpId());
+		personnelLoginDTO.setName(personnel.getName());
+		personnelLoginDTO.setPasswd(personnel.getPasswd());
+		personnelLoginDTO.setEmpDeptId(personnel.getDepartment().getComDtId());
+		log.info("로그인객체 : " + personnelLoginDTO.toString());
 		return personnelLoginDTO;
 	}
 

@@ -1,6 +1,7 @@
 package com.bootstrap.study.groupware.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +15,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
+import com.bootstrap.study.util.HolidayDTO;
+import com.bootstrap.study.util.HolidayService;
+
 import lombok.extern.log4j.Log4j2;
 
 @Controller
@@ -26,8 +31,30 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ScheduleController {
 
-    @Autowired
-    private ScheduleService scheduleService;
+    private final ScheduleService scheduleService;
+    private final HolidayService holidayService;
+    
+    public ScheduleController(HolidayService holidayService, ScheduleService scheduleService) {
+        this.holidayService = holidayService;
+        this.scheduleService = scheduleService;
+    }
+    
+    @GetMapping("/holidays")
+    @ResponseBody
+    public List<Map<String, Object>> getHolidaysForCalendar(@RequestParam("year") int year, @RequestParam("month") int month) {
+        List<HolidayDTO> holidays = holidayService.getHolidays(year, month);
+        
+        List<Map<String, Object>> calendarEvents = new ArrayList<>();
+        for (HolidayDTO holiday : holidays) {
+            Map<String, Object> event = new HashMap<>();
+            event.put("title", holiday.getDateName());
+            event.put("start", holiday.getLocdate().replaceAll("(\\d{4})(\\d{2})(\\d{2})", "$1-$2-$3")); // 날짜 형식 변환
+            event.put("allDay", true);
+            event.put("color", "red"); // 빨간색으로 표시
+            calendarEvents.add(event);
+        }
+        return calendarEvents;
+    }
 
     // 일정 목록 페이지를 보여주는 메서드
     @GetMapping("")

@@ -1,101 +1,184 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
 <head>
-
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="">
-<meta name="author" content="">
-
-<title>심화반 프로젝트 - 로그인</title>
-
-<!-- Custom fonts for this template-->
-<link href="/bootstrap/vendor/fontawesome-free/css/all.min.css"
-	rel="stylesheet" type="text/css">
-<link
-	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-	rel="stylesheet">
-
-<!-- Custom styles for this template-->
-<link href="/bootstrap/css/sb-admin-2.min.css" rel="stylesheet">
-
+<!-- 개별페이지 CSS 영역 -->
+<th:block layout:fragment="style">
+	       <link rel="stylesheet" th:href="@{/bootstrap/css/sb-admin-2.css}" />
+</th:block>
 </head>
+<body>
+	<th:block layout:fragment="content">
+	<div class="container-fluid">
+		<div class="d-sm-flex align-items-center justify-content-between mb-4">
+			<h1 class="h3 mb-0 text-gray-800">대시보드</h1>
+		</div>
 
-<body class="bg-gradient-primary">
+		<div class="row">
 
-	<div class="container">
+			<div class="col-lg-8">
+				<div class="card shadow mb-4">
+					<div
+						class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+						<h6 class="m-0 font-weight-bold text-primary">근무 일정</h6>
+					</div>
+					<div class="card-body">
+						<div id="calendar2" style="max-width: 100%; margin: auto;"></div>
+					</div>
+				</div>
+			</div>
 
-		<!-- Outer Row -->
-		<div class="row justify-content-center">
+			<div class="col-lg-4">
 
-			<div class="col-xl-10 col-lg-12 col-md-9">
+				<div class="card shadow mb-4">
+					<div class="card-header py-3">
+						<h6 class="m-0 font-weight-bold text-primary">출퇴근 관리</h6>
+					</div>
+					<div class="card-body">
+						<div class="d-flex align-items-center mb-3">
+							<label for="commute_start_time" class="mr-2">출근시간 :</label> <input
+								type="text" id="commute_start_time" class="form-control"
+								disabled>
+						</div>
+						<div class="d-flex align-items-center mb-3">
+							<label for="commute_end_time" class="mr-2">퇴근시간 :</label> <input
+								type="text" id="commute_end_time" class="form-control" disabled>
+						</div>
+						<button class="btn btn-primary btn-block">출퇴근 관리</button>
+					</div>
+				</div>
 
-				<div class="card o-hidden border-0 shadow-lg my-5">
-					<div class="card-body p-0">
-						<!-- Nested Row within Card Body -->
-						<div class="row">
-							<div class="col-lg-6 d-none d-lg-block">
-								<img src="/bootstrap/img/itwill.png" alt="로그인 이미지"
-									style="width: 100%; height: 100%;">
+				<div class="card shadow mb-4">
+					<div
+						class="card-header py-3 d-flex justify-content-between align-items-center">
+						<h6 class="m-0 font-weight-bold text-primary">직원 정보</h6>
+						<span class="badge badge-danger text-uppercase">미출근</span>
+					</div>
+					<div class="card-body">
+						<div class="d-flex align-items-center">
+							<div class="mr-3">
+								<i class="fas fa-user-circle fa-4x text-gray-300"></i>
 							</div>
-							<div class="col-lg-6">
-								<div class="p-5">
-									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-4">심화반 ERP</h1>
-									</div>
-									<form class="user" method="post" action="/login">
-										<div class="form-group">
-											<input type="text" class="form-control form-control-user"
-												name="empId" placeholder="사원번호를 입력하세요">
-										</div>
-										<div class="form-group">
-											<input type="password" class="form-control form-control-user"
-												name="empPasswd" id="exampleInputPassword"
-												placeholder="비밀번호를 입력하세요">
-										</div>
-										<div class="form-group">
-											<div class="custom-control custom-checkbox small">
-												<input type="checkbox" class="custom-control-input"
-													id="rememberId"> <label
-													class="custom-control-label" for="customCheck">사원번호
-													기억하기</label>
-											</div>
-										</div>
-										<button type="submit"
-											class="btn btn-primary btn-user btn-block">로그인</button>
-									</form>
-									<hr>
-									<div class="text-center">
-										<a class="small" href="empInfo">사원번호 찾기</a>
-									</div>
-									<div class="text-center">
-										<a class="small" th:href="empPasswd">비밀번호 찾기</a>
-									</div>
+							<div>
+								<div class="text-gray-800 font-weight-bold">인사팀 2025020007</div>
+								<div class="small text-gray-500"
+									sec:authorize="isAuthenticated()">
+									<span class="mr-2 d-none d-lg-inline text-gray-600 "
+										th:text="${#authentication.principal.name}"></span>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 
-			</div>
+				<div class="card shadow mb-4">
+					<div class="card-body">
+						<p class="mb-0">결재 문서가 없습니다. 여유로운 하루 보내세요!</p>
+					</div>
+				</div>
 
+				<div class="card shadow mb-4">
+					<div class="card-body">
+						<p class="mb-0">확인해야 할 수신 문서가 없습니다!</p>
+					</div>
+				</div>
+
+			</div>
+		</div>
+		</div>
+<!-- 		모달 관련  -->
+		<div class="modal fade" id="addScheduleModal" tabindex="-1"
+			role="dialog" aria-labelledby="addScheduleModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="addScheduleModalLabel">간편 일정 등록</h5>
+						<button class="close" type="button" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">×</span>
+						</button>
+					</div>
+					<form th:action="@{/schedule/save}" method="post">
+						<div class="modal-body">
+							<div class="form-group">
+								<label for="modalTitle">일정 제목</label> <input type="text"
+									class="form-control" id="modalTitle" name="schTitle" required>
+							</div>
+
+							<div class="form-group">
+								<label for="modalContent">일정 내용</label>
+								<textarea class="form-control" id="modalContent"
+									name="schContent" rows="4"></textarea>
+							</div>
+
+							<div class="form-group">
+								<label for="modalStartDate">시작일</label> <input type="date"
+									class="form-control" id="modalStartDate" name="startDate"
+									required> <label for="modalStartTime">시작시간</label> <input
+									type="time" class="form-control" id="modalStartTime"
+									name="starttimeAt" required>
+							</div>
+
+							<div class="form-group">
+								<label for="modalEndDate">종료일</label> <input type="date"
+									class="form-control" id="modalEndDate" name="endDate" required>
+								<label for="modalEndTime">종료시간</label> <input type="time"
+									class="form-control" id="modalEndTime" name="endtimeAt"
+									required>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary">등록</button>
+							<button class="btn btn-secondary" type="button"
+								data-dismiss="modal">닫기</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- 모달 상세조회 -->
+		<div class="modal fade" id="scheduleDetailModal" tabindex="-1"
+			role="dialog" aria-labelledby="scheduleDetailModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="scheduleDetailModalLabel">일정 상세</h5>
+						<button class="close" type="button" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">×</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>제목</label>
+							<p id="detailTitle" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>내용</label>
+							<p id="detailContent" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>시작일</label>
+							<p id="detailStartDate" class="form-control-static"></p>
+						</div>
+						<div class="form-group">
+							<label>종료일</label>
+							<p id="detailEndDate" class="form-control-static"></p>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-warning" id="editScheduleBtn">수정</button>
+						<button type="button" class="btn btn-danger" id="deleteScheduleBtn">삭제</button>
+						<button type="submit" form="editScheduleForm" class="btn btn-primary" id="saveEditBtn" style="display: none;">수정	완료</button>
+						<button class="btn btn-secondary" type="button"	data-dismiss="modal">닫기</button>
+					</div>
+				</div>
+			</div>
 		</div>
 
-	</div>
-
-	<!-- Bootstrap core JavaScript-->
-	<script src="/bootstrap/vendor/jquery/jquery.min.js"></script>
-	<script src="/bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-	<!-- Core plugin JavaScript-->
-	<script src="/bootstrap/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-	<!-- Custom scripts for all pages-->
-	<script src="/bootstrap/js/sb-admin-2.min.js"></script>
-
-</body>
-
+	</th:block>
 </html>

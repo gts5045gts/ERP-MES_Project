@@ -30,7 +30,7 @@
 			<div class="container-fluid">
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
-						<h6 class="m-0 font-weight-bold">기안서작성 | 연차신청서</h6>
+						<h6 class="m-0 font-weight-bold">기안서작성 | <th:block th:text="${title}"></th:block></h6>
 					</div>
 					<div class="card-body">
 						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
@@ -59,18 +59,18 @@
 							<!-- 결재자 -->
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">결재자</label>
-								<div class="col-sm-2">
+								<div class="col-sm-6">
 									<div class="form-group position-relative">
-									  <input type="text" class="userSearch form-control" value="" placeholder="결재자 검색">
+									  <input type="text" class="userSearch form-control" value="" placeholder="결재자명을 입력해주세요.">
 									  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
 									</div>
 									<!-- 선택된 결재자 표시 영역 -->
 									<div id="selectedUsers" class="mt-2">
-										<button type="button" class="btn btn-sm btn-outline-success m-1" data-id="2025082501">인사하위관리자 (인사팀 / 사원)</button>
+										<button type="button" class="btn btn-sm btn-outline-success m-1" ><th:block th:text="${principal.name}"></th:block>(본인)</button>
 									</div>
 									<!-- hidden input 담을 영역 -->
 									<div id="hiddenEmpIds">
-										<input type="hidden" name="empIds[]" value="2025082501">
+										<input type="hidden" name="empIds[]" th:value="${loginEmpId}">
 									</div>
 								</div>
 							</div>
@@ -83,7 +83,7 @@
 										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
 												th:value="${reqType}"
 												th:text="${reqType.label}"
-												th:selected="${reqType.name() == selectedRole.name()}"
+												th:selected="${reqType.name() == selectedRole}"
 												>
 										</option>
 									</select>
@@ -105,16 +105,16 @@
 							<div class="form-group row vac">
 								<label class="col-sm-2 col-form-label">기간</label>
 								<div class="col-sm-3">
-									<div class="input-group date" id="startDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{apprDetailDTOList[0].startDate}" data-target="#startDate" readonly required>
+									<div class="input-group date" data-target-input="nearest">
+										<input type="text" class="form-control datetimepicker-input" id="startDate" th:field="*{apprDetailDTOList[0].startDate}" data-target="#startDate" readonly required>
 										<div class="input-group-append" data-target="#startDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
 									</div>
 								</div>
 								<div class="col-sm-3">
-									<div class="input-group date" id="endDate" data-target-input="nearest">
-										<input type="text" class="form-control datetimepicker-input" th:field="*{apprDetailDTOList[0].endDate}" data-target="#endDate" readonly required>
+									<div class="input-group date"data-target-input="nearest">
+										<input type="text" class="form-control datetimepicker-input" id="endDate" th:field="*{apprDetailDTOList[0].endDate}" data-target="#endDate" readonly required>
 										<div class="input-group-append" data-target="#endDate" data-toggle="datetimepicker">
 											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
 										</div>
@@ -127,6 +127,7 @@
 								<label class="col-sm-2 col-form-label">반차 여부</label>
 								<div class="col-sm-8">
 									<div class="form-check form-check-inline" th:each="halfType : ${T(com.bootstrap.study.approval.constant.ApprHalfType).values()}">
+										
 										<input class="form-check-input" type="radio" th:field="*{apprDetailDTOList[0].halfType}" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
 										<label class="form-check-label" th:for="'halfType_' + ${halfType.name()}" th:text="${halfType.label}"></label>
 									</div>
@@ -138,26 +139,26 @@
 								<label class="col-sm-2 col-form-label">연차 일수</label>
 								<div class="col-sm-2">
 									<small>잔여연차</small>
-									<input type="text" class="form-control">
+									<input type="text" class="form-control" th:value="${remain}" disabled readOnly>
 								</div>
 								<div class="col-sm-2">
 									<small>신청연차</small>
-									<input type="text" class="form-control">
+									<input type="text" class="form-control" id="reqAnnual" readOnly>
 								</div>
 							</div>
 
-							<!-- 첨부 -->
-							<div class="form-group row">
+							<!-- 첨부 보류-->
+							<!-- <div class="form-group row">
 								<label class="col-sm-2 col-form-label">첨부</label>
 								<div class="col-sm-8">
 									<a href="#" class="btn btn-info">추가</a>
 								</div>
-							</div>
+							</div> -->
 
 							<!-- 버튼 -->
 							<div class="form-group row">
 								<div class="col-sm-10 offset-sm-2">
-									<button type="submit" class="btn btn-primary">저장/결재(F7)</button>
+									<button type="submit" class="btn btn-primary">저장/결재</button>
 									<button type="button" class="btn btn-secondary" onclick="window.close();">닫기</button>
 								</div>
 							</div>
@@ -201,10 +202,18 @@
 		}
 		
 		$('#createAtPicker, #startDate, #endDate').datetimepicker({
-			format: 'yyyy-MM-DD',
+			format: 'YYYY-MM-DD',
 			defaultDate: new Date(),
 			todayBtn: true,
 			locale: 'ko'
+		});
+		
+		$('#startDate').on("change.datetimepicker", function (e) {
+		    $('#endDate').datetimepicker('minDate', e.date);
+		});
+
+		$('#endDate').on("change.datetimepicker", function (e) {
+		    $('#startDate').datetimepicker('maxDate', e.date);
 		});
 
 		$('#summernote').summernote({
@@ -243,9 +252,9 @@
 		          data.forEach(user => {
 		            let item = `
 		              <a href="#" class="list-group-item list-group-item-action"
-		                 data-id="${user.empId}" data-name="${user.name}" data-dept="${user.deptName}" data-pos="${user.posName}">
+		                 data-id="${user.empId}" data-name="${user.name}" data-dept="${user.deptId}" data-pos="${user.posName}">
 		                <div><strong>${user.name}</strong></div>
-		                <small class="text-muted">${user.deptName} / ${user.posName}</small>
+		                <small class="text-muted">${user.deptId} / ${user.posName}</small>
 		              </a>`;
 		            $result.append(item);
 		          });
@@ -325,15 +334,70 @@
 		});
 		
 		$('#apprForm').on('submit', function(e) {
-		  var content = $('#summernote').summernote('code');
-		  /* if (!content || content === '<p><br></p>') {
-		    alert('내용을 입력해주세요.');
-		    e.preventDefault();  // 제출 중단
-		    return false;
-		  } */
-		  $('#summernote').val(content);  // textarea에 Summernote 내용 복사
+			
+			if ($('input[name="empIds[]"]').length <= 1) {
+				alert("결재자를 지정해주세요.");
+				return false;
+			}
+			
+			var content = $('#summernote').summernote('code');
+			 /* if (!content || content === '<p><br></p>') {
+			   alert('내용을 입력해주세요.');
+			   e.preventDefault();  // 제출 중단
+			   return false;
+			 } */
+			$('#summernote').val(content);  // textarea에 Summernote 내용 복사
 		});
+		
+		
 	});
+	
+	//연차 계산
+	$('#startDate, #endDate').on("change.datetimepicker", calculateAnnual);
+	//$('input[name="apprDetailDTOList[0].halfType"]').on("change", calculateAnnual);
+	
+	//라디오 선택 해제
+	$('input[name="apprDetailDTOList[0].halfType"]').on('click', function () {
+	    let $this = $(this);
+
+	    if ($this.data('waschecked') === true) {
+	        $this.prop('checked', false);
+	        $this.data('waschecked', false);
+	    } else {
+	        $('input[name="apprDetailDTOList[0].halfType"]').data('waschecked', false);
+	        $this.data('waschecked', true);
+	    }
+	    
+	    calculateAnnual();
+	});
+	
+	//날짜 계산
+	function calculateAnnual() {
+		
+	    let start = $('#startDate').val();
+	    let end = $('#endDate').val();
+	    let halfType = $('input[name="apprDetailDTOList[0].halfType"]:checked').val(); 
+	    // "AM", "PM" 같은 값이라고 가정
+	    
+	    if (!start || !end) {
+	        $('#reqAnnual').val(0);
+	        return;
+	    }
+
+	    // 날짜 차이 계산
+	    let startDate = new Date(start);
+	    let endDate = new Date(end);
+
+	    let diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+	    	    // 양쪽 포함
+
+	    // 반차 고려
+	    if (halfType) {
+	        diffDays -= 0.5;   // 반차 선택 시 0.5 차감
+	    }
+
+	    $('#reqAnnual').val(diffDays);
+	}
 </script>
 
 </body>

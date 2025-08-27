@@ -6,6 +6,8 @@ package com.bootstrap.study.groupware.entity;
 
 import java.util.Date;
 
+import com.bootstrap.study.personnel.entity.Personnel;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +26,9 @@ public class Notice {
     @Column(name = "NOT_ID")
     private Long notId;
 
-    @Column(name = "EMP_ID")
-    private Long empId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EMP_ID", referencedColumnName = "EMP_ID")
+    private Personnel employee;
 
     @Column(name = "NOT_TITLE", length = 255)
     private String notTitle;

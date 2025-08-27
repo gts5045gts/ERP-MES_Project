@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
 <title>그룹웨어 - 공지사항</title>
 </head>
-<body>
+<body th:data-current-user-id="${currentUsername}">
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
 			<div class="row">
@@ -30,6 +31,7 @@
 										<thead>
 											<tr>
 												<th>순 번</th>
+												<th>공지 유형</th>
 												<th>공지 제목</th>
 												<th>공지 내용</th>
 												<th>작성자</th>
@@ -39,13 +41,14 @@
 										<tbody>
 											<tr th:each="notice, stat : ${notices}">
 												<td th:text="${stat.count}">순번</td>
+												<td th:text="${notice.notType}">부서명</th>
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 												<td th:text="${notice.notContent}">공지 내용</td>
-												<td th:text="${notice.empId}">작성자</td>
+												<td th:text="${notice.employee.name}">작성자</td>
 												<td
 													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
@@ -64,7 +67,7 @@
 							<a href="#collapse2" class="text-decoration-none text-primary"
 								data-toggle="collapse" role="button" aria-expanded="true"
 								aria-controls="collapse2">
-								<h6 class="m-0 font-weight-bold">부서별 공지사항</h6>
+								<h6 class="m-0 font-weight-bold" th:text="${empDeptName != null ? empDeptName + ' 공지사항' : '부서별 공지사항'}"></h6>
 							</a> <a th:href="@{/notice/ntcWrite}" class="btn btn-sm btn-primary">공지
 								등록</a>
 						</div>
@@ -89,12 +92,12 @@
 
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 
 												<td th:text="${notice.notContent}">공지 내용</td>
-												<td th:text="${notice.empId}">작성자</td>
+												<td th:text="${notice.employee.name}">작성자</td>
 												<td
 													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
@@ -144,6 +147,7 @@
 							</div>
 						</form>
 					</div>
+					
 					<div class="modal-footer">
 						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> <a
 							href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
