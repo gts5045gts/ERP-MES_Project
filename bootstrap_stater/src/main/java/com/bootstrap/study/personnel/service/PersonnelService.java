@@ -153,8 +153,7 @@ public class PersonnelService {
  	      log.info("사원등록 정보: " + personnelDTO.toString());
  	      
  	      Personnel personnel = new Personnel();
- 	      
- 	      personnel = personnel.fromDTO(personnelDTO);
+ 	      personnel = personnel.fromDTO(personnelDTO, commonDetailCodeRepository);
  	      log.info("사원등록 정보: " + personnel.toString());
 
  	      personnelRepository.save(personnel);
@@ -175,11 +174,19 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
- 	    // DTO에서 받은 정보로 엔티티 업데이트
- 	    personnel.setName(personnelDTO.getName());
- 	    personnel.setPasswd(personnelDTO.getPasswd());
- 	    personnel.setPhone(personnelDTO.getPhone());
- 	    personnel.setEmail(personnelDTO.getEmail());
+// 	    personnel.setName(personnelDTO.getName());
+// 	    personnel.setPasswd(personnelDTO.getPasswd());
+// 	    personnel.setPhone(personnelDTO.getPhone());
+// 	    personnel.setResident(personnelDTO.getResident());
+// 	    personnel.setEmail(personnelDTO.getEmail());
+// 	    personnel.setAddrNum(personnelDTO.getAddrNum());
+// 	    personnel.setAddr1(personnelDTO.getAddr1());
+// 	    personnel.setAddr2(personnelDTO.getAddr2());
+// 	    
+ 	    
+ 	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
+ 	    
+ 	    
 
  	    personnelRepository.save(personnel);
  	}
