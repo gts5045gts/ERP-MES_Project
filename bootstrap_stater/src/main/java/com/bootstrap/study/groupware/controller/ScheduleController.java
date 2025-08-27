@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
+import com.bootstrap.study.commonCode.util.HolidayDTO;
+import com.bootstrap.study.commonCode.util.HolidayService;
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
-import com.bootstrap.study.util.HolidayDTO;
-import com.bootstrap.study.util.HolidayService;
 
 import lombok.extern.log4j.Log4j2;
 

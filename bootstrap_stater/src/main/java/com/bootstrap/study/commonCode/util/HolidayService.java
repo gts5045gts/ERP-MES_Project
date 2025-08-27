@@ -1,4 +1,4 @@
-package com.bootstrap.study.util;
+package com.bootstrap.study.commonCode.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
