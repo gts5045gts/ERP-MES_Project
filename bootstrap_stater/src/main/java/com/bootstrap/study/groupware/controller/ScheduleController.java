@@ -1,13 +1,11 @@
 package com.bootstrap.study.groupware.controller;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.commonCode.util.HolidayDTO;
+import com.bootstrap.study.commonCode.util.HolidayService;
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
-import com.bootstrap.study.util.HolidayDTO;
-import com.bootstrap.study.util.HolidayService;
 
 import lombok.extern.log4j.Log4j2;
 
