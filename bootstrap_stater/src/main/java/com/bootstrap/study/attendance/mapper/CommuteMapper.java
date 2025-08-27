@@ -30,9 +30,6 @@ public interface CommuteMapper {
 	// 퇴근버튼 눌렀을때 퇴근시간 commute_record에 저장
 	void updateCommuteCheckOut(CommuteDTO commute);
 
-	// 관리자 근태관리 리스트
-//	List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap);
-
 	// 부서 공통코드
 	List<CommonDetailCodeDTO> getCommonDept(String comId);
 

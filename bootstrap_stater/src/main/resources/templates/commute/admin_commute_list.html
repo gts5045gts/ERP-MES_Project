@@ -32,10 +32,11 @@
 				    
 				    <div class="d-flex align-items-center gap-2">
 						<select id="dept" th:name="dept" class="form-control form-control-sm">
+						    <option th:value="ALL" th:text="'전체'" th:selected="${selectedDept == 'ALL'}"></option>
 						    <option th:each="dept : ${commonDept}" 
 						            th:value="${dept.comDtId}" 
 						            th:text="${dept.comDtNm}"
-						            th:selected="${dept.comId == selectedDept}">
+						            th:selected="${dept.comDtId == selectedDept}">
 						    </option>
 						</select>
 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
@@ -71,6 +72,9 @@
 		                            <td th:text="${c.posName}"></td>
 		                            <td th:text="${c.workStatusNm}"></td>
 		                        </tr>
+		                        <tr th:if="${#lists.isEmpty(adminCommuteList)}">
+									<td colspan="8" class="text-center text-muted">출근한 사람이 없습니다.</td>
+								</tr>
 	                        </tbody>
 	                    </table>
 	                </div>
@@ -89,7 +93,7 @@
 	document.getElementById("searchBtn").addEventListener("click", function() {
 	    const startDate = document.querySelector("input[name='startDate']").value;
 	    const endDate = document.querySelector("input[name='endDate']").value;
-	    const deptId = document.querySelector("#dept").value; // 선택된 부서 값
+	    const deptId = document.querySelector("#dept").value || "ALL"; // 선택된 부서 값
 	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
 	});
 	
