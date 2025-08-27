@@ -55,19 +55,24 @@ public class ApprController {
     }
 
     @GetMapping("/new/{reqTypeVal}")
-    public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model, Authentication authentication){
+    public String draftingForm(@PathVariable("reqTypeVal") String reqTypeVal, Model model, Authentication authentication){
     	
+    	//사원정보
     	PersonnelLoginDTO principal = (PersonnelLoginDTO) authentication.getPrincipal();
     	String loginEmpId = principal.getEmpId();
     	//연차 정보
     	Annual annual = apprService.getAnnualInfo(loginEmpId);
     	double remain = annual.getAnnTotal() - annual.getAnnUse();
+    	//문서정보
+    	ApprReqType reqType = ApprReqType.fromName(reqTypeVal);
+    	String title = reqType.getLabel();
     	    	
     	model.addAttribute("apprDTO", new ApprDTO());
     	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
     	model.addAttribute("loginEmpId", loginEmpId);
     	model.addAttribute("principal", principal);
     	model.addAttribute("remain", remain);
+    	model.addAttribute("title", title);
     	        
         return "approval/drafting_form";
     }

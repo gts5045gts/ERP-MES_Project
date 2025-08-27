@@ -30,7 +30,7 @@
 			<div class="container-fluid">
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
-						<h6 class="m-0 font-weight-bold">기안서작성 | 연차신청서</h6>
+						<h6 class="m-0 font-weight-bold">기안서작성 | <th:block th:text="${title}"></th:block></h6>
 					</div>
 					<div class="card-body">
 						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
@@ -59,14 +59,14 @@
 							<!-- 결재자 -->
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">결재자</label>
-								<div class="col-sm-2">
+								<div class="col-sm-6">
 									<div class="form-group position-relative">
-									  <input type="text" class="userSearch form-control" value="" placeholder="결재자 검색">
+									  <input type="text" class="userSearch form-control" value="" placeholder="결재자명을 입력해주세요.">
 									  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
 									</div>
 									<!-- 선택된 결재자 표시 영역 -->
 									<div id="selectedUsers" class="mt-2">
-										<button type="button" class="btn btn-sm btn-outline-success m-1" ><th:block th:text="${principal.name}">직급, 부서 생기면 넣어야됨</th:block></button>
+										<button type="button" class="btn btn-sm btn-outline-success m-1" ><th:block th:text="${principal.name}"></th:block>(본인)</button>
 									</div>
 									<!-- hidden input 담을 영역 -->
 									<div id="hiddenEmpIds">
@@ -83,7 +83,7 @@
 										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
 												th:value="${reqType}"
 												th:text="${reqType.label}"
-												th:selected="${reqType.name() == selectedRole.name()}"
+												th:selected="${reqType.name() == selectedRole}"
 												>
 										</option>
 									</select>
@@ -143,17 +143,17 @@
 								</div>
 								<div class="col-sm-2">
 									<small>신청연차</small>
-									<input type="text" class="form-control" id="reqAnnual">
+									<input type="text" class="form-control" id="reqAnnual" readOnly>
 								</div>
 							</div>
 
-							<!-- 첨부 -->
-							<div class="form-group row">
+							<!-- 첨부 보류-->
+							<!-- <div class="form-group row">
 								<label class="col-sm-2 col-form-label">첨부</label>
 								<div class="col-sm-8">
 									<a href="#" class="btn btn-info">추가</a>
 								</div>
-							</div>
+							</div> -->
 
 							<!-- 버튼 -->
 							<div class="form-group row">
