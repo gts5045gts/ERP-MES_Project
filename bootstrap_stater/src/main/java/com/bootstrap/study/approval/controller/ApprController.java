@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,6 +33,7 @@ import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 
 import jakarta.validation.Valid;
 
@@ -52,10 +54,16 @@ public class ApprController {
     }
 
     @GetMapping("/new/{reqTypeVal}")
-    public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model){
+    public String draftingForm(@PathVariable("reqTypeVal") ApprReqType reqTypeVal, Model model, Authentication authentication){
     	
+    	PersonnelLoginDTO principal = (PersonnelLoginDTO) authentication.getPrincipal();
+    	String loginEmpId = principal.getEmpId();
+    	//연차 정보 가져와야함.
+    	    	
     	model.addAttribute("apprDTO", new ApprDTO());
     	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
+    	model.addAttribute("loginEmpId", loginEmpId);
+    	model.addAttribute("principal", principal);
     	        
         return "approval/drafting_form";
     }
@@ -171,6 +179,16 @@ public class ApprController {
         model.addAttribute("hasPrevious", approvalPage.hasPrevious());
         model.addAttribute("hasNext", approvalPage.hasNext());
         model.addAttribute("currentStatus", status);
+    }
+    
+    //결재자 검색
+    @GetMapping("/empSearch")
+    @ResponseBody
+    public List<PersonnelDTO> searchUser(@RequestParam("name") String name, Authentication authentication) {
+    	
+    	String loginEmpId = authentication.getName();
+    	
+        return apprService.getApprEmployee(name, loginEmpId);
     }
  	
     // 0826 - 기존 하드코딩된 "2025082501" 대신 실제 로그인 사용자 정보 사용
