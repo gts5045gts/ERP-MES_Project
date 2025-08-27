@@ -336,6 +336,41 @@
                                 </div>
                             </div>
                             
+                            <!-- 0827-2 결재선 정보 추가 -->
+							<div class="row">
+							    <div class="col-md-12">
+							        <div class="info-row">
+							            <div class="info-label">결재선</div>
+							            <div class="info-value">
+							                <table class="table table-bordered table-sm" style="margin-bottom: 0;">
+							                    <thead class="thead-light">
+							                        <tr>
+							                            <th style="width: 100px; text-align: center;">작성자</th>
+							                            <th style="width: 100px; text-align: center;" id="approver-header-1">기안자1</th>
+							                            <th style="width: 100px; text-align: center;" id="approver-header-2">기안자2</th>
+							                            <th style="width: 100px; text-align: center;" id="approver-header-3">기안자3</th>
+							                        </tr>
+							                    </thead>
+							                    <tbody>
+							                        <tr>
+							                            <td style="text-align: center;" id="modal-drafter-cell">-</td>
+							                            <td style="text-align: center;" id="modal-approver-1">-</td>
+							                            <td style="text-align: center;" id="modal-approver-2">-</td>
+							                            <td style="text-align: center;" id="modal-approver-3">-</td>
+							                        </tr>
+							                        <!-- 승인 상태 행 추가 -->
+							                        <tr>
+							                            <td style="text-align: center; font-size: 12px; color: #28a745;">작성완료</td>
+							                            <td style="text-align: center;" id="modal-status-1">-</td>
+							                            <td style="text-align: center;" id="modal-status-2">-</td>
+							                            <td style="text-align: center;" id="modal-status-3">-</td>
+							                        </tr>
+							                    </tbody>
+							                </table>
+							            </div>
+							        </div>
+							    </div>
+							</div>
                             <!-- 승인/반려 사유 입력 영역 -->
                             <div class="row">
                                 <div class="col-md-12">
@@ -505,13 +540,78 @@
         function displayModalContent(data) {
             try {
                 populateModalFields(data);
+                displayApprovalLines(data.approvalLines); // 결재선 표시 추가
                 showModalContent();
             } catch (error) {
                 console.error('모달 내용 표시 중 오류:', error);
                 showModalError();
             }
         }
+		
+     	// 0827-2 결재선 표시 함수 추가
+        function displayApprovalLines(approvalLines) {
+		    console.log('결재선 데이터:', approvalLines);
+		    
+		    // 작성자 이름 설정
+		    const drafterCell = document.getElementById('modal-drafter-cell');
+		    const drafterName = document.getElementById('modal-drafterName').textContent;
+		    if (drafterCell) drafterCell.textContent = drafterName;
+		    
+		    // 모든 결재자 셀과 헤더, 상태 초기화
+		    for (let i = 1; i <= 3; i++) {
+		        const approverCell = document.getElementById(`modal-approver-${i}`);
+		        const headerCell = document.getElementById(`approver-header-${i}`);
+		        const statusCell = document.getElementById(`modal-status-${i}`);
+		        
+		        if (approverCell) approverCell.textContent = '-';
+		        if (statusCell) statusCell.textContent = '-';
+		        if (headerCell) {
+		            headerCell.style.display = 'none';
+		            headerCell.textContent = `기안자${i}`;
+		        }
+		    }
+		    
+		    // 결재선 정보가 있으면 표시
+		    if (approvalLines && approvalLines.length > 0) {
+		        approvalLines.forEach((line, index) => {
+		            if (index < 3) {
+		                const approverCell = document.getElementById(`modal-approver-${index + 1}`);
+		                const headerCell = document.getElementById(`approver-header-${index + 1}`);
+		                const statusCell = document.getElementById(`modal-status-${index + 1}`);
+		                
+		                if (approverCell && line.apprName) {
+		                    approverCell.textContent = line.apprName;
+		                }
+		                
+		                if (headerCell) {
+		                    headerCell.textContent = `기안자${line.stepNo}`;
+		                    headerCell.style.display = 'table-cell';
+		                }
+		                
+		                // 승인 상태 표시
+		                if (statusCell) {
+		                    const status = getApprovalStatus(line.decision);
+		                    statusCell.innerHTML = `<span style="font-size: 12px; ${getStatusStyle(line.decision)}">${status}</span>`;
+		                }
+		            }
+		        });
+		    }
+		}
+     	
+     	// 승인 상태 텍스트 반환
+        function getApprovalStatus(decision) {
+            if (decision === 'ACCEPT') return '승인완료';
+            if (decision === 'DENY') return '반려';
+            return '대기중';
+        }
 
+        // 승인 상태별 스타일 반환
+        function getStatusStyle(decision) {
+            if (decision === 'ACCEPT') return 'color: #28a745; font-weight: bold;';
+            if (decision === 'DENY') return 'color: #dc3545; font-weight: bold;';
+            return 'color: #ffc107; font-weight: bold;';
+        }
+        
         function populateModalFields(data) {
             // 일반 필드들 설정
             Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
