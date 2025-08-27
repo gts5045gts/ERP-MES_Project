@@ -301,4 +301,41 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 	});
+	
+	// schWrite.html 페이지의 폼 제출 처리
+	$('#writeForm').on('submit', function(e) {
+	    e.preventDefault(); // 기본 폼 제출 동작을 막음
+
+	    // 폼 데이터 구성
+	    var formData = {
+	        schTitle: $('#modalTitle').val(),
+	        schContent: $('#modalContent').val(),
+	        starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
+	        endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
+	        // schType 필드를 가져와야 합니다.
+	        // 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
+	        schType: $('#schType').val() || $('#schType_hidden').val(),
+	        empId: $('#modalEmpId').val() // 작성자 ID
+	    };
+
+	    // AJAX 요청
+	    $.ajax({
+	        url: '/schedule/save',
+	        type: 'POST',
+	        contentType: 'application/json',
+	        data: JSON.stringify(formData),
+	        success: function(response) {
+	            if (response.success) {
+	                alert('일정이 성공적으로 등록되었습니다.');
+	                // 성공하면 일정 목록 페이지로 이동
+	                window.location.href = '/schedule'; 
+	            } else {
+	                alert('일정 등록 실패: ' + response.message);
+	            }
+	        },
+	        error: function() {
+	            alert('일정 등록 중 오류가 발생했습니다.');
+	        }
+	    });
+	});
 });
