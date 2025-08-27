@@ -18,20 +18,20 @@ import org.springframework.stereotype.Repository;
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
 	// 0827
-	// 공통코드 join
+	// 인사 결재 목록 조회
 	@Query(value = """
 		    SELECT
 		        al.step_no,           -- 0
 		        a.title,              -- 1
 		        e.emp_name,           -- 2
-		        dept.com_dt_nm,       -- 3 
-		        pos.com_dt_nm,        -- 4 
-		        a.request_at,         -- 5
-		        al.dec_date,          -- 6
-		        al.decision,          -- 7
-		        a.req_id,             -- 8
-		        a.req_type,           -- 9
-		        a.emp_id              -- 10
+		        dept.com_dt_nm,       
+		        pos.com_dt_nm,        
+		        a.request_at,         
+		        al.dec_date,          
+		        al.decision,          
+		        a.req_id,            
+		        a.req_type,           
+		        a.emp_id              
 		    FROM approval_line al
 		    JOIN approval a ON al.req_id = a.req_id
 		    JOIN employee e ON a.emp_id = e.emp_id
@@ -42,7 +42,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		List<Object[]> findApprovalListWithJoin();
 
     
-    //0821
+    // 0821
    	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
 	@Transactional
 	@Modifying(clearAutomatically = true, flushAutomatically = true)

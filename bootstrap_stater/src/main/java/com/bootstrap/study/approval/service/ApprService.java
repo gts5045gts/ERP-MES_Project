@@ -182,9 +182,9 @@ public class ApprService {
             dto.setCreateAt(java.time.LocalDateTime.now());
         }
         
-        // DEC_DATE 처리 - result[6] ✅ 수정!
+        // DEC_DATE 처리
         if (result[6] != null) {
-            Object decDateObj = result[6];  // 6으로 수정!
+            Object decDateObj = result[6];  
             if (decDateObj instanceof oracle.sql.TIMESTAMPTZ) {
                 try {
                     oracle.sql.TIMESTAMPTZ timestamptz = (oracle.sql.TIMESTAMPTZ) decDateObj;
