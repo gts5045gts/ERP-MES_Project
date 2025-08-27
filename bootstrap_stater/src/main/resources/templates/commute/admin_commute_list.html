@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    </th:block>
+</head>
+<body>
+	<th:block layout:fragment="content">
+	    <div class="container-fluid">
+	
+	        <!-- Page Heading -->
+	        <h1 class="h3 mb-2 text-gray-900">관리자 근태관리 출퇴근현황</h1>
+	        
+	        <!-- 출근버튼 -->
+	        
+	        <!-- 근태 리스트 테이블 -->        
+	        <!-- DataTales Example -->
+	        <div class="card shadow mb-4">
+<!-- 	            <div class="card-header py-3"> -->
+<!-- 	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6> -->
+<!-- 		            <div class="mb-3"> -->
+<!-- 		            	<button id="checkInBtn" class="btn btn-primary">출근</button> -->
+<!-- 		            </div> -->
+<!-- 	            	<input type="date"> -->
+<!-- 	            </div> -->
+				<div class="card-header py-3 d-flex align-items-center justify-content-between">
+				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
+				    
+				    <div class="d-flex align-items-center gap-2">
+						<select id="dept" th:name="dept" class="form-control form-control-sm">
+						    <option th:each="dept : ${commonDept}" 
+						            th:value="${dept.comDtId}" 
+						            th:text="${dept.comDtNm}"
+						            th:selected="${dept.comId == selectedDept}">
+						    </option>
+						</select>
+					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
+					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}">
+					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button>
+				        <button id="checkInBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">출근</button>
+				        <button id="checkOutBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">퇴근</button>
+				    </div>
+				</div>
+	            <div class="card-body">
+	                <div class="table-responsive">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
+	                        <thead>
+		                        <tr>
+		                            <th>날짜</th>
+		                            <th>출근시간</th>
+		                            <th>퇴근시간</th>
+		                            <th>사번</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
+		                            <th>근무상태</th>
+		                        </tr>
+	                        </thead>
+	                        <tbody>
+		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}">
+		                            <td th:text="${c.commuteDate}"></td>
+									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
+									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
+		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
+		                            <td th:text="${c.workStatusNm}"></td>
+		                        </tr>
+	                        </tbody>
+	                    </table>
+	                </div>
+	            </div>
+	        </div>
+	
+	    </div>
+	    <!-- /.container-fluid -->
+	
+	</th:block>
+	<th:block layout:fragment="script">
+	<script>
+	
+	console.log("버튼 클릭!");
+	
+	document.getElementById("searchBtn").addEventListener("click", function() {
+	    const startDate = document.querySelector("input[name='startDate']").value;
+	    const endDate = document.querySelector("input[name='endDate']").value;
+	    const deptId = document.querySelector("#dept").value; // 선택된 부서 값
+	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
+	});
+	
+	
+// 	const deptSelect = document.querySelector("#dept");
+// 	deptSelect.addEventListener("change", function() {
+// 	    const startDate = document.querySelector("input[name='startDate']").value;
+// 	    const endDate = document.querySelector("input[name='endDate']").value;
+// 	    const deptId = this.value;
+// 	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
+// 	});
+
+	</script>
+	</th:block>
+</body>
+</html>
