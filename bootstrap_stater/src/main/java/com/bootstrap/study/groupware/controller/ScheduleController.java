@@ -2,12 +2,15 @@ package com.bootstrap.study.groupware.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
+import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.util.HolidayDTO;
 import com.bootstrap.study.util.HolidayService;
 
@@ -60,17 +64,33 @@ public class ScheduleController {
     @GetMapping("")
     public String scheduleList(Model model) {
     	log.info("ScheduleController scheduleList()");
-        List<Schedule> schedules = scheduleService.findAllSchedules();
-//        List<ScheduleDTO> scheduleDTOs = schedules.stream()
-//                .map(ScheduleDTO::new)
-//                .collect(Collectors.toList());
-//                
-//            model.addAttribute("schedules", scheduleDTOs);
+    	
+    	// ⭐ 현재 로그인 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long currentEmpId = null;
+        boolean isAdmin = false;
+        if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
+            PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
+            currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            
+            // 사용자의 권한(Authorities)을 확인하여 관리자 여부를 판단합니다.
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            for (GrantedAuthority authority : authorities) {
+                if (authority.getAuthority().equals("ROLE_ADMIN")) { // 'ROLE_ADMIN'은 실제 권한명에 따라 수정 필요
+                    isAdmin = true;
+                    break;
+                }
+            }
+        }
+        
+        model.addAttribute("currentEmpId", currentEmpId);
+        model.addAttribute("isAdmin", isAdmin);
+        
         return "gw/schedule";
     }
 
     // 일정 등록 페이지를 보여주는 메서드 (schWrite.html)
-    @GetMapping("/write")
+    @GetMapping("/schWrite")
     public String writeForm() {
         return "gw/schWrite";
     }
@@ -78,12 +98,18 @@ public class ScheduleController {
     // ⭐ 일정 등록 (모달 & 페이지 폼 제출)을 처리하는 메서드
     @PostMapping("/save")
     @ResponseBody
-    public Map<String, Object> saveSchedule(@RequestBody ScheduleDTO scheduleDTO) {
+    public Map<String, Object> saveSchedule(@RequestBody ScheduleDTO scheduleDTO, Principal principal) {
         log.info("ScheduleController saveSchedule()", scheduleDTO);
         
+        // 1. Principal 객체를 사용하여 현재 로그인한 사용자의 empId를 가져옵니다.
+        // Principal.getName()은 Spring Security에서 사용자 ID(username)를 반환합니다.
+        String empIdString = principal.getName();
+        Long currentEmpId = Long.parseLong(empIdString);
+        
         Schedule schedule = new Schedule();
+        
         // 이 과정에서 임시 ID와 타입을 할당합니다.
-        schedule.setEmpId(scheduleDTO.getEmpId());
+        schedule.setEmpId(currentEmpId);
         schedule.setSchTitle(scheduleDTO.getSchTitle());
         schedule.setSchContent(scheduleDTO.getSchContent());
         schedule.setStarttimeAt(scheduleDTO.getStarttimeAt());
@@ -143,32 +169,59 @@ public class ScheduleController {
         return events;
     }
     
+    // ⭐ 일정 상세 정보를 조회하고 일정 작성자의 ID를 포함하여 반환
     @GetMapping("/{schId}")
     @ResponseBody
-    public Schedule getScheduleDetail(@PathVariable("schId") Long schId) {
+    public Map<String, Object> getScheduleDetail(@PathVariable("schId") Long schId) {
         log.info("Requesting schedule detail for ID: {}", schId);
-        return scheduleService.findById(schId);
+        Schedule schedule = scheduleService.findById(schId);
+        Map<String, Object> result = new HashMap<>();
+        
+        if (schedule != null) {
+        	result.put("success", true);
+        	result.put("schedule", schedule);
+        } else {
+        	result.put("success", false);
+        	result.put("message", "일정 정보를 찾을 수 없습니다.");
+        }
+        return result;
     }
-    
- // 일정 수정 
+
+    // ⭐ 일정 수정 시 권한 확인 로직 추가
     @PostMapping("/update")
     @ResponseBody
-    public Map<String, Object> updateSchedule(@RequestBody Schedule schedule) {
+    public Map<String, Object> updateSchedule(@RequestBody Schedule schedule, Principal principal) {
         log.info("ScheduleController updateSchedule()", schedule);
-        scheduleService.updateSchedule(schedule);
         Map<String, Object> response = new HashMap<>();
+        
+        // ⭐ 권한 확인
+        if (!scheduleService.isScheduleOwner(schedule.getSchId(), Long.parseLong(principal.getName()))) {
+            response.put("success", false);
+            response.put("message", "수정 권한이 없습니다.");
+            return response;
+        }
+
+        scheduleService.updateSchedule(schedule);
         response.put("success", true);
         response.put("message", "일정이 성공적으로 수정되었습니다.");
         return response;
     }
 
-    // 일정 삭제 
+    // 일정 삭제 시 권한 확인 로직 추가
     @PostMapping("/delete/{schId}")
     @ResponseBody
-    public Map<String, Object> deleteSchedule(@PathVariable("schId") Long schId) {
+    public Map<String, Object> deleteSchedule(@PathVariable("schId") Long schId, Principal principal) {
         log.info("ScheduleController deleteSchedule() for ID: {}", schId);
-        scheduleService.deleteSchedule(schId);
         Map<String, Object> response = new HashMap<>();
+
+        // ⭐ 권한 확인
+        if (!scheduleService.isScheduleOwner(schId, Long.parseLong(principal.getName()))) {
+            response.put("success", false);
+            response.put("message", "삭제 권한이 없습니다.");
+            return response;
+        }
+        
+        scheduleService.deleteSchedule(schId);
         response.put("success", true);
         response.put("message", "일정이 성공적으로 삭제되었습니다.");
         return response;

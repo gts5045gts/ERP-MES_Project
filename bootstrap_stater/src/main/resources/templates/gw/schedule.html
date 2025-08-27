@@ -12,11 +12,10 @@
 	rel="stylesheet">
 <link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
-<body>
+<body th:data-current-emp-id="${currentEmpId}">
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
 			<div class="row">
-				<!-- 전체 일정 -->
 				<div class="col-md-6 mb-4">
 					<div
 						class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -25,8 +24,8 @@
 							data-toggle="collapse" role="button" aria-expanded="true"
 							aria-controls="collapse2">
 							<h6 class="m-0 font-weight-bold">전체 일정관리</h6>
-						</a> <a th:href="@{/groupware/schWrite}"
-							class="btn btn-sm btn-primary">일정 등록</a>
+						</a> <a th:href="@{/schedule/schWrite}" class="btn btn-sm btn-primary">일정
+							등록</a>
 					</div>
 					<div class="collapse show" id="collapse1">
 						<div class="card-body">
@@ -38,7 +37,6 @@
 				</div>
 
 
-				<!-- 부서별 일정 -->
 				<div class="col-md-6 mb-4">
 					<div
 						class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -47,8 +45,8 @@
 							data-toggle="collapse" role="button" aria-expanded="true"
 							aria-controls="collapse2">
 							<h6 class="m-0 font-weight-bold">부서별 일정관리</h6>
-						</a> <a th:href="@{/groupware/schWrite}"
-							class="btn btn-sm btn-primary">일정 등록</a>
+						</a> <a th:href="@{/schedule/schWrite}" class="btn btn-sm btn-primary">일정
+							등록</a>
 					</div>
 					<div class="collapse show" id="collapse2">
 						<div class="card-body">
@@ -61,7 +59,8 @@
 				</div>
 			</div>
 		</div>
-		<!-- 간편일정 등록 모달코드 -->
+
+		<!-- 모달 관련 코드 -->
 		<div class="modal fade" id="addScheduleModal" tabindex="-1"
 			role="dialog" aria-labelledby="addScheduleModalLabel"
 			aria-hidden="true">
@@ -76,6 +75,21 @@
 					</div>
 					<form th:action="@{/schedule/save}" method="post">
 						<div class="modal-body">
+							<div class="form-group">
+								<label for="modalAuthor">작성자</label> <input type="text"
+									class="form-control" id="modalAuthor" name="authorName"
+									readonly> <input type="hidden" id="modalEmpId"
+									name="empId">
+							</div>
+
+							<div class="form-group" th:if="${isAdmin}">
+								<label for="schType">일정 타입</label> <select class="form-control"
+									id="schType" name="schType">
+									<option value="전체">전체 일정</option>
+									<option value="부서">부서별 일정</option>
+								</select>
+							</div>
+							
 							<div class="form-group">
 								<label for="modalTitle">일정 제목</label> <input type="text"
 									class="form-control" id="modalTitle" name="schTitle" required>
@@ -112,7 +126,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- 모달 상세조회 -->
 		<div class="modal fade" id="scheduleDetailModal" tabindex="-1"
 			role="dialog" aria-labelledby="scheduleDetailModalLabel"
 			aria-hidden="true">
@@ -126,28 +139,58 @@
 						</button>
 					</div>
 					<div class="modal-body">
-						<div class="form-group">
-							<label>제목</label>
-							<p id="detailTitle" class="form-control-static"></p>
+						<div id="readModeContent">
+							<div class="form-group">
+								<label>제목</label>
+								<p id="detailTitle" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>내용</label>
+								<p id="detailContent" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>시작일</label>
+								<p id="detailStartDate" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>종료일</label>
+								<p id="detailEndDate" class="form-control-static"></p>
+							</div>
 						</div>
-						<div class="form-group">
-							<label>내용</label>
-							<p id="detailContent" class="form-control-static"></p>
-						</div>
-						<div class="form-group">
-							<label>시작일</label>
-							<p id="detailStartDate" class="form-control-static"></p>
-						</div>
-						<div class="form-group">
-							<label>종료일</label>
-							<p id="detailEndDate" class="form-control-static"></p>
-						</div>
+
+						<form id="editScheduleForm" style="display: none;">
+							<input type="hidden" id="editScheduleId" name="schId"> <input
+								type="hidden" id="editSchEmpId" name="empId">
+							<div class="form-group">
+								<label for="editTitle">제목</label> <input type="text"
+									class="form-control" id="editTitle" name="schTitle" required>
+							</div>
+							<div class="form-group">
+								<label for="editContent">내용</label>
+								<textarea class="form-control" id="editContent"
+									name="schContent" rows="4"></textarea>
+							</div>
+							<div class="form-group">
+								<label for="editStartDate">시작일</label> <input
+									type="datetime-local" class="form-control" id="editStartDate"
+									name="starttimeAt" required>
+							</div>
+							<div class="form-group">
+								<label for="editEndDate">종료일</label> <input
+									type="datetime-local" class="form-control" id="editEndDate"
+									name="endtimeAt" required>
+							</div>
+						</form>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-warning" id="editScheduleBtn">수정</button>
-						<button type="button" class="btn btn-danger" id="deleteScheduleBtn">삭제</button>
-						<button type="submit" form="editScheduleForm" class="btn btn-primary" id="saveEditBtn" style="display: none;">수정	완료</button>
-						<button class="btn btn-secondary" type="button"	data-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-danger"
+							id="deleteScheduleBtn">삭제</button>
+						<button type="submit" form="editScheduleForm"
+							class="btn btn-primary" id="saveEditBtn" style="display: none;">수정
+							완료</button>
+						<button class="btn btn-secondary" type="button"
+							data-dismiss="modal">닫기</button>
 					</div>
 				</div>
 			</div>
