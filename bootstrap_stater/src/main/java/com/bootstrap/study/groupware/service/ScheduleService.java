@@ -50,4 +50,9 @@ public class ScheduleService {
 	    	Optional<Schedule> schedule = scheduleRepository.findById(schId);
 	    	return schedule.isPresent() && schedule.get().getEmpId().equals(empId);
 	    }
+
+	public List<Schedule> findByEmpDeptName(String empDeptName) {
+		
+		return scheduleRepository.findByschType(empDeptName);
+	}
 }

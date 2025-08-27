@@ -89,7 +89,7 @@
 										<option th:each="dept : ${allDepartments}" th:value="${dept.comDtNm}" th:text="${dept.comDtNm + ' 일정'}"></option>
 									</th:block>
 									<th:block th:unless="${isAdmin}">
-										<option th:value="${empDeptName}" th:text="${empDeptName}"></option>
+										<option th:value="${empDeptName}" th:text="${empDeptName + ' 일정'}"></option>
 									</th:block>
 								</select>
 							</div>

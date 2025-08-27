@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// body 태그에서 현재 로그인한 사용자 ID를 가져옴
 	var currentEmpId = $('body').data('current-emp-id');
+	var empDeptId = $('body').data('emp-dept-id');
+	var empDeptName = $('body').data('emp-dept-name');
 
 	var calendarEl1 = document.getElementById('calendar1');
 	if (calendarEl1) {
@@ -106,7 +108,13 @@ document.addEventListener('DOMContentLoaded', function() {
 				// 1. 부서별 일정 데이터 소스
 				{
 					url: '/schedule/events/dept',
-					method: 'GET'
+					method: 'GET',
+					extraParams: function(fetchInfo) {
+						if (empDeptName) {
+							return { empDeptName: empDeptName };
+						}
+						return {};
+					}
 				},
 				// 2. 공휴일 데이터 소스
 				{
@@ -210,15 +218,21 @@ document.addEventListener('DOMContentLoaded', function() {
 	$('#addScheduleModal form').on('submit', function(e) {
 		e.preventDefault();
 		var startDate = $('#modalStartDate').val();
-		    var endDate = $('#modalEndDate').val();
+		var endDate = $('#modalEndDate').val();
+		var schTypeVal;
+		if ($('#schType').length) { // #schType(드롭다운)이 존재하면
+		        schTypeVal = $('#schType').val();
+		    } else { 
+		        schTypeVal = $('input[name="schType"]').val(); // 숨겨진 필드의 값을 가져옴
+		    }
 
-			var formData = {
-			        schTitle: $('#modalTitle').val(),
-			        schContent: $('#modalContent').val(),
-			        starttimeAt: startDate + 'T00:00:00', // 날짜 + 자정 시간
-			        endtimeAt: endDate + 'T23:59:59',   // 날짜 + 하루의 마지막 시간
-			        schType: $('#schType').val(), 
-			        empId: currentEmpId
+		var formData = {
+			schTitle: $('#modalTitle').val(),
+			schContent: $('#modalContent').val(),
+			starttimeAt: startDate + 'T00:00:00', // 날짜 + 자정 시간
+			endtimeAt: endDate + 'T23:59:59',   // 날짜 + 하루의 마지막 시간
+			schType: schTypeVal,
+			empId: currentEmpId
 		};
 
 		$.ajax({
@@ -301,41 +315,41 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 	});
-	
+
 	// schWrite.html 페이지의 폼 제출 처리
 	$('#writeForm').on('submit', function(e) {
-	    e.preventDefault(); // 기본 폼 제출 동작을 막음
+		e.preventDefault(); // 기본 폼 제출 동작을 막음
 
-	    // 폼 데이터 구성
-	    var formData = {
-	        schTitle: $('#modalTitle').val(),
-	        schContent: $('#modalContent').val(),
-	        starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
-	        endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
-	        // schType 필드를 가져와야 합니다.
-	        // 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
-	        schType: $('#schType').val() || $('#schType_hidden').val(),
-	        empId: $('#modalEmpId').val() // 작성자 ID
-	    };
+		// 폼 데이터 구성
+		var formData = {
+			schTitle: $('#modalTitle').val(),
+			schContent: $('#modalContent').val(),
+			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
+			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
+			// schType 필드를 가져와야 합니다.
+			// 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
+			schType: $('#schType').val() || $('#schType_hidden').val(),
+			empId: $('#modalEmpId').val() // 작성자 ID
+		};
 
-	    // AJAX 요청
-	    $.ajax({
-	        url: '/schedule/save',
-	        type: 'POST',
-	        contentType: 'application/json',
-	        data: JSON.stringify(formData),
-	        success: function(response) {
-	            if (response.success) {
-	                alert('일정이 성공적으로 등록되었습니다.');
-	                // 성공하면 일정 목록 페이지로 이동
-	                window.location.href = '/schedule'; 
-	            } else {
-	                alert('일정 등록 실패: ' + response.message);
-	            }
-	        },
-	        error: function() {
-	            alert('일정 등록 중 오류가 발생했습니다.');
-	        }
-	    });
+		// AJAX 요청
+		$.ajax({
+			url: '/schedule/save',
+			type: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify(formData),
+			success: function(response) {
+				if (response.success) {
+					alert('일정이 성공적으로 등록되었습니다.');
+					// 성공하면 일정 목록 페이지로 이동
+					window.location.href = '/schedule';
+				} else {
+					alert('일정 등록 실패: ' + response.message);
+				}
+			},
+			error: function() {
+				alert('일정 등록 중 오류가 발생했습니다.');
+			}
+		});
 	});
 });

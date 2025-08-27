@@ -2,14 +2,12 @@ package com.bootstrap.study.groupware.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -216,20 +214,21 @@ public class ScheduleController {
 	// 부서별 일정 데이터
 	@GetMapping("/events/dept")
 	@ResponseBody
-	public List<Map<String, Object>> getDeptSchedules() {
-		// 부서별 일정을 가져오는 서비스 로직 구현 필요
-		// 예시: List<Schedule> deptSchedules = scheduleService.findDeptSchedules();
-		// 현재는 모든 일정을 반환하는 로직과 동일하게 작성
-		List<Schedule> schedules = scheduleService.findAllSchedules();
-		List<Map<String, Object>> events = schedules.stream().map(schedule -> {
-			Map<String, Object> event = new HashMap<>();
-			event.put("id", schedule.getSchId());
-			event.put("title", schedule.getSchTitle());
-			event.put("start", schedule.getStarttimeAt());
-			event.put("end", schedule.getEndtimeAt());
-			return event;
-		}).collect(Collectors.toList());
-		return events;
+	public List<Map<String, Object>> getDeptSchedules(@RequestParam("empDeptName") String empDeptName) {
+
+		List<Schedule> schedules = scheduleService.findByEmpDeptName(empDeptName);
+        List<Map<String, Object>> events = schedules.stream()
+            .map(schedule -> {
+                Map<String, Object> event = new HashMap<>();
+                event.put("id", schedule.getSchId());
+                event.put("title", schedule.getSchTitle());
+                event.put("start", schedule.getStarttimeAt());
+                event.put("end", schedule.getEndtimeAt());
+                event.put("empId", schedule.getEmpId());
+                return event;
+            })
+            .collect(Collectors.toList());
+        return events;
 	}
 
 	// ⭐ 일정 상세 정보를 조회하고 일정 작성자의 ID를 포함하여 반환
