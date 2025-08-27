@@ -57,7 +57,7 @@ $(document).ready(function() {
 		// 초기 상태는 읽기 모드입니다.
 		$('#readModeContent').show();
 		$('#editForm').hide();
-	});
+	}); 
 
 	// 수정 버튼 클릭 시 모달 모드 전환 이벤트
 	$('#editNoticeBtn').on('click', function() {
