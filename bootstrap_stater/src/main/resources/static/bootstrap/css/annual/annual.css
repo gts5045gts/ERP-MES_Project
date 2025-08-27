@@ -42,3 +42,36 @@
 	padding-bottom: 5px;
 }
 
+#AnnSearch::placeholder {
+    font-size: 12px;   /* 글자 크기 */
+    color: #c7c7c7;       /* 글자 색상 */
+    font-style: italic; /* 필요 시 기울임 */
+}
+
+input[type="search"] {
+    font-family: 'Arial', 'Noto Sans KR', sans-serif; /* 원하는 글꼴 */
+    font-size: 14px; /* 글자 크기 */
+    color: #333; /* 글자 색상 */
+}
+
+
+/* 그리드 글씨체 */
+.tui-grid-row-odd, .tui-grid-row-even {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+    font-size: 12px !important;
+/*     font-weight: 500 !important; */
+}
+
+.tui-grid-header-area {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.tui-grid-filter-list-container {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+    font-size: 12px !important;
+}
+
+
+/* 차트 */

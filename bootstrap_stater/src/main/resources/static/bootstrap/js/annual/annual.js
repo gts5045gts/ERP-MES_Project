@@ -1,48 +1,136 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 무한스크롤용 임시 데이터 생성 함수
-    function createRows(count = 50) {
-        const rows = [];
-        for (let i = 0; i < count; i += 1) {
-            const row = {
-                name: `Name ${Math.floor(Math.random() * 100)}`,
-                artist: `Artist ${Math.floor(Math.random() * 100)}`,
-                price: Math.floor(Math.random() * 100000),
-                release: new Date().toISOString().slice(0, 10),
-                genre: `Genre ${Math.floor(Math.random() * 5)}`
-            };
-            rows.push(row);
-        }
-        return rows;
-    }
+// 그리드
+let grid;
 
-    // Grid 컬럼 정의
+document.addEventListener('DOMContentLoaded', function() {
+	let currentPage = 0;
+   	let totalPages = 1; // 초기값
+	
     const columns = [
-        { header: '사원번호', name: 'price', filter: 'number' },
-        { header: '이름', name: 'name', filter: { type: 'text', showApplyBtn: true, showClearBtn: true } },
-		{ header: '부서', name: 'artist', filter: 'select' },
-		{ header: '직급', name: 'artist', filter: 'select' },
-        { header: '입사일', name: 'release', filter: { type: 'date', options: { format: 'yyyy.MM.dd' } } },
-        { header: '총 휴가일수', name: 'price', filter: 'number' },
-        { header: '사용 휴가일수', name: 'price', filter: 'number' },
-        { header: '잔여 휴가일수', name: 'price', filter: 'number' },
-        { header: '휴가 소멸일', name: 'release', filter: { type: 'date', options: { format: 'yyyy.MM.dd' } } }
+        { header: '사원번호', name: 'empId', sortable: true},
+        { header: '이름', name: 'empName', sortable: true},
+        { header: '부서', name: 'depName', filter: 'select' },
+        { header: '직급', name: 'empPos', filter: 'select' },
+        { header: '입사일', name: 'joinDate', sortable: true},
+        { header: '총 휴가일수', name: 'annTotal', sortable: true},
+        { header: '사용 휴가일수', name: 'annUse', sortable: true},
+        { header: '잔여 휴가일수', name: 'annRemain', sortable: true},
+        { header: '휴가 소멸일', name: 'annExpire', sortable: true }
     ];
 
-    // Grid 생성 (초기 데이터는 빈 배열)
-    const grid = new tui.Grid({
+	grid = new tui.Grid({
         el: document.getElementById('grid'),
         data: [],
         columns: columns,
-        bodyHeight: 300,
+        bodyHeight: 400,
         rowHeaders: ['rowNum'],
-		scrollX: false      // 가로 스크롤 금지
+        scrollX: false,
+        emptyMessage: '조회결과가 없습니다.'
     });
 
-    // 초기 데이터 한 번 추가
-    grid.resetData(createRows());
+   
+
+    function loadPage(page) {
+        fetch(`/attendance/annListAll/2025?page=${page}&size=20`)
+            .then(res => res.json())
+            .then(res => {
+                totalPages = res.totalPages;
+                currentPage = res.page;
+
+                if (page === 0) {
+                    grid.resetData(res.data);
+                } else {
+                    grid.appendRows(res.data);
+                }
+            });
+    }
+
+    // 초기 데이터 로딩
+    loadPage(0);
 
     // 무한스크롤 이벤트
-    grid.on('scrollEnd', () => {
-        grid.appendRows(createRows());
-    });
+	grid.on('scrollEnd', () => {
+		if (currentPage + 1 < totalPages) {
+		    loadPage(currentPage + 1);
+		}
+	});
 });
+
+//연차 검색창
+$('#AnnSearch').on('keyup', function() {
+	const keyword = $(this).val().trim();
+	$.ajax({
+		url: '/attendance/annSearch',
+		method: 'GET',
+		data: { keyword: keyword},
+		success: function(data) {
+			if (data.length === 0) {
+				grid.resetData([]); // 검색 결과 없음
+			} else {
+                grid.resetData(data); // Grid API로 데이터 업데이트
+            }
+		},
+	});
+});
+
+// 차트 
+const chartEl = document.getElementById('chart-area');
+const id = 2;
+
+fetch(`/attendance/annualList/chart/${id}`)
+	.then(res => res.json())
+	.then(data => {
+		const annTotal = Number(data.annTotal) || 0;
+		const annUse = Number(data.annUse) || 0;
+		const annPercent = annTotal === 0 ? 0 : Math.round((annUse / annTotal) * 100);
+		
+		const chartData = {
+			series: [
+				{ 
+					name: '사용률', 
+					data: [annPercent] 
+				}
+			]
+		};
+
+		const options = {
+			chart: {
+				width: 270,
+				height: 300
+			},
+			gaugeScale: { min: 0, max: 100 },
+			exportMenu: {
+				visible: false
+			},
+			series: {
+				solid: true,
+				dataLabels: { visible: true, offsetY: 40, formatter: (value) => `사용률 ${value}%` },
+			},
+			theme: {
+				circularAxis: {
+					lineWidth: 0,
+					strokeStyle: 'rgba(0, 0, 0, 0)',
+					tick: {
+						lineWidth: 0,
+						strokeStyle: 'rgba(0, 0, 0, 0)',
+					},
+					label: {
+						color: 'rgba(0, 0, 0, 0)',
+					},
+				},
+				series: {
+					dataLabels: {
+						fontSize: 15,
+						fontFamily: 'Impact',
+						fontWeight: 500,
+						color: '#00a9ff',
+						textBubble: {
+							visible: false,
+						},
+					},
+				},
+			},
+		};
+
+		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options: options });
+	});
+

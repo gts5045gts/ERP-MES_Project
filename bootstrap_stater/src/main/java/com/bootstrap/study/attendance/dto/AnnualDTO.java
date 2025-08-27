@@ -1,5 +1,6 @@
 package com.bootstrap.study.attendance.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,8 @@ public class AnnualDTO {
 	private String depName; // 부서(공통코드)
 	private String empPos; // 직책 (공통코드)
 	private String joinDate; // 입사일
+	private String annPeriod; // 연차 산정 기간 
+	private String annExpire; // 휴가 소멸일
 
 	
 	
@@ -59,6 +62,13 @@ public class AnnualDTO {
         this.depName = personnel.getDepartment().getComDtNm();
         this.empPos = personnel.getPosition().getComDtNm();
         this.joinDate = personnel.getJoinDate();
+        
+        // 연차 산정기간
+        LocalDate join = LocalDate.parse(personnel.getJoinDate()); // 입사일
+        LocalDate start = join; // 시작일 = 입사일
+        LocalDate end = start.plusYears(1).minusDays(1); // 종료일 = 입사일 기준 1년 뒤 - 1일
+        this.annPeriod = start + " ~ " + end;
+        this.annExpire = end.toString(); // 휴가 소멸일
     }
 	
 	

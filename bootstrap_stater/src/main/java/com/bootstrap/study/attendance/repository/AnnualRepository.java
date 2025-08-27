@@ -1,10 +1,16 @@
 package com.bootstrap.study.attendance.repository;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 
 @Repository
@@ -13,6 +19,17 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 	
 	// 내 연차 조회
 	Optional<Annual> findByEmpIdAndAnnYear(String empId, String annYear);
+
+	// 전체 사원 조회 + 무한스크롤
+	Page<Annual> findByAnnYear(String annYear, Pageable pageable);
+
+	// 검색(사원번호, 이름, 부서, 직급)
+	@Query("SELECT a, p FROM Annual a JOIN Personnel p ON a.empId = p.empId " +
+			"WHERE LOWER(a.empId) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+			"OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " + 
+			"OR LOWER(p.department.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
+			"OR LOWER(p.position.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+	List<Object[]> searchAnn(@Param("keyword") String keyword);
 	
 	
 
