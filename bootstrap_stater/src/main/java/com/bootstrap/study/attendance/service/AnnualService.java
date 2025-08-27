@@ -1,6 +1,8 @@
 package com.bootstrap.study.attendance.service;
 
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.repository.AnnualRepository;
+import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
 
@@ -31,18 +34,33 @@ public class AnnualService {
 	
 	// 내 연차 조회
 	public AnnualDTO myAnnual(String empId, String annYear) {
-		Annual ann = annRepository.findByEmpIdAndAnnYear(empId, annYear)
-				.orElseThrow(() -> new RuntimeException("해당 사원의 연차가 없습니다."));
-		
 		
 		Personnel emp = empRepository.findById(empId)
 	            .orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
 		
-		return new AnnualDTO(ann, emp);
+		// 연차 데이터 조회 혹은 신규 생성
+		Annual ann = annRepository.findByEmpIdAndAnnYear(empId, annYear)
+				.orElseGet(() -> new Annual(empId, annYear, 0.0, (double)getAnnByPosition(emp.getPosition())));
+
+		// 직급별 연차 자동 적용 (갱신)
+	    ann.setAnnTotal((double)getAnnByPosition(emp.getPosition()));
+	    
+	    annRepository.save(ann);
+	    
+	    return new AnnualDTO(ann, emp);
+		
 		
 	}
 
-
+	// 직급별 연차 계산
+	private int getAnnByPosition(CommonDetailCode position) {
+		switch (position.getComDtId()) {
+		case "POS001": return 15;
+		case "POS002" : case "POS003" : case "POS004" : return 20;
+		case "POS005" : case "POS006" : return 25;
+		default: return 15;
+		}
+	}
 	
 	// 모든사원의 연차 조회
 	public Page<AnnualDTO> getAllAnnByYearPaged(String annYear, Pageable pageable) {
@@ -82,6 +100,12 @@ public class AnnualService {
 		return new AnnualDTO(ann, emp);
 	}
 
+	// 사원등록시 연차 초기 생성
+	public void annListUpdate(Personnel emp) {
+        int totalAnnual = getAnnByPosition(emp.getPosition());
+        Annual ann = new Annual(emp.getEmpId(), String.valueOf(java.time.LocalDate.now().getYear()), 0.0, totalAnnual);
+        annRepository.save(ann);
+    }
 
 
 

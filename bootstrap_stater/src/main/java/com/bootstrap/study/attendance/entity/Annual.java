@@ -28,8 +28,8 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 public class Annual {
-	
-	
+
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;   // pk 용
@@ -56,5 +56,11 @@ public class Annual {
 	@LastModifiedDate
 	private LocalDateTime updatedAt; // 수정일
 	
-	
+	// 연차 개수 설정을 위한 생성자
+	public Annual(String empId, String annYear, double annUse, double annTotal) {
+		this.empId = empId;
+        this.annYear = annYear;
+        this.annUse = annUse;
+        this.annTotal = annTotal;
+	}
 }
