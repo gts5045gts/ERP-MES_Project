@@ -76,4 +76,20 @@ public interface ApprLineRepository extends JpaRepository<ApprLine,Long> {
 	    ORDER BY a.request_at DESC, al.step_no ASC
 	    """, nativeQuery = true)
 	List<Object[]> findToApproveList(@Param("loginId") String loginId);
+	
+	// 0827 결재선 정보
+	@Query(value = """
+		    SELECT 
+		        al.step_no,
+		        al.appr_id,
+		        e.emp_name,
+		        al.decision,
+		        al.dec_date,
+		        al.comments
+		    FROM approval_line al
+		    JOIN employee e ON al.appr_id = e.emp_id
+		    WHERE al.req_id = :reqId
+		    ORDER BY al.step_no ASC
+		    """, nativeQuery = true)
+		List<Object[]> findApprovalLinesByReqId(@Param("reqId") Long reqId);
 }

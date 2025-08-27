@@ -100,12 +100,12 @@ public class ApprService {
 	   return createPagedResult(filteredList, pageable);
 	}
 
-    // 0827 결재 상세 정보 조회
+    // 0827-2 결재 상세 정보 조회
     @Transactional(readOnly = true)
     public ApprFullDTO getApprovalDetail(Long reqId) {
         log.info("결재 상세 조회 - reqId: {}", reqId);
         
-        // 특정 문서 조회는 WHERE절에 reqId 조건만 추가
+        // 기본 결재 정보 조회
         List<Object[]> results = apprRepository.findApprovalByReqId(reqId);
         
         if (!results.isEmpty()) {
@@ -116,13 +116,34 @@ public class ApprService {
             Appr appr = findApprovalById(reqId);
             dto.setContent(appr.getContent());
             
-            log.info("결재 상세 조회 완료 - 기안자: {}", dto.getDrafterName());
+            // 결재선 정보 조회 및 설정
+            List<Object[]> lineResults = apprLineRepository.findApprovalLinesByReqId(reqId);
+            List<ApprFullDTO.ApprLineInfo> approvalLines = lineResults.stream()
+                .map(this::convertToApprLineInfo)
+                .collect(Collectors.toList());
+            dto.setApprovalLines(approvalLines);
+            
             return dto;
         }
         
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
-
+    // 0827-2 결재 상세 정보 조회
+    private ApprFullDTO.ApprLineInfo convertToApprLineInfo(Object[] result) {
+        ApprFullDTO.ApprLineInfo lineInfo = new ApprFullDTO.ApprLineInfo();
+        lineInfo.setStepNo(((Number) result[0]).intValue());
+        lineInfo.setApprId((String) result[1]);
+        lineInfo.setApprName((String) result[2]);
+        lineInfo.setDecision((String) result[3]);
+        
+        if (result[4] != null && result[4] instanceof java.sql.Timestamp) {
+            lineInfo.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime());
+        }
+        
+        lineInfo.setComments((String) result[5]);
+        return lineInfo;
+    }
+    
     @Transactional
     public void approveRequestWithComments(Long reqId, String comments, String loginId) {
         log.info("승인 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
@@ -180,14 +201,13 @@ public class ApprService {
         for(int i = 0; i < result.length; i++) {
             log.info("result[{}]: {}", i, result[i]);
         }
-        dto.setStepNo((Integer) result[0]);
-        dto.setTitle((String) result[1]);
-        dto.setDrafterName((String) result[2]);
         
         // 부서, 직급 설정 전 로그
         log.info("부서명 raw: {}", result[3]);
         log.info("직급명 raw: {}", result[4]);
-        
+        dto.setStepNo(((Number) result[0]).intValue());
+        dto.setTitle((String) result[1]);
+        dto.setDrafterName((String) result[2]);
         dto.setDepartment(result[3] != null ? (String) result[3] : "-");  
         dto.setPosition(result[4] != null ? (String) result[4] : "-");    
         
