@@ -50,15 +50,15 @@ public class PersonnelDTO {
 				.resident(personnel.getResident()).addrNum(personnel.getAddrNum()).addr1(personnel.getAddr1()).addr2(personnel.getAddr2())
 				.email(personnel.getEmail()).phone(personnel.getPhone()).joinDate(personnel.getJoinDate()).resignDate(personnel.getResignDate())
 				.update(personnel.getUpdate())
-				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getComDtId()  : null)
-				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getComDtNm() : null)
+				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getComDtId() : null)
+				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getComDtNm()  : null)
 				.posId(personnel.getPosition() != null ? personnel.getPosition().getComDtId() : null)
 				.posName(personnel.getPosition() != null ? personnel.getPosition().getComDtNm() : null)
 				//추가한 부분 보안등급 (Level)
 				.levId(personnel.getLevel() != null ? personnel.getLevel().getComDtId() : null)
 				.levName(personnel.getLevel() != null ? personnel.getLevel().getComDtNm() : null)
-				.staId(personnel.getStatus() != null ? personnel.getLevel().getComDtId() : null)
-				.staName(personnel.getStatus() != null ? personnel.getLevel().getComDtId() : null)
+				.staId(personnel.getStatus() != null ? personnel.getStatus().getComDtId() : null)
+				.staName(personnel.getStatus() != null ? personnel.getStatus().getComDtNm() : null)
 				.build();
 	}
 

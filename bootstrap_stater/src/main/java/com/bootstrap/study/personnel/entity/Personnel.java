@@ -116,7 +116,7 @@ public class Personnel {
 		//추가한 부분 보안등급 관련
 		CommonDetailCode lelvel = new CommonDetailCode();
 		lelvel.setComDtId(peronnelDTO.getLevId());
-		lelvel.setComDtId(peronnelDTO.getLevName());
+		lelvel.setComDtNm(peronnelDTO.getLevName());
 		
 		//재직현황
 		CommonDetailCode status = new CommonDetailCode();

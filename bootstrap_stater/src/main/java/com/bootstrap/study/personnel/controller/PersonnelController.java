@@ -46,7 +46,7 @@ public class PersonnelController {
     public String detailInfo(@RequestParam("empId") String empId, Model model) {
         // Service를 통해 해당 사원의 상세 정보를 가져와 모델에 추가
         Optional<PersonnelDTO> personnelOpt = personnelService.getPersonnelDetails(empId);
-        log.info("personnel : " + personnelOpt.toString());
+        
         if (personnelOpt.isPresent()) {
             model.addAttribute("personnel", personnelOpt.get());
         } else {
@@ -57,18 +57,26 @@ public class PersonnelController {
         // 부서 및 직책 리스트도 모델에 추가 (select 박스 생성을 위해 필요)
         List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
         model.addAttribute("departments", departments);
+        log.info("personnel : " + personnelOpt);
+        log.info("부서 정보 : " + departments.toString());
 
         List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
         model.addAttribute("position", position);
-        
+        log.info("직책 정보 : " + position.toString());
     	//추가 된 부분 ----------------------------------------------------
     	//재직 리스트
 		List<CommonDetailCodeDTO> status = personnelService.getAllStatus();
 		model.addAttribute("status", status);
-		
+        log.info("상태 정보 : " + status.toString());
+
 		//보안등급
 		List<CommonDetailCodeDTO> level = personnelService.getAllLevel();
 		model.addAttribute("level", level);
+        log.info("보안등급 정보 : " + level.toString());
+        
+        log.info("사원등급 정보 : " + departments.toString());
+        
+
 		//추가 된 부분 ----------------------------------------------------
 		
 
