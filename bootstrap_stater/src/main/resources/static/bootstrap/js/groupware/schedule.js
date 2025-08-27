@@ -209,12 +209,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	$('#addScheduleModal form').on('submit', function(e) {
 		e.preventDefault();
+		var startDate = $('#modalStartDate').val();
+		    var endDate = $('#modalEndDate').val();
 
-		var formData = {
-			schTitle: $('#modalTitle').val(),
-			schContent: $('#modalContent').val(),
-			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
-			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val()
+			var formData = {
+			        schTitle: $('#modalTitle').val(),
+			        schContent: $('#modalContent').val(),
+			        starttimeAt: startDate + 'T00:00:00', // 날짜 + 자정 시간
+			        endtimeAt: endDate + 'T23:59:59',   // 날짜 + 하루의 마지막 시간
+			        schType: $('#schType').val(), 
+			        empId: currentEmpId
 		};
 
 		$.ajax({

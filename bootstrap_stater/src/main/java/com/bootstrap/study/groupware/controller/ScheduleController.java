@@ -110,21 +110,42 @@ public class ScheduleController {
 	// 일정 등록 페이지를 보여주는 메서드 (schWrite.html)
 	@GetMapping("/schWrite")
 	public String writeForm(Model model) {
-		// writeForm에 관리자 여부, 부서명, 모든 부서 목록을 전달
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		String empName = null;
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
-			empName = personnelLoginDTO.getName();
-			String empDeptName = commonCodeService.getCommonDetailCode(personnelLoginDTO.getEmpDeptId()).getComDtNm();
-			model.addAttribute("empDeptName", empDeptName);
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    
+	    // ⭐ 모델에 전달할 변수들
+	    String empName = null;
+	    boolean isAdmin = false;
+	    List<CommonDetailCode> allDepartments = new ArrayList<>();
+	    String empDeptName = null;
+	    Long currentEmpId = null;
 
-			if ("관리자".equals(empName)) {
-				List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
-				model.addAttribute("allDepartments", allDepartments);
-			}
-		}
-		return "gw/schWrite";
+	    if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
+	        PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
+	        empName = personnelLoginDTO.getName();
+	        currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+	        String empDeptId = personnelLoginDTO.getEmpDeptId();
+
+	        if (commonCodeService != null) {
+	            CommonDetailCode deptCode = commonCodeService.getCommonDetailCode(empDeptId);
+	            if (deptCode != null) {
+	                empDeptName = deptCode.getComDtNm();
+	            }
+	        }
+	        
+	        if ("관리자".equals(empName)) {
+	            isAdmin = true;
+	            allDepartments = commonCodeService.findByComId("DEP");
+	        }
+	    }
+	    
+	    // ⭐ 모델에 데이터 추가
+	    model.addAttribute("empName", empName);
+	    model.addAttribute("isAdmin", isAdmin);
+	    model.addAttribute("allDepartments", allDepartments);
+	    model.addAttribute("empDeptName", empDeptName);
+	    model.addAttribute("currentEmpId", currentEmpId);
+
+	    return "gw/schWrite";
 	}
 
 	// ⭐ 일정 등록 (모달 & 페이지 폼 제출)을 처리하는 메서드
