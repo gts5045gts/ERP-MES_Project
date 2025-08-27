@@ -18,7 +18,7 @@ import org.springframework.stereotype.Repository;
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
 	// 0827
-	// 인사 결재 목록 조회
+	// 인사 결재 목록 세부조회
 	@Query(value = """
 		    SELECT
 		        al.step_no,           -- 0
@@ -29,17 +29,43 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		        a.request_at,         
 		        al.dec_date,          
 		        al.decision,          
-		        a.req_id,            
+		        a.req_id,             
 		        a.req_type,           
-		        a.emp_id              
+		        a.emp_id              -- 10
 		    FROM approval_line al
 		    JOIN approval a ON al.req_id = a.req_id
 		    JOIN employee e ON a.emp_id = e.emp_id
 		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
 		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		    WHERE a.req_id = :reqId
+		    ORDER BY al.step_no ASC
+		    """, nativeQuery = true)
+		List<Object[]> findApprovalByReqId(@Param("reqId") Long reqId);
+	
+	// 0827
+	// 인사 결재 목록 조회
+	@Query(value = """
+		    SELECT
+		        al.step_no,           -- 0
+		        a.title,              -- 1
+		        e.emp_name,           -- 2
+		        dept.com_dt_nm,       -- 3
+		        pos.com_dt_nm,        -- 4
+		        a.request_at,         -- 5
+		        al.dec_date,          -- 6
+		        al.decision,          -- 7
+		        a.req_id,             -- 8
+		        a.req_type,           -- 9
+		        a.emp_id              -- 10
+		    FROM approval_line al
+		    JOIN approval a ON al.req_id = a.req_id
+		    JOIN employee e ON a.emp_id = e.emp_id
+		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		    WHERE al.appr_id = :loginId  -- 결재자
 		    ORDER BY a.request_at DESC, al.step_no ASC
 		    """, nativeQuery = true)
-		List<Object[]> findApprovalListWithJoin();
+		List<Object[]> findApprovalListWithJoin(@Param("loginId") String loginId);
 
     
     // 0821

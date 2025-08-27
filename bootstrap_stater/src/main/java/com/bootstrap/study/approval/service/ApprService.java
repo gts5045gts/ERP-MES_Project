@@ -42,11 +42,10 @@ public class ApprService {
     private static final String APPROVED_STATUS = "승인";
     private static final String REJECTED_STATUS = "반려";
     
-    
-    // 결재 목록 조회 (페이징 없음)
+ // 0827 결재 목록 조회 (페이징 없음)
     @Transactional(readOnly = true)
-    public List<ApprDTO> getApprovalList() {
-        List<Object[]> results = apprRepository.findApprovalListWithJoin();
+    public List<ApprDTO> getApprovalList(String loginId) {
+        List<Object[]> results = apprRepository.findApprovalListWithJoin(loginId);
         log.info("DB에서 조회된 결재 라인 건수: {}건", results.size());
         
         List<ApprDTO> apprDtoList = convertToApprDTOList(results);
@@ -54,84 +53,81 @@ public class ApprService {
         log.info("DTO 변환 후 최종 반환 건수: {}건", apprDtoList.size());
         return apprDtoList;
     }
-    
-    
-    // 결재 목록 조회 (페이징, 상태별 필터링 지원) - 기존 메소드
+
+    // 0827 결재 목록 조회 (페이징, 상태별 필터링 지원) - 오버로딩
     @Transactional(readOnly = true)
     public Page<ApprDTO> getApprovalList(Pageable pageable, String status) {
-        return getApprovalList(pageable, status, null); // userId를 null로 전달
+        // 로그인 정보 없으면 에러
+        throw new IllegalArgumentException("로그인 정보가 필요합니다.");
     }
-    
-    // 결재 목록 조회 (페이징, 상태별 + 사용자별 필터링 지원)
+
+    // 0827 결재 목록 조회 (페이징, 상태별 + 사용자별 필터링 지원)
     @Transactional(readOnly = true)
     public Page<ApprDTO> getApprovalList(Pageable pageable, String status, String userId) {
         log.info("결재 목록 조회 - 상태 필터: {}, 사용자 ID: {}", status, userId);
         
-        // 전체 데이터 조회 및 DTO 변환
-        List<Object[]> allResults = apprRepository.findApprovalListWithJoin();
+        if (userId == null) {
+            throw new IllegalArgumentException("로그인 정보가 필요합니다.");
+        }
+        
+        // 로그인 사용자가 결재자인 문서만 조회
+        List<Object[]> allResults = apprRepository.findApprovalListWithJoin(userId);
         List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
         
-        // 상태별 + 사용자별 필터링
-        List<ApprDTO> filteredList = filterByStatusAndUser(allDtoList, status, userId);
+        // 상태별 필터링
+        List<ApprDTO> filteredList = filterByStatus(allDtoList, status);
         
         // 페이징 처리
         return createPagedResult(filteredList, pageable);
     }
-    
-    //결재 상세 정보 조회
+
+    // 0827 결재 상세 정보 조회
     @Transactional(readOnly = true)
     public ApprFullDTO getApprovalDetail(Long reqId) {
         log.info("결재 상세 조회 - reqId: {}", reqId);
         
-        List<Object[]> results = apprRepository.findApprovalListWithJoin();
+        // 특정 문서 조회는 WHERE절에 reqId 조건만 추가
+        List<Object[]> results = apprRepository.findApprovalByReqId(reqId);
         
-        // reqId와 일치하는 데이터 찾기
-        for (Object[] result : results) {
-            Long currentReqId = ((Number) result[6]).longValue();
+        if (!results.isEmpty()) {
+            Object[] result = results.get(0);
+            ApprFullDTO dto = convertToApprFullDTO(result);
             
-            if (currentReqId.equals(reqId)) {
-                ApprFullDTO dto = convertToApprFullDTO(result);
-                
-                // content는 별도 조회
-                Appr appr = findApprovalById(reqId);
-                dto.setContent(appr.getContent());
-                
-                log.info("결재 상세 조회 완료 - 기안자: {}", dto.getDrafterName());
-                return dto;
-            }
+            // content는 별도 조회
+            Appr appr = findApprovalById(reqId);
+            dto.setContent(appr.getContent());
+            
+            log.info("결재 상세 조회 완료 - 기안자: {}", dto.getDrafterName());
+            return dto;
         }
         
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
-    // 0826
-    //승인 처리 (코멘트 포함)
+
+    // 0827 승인 처리 (코멘트 포함)
     @Transactional
     public void approveRequestWithComments(Long reqId, String comments) {
         log.info("승인 처리 시작 - reqId: {}, comments: {}", reqId, comments);
         
-        // 현재 단계 승인 처리
         processApprovalDecision(reqId, comments, "ACCEPT", "승인");
         
-        // 남은 대기 결재가 있는지 확인
         int pendingCount = apprRepository.countPendingApprovals(reqId);
         
         if (pendingCount == 0) {
-            // 모든 결재 완료 -> FINISHED로 변경
             log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
             apprRepository.updateApprovalStatus(reqId, "FINISHED");
         }
         
         log.info("승인 처리 완료 - reqId: {}", reqId);
     }
-    
-    //반려 처리 (코멘트 포함)
+
+    // 0827 반려 처리 (코멘트 포함)
     @Transactional
     public void rejectRequestWithComments(Long reqId, String comments) {
         log.info("반려 처리 시작 - reqId: {}, comments: {}", reqId, comments);
         
         processApprovalDecision(reqId, comments, "DENY", "반려");
         
-        // 반려되면 즉시 FINISHED로
         log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
         apprRepository.updateApprovalStatus(reqId, "FINISHED");
         

@@ -75,24 +75,21 @@ public class ApprController {
     }
     
     
-    //결재 목록 조회 (페이징, 상태별 필터링 지원)
+    // 0827 결재 목록 조회 (페이징, 상태별 필터링 지원)
     @GetMapping("/approval_list")
     public String approvalList(
             @RequestParam(value = "status", required = false, defaultValue = "all") String status,
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             Model model, 
-            Authentication authentication) { // 로그인 사용자 정보 추가
+            Authentication authentication) {
         
         log.info("결재 목록 조회 - 상태: {}, 페이지: {}", status, page);
         
         Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createAt"));
         
-        // 내결재인 경우 현재 로그인 사용자 ID 전달
-        String currentUserId = null;
-        if ("my".equals(status) && authentication != null) {
-            currentUserId = authentication.getName(); // 로그인한 사용자 ID
-            log.info("내결재 조회 - 사용자: {}", currentUserId);
-        }
+        // 항상 로그인 사용자 ID 전달 (내 결재만 보기)
+        String currentUserId = authentication.getName();
+        log.info("로그인 사용자: {}", currentUserId);
         
         Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable, status, currentUserId);
         
