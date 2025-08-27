@@ -17,6 +17,30 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
+	// 0827 내가 기안한 문서 조회
+	@Query(value = """
+	    SELECT
+	        al.step_no,           -- 0
+	        a.title,              -- 1
+	        e.emp_name,           -- 2
+	        dept.com_dt_nm,       -- 3
+	        pos.com_dt_nm,        -- 4
+	        a.request_at,         -- 5
+	        al.dec_date,          -- 6
+	        al.decision,          -- 7
+	        a.req_id,             -- 8
+	        a.req_type,           -- 9
+	        a.emp_id              -- 10
+	    FROM approval_line al
+	    JOIN approval a ON al.req_id = a.req_id
+	    JOIN employee e ON a.emp_id = e.emp_id
+	    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+	    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+	    WHERE a.emp_id = :loginId  -- 내가 기안자
+	    ORDER BY a.request_at DESC, al.step_no ASC
+	    """, nativeQuery = true)
+	List<Object[]> findMyDraftedApprovalList(@Param("loginId") String loginId);
+	
 	// 0827
 	// 인사 결재 목록 세부조회
 	@Query(value = """

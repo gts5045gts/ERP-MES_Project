@@ -115,38 +115,41 @@ public class ApprController {
         }
     }
  	
-    //승인 처리 API
+    // 0827 승인 처리 API
     @PostMapping("/api/approve/{reqId}")
     @ResponseBody
     public ResponseEntity<String> approveRequest(@PathVariable("reqId") Long reqId,
-                                                 @RequestBody(required = false) Map<String, String> requestBody) {
-        return processApproval(reqId, requestBody, "APPROVE");
+                                                 @RequestBody(required = false) Map<String, String> requestBody,Authentication authentication) { 
+                                                  
+        return processApproval(reqId, requestBody, "APPROVE", authentication);  
     }
+
     
-     //반려 처리 API
+    // 0827 반려 처리 API
     @PostMapping("/api/reject/{reqId}")
     @ResponseBody 
     public ResponseEntity<String> rejectRequest(@PathVariable("reqId") Long reqId,
-                                                @RequestBody(required = false) Map<String, String> requestBody) {
-        return processApproval(reqId, requestBody, "REJECT");
+                                                @RequestBody(required = false) Map<String, String> requestBody, Authentication authentication) { 
+        return processApproval(reqId, requestBody, "REJECT", authentication);  
     }
     
     // ==================== Private Helper Methods ====================
     
-    //승인/반려 공통 처리 메서드
-    private ResponseEntity<String> processApproval(Long reqId, Map<String, String> requestBody, String action) {
+    // 0827 승인/반려 공통 처리 메서드
+    private ResponseEntity<String> processApproval(Long reqId, Map<String, String> requestBody, String action, Authentication authentication) {  // authentication 추가
         log.info("{} 처리 API 호출 - reqId: {}", action, reqId);
         
         try {
             String comments = extractComments(requestBody);
-            log.info("{} 사유: {}", action, comments);
+            String loginId = authentication.getName();  // 로그인 ID 가져오기
+            log.info("{} 사유: {}, 로그인ID: {}", action, comments, loginId);
             
             if ("APPROVE".equals(action)) {
-                apprService.approveRequestWithComments(reqId, comments);
+                apprService.approveRequestWithComments(reqId, comments, loginId);  // loginId 추가
                 log.info("승인 처리 완료 - reqId: {}", reqId);
                 return ResponseEntity.ok("승인 처리가 완료되었습니다.");
             } else {
-                apprService.rejectRequestWithComments(reqId, comments);
+                apprService.rejectRequestWithComments(reqId, comments, loginId);  // loginId 추가
                 log.info("반려 처리 완료 - reqId: {}", reqId);
                 return ResponseEntity.ok("반려 처리가 완료되었습니다.");
             }

@@ -8,6 +8,7 @@ import com.bootstrap.study.approval.dto.ApprLineDTO;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.entity.ApprDetail;
 import com.bootstrap.study.approval.entity.ApprLine;
+import com.bootstrap.study.approval.repository.ApprLineRepository;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
@@ -34,6 +35,7 @@ public class ApprService {
 
 	private final ApprRepository apprRepository;
 	private final ApprLineService apprLineService;
+	private final ApprLineRepository apprLineRepository;
 	
     // 상수 정의
     private static final String DEFAULT_DEPARTMENT = "인사부";
@@ -70,14 +72,25 @@ public class ApprService {
             throw new IllegalArgumentException("로그인 정보가 필요합니다.");
         }
         
-        // 로그인 사용자가 결재자인 문서만 조회
-        List<Object[]> allResults = apprRepository.findApprovalListWithJoin(userId);
+        List<Object[]> allResults;
+        
+        // "my"는 내가 기안한 문서, 나머지는 내가 결재할 문서
+        if ("my".equals(status)) {
+            allResults = apprRepository.findMyDraftedApprovalList(userId);  // 내가 기안한 문서
+        } else {
+            allResults = apprRepository.findApprovalListWithJoin(userId);  // 내가 결재할 문서
+        }
+        
         List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
         
-        // 상태별 필터링
-        List<ApprDTO> filteredList = filterByStatus(allDtoList, status);
+        // 상태별 필터링 (my는 이미 필터링됨)
+        List<ApprDTO> filteredList;
+        if ("my".equals(status)) {
+            filteredList = allDtoList;  // 추가 필터링 불필요
+        } else {
+            filteredList = filterByStatus(allDtoList, status);
+        }
         
-        // 페이징 처리
         return createPagedResult(filteredList, pageable);
     }
 
@@ -104,34 +117,42 @@ public class ApprService {
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
 
-    // 0827 승인 처리 (코멘트 포함)
     @Transactional
-    public void approveRequestWithComments(Long reqId, String comments) {
-        log.info("승인 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+    public void approveRequestWithComments(Long reqId, String comments, String loginId) {
+        log.info("승인 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
         
-        processApprovalDecision(reqId, comments, "ACCEPT", "승인");
+        // apprLineRepository로 변경
+        int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "ACCEPT", comments);
         
-        int pendingCount = apprRepository.countPendingApprovals(reqId);
-        
-        if (pendingCount == 0) {
-            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
-            apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        if (updatedRows == 0) {
+            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
         }
         
-        log.info("승인 처리 완료 - reqId: {}", reqId);
+        // apprLineRepository로 변경
+        int remainingCount = apprLineRepository.countRemainingApprovals(reqId);
+        
+        if (remainingCount == 0) {
+            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경");
+            apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        } else {
+            log.info("남은 결재자: {}명", remainingCount);
+            apprRepository.updateApprovalStatus(reqId, "PROCESSING");
+        }
     }
 
-    // 0827 반려 처리 (코멘트 포함)
     @Transactional
-    public void rejectRequestWithComments(Long reqId, String comments) {
-        log.info("반려 처리 시작 - reqId: {}, comments: {}", reqId, comments);
+    public void rejectRequestWithComments(Long reqId, String comments, String loginId) {
+        log.info("반려 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
         
-        processApprovalDecision(reqId, comments, "DENY", "반려");
+        // apprLineRepository로 변경
+        int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "DENY", comments);
         
-        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경: reqId={}", reqId);
+        if (updatedRows == 0) {
+            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
+        }
+        
+        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경");
         apprRepository.updateApprovalStatus(reqId, "FINISHED");
-        
-        log.info("반려 처리 완료 - reqId: {}", reqId);
     }
     
     // ==================== Private 헬퍼 메서드 ====================
