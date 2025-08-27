@@ -312,6 +312,7 @@ public class ApprService {
     //결재자 리스트 조회
     @Transactional(readOnly = true)
     public List<PersonnelDTO> getApprEmployee(String keyword, String currentEmpId) {
+    	log.info("currentEmpId>>>>>>>>>>>>>>>>>>>>>>>>>"+currentEmpId);
         return apprRepository.findByNameContainingIgnoreCase(keyword, currentEmpId)
                 .stream()
                 .map(PersonnelDTO::fromEntity)
@@ -322,7 +323,6 @@ public class ApprService {
 		
 		Appr appr = apprDTO.toEntity();
 		
-		//empid (신청자id) 로그인한 값으로 바꿔 넣어야함 default 지금은 임의로 넣음
 		appr.setEmpId(loginEmpId);
 		appr.setTotStep(empIds.length);
 		
@@ -342,7 +342,7 @@ public class ApprService {
 		    detail.setHalfType(dto.getHalfType());
 		    appr.addDetail(detail);  // 연관관계 메서드
 		}
-//		System.out.println("Details size = " + appr.getApprDetails().size());
+		
 		apprRepository.save(appr);
 		
 //		apprLineService.registApprLine(appr, empIds);
