@@ -1,5 +1,6 @@
 package com.bootstrap.study.approval.service;
 
+import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -363,6 +365,11 @@ public class ApprService {
 		int index = 1;
 		for (String empId : empIds) {
 		    ApprLine line = new ApprLine();
+		    
+		    if (empId.equals(loginEmpId)) {
+				line.setDecDate(LocalDateTime.now());
+				line.setDecision(ApprDecision.ACCEPT);
+			}
 		    line.setApprId(empId);
 		    line.setStepNo(index++);
 		    appr.addLine(line);  // Appr이 직접 관리
