@@ -30,7 +30,9 @@
 			<div class="container-fluid">
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
-						<h6 class="m-0 font-weight-bold">기안서작성 | <th:block th:text="${title}"></th:block></h6>
+						<h6 class="m-0 font-weight-bold">기안서작성 | 
+							<span th:text="${title}" id="targetTitle"></span>
+						</h6>
 					</div>
 					<div class="card-body">
 						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
@@ -320,6 +322,9 @@
 		// 양식타입 변경
 		$(document).on("change", ".selected-req-type", function () {
 			let sel_val = $(this).val();
+			const title = $(this).find('option:selected').text();
+			
+			$("#targetTitle").text(title);
 
 			if (sel_val === 'VACATION')
 			{

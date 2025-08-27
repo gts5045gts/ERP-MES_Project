@@ -19,19 +19,28 @@
 
 			<div class="card shadow mb-4">
 				<div class="card-body">
-					<div class="form-group">
-						<label for="templateSelector">문서 종류 선택</label>
-						<select class="form-control" id="templateSelector">
-							<option value="">-- 양식을 선택하세요 --</option>
-							<option value="report">보고서</option>
-							<option value="contract">계약서</option>
-							<option value="proposal">품의서</option>
-							<option value="memo">사내 메모</option>
-						</select>
-					</div>
-
-					<div class="mt-4" id="formContainer">
+					<div class="mt-4" id="formContainer"></div>
+					<form method="post" th:action="@{/notice/save}" th:object="${noticeDTO}">
+						<div class="form-group">
+							<label for="templateSelector">문서 종류 선택</label>
+							<select class="form-control" id="templateSelector">
+								<option value="">-- 양식을 선택하세요 --</option>
+								<option value="report">보고서</option>
+								<option value="contract">계약서</option>
+								<option value="proposal">품의서</option>
+								<option value="memo">사내 메모</option>
+							</select>
 						</div>
+						<div class="form-group">
+							<label for="notTitle">제목</label>
+							<!-- <input type="text" th:field="*{notTitle}" id="notTitle" class="form-control" /> -->
+						</div>
+						<div class="form-group">
+							<label for="notContent">내용</label>
+							<textarea th:field="*{notContent}" id="notContent"class="form-control"></textarea>
+						</div>
+						<button type="submit" class="btn btn-primary">등록</button>
+					</form>
 				</div>
 			</div>
 		</div>
