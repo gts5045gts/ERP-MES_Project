@@ -53,6 +53,7 @@ public class NoticeController {
 		// 2. 현재 로그인한 사용자 정보 가져오기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	    String currentUserId = null; // ✅ 현재 로그인 사용자의 ID를 담을 변수
+	    String currentUsername = null; // ⭐현재 로그인 사용자의 username
 
 		// 사용자 정보에서 부서 ID를 담을 변수
 		String empDeptId = null;
@@ -62,6 +63,7 @@ public class NoticeController {
 		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
 			PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
 			currentUserId = personnelLoginDTO.getEmpId();
+			currentUsername = personnelLoginDTO.getUsername();
 			empDeptId = personnelLoginDTO.getEmpDeptId();
 			// 부서 ID로 부서명을 조회하는 로직
 			// 이전에 CommonCodeService에 추가한 메서드를 활용해야 합니다.
@@ -83,6 +85,7 @@ public class NoticeController {
 		model.addAttribute("deptNotices", deptNotices);
 		model.addAttribute("empDeptName", empDeptName);
 		model.addAttribute("currentUserId", currentUserId);
+		model.addAttribute("currentUsername", currentUsername);
 
 		return "gw/notice";
 	}

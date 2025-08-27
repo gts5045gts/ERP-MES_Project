@@ -7,7 +7,7 @@
 <meta charset="UTF-8">
 <title>그룹웨어 - 공지사항</title>
 </head>
-<body>
+<body th:data-current-user-id="${currentUsername}">
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
 			<div class="row">
@@ -44,7 +44,7 @@
 												<td th:text="${notice.notType}">부서명</th>
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 												<td th:text="${notice.notContent}">공지 내용</td>
@@ -92,7 +92,7 @@
 
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 
