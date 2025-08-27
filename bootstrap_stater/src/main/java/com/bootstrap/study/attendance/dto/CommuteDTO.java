@@ -18,6 +18,7 @@ public class CommuteDTO {
 	private LocalDateTime checkOutTime;
 	private String empId;
 	private String workStatus;
+	private String workStatusNm;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private String empName;
