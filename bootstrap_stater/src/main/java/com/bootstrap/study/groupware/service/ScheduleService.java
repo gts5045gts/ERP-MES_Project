@@ -45,7 +45,7 @@ public class ScheduleService {
 		}
 	}
 
-	// ⭐ 일정 작성자 권한 확인
+	// 일정 작성자 권한 확인
 	public boolean isScheduleOwner(Long schId, Long empId) {
 	    	Optional<Schedule> schedule = scheduleRepository.findById(schId);
 	    	return schedule.isPresent() && schedule.get().getEmpId().equals(empId);
