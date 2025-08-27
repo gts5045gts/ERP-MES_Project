@@ -174,6 +174,7 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
+ 	    // 수정된 부분
 // 	    personnel.setName(personnelDTO.getName());
 // 	    personnel.setPasswd(personnelDTO.getPasswd());
 // 	    personnel.setPhone(personnelDTO.getPhone());
@@ -182,7 +183,6 @@ public class PersonnelService {
 // 	    personnel.setAddrNum(personnelDTO.getAddrNum());
 // 	    personnel.setAddr1(personnelDTO.getAddr1());
 // 	    personnel.setAddr2(personnelDTO.getAddr2());
-// 	    
  	    
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
