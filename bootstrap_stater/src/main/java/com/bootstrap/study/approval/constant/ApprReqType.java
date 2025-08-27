@@ -17,4 +17,14 @@ public enum ApprReqType {
 		return this.name();
 	}
 	
+	// 이름으로 enum 찾기
+    public static ApprReqType fromName(String name) {
+        for (ApprReqType type : values()) {
+            if (type.name().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant for name: " + name);
+    }
+	
 }
