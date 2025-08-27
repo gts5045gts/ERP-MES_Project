@@ -42,23 +42,21 @@ public class ApprDTO {
 	
  	private ApprStatus status = ApprStatus.REQUESTED;
  	
-// 	private Integer currentStep;
- 	
  	private Integer totStep;
  	
- 	// ============== [ 추가된 필드 ] ==============
+ 	// 0826
     private String drafterName;     // 기안자 이름
     private String department;      // 기안자 부서
+    private String position;
     private String currentApprover; // 현재 결재자 이름
-    // ㅇㅇ
+    
     private LocalDateTime decDate; // 결재일자 추가
     private String decision; // 결재 상태 (PENDING, ACCEPT, DENY)
     private Integer stepNo; // 결재순번 추가
-    // ===========================================
-    // ㅇㅇ
-    // 상태를 한글로 변환하는 메서드 추가
+    
+    
+    // 0827 상태를 한글로 변환하는 메서드 추가
     public String getStatusLabel() {
-    	// 0826
         // decision이 null, 빈 문자열, 또는 PENDING이면 "대기"
         if (decision == null || decision.trim().isEmpty() || "PENDING".equals(decision)) {
             return "대기";
@@ -68,6 +66,20 @@ public class ApprDTO {
             return "반려";
         }
         return "미정";
+    }
+    
+    // 0827 내가 기안한 문서의 상태 표시
+    public String getMyApprovalStatus() {
+        if (this.status == ApprStatus.FINISHED) {
+            // FINISHED 상태일 때 결재선 확인해서 반려 있으면 "반려", 없으면 "승인완료"
+            // 간단히 "완료"로 표시
+            return "완료";
+        } else if (this.status == ApprStatus.PROCESSING) {
+            return "진행중";
+        } else if (this.status == ApprStatus.REQUESTED) {
+            return "대기";
+        }
+        return "대기";
     }
     
  	private List<ApprLineDTO> ApprLineDTOList;
@@ -85,7 +97,6 @@ public class ApprDTO {
 		this.createAt = createAt;
 		this.updateAt = updateAt;
 		this.status = status;
-//		this.currentStep = currentStep;
 		this.totStep = totStep;
 	}
 
@@ -94,4 +105,5 @@ public class ApprDTO {
  	public Appr toEntity() { return modelMapper.map(this, Appr.class); }
 
 	public static ApprDTO fromEntity(Appr appr) { return modelMapper.map(appr, ApprDTO.class); }
+
 }

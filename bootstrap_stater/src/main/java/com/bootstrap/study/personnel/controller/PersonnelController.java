@@ -1,5 +1,6 @@
 package com.bootstrap.study.personnel.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
-import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
@@ -57,9 +57,28 @@ public class PersonnelController {
         // 부서 및 직책 리스트도 모델에 추가 (select 박스 생성을 위해 필요)
         List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
         model.addAttribute("departments", departments);
+        log.info("personnel : " + personnelOpt);
+        log.info("부서 정보 : " + departments.toString());
 
         List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
         model.addAttribute("position", position);
+        log.info("직책 정보 : " + position.toString());
+    	//추가 된 부분 ----------------------------------------------------
+    	//재직 리스트
+		List<CommonDetailCodeDTO> status = personnelService.getAllStatus();
+		model.addAttribute("status", status);
+        log.info("상태 정보 : " + status.toString());
+
+		//보안등급
+		List<CommonDetailCodeDTO> level = personnelService.getAllLevel();
+		model.addAttribute("level", level);
+        log.info("보안등급 정보 : " + level.toString());
+        
+        log.info("사원등급 정보 : " + departments.toString());
+        
+
+		//추가 된 부분 ----------------------------------------------------
+		
 
         return "/hrn/personnelDetailInfo";
     }
@@ -91,9 +110,17 @@ public class PersonnelController {
 		List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
 		model.addAttribute("position", position);
 		
+		
+		//추가 된 부분 ----------------------------------------------------
+		
 		//재직 리스트 
-		List<CommonDetailCodeDTO> status = personnelService.getAllStatus();
+		List<CommonDetailCodeDTO> status = personnelService.getStatus();
 		model.addAttribute("status", status);
+		
+		//보안등급 리스트
+		List<CommonDetailCodeDTO> level = personnelService.getAllLevel();
+		model.addAttribute("level", level);
+		//추가 된 부분 ----------------------------------------------------
 		
 		log.info("position" + position.toString());
 		log.info("departments" + departments.toString());
@@ -118,8 +145,7 @@ public class PersonnelController {
 		return "/hrn/personnelApp";
 	}
 	
-	/*
-
+// 현재에 맞게 다시 수정 
 @GetMapping("/orgChart")
     public String showOrgChart(Model model) {
         // 모든 부서 목록을 가져와 모델에 추가
@@ -130,7 +156,7 @@ public class PersonnelController {
         List<PersonnelDTO> personnels;
         if (!departments.isEmpty()) {
             // 첫 번째 부서의 ID를 가져와 해당 부서의 직원 목록을 조회
-            Long firstDeptId = departments.get(0).getId();
+            String firstDeptId = departments.get(0).getComDtId();
             personnels = personnelService.getEmployeesByDepartmentId(firstDeptId);
         } else {
             // 부서가 없을 경우 빈 목록을 추가
@@ -142,7 +168,6 @@ public class PersonnelController {
 
         return "/hrn/orgchart"; 
     }
-	 */
     // AJAX 요청을 처리하여 특정 부서의 직원 정보를 JSON 형태로 반환
     @GetMapping("/employees")
     public ResponseEntity<List<PersonnelDTO>> getPersonnels(@RequestParam("deptId") String comDtId) {

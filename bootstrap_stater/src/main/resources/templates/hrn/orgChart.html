@@ -27,8 +27,8 @@
 							<div class="dept-list">
        							<select id="deptSelect" size="4" >
            							<option th:each="dept : ${departments}"
-                   							th:value="${dept.id}"
-                   							th:text="${dept.name}">
+                   							th:value="${dept.comDtId}"
+                   							th:text="${dept.comDtNm}">
 									</option>
       							 </select>
    							</div>

@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
+import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.Column;
@@ -75,9 +76,9 @@ public class Personnel {
 	@Column(nullable = false, name = "update_at")
 	private Timestamp update;
 
-	// 재직상태
-	@Column(nullable = false, name = "emp_status")
-	private String status;
+//	// 재직상태
+//	@Column(nullable = false, name = "emp_status")
+//	private String status;
 
 	// 부서
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -89,21 +90,28 @@ public class Personnel {
 	@JoinColumn(nullable = false, name = "emp_position", referencedColumnName = "com_dt_id")
 	private CommonDetailCode position; // 직책
 
-	public static Personnel fromDTO(PersonnelDTO peronnelDTO) {
-		
-		CommonDetailCode department = new CommonDetailCode();
-		department.setComDtId(peronnelDTO.getDeptId());
-		department.setComDtNm(peronnelDTO.getDeptName());
-		CommonDetailCode position = new CommonDetailCode();
-		position.setComDtId(peronnelDTO.getPosId());
-		position.setComDtNm(peronnelDTO.getPosName());
+	
+	//추가한 컬럼 보안등급---------------------------
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_level_id", referencedColumnName = "com_dt_id")
+	private CommonDetailCode level;
+	
+	
+//	재직현황
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "emp_status", referencedColumnName = "com_dt_id")
+	private CommonDetailCode status;
+	
+	
+	public static Personnel fromDTO(PersonnelDTO peronnelDTO , CommonDetailCodeRepository repo) {		//repo 추가로 사용하기 위함
 		
 		Personnel personnel = new Personnel();
 		personnel.setEmpId(peronnelDTO.getEmpId());
 		personnel.setName(peronnelDTO.getName());
 		personnel.setPasswd(peronnelDTO.getPasswd());
 		personnel.setResident(peronnelDTO.getResident());
-		personnel.setAddrNum(peronnelDTO.getAddrNum());
+		personnel.setAddrNum(peronnelDTO.getAddrNum());	
 		personnel.setAddr1(peronnelDTO.getAddr1());
 		personnel.setAddr2(peronnelDTO.getAddr2());
 		personnel.setEmail(peronnelDTO.getEmail());
@@ -111,12 +119,75 @@ public class Personnel {
 		personnel.setJoinDate(peronnelDTO.getJoinDate());
 		personnel.setResignDate(peronnelDTO.getResignDate());
 		personnel.setUpdate(peronnelDTO.getUpdate());
-		personnel.setStatus(peronnelDTO.getStatus());
 		personnel.setName(peronnelDTO.getName());
 		personnel.setName(peronnelDTO.getName());
-		personnel.setDepartment(department);
-		personnel.setPosition(position);
+		
+		//추가된 부분 
+		  if(peronnelDTO.getDeptId() != null) {
+		        CommonDetailCode dept = repo.findById(peronnelDTO.getDeptId())
+		            .orElseThrow(() -> new IllegalArgumentException("없는 부서 코드"));
+		        personnel.setDepartment(dept);
+		    }
 
+		    if(peronnelDTO.getPosId() != null) {
+		        CommonDetailCode pos = repo.findById(peronnelDTO.getPosId())
+		            .orElseThrow(() -> new IllegalArgumentException("없는 직급 코드"));
+		        personnel.setPosition(pos);
+		    }
+
+		    if(peronnelDTO.getLevId() != null) {
+		        CommonDetailCode lev = repo.findById(peronnelDTO.getLevId())
+		            .orElseThrow(() -> new IllegalArgumentException("없는 보안등급 코드"));
+		        personnel.setLevel(lev);
+		    }
+
+		    if(peronnelDTO.getStaId() != null) {
+		        CommonDetailCode status = repo.findById(peronnelDTO.getStaId())
+		            .orElseThrow(() -> new IllegalArgumentException("없는 재직상태 코드"));
+		        personnel.setStatus(status);
+		    }
+
+		
+		
 		return personnel;
 	}
+	
+	
+	//update 할때 사용하는 메서드
+	public void fromDTOUpdate( PersonnelDTO dto , CommonDetailCodeRepository repo) {
+			
+		this.setName(dto.getName());
+	    this.setPasswd(dto.getPasswd());
+	    this.setResident(dto.getResident());
+	    this.setAddrNum(dto.getAddrNum());
+	    this.setAddr1(dto.getAddr1());
+	    this.setAddr2(dto.getAddr2());
+	    this.setEmail(dto.getEmail());
+	    this.setPhone(dto.getPhone());
+	    this.setJoinDate(dto.getJoinDate());
+	    this.setResignDate(dto.getResignDate());
+	    this.setUpdate(dto.getUpdate());
+	
+	    if(dto.getDeptId() != null) {
+	        this.setDepartment(repo.findById(dto.getDeptId())
+	            .orElseThrow(() -> new IllegalArgumentException("없는 부서 코드")));
+	    }
+	
+	    if(dto.getPosId() != null) {
+	        this.setPosition(repo.findById(dto.getPosId())
+	            .orElseThrow(() -> new IllegalArgumentException("없는 직급 코드")));
+	    }
+	
+	    if(dto.getLevId() != null) {
+	        this.setLevel(repo.findById(dto.getLevId())
+	            .orElseThrow(() -> new IllegalArgumentException("없는 보안등급 코드")));
+	    }
+	
+	    if(dto.getStaId() != null) {
+	        this.setStatus(repo.findById(dto.getStaId())
+	            .orElseThrow(() -> new IllegalArgumentException("없는 재직상태 코드")));
+	    }
+			
+	}
+	
 }
