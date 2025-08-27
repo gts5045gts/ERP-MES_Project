@@ -31,13 +31,14 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 	        al.decision,          -- 7
 	        a.req_id,             -- 8
 	        a.req_type,           -- 9
-	        a.emp_id              -- 10
+	        a.emp_id,             -- 10
+	        a.status              -- 11 (APPROVAL 테이블의 STATUS 추가!)
 	    FROM approval_line al
 	    JOIN approval a ON al.req_id = a.req_id
 	    JOIN employee e ON a.emp_id = e.emp_id
 	    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
 	    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
-	    WHERE a.emp_id = :loginId  -- 내가 기안자
+	    WHERE a.emp_id = :loginId
 	    ORDER BY a.request_at DESC, al.step_no ASC
 	    """, nativeQuery = true)
 	List<Object[]> findMyDraftedApprovalList(@Param("loginId") String loginId);

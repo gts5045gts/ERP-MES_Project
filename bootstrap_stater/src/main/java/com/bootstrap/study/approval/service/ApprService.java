@@ -1,6 +1,7 @@
 package com.bootstrap.study.approval.service;
 
 import com.bootstrap.study.approval.constant.ApprReqType;
+import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
@@ -67,35 +68,35 @@ public class ApprService {
     }
 
     // 0827 결재 목록 조회 (페이징, 상태별 + 사용자별 필터링 지원)
-    @Transactional(readOnly = true)
     public Page<ApprDTO> getApprovalList(Pageable pageable, String status, String userId) {
-        log.info("결재 목록 조회 - 상태 필터: {}, 사용자 ID: {}", status, userId);
-        
-        if (userId == null) {
-            throw new IllegalArgumentException("로그인 정보가 필요합니다.");
-        }
-        
-        List<Object[]> allResults;
-        
-        // "my"는 내가 기안한 문서, 나머지는 내가 결재할 문서
-        if ("my".equals(status)) {
-            allResults = apprRepository.findMyDraftedApprovalList(userId);  // 내가 기안한 문서
-        } else {
-            allResults = apprRepository.findApprovalListWithJoin(userId);  // 내가 결재할 문서
-        }
-        
-        List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
-        
-        // 상태별 필터링 (my는 이미 필터링됨)
-        List<ApprDTO> filteredList;
-        if ("my".equals(status)) {
-            filteredList = allDtoList;  // 추가 필터링 불필요
-        } else {
-            filteredList = filterByStatus(allDtoList, status);
-        }
-        
-        return createPagedResult(filteredList, pageable);
-    }
+	   log.info("결재 목록 조회 - 상태 필터: {}, 사용자 ID: {}", status, userId);
+	   
+	   if (userId == null) {
+	       throw new IllegalArgumentException("로그인 정보가 필요합니다.");
+	   }
+	   
+	   List<Object[]> allResults;
+	   
+	   if ("my".equals(status)) {
+	       // 내가 기안한 문서만 조회
+	       allResults = apprRepository.findMyDraftedApprovalList(userId);
+	   } else {
+	       // 내가 결재해야 할 문서만 조회 (내가 기안한 문서 제외)
+	       allResults = apprLineRepository.findToApproveList(userId);
+	   }
+	   
+	   List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
+	   
+	   // 상태별 필터링
+	   List<ApprDTO> filteredList;
+	   if ("my".equals(status)) {
+	       filteredList = allDtoList;  // 이미 내 기안 문서만 있으니 추가 필터링 불필요
+	   } else {
+	       filteredList = filterByStatus(allDtoList, status);
+	   }
+	   
+	   return createPagedResult(filteredList, pageable);
+	}
 
     // 0827 결재 상세 정보 조회
     @Transactional(readOnly = true)
@@ -224,6 +225,22 @@ public class ApprService {
         dto.setEmpId((String) result[10]);
         dto.setCurrentApprover("-");
         
+        // 0827 기안신청, 진행중, 완료 표시(ApprStatus)
+        String decision = (String) result[7];
+        if ("DENY".equals(decision)) {
+            dto.setStatus(ApprStatus.FINISHED);
+        } else if ("ACCEPT".equals(decision)) {
+            // 모든 결재가 끝났는지는 별도 확인 필요
+            dto.setStatus(ApprStatus.PROCESSING); 
+        } else {
+            dto.setStatus(ApprStatus.REQUESTED);
+        }
+        
+        // STATUS 필드 추가
+        if (result.length > 11 && result[11] != null) {
+            String statusStr = (String) result[11];
+            dto.setStatus(ApprStatus.valueOf(statusStr));
+        }
         return dto;
     }
     
