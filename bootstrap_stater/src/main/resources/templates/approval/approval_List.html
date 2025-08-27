@@ -193,18 +193,28 @@
                                 <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
                                 <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td>
                                 <td>
-                                    <span th:text="${appr.statusLabel}" 
-                                          th:class="'approval-status-badge ' + 
-                                                   ${appr.statusLabel == '승인' ? 'approval-status-approved' : 
-                                                     appr.statusLabel == '대기' ? 'approval-status-pending' : 
-                                                     appr.statusLabel == '반려' ? 'approval-status-rejected' : 
-                                                     'approval-status-unknown'}">대기</span>
-                                </td>
-                                <td>
-                                    <button th:if="${appr.statusLabel == '대기'}"
-                                            type="button" class="btn btn-primary btn-sm approval-btn"
-                                            th:data-req-id="${appr.reqId}">결재하기</button>
-                                </td>
+								    <!-- 내결재목록일 때 -->
+								    <span th:if="${currentStatus == 'my'}" 
+								          th:text="${appr.myApprovalStatus}"
+								          th:class="'approval-status-badge ' + 
+								                   ${appr.myApprovalStatus == '완료' ? 'approval-status-approved' : 
+								                     appr.myApprovalStatus == '진행중' ? 'approval-status-pending' : 
+								                     'approval-status-pending'}">진행중</span>
+								    
+								    <!-- 다른 탭일 때 -->
+								    <span th:unless="${currentStatus == 'my'}"
+								          th:text="${appr.statusLabel}" 
+								          th:class="'approval-status-badge ' + 
+								                   ${appr.statusLabel == '승인' ? 'approval-status-approved' : 
+								                     appr.statusLabel == '대기' ? 'approval-status-pending' : 
+								                     appr.statusLabel == '반려' ? 'approval-status-rejected' : 
+								                     'approval-status-unknown'}">대기</span>
+								</td>
+								<td>
+							        <button th:if="${currentStatus != 'my' and appr.statusLabel == '대기'}"
+							                type="button" class="btn btn-primary btn-sm approval-btn"
+							                th:data-req-id="${appr.reqId}">결재하기</button>
+							    </td>
                             </tr>
                             </tbody>
                         </table>
