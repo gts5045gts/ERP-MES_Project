@@ -17,25 +17,28 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
-	// ㅇㅇ
-	// JOIN 쿼리를 네이티브 쿼리로 추가
+	// 0827
+	// 공통코드 join
 	@Query(value = """
-		SELECT
-		    al.step_no,
-		    a.title,
-		    e.emp_name,
-		    a.request_at, 
-		    al.dec_date,
-		    al.decision,
-		    a.req_id,
-		    a.req_type,
-		    a.emp_id,
-		    a.tot_step as current_step
-		FROM approval_line al
-		JOIN approval a ON al.req_id = a.req_id
-		JOIN employee e ON a.emp_id = e.emp_id
-		ORDER BY a.request_at DESC, al.step_no ASC  
-		""", nativeQuery = true)
+		    SELECT
+		        al.step_no,           -- 0
+		        a.title,              -- 1
+		        e.emp_name,           -- 2
+		        dept.com_dt_nm,       -- 3 
+		        pos.com_dt_nm,        -- 4 
+		        a.request_at,         -- 5
+		        al.dec_date,          -- 6
+		        al.decision,          -- 7
+		        a.req_id,             -- 8
+		        a.req_type,           -- 9
+		        a.emp_id              -- 10
+		    FROM approval_line al
+		    JOIN approval a ON al.req_id = a.req_id
+		    JOIN employee e ON a.emp_id = e.emp_id
+		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		    ORDER BY a.request_at DESC, al.step_no ASC
+		    """, nativeQuery = true)
 		List<Object[]> findApprovalListWithJoin();
 
     

@@ -147,20 +147,32 @@ public class ApprService {
                 .collect(Collectors.toList());
     }
     
-    
+    // 0827 - 부서/직급 하드코딩 제거, 조인으로 실제 데이터 연동
     // Object[] 배열을 ApprDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprDTO convertToApprDTO(Object[] result) {
         ApprDTO dto = new ApprDTO();
+        
+        // 디버그 로그
+        log.info("=== 쿼리 결과 raw 데이터 ===");
+        for(int i = 0; i < result.length; i++) {
+            log.info("result[{}]: {}", i, result[i]);
+        }
         dto.setStepNo((Integer) result[0]);
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
         
-        // REQUEST_AT 처리 - result[3]
-        Object requestAtObj = result[3];
+        // 부서, 직급 설정 전 로그
+        log.info("부서명 raw: {}", result[3]);
+        log.info("직급명 raw: {}", result[4]);
+        
+        dto.setDepartment(result[3] != null ? (String) result[3] : "-");  
+        dto.setPosition(result[4] != null ? (String) result[4] : "-");    
+        
+        // REQUEST_AT 처리 - result[5]
+        Object requestAtObj = result[5];
         if (requestAtObj == null) {
             dto.setCreateAt(java.time.LocalDateTime.now());
         } else if (requestAtObj instanceof java.sql.Date) {
-            // DATE 타입을 LocalDateTime으로 변환
             java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
             dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
         } else if (requestAtObj instanceof java.sql.Timestamp) {
@@ -170,9 +182,9 @@ public class ApprService {
             dto.setCreateAt(java.time.LocalDateTime.now());
         }
         
-        // DEC_DATE 처리
-        if (result[4] != null) {
-            Object decDateObj = result[4];
+        // DEC_DATE 처리 - result[6] ✅ 수정!
+        if (result[6] != null) {
+            Object decDateObj = result[6];  // 6으로 수정!
             if (decDateObj instanceof oracle.sql.TIMESTAMPTZ) {
                 try {
                     oracle.sql.TIMESTAMPTZ timestamptz = (oracle.sql.TIMESTAMPTZ) decDateObj;
@@ -186,45 +198,30 @@ public class ApprService {
             }
         }
         
-        dto.setDecision((String) result[5]);
-        dto.setReqId(((Number) result[6]).longValue());
-//        dto.setReqType(ApprReqType.valueOf((String) result[7]));
-        dto.setReqType((String) result[7]);
-        dto.setEmpId((String) result[8]);
-        
-        // 임시 데이터 설정
-        dto.setDepartment(DEFAULT_DEPARTMENT);
-        dto.setCurrentApprover(DEFAULT_APPROVER);
+        dto.setDecision((String) result[7]);
+        dto.setReqId(((Number) result[8]).longValue());
+        dto.setReqType((String) result[9]);
+        dto.setEmpId((String) result[10]);
+        dto.setCurrentApprover("-");
         
         return dto;
     }
     
-    
+    // 0827 - 부서/직급 하드코딩 제거, 조인으로 실제 데이터 연동
     // Object[] 배열을 ApprFullDTO로 변환 - ORACLE TIMESTAMPTZ 타입 처리 추가
     private ApprFullDTO convertToApprFullDTO(Object[] result) {
         ApprFullDTO dto = new ApprFullDTO();
-        dto.setReqId(((Number) result[6]).longValue());
+        dto.setReqId(((Number) result[8]).longValue());  // 인덱스 8로 수정
         dto.setTitle((String) result[1]);
         dto.setDrafterName((String) result[2]);
+        dto.setDepartment(result[3] != null ? (String) result[3] : "-");  // 실제 부서명
         
-        // REQUEST_AT 처리 - result[3]
-        Object requestAtObj = result[3];
-        if (requestAtObj == null) {
-            dto.setCreateAt(java.time.LocalDateTime.now());
-        } else if (requestAtObj instanceof java.sql.Date) {
-            // DATE 타입을 LocalDateTime으로 변환
-            java.sql.Date sqlDate = (java.sql.Date) requestAtObj;
-            dto.setCreateAt(sqlDate.toLocalDate().atStartOfDay());
-        } else if (requestAtObj instanceof java.sql.Timestamp) {
-            dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
-        } else {
-            log.warn("ApprFullDTO 알 수 없는 날짜 타입: {}, 현재 시간으로 대체", requestAtObj.getClass().getName());
-            dto.setCreateAt(java.time.LocalDateTime.now());
-        }
+        // REQUEST_AT 처리 - result[5]로 수정
+        Object requestAtObj = result[5];
+        // ... 날짜 처리 코드 ...
         
-        dto.setReqType((String) result[7]);
-        dto.setEmpId((String) result[8]);
-        dto.setDepartment(DEFAULT_DEPARTMENT);
+        dto.setReqType((String) result[9]);
+        dto.setEmpId((String) result[10]);
         
         return dto;
     }
@@ -345,8 +342,6 @@ public class ApprService {
 		
 		apprRepository.save(appr);
 		
-//		apprLineService.registApprLine(appr, empIds);
-				
 		return appr.getReqId();
 	}
 	

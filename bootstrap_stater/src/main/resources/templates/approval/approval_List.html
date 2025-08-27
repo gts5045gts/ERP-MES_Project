@@ -175,6 +175,7 @@
                                     <th>문서제목</th>
                                     <th>기안자</th>
                                     <th>부서명</th>
+                                    <th>직급</th>
                                     <th>생성일</th>
                                     <th>결재 완료일자</th>
                                     <th>상태</th>
@@ -188,6 +189,7 @@
                                 <td th:text="${appr.title}">휴가 신청서</td>
                                 <td th:text="${appr.drafterName}">이연수</td>
                                 <td th:text="${appr.department}">재무팀</td>
+                                <td th:text="${appr.position}">대리</td>
                                 <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
                                 <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td>
                                 <td>
