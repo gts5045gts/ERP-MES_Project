@@ -9,6 +9,7 @@ import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.entity.ApprDetail;
 import com.bootstrap.study.approval.entity.ApprLine;
 import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -19,10 +20,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +36,6 @@ import java.util.stream.Collectors;
 public class ApprService {
 
 	private final ApprRepository apprRepository;
-	private final ApprLineService apprLineService;
 	
     // 상수 정의
     private static final String DEFAULT_DEPARTMENT = "인사부";
@@ -312,7 +314,7 @@ public class ApprService {
     //결재자 리스트 조회
     @Transactional(readOnly = true)
     public List<PersonnelDTO> getApprEmployee(String keyword, String currentEmpId) {
-    	log.info("currentEmpId>>>>>>>>>>>>>>>>>>>>>>>>>"+currentEmpId);
+//    	log.info("currentEmpId>>>>>>>>>>>>>>>>>>>>>>>>>"+currentEmpId);
         return apprRepository.findByNameContainingIgnoreCase(keyword, currentEmpId)
                 .stream()
                 .map(PersonnelDTO::fromEntity)
@@ -345,9 +347,17 @@ public class ApprService {
 		
 		apprRepository.save(appr);
 		
-//		apprLineService.registApprLine(appr, empIds);
 				
 		return appr.getReqId();
+	}
+
+
+    //연차 정보 조회
+	public Annual getAnnualInfo(String empId) {
+		Annual annual = apprRepository.findByAnnual(empId, LocalDate.now().getYear())
+				.orElseThrow(() -> new EntityNotFoundException(empId + " : 연차정보조회실패!"));
+		
+		return annual;
 	}
 	
 }

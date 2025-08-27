@@ -1,6 +1,7 @@
 package com.bootstrap.study.approval.repository;
 
 import com.bootstrap.study.approval.entity.Appr;
+import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -106,11 +107,16 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
     	    "SELECT * FROM " +
     	    "C##TEAM1.employee e " +
     	    "JOIN " +
-    	    "C##TEAM1.test_dept d ON e.emp_dept_id = d.dept_id " +
+    	    "C##TEAM1.common_dt_code d ON e.emp_dept_id = d.com_dt_id " +
     	    "JOIN " +
-    	    "C##TEAM1.test_position p ON e.emp_position = p.pos_id " +
+    	    "C##TEAM1.common_dt_code p ON e.emp_position = p.com_dt_id " +
     	    "WHERE e.emp_name LIKE %:keyword% and e.emp_id <> :currentEmpId",  // 파라미터로 변경
     	    nativeQuery = true)
 	List<Personnel> findByNameContainingIgnoreCase(@Param("keyword") String keyword, 
 	                                               @Param("currentEmpId") String currentEmpId);
+
+    //연차신청자 연차 정보 가져오기
+    @Query
+    ("SELECT a FROM Annual a where a.empId = :empId and a.annYear = :year")
+	Optional<Annual> findByAnnual(@Param("empId") String empId, @Param("year") int year);
 }
