@@ -30,7 +30,7 @@ public interface CommuteMapper {
 	// 퇴근버튼 눌렀을때 퇴근시간 commute_record에 저장
 	void updateCommuteCheckOut(CommuteDTO commute);
 
-	// 부서 공통코드
+	// 부서 공통코드 조회
 	List<CommonDetailCodeDTO> getCommonDept(String comId);
 
 	// 전체부서 인원(오늘날짜) - 공통코드 셀렉박스
@@ -39,6 +39,8 @@ public interface CommuteMapper {
 	// 특정부서 인원(오늘날짜) - 공통코드 셀렉박스
 	List<AdminCommuteDTO> getSpecificDeptCommuteList(Map<String, Object> paramMap);
 
-//	List<CommonDetailCodeDTO> getCommonStatus();
+	// 근무상태 공통코드 조회
+	List<CommonDetailCodeDTO> getCommonStatus(String comId);
+
 
 }
