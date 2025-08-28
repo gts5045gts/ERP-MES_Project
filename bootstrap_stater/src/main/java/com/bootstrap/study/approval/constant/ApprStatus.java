@@ -10,8 +10,8 @@ public enum ApprStatus {
 	
 	REQUESTED("기안신청"), // 기안 신청
     PROCESSING("진행중"), // 진행중
-    FINISHED("완료");   // 완료
-	
+    FINISHED("완료"),   // 완료
+	CANCELED("반려");
 	private final String label;
 	
 	public String getCode() {

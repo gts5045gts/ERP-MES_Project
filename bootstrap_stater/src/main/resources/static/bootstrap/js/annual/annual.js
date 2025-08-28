@@ -74,9 +74,8 @@ $('#AnnSearch').on('keyup', function() {
 
 // 차트 
 const chartEl = document.getElementById('chart-area');
-const id = 2;
 
-fetch(`/attendance/annualList/chart/${id}`)
+fetch(`/attendance/annualList/chart`)
 	.then(res => res.json())
 	.then(data => {
 		const annTotal = Number(data.annTotal) || 0;
@@ -87,7 +86,7 @@ fetch(`/attendance/annualList/chart/${id}`)
 			series: [
 				{ 
 					name: '사용률', 
-					data: [annPercent] 
+					data: [{value: annPercent}] 
 				}
 			]
 		};
@@ -103,7 +102,9 @@ fetch(`/attendance/annualList/chart/${id}`)
 			},
 			series: {
 				solid: true,
-				dataLabels: { visible: true, offsetY: 40, formatter: (value) => `사용률 ${value}%` },
+				dataLabels: { 
+					visible: true, 
+					offsetY: -25, formatter: (value) => `사용률 ${value.value}%` },
 			},
 			theme: {
 				circularAxis: {
@@ -119,7 +120,7 @@ fetch(`/attendance/annualList/chart/${id}`)
 				},
 				series: {
 					dataLabels: {
-						fontSize: 15,
+						fontSize: 20,
 						fontFamily: 'Impact',
 						fontWeight: 500,
 						color: '#00a9ff',
@@ -131,6 +132,43 @@ fetch(`/attendance/annualList/chart/${id}`)
 			},
 		};
 
-		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options: options });
+		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options });
 	});
 
+// 오늘의 연차사원
+document.addEventListener('DOMContentLoaded', function() {
+	const table = document.getElementById('todayAnnTable');
+
+	fetch('/attendance/todayAnn')
+		.then(response => response.json())
+		.then(data => {
+			if (data.length === 0) {
+				table.innerHTML = '<tr><td colspan="5" class="text-center">오늘 연차 사원이 없습니다.</td></tr>';
+				return;
+			}
+
+			let html = `<thead>
+                            <tr>
+                                <th>사원ID</th>
+                                <th>이름</th>
+                                <th>부서</th>
+                                <th>직급</th>
+                                <th>휴가종류</th>
+                            </tr>
+                        </thead><tbody>`;
+
+			data.forEach(emp => {
+				html += `<tr>
+                            <td>${emp.empId}</td>
+                            <td>${emp.empName}</td>
+                            <td>${emp.depName}</td>
+                            <td>${emp.empPos}</td>
+                            <td>${emp.annType}</td>
+                         </tr>`;
+			});
+
+			html += '</tbody>';
+			table.innerHTML = html;
+		})
+		.catch(err => console.error('오늘 연차 조회 실패', err));
+});
