@@ -1,14 +1,6 @@
 package com.bootstrap.study.groupware.dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
-
-import com.bootstrap.study.approval.constant.ApprStatus;
-import com.bootstrap.study.approval.dto.ApprDTO;
-import com.bootstrap.study.approval.dto.ApprDetailDTO;
-import com.bootstrap.study.approval.dto.ApprLineDTO;
 
 import lombok.Builder;
 import lombok.Getter;
