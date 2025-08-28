@@ -1,4 +1,4 @@
-package com.bootstrap.study.commonCode.util;
+package com.bootstrap.study.config.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;

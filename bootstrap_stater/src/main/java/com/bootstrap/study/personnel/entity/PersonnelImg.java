@@ -35,11 +35,11 @@ public class PersonnelImg {
 	@JoinColumn(nullable = false, name = "emp_id", referencedColumnName = "emp_id")
 	private Personnel personnel;
 	
-	@Column(nullable = false, name = "img_id")
+	@Column(nullable = false, name = "img_name")
 	private String name;
-	@Column(nullable = false, name = "img_id")
+	@Column(nullable = false, name = "img_location")
 	private String location;
-	@Column(nullable = false, name = "img_id")
+	@Column(nullable = false, name = "file_name")
 	private String fileName;
 	
 	

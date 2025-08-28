@@ -61,7 +61,7 @@ public class PersonnelImgService {
 		perImg.setPersonnel(personnel);
 		perImg.setImgId(fileName);
 		perImg.setFileName(originalFileName);
-		perImg.getLocation(itemImgLocation);
+//		perImg.getLocation(itemImgLocation);
 		
 	}
 	

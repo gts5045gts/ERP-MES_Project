@@ -1,4 +1,4 @@
-package com.bootstrap.study.commonCode.util;
+package com.bootstrap.study.config.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
