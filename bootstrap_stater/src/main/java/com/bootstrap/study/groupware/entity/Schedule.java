@@ -10,12 +10,17 @@ import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.bootstrap.study.personnel.entity.Personnel;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -29,8 +34,9 @@ public class Schedule {
     @Column(name = "SCH_ID")
     private Long schId;
 
-    @Column(name = "EMP_ID")
-    private Long empId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EMP_ID", referencedColumnName = "EMP_ID")
+    private Personnel employee;
     
     @Column(name = "SCH_TITLE")
     private String schTitle;

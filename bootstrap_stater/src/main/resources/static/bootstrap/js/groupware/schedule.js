@@ -42,11 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					success: function(response) {
 						if (response.success) {
 							var schedule = response.schedule;
+							var empName = response.empName;
 
 							console.log("로그인 사용자 ID:", typeof currentEmpId, currentEmpId);
 							console.log("일정 작성자 ID:", typeof schedule.empId, schedule.empId);
 							// 상세 정보 표시
 							$('#detailTitle').text(schedule.schTitle);
+							$('#detailEmpName').text(empName);
 							$('#detailContent').text(schedule.schContent);
 							$('#detailStartDate').text(schedule.starttimeAt);
 							$('#detailEndDate').text(schedule.endtimeAt);
@@ -143,8 +145,10 @@ document.addEventListener('DOMContentLoaded', function() {
 					success: function(response) {
 						if (response.success) {
 							var schedule = response.schedule;
+							var empName = response.empName;
 							// 상세 정보 표시
 							$('#detailTitle').text(schedule.schTitle);
+							$('#detailEmpName').text(empName);
 							$('#detailContent').text(schedule.schContent);
 							$('#detailStartDate').text(schedule.starttimeAt);
 							$('#detailEndDate').text(schedule.endtimeAt);
@@ -159,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							$('#editEndDate').val(schedule.endtimeAt.substring(0, 16));
 
 							// ⭐ 권한에 따라 버튼 표시/숨김
-							if (String(schedule.empId) === String(currentEmpId)) {
+							if (schedule.employee.empId === String(currentEmpId)) {
 								$('#editScheduleBtn').show();
 								$('#deleteScheduleBtn').show();
 							} else {
