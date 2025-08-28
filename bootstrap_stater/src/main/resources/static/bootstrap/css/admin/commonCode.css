@@ -1,0 +1,74 @@
+@charset "UTF-8";
+
+/* 부트스트랩 그리드 */
+.card-title {
+	font-size: 20px;
+}
+
+.codeTitle {
+	margin: 15px 0 25px 12px;
+}
+
+
+.card-body-code {
+	flex: 1 1 auto;
+    min-height: 1px;
+}
+
+#bigTable {
+	font-size: 12px;
+}
+
+#smallTable {
+	font-size: 12px;
+}
+
+
+.codeSearch {
+    font-size: 13px;
+}
+
+.codeSearch + input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 55%;
+}
+
+#codeSearch:focus, #codeDetailSearch:focus {
+	border-color: #4e73df !important; /* 연한 파란색 */
+	outline: none !important;
+	box-shadow: 0 0 4px 1px rgba(102, 170, 255, 0.3) !important; /* 작고 연한 파란 그림자 */
+  	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="search"] {
+    font-family: 'Arial', 'Noto Sans KR', sans-serif; /* 원하는 글꼴 */
+    font-size: 14px; /* 글자 크기 */
+    color: #333; /* 글자 색상 */
+}
+
+.filterArea {
+	display: flex;
+	padding-bottom: 5px;
+}
+
+.codeContainer {
+	width: 100%;
+    padding-right: .75rem;
+    padding-left: .75rem;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+
+/* 모달 창*/
+.useCodeAt {
+	border: 1px solid #ccc;
+ 	border-radius: 4px;
+ 	color: #000000bd;
+}
+
+.modal-title {
+    font-size: 17px;
+    font-weight: 500;
+}

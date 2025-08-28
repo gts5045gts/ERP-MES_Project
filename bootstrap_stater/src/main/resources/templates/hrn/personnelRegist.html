@@ -3,17 +3,15 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout}">
 <head>
-
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
-
     </th:block>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
-	<link href="/personnel/css/personnel.regist.css" rel="stylesheet" type="text/css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
+<link href="/personnel/css/personnel.regist.css" rel="stylesheet" type="text/css">
     
 </head>
 <body>
@@ -61,7 +59,7 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_bd" class="form-label">주민등록번호</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_bd" name="resident" placeholder="(ex) 990101-1111111" maxlength="13"></td>
+											<input type="text" class="form-control w-75" id="emp_bd" name="resident" placeholder="(ex) 990101-1111111" maxlength="14"></td>
 									</tr>
 
 									<tr>
@@ -81,10 +79,11 @@
 										<th scope="row">
 											<label for="emp_yn" class="form-label">재직현황</label></th>
 										<td colspan="3">
-											<select id="emp_yn" name="status" class="form-select w-75">
-												<option value="재직" selected="">재직</option>
-												<option value="휴직" disabled="">휴직</option>
-												<option value="퇴사" disabled="">퇴사</option>
+											<select id="emp_yn" name="staId" class="form-select w-75">
+												<th:block th:each=" status: ${status}">
+													<option th:value="${status.comDtId}" th:text="${status.comDtNm}">
+												</th:block>
+												
 											</select>
 										</td>
 									</tr>
@@ -103,9 +102,9 @@
 											<label for="dep_nm" class="form-label">부서명</label></th>
 										<td colspan="3">
 											<select id="dep_nm" name="deptId" class="form-select w-75">
-												<option value="">부서명을 선택하세요</option>
+												<option value="1">부서명을 선택하세요</option>
 												<th:block th:each="departments : ${departments}">
-													<option th:value="${departments.id}" th:text="${departments.name}">
+													<option th:value="${departments.comDtId}" th:text="${departments.comDtNm}">
 												</th:block>
 											</select>
 										</td>
@@ -115,26 +114,25 @@
 											<label for="emp_gd" class="form-label">직책</label></th>
 										<td colspan="3">
 											<select id="emp_gd" name="posId" class="form-select w-75">
-												<option value="">직책을 선택하세요</option>
+												<option value="1">직책을 선택하세요</option>
 												<th:block th:each="position : ${position}">
-													<option th:value="${position.id}" th:text="${position.name}">
+													<option th:value="${position.comDtId}" th:text="${position.comDtNm}">
 												</th:block>
 											</select>
 										</td>
-										<!-- 보안등급 
+										<!-- 보안등급 	-->
 									
 										<th scope="row" class="custom-th">
 											<label for="emp_lv" class="form-label">보안등급</label></th>
 										<td colspan="3">
-											<select id="emp_lv" name="emp_lv" class="form-select w-75">
+											<select id="emp_lv" name="levId" class="form-select w-75">
 												<option value="">보안등급을 선택하세요</option>
-												<option value="1">(1)부서원</option>
-												<option value="2">(2)부서장</option>
-												<option value="3">(3)사장</option>
-												<option value="4" disabled="">(4)관리자</option>
+												<th:block th:each="level : ${level}">
+													<option th:value="${level.comDtId}" th:text="${level.comDtNm}">
+												</th:block>
 											</select>
 										</td>
-										-->
+									
 									</tr>
 
 									<tr>
@@ -181,13 +179,127 @@
 			</section>
 </th:block>
 
-<script th:src="@{/vendor/jquery/jquery.min.js}"></script>
-    <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<th:block layout:fragment="script">
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
 
-    <script th:src="@{/vendor/jquery-easing/jquery.easing.min.js}"></script>
+	// 전화번호 유효성 검사 
+	document.getElementById('emp_ph').addEventListener('input', function(e) {
+  		let input = e.target.value.replace(/\D/g, ''); // 숫자 이외의 문자는 모두 제거
+  
+		// 최대 11자리까지 허용 (예: 01012345678)
+		if (input.length > 11) {
+			input = input.substring(0, 11);
+		}
+  		
+		let formatted = '';
+		// 입력된 숫자 길이에 따라 하이픈(-)을 삽입합니다.
+		if (input.length < 4) { // 예: 010
+			formatted = input;
+		} else if (input.length < 7) {	// 예: 010-123
+			formatted = input.substring(0, 3) + '-' + input.substring(3);
+		} else if (input.length < 11) {	// 예: 010-123-456
+			formatted = input.substring(0, 3) + '-' + input.substring(3, 6) + '-' + input.substring(6);
+		} else {	// 예: 010-1234-5678 (11자리일 경우)
+			formatted = input.substring(0, 3) + '-' + input.substring(3, 7) + '-' + input.substring(7);
+		}
 
-    <script th:src="@{/js/sb-admin-2.min.js}"></script>
+		// 포맷팅된 결과를 다시 input에 반영
+		e.target.value = formatted;
+	});
+	
+	/**
+	// 주민등록 번호
+	document.getElementById('emp_bd').addEventListener('input', function(e) {
+  		let input = e.target.value.replace(/\D/g, ''); // 숫자 이외의 문자는 모두 제거
+  
+		// 최대 11자리까지 허용 (예: 01012345678)
+		if (input.length > 13) {
+			input = input.substring(0, 13);
+		}
+  		
+		let formatted = '';
+		// 입력된 숫자 길이에 따라 하이픈(-)을 삽입합니다.
+		if (input.length < 6) { // 예: 010
+			formatted = input;
+		} else  {	// 예: 010-123
+			formatted = input.substring(0, 6) + '-' + input.substring(6);
+		} 
 
-    <th:block layout:fragment="script"></th:block>
+		// 포맷팅된 결과를 다시 input에 반영
+		e.target.value = formatted;
+	});
+	**/
+	document.getElementById('emp_bd').addEventListener('input', function(e) {
+	  	let input = e.target.value.replace(/\D/g, ''); // 숫자만 남김
+
+		// 최대 13자리까지만 허용
+		if (input.length > 13) {
+			input = input.substring(0, 13);
+		}
+
+		let formatted = '';
+		if (input.length <= 6) {
+			// 앞 6자리만 입력 중
+			formatted = input;
+		} else if (input.length === 7) {
+			// 앞 6자리 + '-' + 뒷번호 첫 글자
+			formatted = input.substring(0, 6) + '-' + input.charAt(6);
+		} else {
+			// 앞 6자리 + '-' + 뒷번호 첫 글자 + ****** (항상 6개)
+			let front = input.substring(0, 6);
+			let firstBack = input.charAt(6);
+			formatted = front + '-' + firstBack + '******';
+		}
+
+		e.target.value = formatted;
+	});
+	
+	
+	// 주소검색
+	let btnSearchAddress = document.querySelector('#btnSearchAddress');
+	btnSearchAddress.onclick = function() {
+		new daum.Postcode({
+			oncomplete : function(data) {
+				document.querySelector('#emp_pc').value = data.zonecode;
+
+				let addr = data.address;
+				if (data.buildingName != "") {
+					addr += " (" + data.buildingName + ")";
+				}
+				document.querySelector('#emp_ad').value = addr;
+				document.querySelector('#emp_ba').focus();
+			}
+		}).open();
+
+	}
+
+
+
+	// 사진 등록 함수
+	function employeePhoto(event) {
+		const file = event.target.files[0]; // 선택된 파일 가져오기
+		const reader = new FileReader(); // FileReader 객체 생성
+
+		reader.onload = function() {
+			const imgElement = document.getElementById("pFIle");
+			imgElement.src = reader.result; // 미리보기 이미지 변경
+			imgElement.style.width = "100%"; // 부모 요소에 맞게 조정
+			imgElement.style.height = "100%";
+			imgElement.style.objectFit = "cover"; // 비율 유지하면서 꽉 차게
+		}
+
+		if (file) {
+			reader.readAsDataURL(file); // 파일을 읽어서 미리보기
+		}
+	}
+	
+// 	  '.notice-title'를 클릭하면 '.notice-list'에 .show 클래스를 토글
+	document.querySelector('.notice-title').addEventListener('click', function() {
+	document.querySelector('.notice-list').classList.toggle('show');
+	});
+	
+</script>
+</th:block>
 </body>
 </html>

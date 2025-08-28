@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 @Builder
 @ToString
 public class PersonnelDTO {
+
 	private String empId;		// 사원id 		ex)2025082101
 	private String name;		// 이름
 	private String passwd;		// 비밀번호
@@ -29,38 +30,37 @@ public class PersonnelDTO {
 	private String joinDate;	// 입사일
 	private String resignDate;	// 퇴사일	
 	private Timestamp update;	// 수정일
-	private String status;		// 재직상태
+//	private String status;		// 재직상태 수정
 	
 	// 부서 직급 정보
-	private Long posId;			// 직급
+	private String posId;			// 직급
 	private String posName;		
-	private Long deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
+	private String deptId;		// 부서명은 엔티티에서 직접 가져오지 않고 DTO에서 추가
 	private String deptName;
 
-    // 인사현황
-    public static PersonnelDTO fromEntityCurrent(Personnel personnel) {
-        return PersonnelDTO.builder()
-                .empId(personnel.getEmpId())
-                .name(personnel.getName())
-                .posName(personnel.getPosition() != null ? personnel.getPosition().getPosName() : null)
-                .phone(personnel.getPhone())
-                .email(personnel.getEmail())
-                .deptName(personnel.getDepartment() != null ? personnel.getDepartment().getDeptName() : null)
-                .joinDate(personnel.getJoinDate())
-                .build();
-    }
-    
-    // 인사등록
+	
+	//추가 한 컬럼	
+	private String levId;		//보안등급 아이디값
+	private String levName;		//보안등급 이름
+	private String staId;		//재직현황 아이디값
+	private String staName;		//재직현항 이름
+	// Entity -> DTO 변환을 위한 정적 팩토리 메서드
     public static PersonnelDTO fromEntity(Personnel personnel) {
 		return PersonnelDTO.builder().empId(personnel.getEmpId()).name(personnel.getName()).passwd(personnel.getPasswd())
 				.resident(personnel.getResident()).addrNum(personnel.getAddrNum()).addr1(personnel.getAddr1()).addr2(personnel.getAddr2())
 				.email(personnel.getEmail()).phone(personnel.getPhone()).joinDate(personnel.getJoinDate()).resignDate(personnel.getResignDate())
 				.update(personnel.getUpdate())
-				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getDeptName()  : null)
-				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getDeptId() : null)
-				.posId(personnel.getPosition() != null ? personnel.getPosition().getPosId() : null)
-				.posName(personnel.getPosition() != null ? personnel.getPosition().getPosName() : null)
+				.deptId(personnel.getDepartment() != null ? personnel.getDepartment().getComDtId() : null)
+				.deptName(personnel.getDepartment() != null ? personnel.getDepartment().getComDtNm()  : null)
+				.posId(personnel.getPosition() != null ? personnel.getPosition().getComDtId() : null)
+				.posName(personnel.getPosition() != null ? personnel.getPosition().getComDtNm() : null)
+				//추가한 부분 보안등급 (Level)
+				.levId(personnel.getLevel() != null ? personnel.getLevel().getComDtId() : null)
+				.levName(personnel.getLevel() != null ? personnel.getLevel().getComDtNm() : null)
+				.staId(personnel.getStatus() != null ? personnel.getStatus().getComDtId() : null)
+				.staName(personnel.getStatus() != null ? personnel.getStatus().getComDtNm() : null)
 				.build();
 	}
-    
+
 }
+

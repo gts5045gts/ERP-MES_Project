@@ -1,138 +1,196 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout_commute}">
+      layout:decorate="~{layouts/layout}">
 <head>
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
-        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
-		<style>
-		  table {
-		    border-collapse: collapse;
-		    width: 100%;
-		    font-family: Arial, sans-serif;
-		  }
-		
-		  th, td {
-		    border: 1px solid #d1d7dd; /* 더 연한 연파랑-회색 중간 연한 회색 */
-		    padding: 8px;
-		    text-align: center;
-		  }
-		
-		  th {
-		    background-color: #dce3e9; /* 훨씬 더 연한 중간 톤 */
-		    color: #333; /* 흰색 대신 약간 어두운 글자색으로 가독성 유지 */
-		  }
-		
-		  tr:nth-child(even) {
-		    background-color: #f0f3f6; /* 아주 연한 파랑-회색 */
-		  }
-		
-		  hr {
-		    border: none;
-		    border-top: 1px solid #d1d7dd;
-		    margin: 4px 0;
-		  }
-		</style>
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
     </th:block>
 </head>
 <body>
-<th:block layout:fragment="content">
-    <!-- Begin Page Content -->
-    <div class="container-fluid">
-        <!-- Page Heading -->
-        <h1 class="h3 mb-4 text-gray-800">Blank Page</h1>
-    </div>
-    <!-- /.container-fluid -->
-</th:block>
-	<section layout:fragment="content">
-		<h3>출퇴근확인</h3>
-<!-- 		<table border="1"> -->
-<!-- 			<tr> -->
-<!-- 				<th>날짜</th> -->
-<!-- 				<th>사번</th> -->
-<!-- 				<th>부서</th> -->
-<!-- 				<th>직책</th> -->
-<!-- 				<th>이름</th> -->
-<!-- 				<th>출근시간</th> -->
-<!-- 				<th>퇴근시간</th> -->
-<!-- 				<th>근무상태</th> -->
-<!-- 			</tr> -->
-<!-- 			<tr th:each="itemDTO : ${itemDTOList}" th:object="${itemDTO}"> -->
-<!-- 				<td th:text="*{id}"></td> -->
-<!-- 				<td th:text="*{itemNm}"></td> -->
-<!-- 				<td th:text="*{price}"></td> -->
-<!-- 				<td th:text="*{stockQty}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 				<td th:text="*{regTime}"></td> -->
-<!-- 			</tr> -->
-<!-- 		</table> -->
-		<table border="1">
-			<tr>
-				<th>날짜</th>
-				<th>사번</th>
-				<th>부서</th>
-				<th>직책</th>
-				<th>이름</th>
-				<th>출근시간</th>
-				<th>퇴근시간</th>
-				<th>근무상태</th>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-			<tr>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-				<td>1</td>
-			</tr>
-		</table>
-	</section>
-<th:block layout:fragment="script">
+	<th:block layout:fragment="content">
+	    <div class="container-fluid">
+	
+	        <!-- Page Heading -->
+	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
+	        
+	        <!-- 출근버튼 -->
+	        
+	        <!-- 근태 리스트 테이블 -->        
+	        <!-- DataTales Example -->
+	        <div class="card shadow mb-4">
+<!-- 	            <div class="card-header py-3"> -->
+<!-- 	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6> -->
+<!-- 		            <div class="mb-3"> -->
+<!-- 		            	<button id="checkInBtn" class="btn btn-primary">출근</button> -->
+<!-- 		            </div> -->
+<!-- 	            	<input type="date"> -->
+<!-- 	            </div> -->
+				<div class="card-header py-3 d-flex align-items-center justify-content-between">
+				    <h6 class="m-0 font-weight-bold text-primary">출근한 나의 부서인원 근태현황</h6>
+				    
+				    <div class="d-flex align-items-center gap-2">
+					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
+					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}">
+					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button>
+				        <button id="checkInBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">출근</button>
+				        <button id="checkOutBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">퇴근</button>
+				    </div>
+				</div>
+	            <div class="card-body">
+	                <div class="table-responsive">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
+	                        <thead>
+		                        <tr>
+		                            <th>날짜</th>
+		                            <th>출근시간</th>
+		                            <th>퇴근시간</th>
+		                            <th>사번</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
+		                            <th>근무상태</th>
+		                        </tr>
+	                        </thead>
+	                        <tbody>
+		                        <tr th:each="c : ${commuteDTOList}" id="commuteTable" th:data-empid="${c.empId}">
+		                            <td th:text="${c.commuteDate}"></td>
+									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
+									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
+		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
+		                            <td th:text="${c.workStatusNm}"></td>
+		                        </tr>
+		                            <tr th:if="${#lists.isEmpty(commuteDTOList)}">
+								        <td colspan="8" class="text-center text-muted">출근한 사람이 없습니다.</td>
+								    </tr>
+	                        </tbody>
+	                    </table>
+	                </div>
+	            </div>
+	        </div>
+	
+	    </div>
+	    <!-- /.container-fluid -->
+	
+	</th:block>
+	<th:block layout:fragment="script">
+	<script>
+	// 출근 버튼
+	document.addEventListener("DOMContentLoaded", function() {
+// 		console.log("버튼 클릭!");
+		
+	    const checkInBtn = document.getElementById("checkInBtn");
+	
+	    checkInBtn.addEventListener("click", function() {
+	        // 확인 팝업
+	        if (!confirm("출근하시겠습니까?")) return;
+	
+	        fetch("/attendance/checkIn", {
+	            method: "POST",
+	            headers: { "Content-Type": "application/json" },
+	            body: JSON.stringify({}) // 바디 안넣으면 오류가 났음
+	        })
+	        .then(response => {
+	            if (response.status === 401) {
+	                alert("로그인이 필요합니다.");
+	                window.location.href = "/login";
+	                return;
+	            } else if (response.status === 409) {
+	                alert("이미 오늘 출근한 상태입니다.");
+	                window.location.href="/attendance/commuteList";
+	                return;
+	            } else if (!response.ok) {
+	                throw new Error("출근 처리 중 오류 발생");
+	            }
+	            return response.json();
+	        })
+	        .then(data => {
+	            if (data) {
+	            	// data.checkInTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
+	                const rawTime = data.checkInTime;
+	                const dateObj = new Date(rawTime);
 
-</th:block>
+	                // yyyy-MM-dd HH:mm:ss 형식으로 변환
+	                const formatted = dateObj.getFullYear() + "-" +
+	                                  String(dateObj.getMonth() + 1).padStart(2, '0') + "-" +
+	                                  String(dateObj.getDate()).padStart(2, '0') + " " +
+	                                  String(dateObj.getHours()).padStart(2, '0') + ":" +
+	                                  String(dateObj.getMinutes()).padStart(2, '0') + ":" +
+	                                  String(dateObj.getSeconds()).padStart(2, '0');
+	            	
+	                alert(`출근 완료: ${formatted}`);
+	                // 필요하면 리스트 새로고침
+	                location.reload();
+	            }
+	        })
+	        .catch(err => console.error(err));
+	    });
+	});
+	
+	// 퇴근 버튼
+	document.addEventListener("DOMContentLoaded", function() {
+// 		console.log("버튼 클릭!");
+		
+	    const checkOutBtn = document.getElementById("checkOutBtn");
+	
+	    checkOutBtn.addEventListener("click", function() {
+	        // 확인 팝업
+	        if (!confirm("퇴근하시겠습니까?")) return;
+	
+	        fetch("/attendance/checkOut", {
+	            method: "POST",
+	            headers: { "Content-Type": "application/json" },
+	            body: JSON.stringify({}) // 바디 안넣으면 오류가 났음
+	        })
+	        .then(response => {
+	            if (response.status === 401) {
+	                alert("로그인이 필요합니다.");
+	                window.location.href = "/login";
+	                return;
+	            } else if (response.status === 409) {
+	                alert("이미 오늘 퇴근한 상태입니다.");
+	                window.location.href="/attendance/commuteList";
+	                return;
+	            } else if (!response.ok) {
+	                throw new Error("퇴근 처리 중 오류 발생");
+	            }
+	            return response.json();
+	        })
+	        .then(data => {
+	            if (data) {
+	            	// data.checkOutTime가 "2025-08-25T15:20:58.9681132" 이렇게 나옴
+	                const rawTime = data.checkOutTime;
+	                const dateObj = new Date(rawTime);
+
+	                // yyyy-MM-dd HH:mm:ss 형식으로 변환
+	                const formatted = dateObj.getFullYear() + "-" +
+	                                  String(dateObj.getMonth() + 1).padStart(2, '0') + "-" +
+	                                  String(dateObj.getDate()).padStart(2, '0') + " " +
+	                                  String(dateObj.getHours()).padStart(2, '0') + ":" +
+	                                  String(dateObj.getMinutes()).padStart(2, '0') + ":" +
+	                                  String(dateObj.getSeconds()).padStart(2, '0');
+	            	
+	                alert(`퇴근 완료: ${formatted}`);
+	                // 필요하면 리스트 새로고침
+	                location.reload();
+	            }
+	        })
+	        .catch(err => console.error(err));
+	    });
+	});
+	
+	searchBtn
+	document.getElementById("searchBtn").addEventListener("click", function() {
+	    const startDate = document.querySelector("input[name='startDate']").value;
+	    const endDate = document.querySelector("input[name='endDate']").value;
+	    window.location.href = `/attendance/commuteList?startDate=${startDate}&endDate=${endDate}`;
+	});
+
+	</script>
+	</th:block>
 </body>
 </html>

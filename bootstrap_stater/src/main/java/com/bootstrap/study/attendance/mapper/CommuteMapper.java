@@ -1,21 +1,44 @@
 package com.bootstrap.study.attendance.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
 
+import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
+import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 @Mapper
 public interface CommuteMapper {
 
-	// 출퇴근리스트
-	List<CommuteDTO> selectAllCommute();
+	// 출퇴근리스트(오늘날짜)
+	List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap);
+	
+	// 오늘 출근 기록이 있는지 확인
+	int getTodayCheckInCount(String empId);
+	
+	// 출근버튼 눌렀을때 출근시간 commute_record 테이블에 저장
+	int insertCommuteCheckIn(CommuteDTO commute);
 
-	// 출근버튼
-	CommuteScheduleDTO getSchedule();
+	// 오늘 퇴근 기록이 있는지 확인
+	int getTodayCheckOutCount(String empId);
 
-	// 출근했을때 데이터 commute_record 테이블에 저장
-	void insertCommute(CommuteDTO commute);
+	// 퇴근버튼 눌렀을때 퇴근시간 commute_record에 저장
+	void updateCommuteCheckOut(CommuteDTO commute);
+
+	// 부서 공통코드
+	List<CommonDetailCodeDTO> getCommonDept(String comId);
+
+	// 전체부서 인원(오늘날짜) - 공통코드 셀렉박스
+	List<AdminCommuteDTO> getAllDeptCommuteList(Map<String, Object> paramMap);
+	
+	// 특정부서 인원(오늘날짜) - 공통코드 셀렉박스
+	List<AdminCommuteDTO> getSpecificDeptCommuteList(Map<String, Object> paramMap);
+
+//	List<CommonDetailCodeDTO> getCommonStatus();
+
 }

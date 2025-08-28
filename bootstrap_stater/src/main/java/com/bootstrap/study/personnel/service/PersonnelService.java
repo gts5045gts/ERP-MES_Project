@@ -1,3 +1,4 @@
+
 package com.bootstrap.study.personnel.service;
 
 import java.time.LocalDate;
@@ -6,18 +7,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.bootstrap.study.personnel.dto.DepartmentDTO;
+import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
+import com.bootstrap.study.commonCode.entity.CommonDetailCode;
+import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
-import com.bootstrap.study.personnel.dto.PositionDTO;
-import com.bootstrap.study.personnel.entity.Department;
 import com.bootstrap.study.personnel.entity.Personnel;
-import com.bootstrap.study.personnel.entity.Position;
-import com.bootstrap.study.personnel.repository.DepartmentRepository;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
-import com.bootstrap.study.personnel.repository.PositionRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -27,25 +25,80 @@ import lombok.extern.log4j.Log4j2;
 public class PersonnelService {
 	
 	private final PersonnelRepository personnelRepository;
-    private final DepartmentRepository departmentRepository;
-    private final PositionRepository positionRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final CommonDetailCodeRepository commonDetailCodeRepository;
+    
+    // 부서 리스트 조회
+    public List<CommonDetailCodeDTO> getAllDepartments() {
+    	
+        List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
+        log.info("depList" + comList.toString());
 
-    // 모든 부서를 조회하여 DTO 리스트로 반환
-    public List<DepartmentDTO> getAllDepartments() {
-        List<Department> departments = departmentRepository.findAll();
-        return departments.stream()
-                .map(dept -> {
-                    DepartmentDTO dto = new DepartmentDTO();
-                    dto.setId(dept.getDeptId());
-                    dto.setName(dept.getDeptName());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<CommonDetailCodeDTO> departments = comList.stream()
+        		.filter(result -> "DEP".equals(result.getComId().getComId()))
+        		.map(CommonDetailCodeDTO :: fromEntity)
+        		.collect(Collectors.toList());
+         
+        log.info("필터 후 데이터 : " + departments.toString());
+        return departments;
+    }
+    
+    // 직책 리스트 조회
+    public List<CommonDetailCodeDTO> getAllPositions() {
+    	List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> position = comList.stream()
+    			.filter(result -> "POS".equals(result.getComId().getComId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return position;
     }
 
+    // 재직 상황 리스트 
+    public List<CommonDetailCodeDTO> getStatus() {
+    	
+    	List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> position = comList.stream()
+    			.filter(result -> "STA".equals(result.getComId().getComId()))
+    			.filter(result2 -> "STA007".equals(result2.getComDtId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return position;
+    	
+    	
+    }
+    public List<CommonDetailCodeDTO> getAllStatus() {
+    	
+    	List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> position = comList.stream()
+    			.filter(result -> "STA".equals(result.getComId().getComId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return position;
+    	
+    	
+    }
+    public List<CommonDetailCodeDTO> getAllLevel() {
+    	
+    	List<CommonDetailCode> levList = commonDetailCodeRepository.findAll();
+    	
+    	List<CommonDetailCodeDTO> level = levList.stream()
+    			.filter(result -> "AUT".equals(result.getComId().getComId()))
+    			.map(CommonDetailCodeDTO :: fromEntity)
+    			.collect(Collectors.toList());
+    	
+    	return level;
+    }
+    
+    
     // 특정 부서의 직원 목록을 조회하여 DTO 리스트로 반환
-    public List<PersonnelDTO> getEmployeesByDepartmentId(Long deptId) {
-        List<Personnel> personnels = personnelRepository.findByDepartment_DeptId(deptId);
+    public List<PersonnelDTO> getEmployeesByDepartmentId(String comDtId) {
+        List<Personnel> personnels = personnelRepository.findByDepartment_ComDtId(comDtId);
         return personnels.stream()
                 .map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
                 .collect(Collectors.toList());
@@ -55,8 +108,8 @@ public class PersonnelService {
     private PersonnelDTO convertToDto(Personnel personnel) {
     	PersonnelDTO dto = new PersonnelDTO();
         dto.setEmpId(personnel.getEmpId()); 
-        dto.setDeptName(personnel.getDepartment().getDeptName());
-        dto.setPosName(personnel.getPosition().getPosName());
+        dto.setDeptName(personnel.getDepartment().getComDtId());
+        dto.setPosName(personnel.getPosition().getComDtId());
         dto.setName(personnel.getName());
         dto.setPhone(personnel.getPhone());
         dto.setEmail(personnel.getEmail());
@@ -73,26 +126,16 @@ public class PersonnelService {
  				.collect(Collectors.toList());
  	}
  	
- 	public List<PositionDTO> getAllPositions() {
-		List<Position> positionList = positionRepository.findAll();
-
-		return positionList.stream().map(result -> {
-			PositionDTO dto = new PositionDTO();
-			dto.setId(result.getPosId());
-			dto.setName(result.getPosName());
-			return dto;
-		}).collect(Collectors.toList());
-	}
+ 	
  	
  	public void personRegist(PersonnelDTO personnelDTO) {
- 		Department department = new Department();   // 부서 
- 	      Position position = new Position();         // 직급
-
  	      //현재 날짜
  	      LocalDate today = LocalDate.now();
  	      
- 	      String todayStr = personnelDTO.getJoinDate();							//joinDate 넣어줄 타입 변환 Date값   
- 	      
+ 	        // yyyyMMdd 포맷 지정
+ 	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
+ 	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
+ 	   
  	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
  	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
 
@@ -104,13 +147,14 @@ public class PersonnelService {
  	      
  	      personnelDTO.setEmpId(employeeId);            //부서 아이디 부서타입의 변수에 저장
  	      personnelDTO.setJoinDate(todayStr);
+ 	      String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
+ 	   	  personnelDTO.setPasswd(encodedPassword);
  	      
  	      log.info("사원등록 정보: " + personnelDTO.toString());
  	      
  	      Personnel personnel = new Personnel();
- 	      
- 	      personnel = personnel.fromDTO(personnelDTO);
- 	      log.info("사원등록 정보: " + personnel.fromDTO(personnelDTO).toString());
+ 	      personnel = personnel.fromDTO(personnelDTO, commonDetailCodeRepository);
+ 	      log.info("사원등록 정보: " + personnel.toString());
 
  	      personnelRepository.save(personnel);
 
@@ -121,8 +165,6 @@ public class PersonnelService {
  	    Optional<Personnel> personnelOpt = personnelRepository.findById(empId);
  	    return personnelOpt.map(personnel -> {
  	        PersonnelDTO dto = PersonnelDTO.fromEntity(personnel);
- 	        dto.setDeptId(personnel.getDepartment().getDeptId());
- 	        dto.setPosId(personnel.getPosition().getPosId());
  	        return dto;
  	    });
  	}
@@ -132,14 +174,24 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
- 	    // DTO에서 받은 정보로 엔티티 업데이트
- 	    personnel.setName(personnelDTO.getName());
- 	    personnel.setPasswd(personnelDTO.getPasswd());
- 	    personnel.setPhone(personnelDTO.getPhone());
- 	    personnel.setEmail(personnelDTO.getEmail());
+ 	    // 수정된 부분
+// 	    personnel.setName(personnelDTO.getName());
+// 	    personnel.setPasswd(personnelDTO.getPasswd());
+// 	    personnel.setPhone(personnelDTO.getPhone());
+// 	    personnel.setResident(personnelDTO.getResident());
+// 	    personnel.setEmail(personnelDTO.getEmail());
+// 	    personnel.setAddrNum(personnelDTO.getAddrNum());
+// 	    personnel.setAddr1(personnelDTO.getAddr1());
+// 	    personnel.setAddr2(personnelDTO.getAddr2());
+ 	    
+ 	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
+ 	    
+ 	    
 
  	    personnelRepository.save(personnel);
  	}
+
+
  	
 
 }

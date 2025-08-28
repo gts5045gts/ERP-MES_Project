@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bootstrap.study.attendance.mapper.CommuteMapper">
+
+	<!-- 출근현황 리스트 조회 -->
+<!-- 	<resultMap id="CommuteResultMap" type="com.bootstrap.study.attendance.dto.CommuteDTO"> -->
+<!-- 		<id property="commuteId" column="commute_id"/> -->
+<!-- 		<result property="checkInTime" column="check_in_time" /> -->
+<!-- 		<result property="checkOutTime" column="check_out_time" /> -->
+<!-- 		<result property="empId" column="emp_id" /> -->
+<!-- 		<result property="workStatus" column="work_status" /> -->
+<!-- 		<result property="empName" column="emp_name" /> -->
+<!-- 		<result property="depName" column="dep_name" /> -->
+<!-- 		<result property="posName" column="pos_name" /> -->
+<!-- 	</resultMap> -->
+<!-- 	<select id="getDeptCommuteList" resultMap="CommuteResultMap"> -->
+
+	<!-- 오늘날짜 기준으로 부서전체인원 셀렉 -->
+	<select id="getDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    SELECT 
+	        c.commute_id,
+	        c.check_in_time,
+	        c.check_out_time,
+	        e.emp_id,
+	        c.work_status,                  
+	        ws.com_dt_nm AS workStatusNm,  
+	        c.created_at,
+	        c.updated_at,
+	        e.emp_name,
+	        d.COM_DT_NM AS dept_name,
+	        p.COM_DT_NM AS pos_name,
+	        TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commute_date
+	    FROM employee e
+	    INNER JOIN commute_record c
+	        ON e.emp_id = c.emp_id
+	       AND TRUNC(c.check_in_time) BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	                                     AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	    LEFT JOIN common_dt_code d 
+	        ON e.emp_dept_id = d.com_dt_id AND d.com_id = 'DEP'
+	    LEFT JOIN common_dt_code p 
+	        ON e.emp_position = p.com_dt_id AND p.com_id = 'POS'
+	    LEFT JOIN common_dt_code ws
+	        ON c.work_status = ws.com_dt_id AND ws.com_id = 'STA'
+	    WHERE e.emp_dept_id = (
+	        SELECT emp_dept_id
+	        FROM employee
+	        WHERE emp_id = #{empId}
+	    )
+	    ORDER BY commute_date
+
+	</select> 
+
+
+	<!-- 출근 기록이 있는지 확인 -->
+	<select id="getTodayCheckInCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_in_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 출근상태 commute_record에 저장 -->
+	<insert id="insertCommuteCheckIn" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    INSERT INTO commute_record (
+	        check_in_time,
+	        check_out_time,
+	        emp_id,
+	        work_status,
+	        created_at,
+	        updated_at
+	    ) VALUES (        
+	        #{checkInTime},              
+	        NULL,                        
+	        #{empId},                   
+	        #{workStatus},               
+	        SYSDATE,                    
+	        SYSDATE                      
+	    )
+	</insert>
+	
+	
+	<!-- 퇴근 기록이 있는지 확인 -->
+	<select id="getTodayCheckOutCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_out_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 퇴근상태 commute_record에 저장 -->
+	<update id="updateCommuteCheckOut" parameterType="com.bootstrap.study.attendance.dto.CommuteDTO">
+	    UPDATE commute_record
+	    SET check_out_time = #{checkOutTime},
+	        work_status = #{workStatus},
+	        updated_at = SYSDATE
+	    WHERE emp_id = #{empId}
+	      AND TRUNC(check_in_time) = TRUNC(SYSDATE)   
+	      AND check_out_time IS NULL
+	</update>
+
+	<!-- 부서 공통코드 들고오기 -->	
+	<select id="getCommonDept" resultType="com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO">
+		SELECT 
+		    com_dt_id AS comDtId,
+		    com_dt_nm AS comDtNm,
+		    com_id    AS comId
+		FROM common_dt_code
+		WHERE com_id = #{comId}
+	</select>
+	
+	<!-- 관리자 전체 부서인원 조회(오늘날짜) -->
+	<select id="getAllDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.AdminCommuteDTO">
+    SELECT e.emp_id, 
+           e.emp_name, 
+           d.com_dt_nm AS deptName, 
+           c.check_in_time,
+           c.check_out_time, 
+           TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate,
+           p.com_dt_nm AS posName, 
+           s.com_dt_id AS workStatus,
+           ws.com_dt_nm AS workStatusNm
+    FROM employee e
+    JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
+    JOIN common_dt_code p ON e.emp_position = p.com_dt_id
+    JOIN commute_record c ON e.emp_id = c.emp_id
+    JOIN common_dt_code s ON c.work_status = s.com_dt_id
+	JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'STA'
+    WHERE TRUNC(c.check_in_time) 
+          BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+	</select>
+	
+	<!-- 관리자 특정 부서인원 조회(오늘날짜) -->
+	<select id="getSpecificDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.AdminCommuteDTO">	    	
+	    SELECT e.emp_id, e.emp_name, d.com_dt_nm AS deptName, c.check_in_time,
+		        c.check_out_time, p.com_dt_nm AS posName, S.com_dt_id,
+		        TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate
+		FROM employee e
+		JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
+		JOIN common_dt_code p ON e.emp_position = p.com_dt_id
+		JOIN commute_record c ON e.emp_id = c.emp_id
+		JOIN common_dt_code s ON c.work_status = s.com_dt_id
+		WHERE e.emp_dept_id = #{deptId} 
+			AND TRUNC(c.check_in_time) BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

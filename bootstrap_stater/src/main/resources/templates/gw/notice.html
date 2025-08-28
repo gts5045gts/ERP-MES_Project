@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<title>그룹웨어 - 공지사항</title>
+</head>
+<body th:data-current-user-id="${currentUsername}">
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div
+							class="card-header d-flex justify-content-between align-items-center">
+							<a href="#collapse1" class="text-decoration-none text-primary"
+								data-toggle="collapse" role="button" aria-expanded="true"
+								aria-controls="collapse1">
+								<h6 class="m-0 font-weight-bold">전체 공지사항</h6>
+							</a> <a th:href="@{/notice/ntcWrite}" class="btn btn-sm btn-primary">공지
+								등록</a>
+						</div>
+
+						<div class="collapse show" id="collapse1">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table id="dataTable1"
+										class="table table-bordered table-striped table-hover">
+										<thead>
+											<tr>
+												<th>순 번</th>
+												<th>공지 유형</th>
+												<th>공지 제목</th>
+												<th>공지 내용</th>
+												<th>작성자</th>
+												<th>등록일</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr th:each="notice, stat : ${notices}">
+												<td th:text="${stat.count}">순번</td>
+												<td th:text="${notice.notType}">부서명</th>
+												<td><a href="#" data-toggle="modal"
+													data-target="#noticeModal"
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+														<span th:text="${notice.notTitle}">공지 제목</span>
+												</a></td>
+												<td th:text="${notice.notContent}">공지 내용</td>
+												<td th:text="${notice.employee.name}">작성자</td>
+												<td
+													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div
+							class="card-header py-3 d-flex justify-content-between align-items-center">
+							<a href="#collapse2" class="text-decoration-none text-primary"
+								data-toggle="collapse" role="button" aria-expanded="true"
+								aria-controls="collapse2">
+								<h6 class="m-0 font-weight-bold" th:text="${empDeptName != null ? empDeptName + ' 공지사항' : '부서별 공지사항'}"></h6>
+							</a> <a th:href="@{/notice/ntcWrite}" class="btn btn-sm btn-primary">공지
+								등록</a>
+						</div>
+
+						<div class="collapse show" id="collapse2">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table id="dataTable2"
+										class="table table-bordered table-striped table-hover">
+										<thead>
+											<tr>
+												<th>순 번</th>
+												<th>공지 제목</th>
+												<th>공지 내용</th>
+												<th>작성자</th>
+												<th>등록일</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr th:each="notice, stat : ${deptNotices}">
+												<td th:text="${stat.count}">순번</td>
+
+												<td><a href="#" data-toggle="modal"
+													data-target="#noticeModal"
+													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+														<span th:text="${notice.notTitle}">공지 제목</span>
+												</a></td>
+
+												<td th:text="${notice.notContent}">공지 내용</td>
+												<td th:text="${notice.employee.name}">작성자</td>
+												<td
+													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 모달코드 -->
+		<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog"
+			aria-labelledby="noticeModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="noticeModalLabel">공지사항 상세 내용</h5>
+						<button class="close" type="button" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">×</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div id="readModeContent">
+							<h4 id="modalTitle"></h4>
+							<p>
+								<small class="text-muted mr-3" id="modalAuthor"></small><small
+									class="text-muted" id="modalDate"></small>
+							</p>
+							<hr>
+							<pre id="modalContent"></pre>
+						</div>
+
+						<form id="editForm" style="display: none;"
+							action="/notice/ntcUpdate" method="post">
+							<input type="hidden" id="editNoticeId" name="notId">
+							<div class="form-group">
+								<label for="editTitle">제목</label> <input type="text"
+									class="form-control" id="editTitle" name="notTitle">
+							</div>
+							<div class="form-group">
+								<label for="editContent">내용</label>
+								<textarea class="form-control" id="editContent"
+									name="notContent" rows="5"></textarea>
+							</div>
+						</form>
+					</div>
+					
+					<div class="modal-footer">
+						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> <a
+							href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
+						<button type="submit" class="btn btn-primary" id="saveEditBtn"
+							form="editForm" style="display: none;">수정 완료</button>
+						<button class="btn btn-secondary" type="button"
+							data-dismiss="modal">닫기</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+</html>
