@@ -62,12 +62,14 @@ public class ScheduleController {
     	int currentYear = (year != null) ? year : java.time.YearMonth.now().getYear();
         int currentMonth = (month != null) ? month : java.time.YearMonth.now().getMonthValue();
         
-    	    // year 또는 month가 null이면 현재 연도/월로 기본값 설정
-    	    if (year == null || month == null) {
-    	        // 기본값 로직을 여기에 추가
-    	    }
-    	    List<HolidayDTO> holidays = holidayService.getHolidays(currentYear, currentMonth);
-
+	    // year 또는 month가 null이면 현재 연도/월로 기본값 설정
+	    if (year == null || month == null) {
+	        // 기본값 로직을 여기에 추가
+	    }
+	    
+	    List<HolidayDTO> holidays = holidayService.getHolidays(currentYear, currentMonth);
+	    holidays.addAll(holidayService.getHolidays(currentYear, currentMonth + 1));
+	    holidays.addAll(holidayService.getHolidays(currentYear, currentMonth - 1));
         
         List<Map<String, Object>> calendarEvents = new ArrayList<>();
         for (HolidayDTO holiday : holidays) {
@@ -78,6 +80,7 @@ public class ScheduleController {
             event.put("color", "red");
             calendarEvents.add(event);
         }
+        
         return calendarEvents;
     }
 

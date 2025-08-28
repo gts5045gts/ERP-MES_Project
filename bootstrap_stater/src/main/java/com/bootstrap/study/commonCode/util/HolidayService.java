@@ -3,6 +3,10 @@ package com.bootstrap.study.commonCode.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.log.Log;
+
+import lombok.extern.log4j.Log4j2;
+
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
+@Log4j2
 public class HolidayService {
 
     @Value("${service.key}") // application.properties 파일에 저장된 API 키를 주입받습니다.
@@ -62,6 +67,8 @@ public class HolidayService {
                 holidays.add(objectMapper.convertValue(itemNode, HolidayDTO.class));
             }
 
+            log.info(finalYear + "/" + finalMonth + " 조회 결과 : " + holidays);
+            
             // isHoliday가 "Y"인 경우만 필터링하여 반환
             return holidays.stream()
                     .filter(h -> "Y".equals(h.getIsHoliday()))

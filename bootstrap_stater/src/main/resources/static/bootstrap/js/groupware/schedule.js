@@ -28,13 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
 					method: 'GET'
 				}
 				// 2. 공휴일 데이터 소스
-				//				{
-				//					url: '/schedule/holidays',
-				//					method: 'GET',
-				//					className: 'holiday-event',
-				//					color: '#dc3545', 
-				//					editable: false
-				//				}
+//				{
+//					url: '/schedule/holidays',
+//					method: 'GET',
+//					className: 'holiday-event',
+//					color: '#dc3545', 
+//					editable: false
+//				}
 			],
 			dateClick: function(info) {
 				let clickedDate = info.dateStr;
@@ -52,8 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							let schedule = response.schedule;
 							let empName = response.empName;
 
-							console.log("로그인 사용자 ID:", typeof currentEmpId, currentEmpId);
-							console.log("일정 작성자 ID:", typeof schedule.empId, schedule.empId);
 							// 상세 정보 표시
 							$('#detailTitle').text(schedule.schTitle);
 							$('#detailEmpName').text(empName);
@@ -70,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							$('#editStartDate').val(schedule.starttimeAt.substring(0, 16));
 							$('#editEndDate').val(schedule.endtimeAt.substring(0, 16));
 
-							// ⭐ 권한에 따라 버튼 표시/숨김
+							// 권한에 따라 버튼 표시/숨김
 							if (String(schedule.empId) === String(currentEmpId)) {
 								$('#editScheduleBtn').show();
 								$('#deleteScheduleBtn').show();
@@ -129,15 +127,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						return {};
 					}
-				}
+				},
 				// 2. 공휴일 데이터 소스
-				//				{
-				//					url: '/schedule/holidays',
-				//					method: 'GET',
-				//					className: 'holiday-event',
-				//					color: '#dc3545',
-				//					editable: false
-				//				}
+//				{
+//					url: '/schedule/holidays',
+//					method: 'GET',
+//					className: 'holiday-event',
+//					color: '#dc3545',
+//					editable: false
+//				}
 			],
 			dateClick: function(info) {
 				let clickedDate = info.dateStr;
