@@ -67,7 +67,8 @@
 		                        </tr>
 	                        </thead>
 	                        <tbody>
-		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}">
+		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}"
+		                        	th:data-check-in-time="${#temporals.format(c.checkInTime, 'yyyy-MM-dd HH:mm:ss')}">
 		                            <td th:text="${c.commuteDate}"></td>
 		                            <td th:text="${c.empId}"></td>
 		                            <td th:text="${c.empName}"></td>
@@ -182,7 +183,7 @@
 		        }
 		    });
 		});
-		
+		// =====================================================================================
 		// 삭제 버튼(모달창)
 		let deleteTarget = [];
 		
@@ -196,10 +197,10 @@
 		        const modalMsg = document.getElementById("deleteModalMessage");
 		        if(modalMsg) {
 		            modalMsg.textContent =
-		                "사원ID : " + empId + "\n" + 
-		                "날짜 : " + commuteDate + "\n" +
-		                "출근기록 : " + checkInTime + "\n" +
-		                "출근기록을 삭제하시겠습니까?";
+		                "- 사원ID : " + empId + "\n" + 
+		                "- 날짜 : " + commuteDate + "\n" +
+		                "- 출근기록 : " + checkInTime + "\n" +
+		                "- 출근기록을 삭제하시겠습니까?";
 		        }
 
 		        // 모달 열기
@@ -208,8 +209,49 @@
 		    });
 		});
 		
+// 		document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
+// 			const modalData = document.getElementById("deleteModalMessage");
+			
+// 			// 삭제할 정보 가져오기
+// 			const empId = modalData.getAttribute("data-emp-id");
+// 			const commuteDate = modalData.getAttribute("data-commute-date");
+// 			const checkInTime = modalData.getAttribute("data-check-in-time");
+// 			const deleteReason = $("#deleteReason").val();
+			
+// 			$.ajax({
+// 				url: "attendance/deleteCommuteRecord",
+// 				type: "POST",
+// 				contentType: "application/json",
+// 				data: JSON.stringify({
+// 					targetEmpId: empId,
+// 					commuteDate: commuteDate,
+// 					checkInTime: checkInTime,
+// 					deleteReason: deleteReason
+// 				}),
+// 				success: function(data) {
+// 					alert("삭제 완료: " + data.message); // 무슨 메세지?
+					
+// 					// 테이블에서 지워질 행 제거
+// 					const row = $(`tr[data-emp-id="${empId}"][data-check-in-time="${checkInTime}"])
+// 				}
+// 			});
+			
+			
+// 		});
 	    
 	</script>
 	</th:block>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+

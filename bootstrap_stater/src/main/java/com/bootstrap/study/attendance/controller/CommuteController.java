@@ -242,7 +242,7 @@ public class CommuteController {
 	
 	// 출근기록 삭제
 	@ResponseBody
-	@PostMapping("/deleteWork")
+	@PostMapping("/deleteCommuteRecord")
 	public ResponseEntity<CommuteDeleteLogDTO> deleteWork() {
 		
 		// 로그인한 사용자 객체 꺼내기
