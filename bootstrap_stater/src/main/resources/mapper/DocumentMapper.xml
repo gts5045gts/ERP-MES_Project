@@ -106,6 +106,7 @@
 		    common_dt_code iiii
 		ON
 		    ii.emp_position = iiii.com_dt_id
+		ORDER BY i.doc_id desc
 	</select>
 	
 </mapper>

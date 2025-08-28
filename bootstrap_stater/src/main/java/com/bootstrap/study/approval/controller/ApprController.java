@@ -51,6 +51,7 @@ public class ApprController {
 	
     @GetMapping("/doc_list")
     public String getDocList(){
+    	
         return "/approval/appr_doc_list";
     }
 
