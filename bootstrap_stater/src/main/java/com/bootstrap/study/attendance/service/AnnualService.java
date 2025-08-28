@@ -12,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bootstrap.study.approval.constant.ApprHalfType;
 import com.bootstrap.study.approval.constant.ApprStatus;
+import com.bootstrap.study.approval.constant.ApprVacType;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.entity.ApprDetail;
 import com.bootstrap.study.approval.repository.ApprDetailRepository;
@@ -40,23 +42,51 @@ public class AnnualService {
 	
 
 // ====================================================================	
+// 공통부분 메서드로 추출
 	
-	// 내 연차 조회
-	public AnnualDTO myAnnual(String empId, String annYear) {
+	// 특정 사원의 특정 연도 연차 가져오기
+	private Annual getOrCreateAnnual(String empId, String annYear) {
 		
 		Personnel emp = empRepository.findById(empId)
 	            .orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
 		
-		
-		
-		// 연차 데이터 조회 혹은 신규 생성
-		Annual ann = annRepository.findByEmpIdAndAnnYear(empId, annYear)
+		return annRepository.findByEmpIdAndAnnYear(empId, annYear)
 				.orElseGet(() -> {
-                    int totalAnnual = getAnnByPosition(emp.getPosition());
-                    Annual newAnn = new Annual(empId, annYear, 0.0, totalAnnual);
-                    annRepository.save(newAnn);
-                    return newAnn;
-                });
+					int totalAnnual = getAnnByPosition(emp.getPosition());
+					Annual newAnn = new Annual(empId, annYear, 0.0, totalAnnual);
+					annRepository.save(newAnn);
+					return newAnn;
+		});
+	}
+	
+	// int year 버전 (위 메서드로 위임)
+	private Annual getOrCreateAnnual(String empId, int year) {
+	    return getOrCreateAnnual(empId, String.valueOf(year));
+	}
+	
+	// 사원 조회
+	private Personnel getPersonnel(String empId) {
+	    return empRepository.findById(empId)
+	            .orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+	}
+	
+	// 반차 종류 화면에 표시
+	private String halfType(ApprHalfType halfType) {
+	    return switch (halfType) {
+	    	case STARTMORNING, ENDMORNING -> "오전반차";
+	    	case STARTAFTERNOON, ENDAFTERNOON -> "오후반차";
+	    };
+	}
+	
+
+// =================================================================================
+	
+	
+	// 내 연차 조회
+	public AnnualDTO myAnnual(String empId, String annYear) {
+		
+		Personnel emp = getPersonnel(empId);
+	    Annual ann = getOrCreateAnnual(empId, annYear);
 
 		// 직급별 연차 자동 적용 (갱신)
 	    ann.setAnnTotal((double)getAnnByPosition(emp.getPosition()));
@@ -70,10 +100,10 @@ public class AnnualService {
 	// 직급별 연차 계산
 	private int getAnnByPosition(CommonDetailCode position) {
 		switch (position.getComDtId()) {
-		case "POS001": return 15;
-		case "POS002" : case "POS003" : case "POS004" : return 20;
-		case "POS005" : case "POS006" : return 25;
-		default: return 15;
+			case "POS001": return 15;
+			case "POS002" : case "POS003" : case "POS004" : return 20;
+			case "POS005" : case "POS006" : return 25;
+			default: return 15;
 		}
 	}
 	
@@ -85,24 +115,11 @@ public class AnnualService {
 
 		// 2. Annual -> AnnualDTO 변환
 		List<AnnualDTO> dtoList = annPage.stream().map(ann -> {
-			Personnel emp = empRepository.findById(ann.getEmpId())
-					.orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+			Personnel emp = getPersonnel(ann.getEmpId());
 			ann.setAnnRemain(ann.getAnnTotal() - ann.getAnnUse());
 			return new AnnualDTO(ann, emp); // DTO 생성자에서 annPeriod, annExpire 계산됨
 		}).collect(Collectors.toList());
 
-		List<String> existingEmpIds = dtoList.stream().map(AnnualDTO::getEmpId).toList();
-
-		List<Personnel> missingEmps = empRepository.findAll().stream()
-				.filter(emp -> !existingEmpIds.contains(emp.getEmpId())).toList();
-
-		for (Personnel emp : missingEmps) {
-			int totalAnnual = getAnnByPosition(emp.getPosition());
-			Annual tempAnn = new Annual(emp.getEmpId(), annYear , 0.0, totalAnnual);
-			annRepository.save(tempAnn);
-			AnnualDTO dto = new AnnualDTO(tempAnn, emp);
-			dtoList.add(dto);
-		}
 		// 3. Page<AnnualDTO>로 변환
 		return new PageImpl<>(dtoList, pageable, dtoList.size());
 	}
@@ -114,8 +131,7 @@ public class AnnualService {
 		List<Object[]> results = annRepository.searchAnn(keyword);
 
 	    return results.stream()
-	                  .map(obj -> new AnnualDTO((Annual) obj[0], (Personnel) obj[1]))
-	                  .toList();
+	    		.map(obj -> new AnnualDTO((Annual) obj[0], (Personnel) obj[1])).toList();
 	}
 
 
@@ -124,8 +140,7 @@ public class AnnualService {
 		Annual ann = annRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("해당 사원의 연차가 없습니다.")); 
 		
-		Personnel emp = empRepository.findById(ann.getEmpId())
-	            .orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+		Personnel emp = getPersonnel(ann.getEmpId());
 		
 		return new AnnualDTO(ann, emp);
 	}
@@ -133,8 +148,7 @@ public class AnnualService {
 
 	// 사원등록시 연차 초기 생성
 	public void annListUpdate(String empId) {
-		Personnel emp = empRepository.findById(empId)
-                .orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+		Personnel emp = getPersonnel(empId);
 		
         int totalAnnual = getAnnByPosition(emp.getPosition());
         Annual ann = new Annual(emp.getEmpId(), String.valueOf(java.time.LocalDate.now().getYear()), 0.0, totalAnnual);
@@ -153,28 +167,19 @@ public class AnnualService {
 
 			Long reqId = appr.getReqId();
 
-			Annual ann = annRepository
-					.findByEmpIdAndAnnYear(appr.getEmpId(), String.valueOf(appr.getRequestAt().getYear()))
-					.orElseGet(() -> {
-						Personnel emp = empRepository.findById(appr.getEmpId())
-								.orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
-						int totalAnnual = getAnnByPosition(emp.getPosition());
-						Annual newAnn = new Annual(emp.getEmpId(), String.valueOf(appr.getRequestAt().getYear()), 0,
-								totalAnnual);
-						annRepository.save(newAnn);
-						return newAnn;
-					});
-
-			Personnel emp = empRepository.findById(ann.getEmpId())
-					.orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+			Annual ann = getOrCreateAnnual(appr.getEmpId(), appr.getRequestAt().getYear());
 
 			List<ApprDetail> details = apprDtRepository.findByApprReqId(reqId);
 
 			// 연차 일수 계산
-			int totalDays = details.stream()
-					.mapToInt(d -> (int) ChronoUnit.DAYS.between(d.getStartDate(), d.getEndDate()) + 1).sum();
+			double totalDays = details.stream()
+	                .mapToDouble(d -> {
+	                	if (d.getVacType() == ApprVacType.LEAVE) return ChronoUnit.DAYS.between(d.getStartDate(), d.getEndDate()) + 1;
+	                    else if (d.getVacType() == ApprVacType.HALF_LEAVE) return 0.5;
+	                    else return 0;
+	                }).sum();
 			
-			 if (ann.getAnnUse() >= totalDays) continue;
+			if (ann.getAnnUse() >= totalDays) continue;
 			
 
 			// 연차 차감
@@ -194,29 +199,40 @@ public class AnnualService {
 				.filter(a -> a.getStatus() == ApprStatus.FINISHED && "VACATION".equalsIgnoreCase(a.getReqType()))
 				.toList();
 
-		List<AnnualDTO> todaysAnn = approvals.stream().filter(appr -> {
+		return approvals.stream().map(appr -> {
 			List<ApprDetail> details = apprDtRepository.findByApprReqId(appr.getReqId());
-			return details.stream().anyMatch(d -> !today.isBefore(d.getStartDate()) && !today.isAfter(d.getEndDate()));
-		}).map(appr -> {
-			Annual ann = annRepository
-					.findByEmpIdAndAnnYear(appr.getEmpId(), String.valueOf(appr.getRequestAt().getYear()))
-					.orElseGet(() -> {
-						Personnel emp = empRepository.findById(appr.getEmpId())
-								.orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
-						int totalAnnual = getAnnByPosition(emp.getPosition());
-						Annual newAnn = new Annual(emp.getEmpId(), String.valueOf(appr.getRequestAt().getYear()), 0,
-								totalAnnual);
-						annRepository.save(newAnn);
-						return newAnn;
-					});
 
-			Personnel emp = empRepository.findById(appr.getEmpId())
-					.orElseThrow(() -> new RuntimeException("해당 사원이 없습니다."));
+			// 오늘 해당되는 결재 상세
+			ApprDetail todayDetail = details.stream()
+					.filter(d -> !today.isBefore(d.getStartDate()) && !today.isAfter(d.getEndDate())).findFirst()
+					.orElse(null);
 
-			return new AnnualDTO(ann, emp);
-		}).collect(Collectors.toList());
+			if (todayDetail == null)
+				return null;
 
-		return todaysAnn;
+			// 연차/반차 구분 텍스트
+			StringBuilder text = new StringBuilder(); // 여러문자열을 연결해서 하나의 문자열로 만들기 위함
+			for (ApprDetail d : details) {
+				if (!today.isBefore(d.getStartDate()) && !today.isAfter(d.getEndDate())) {
+					if (d.getVacType() == ApprVacType.LEAVE) {
+						text.append("연차");
+					} else if (d.getVacType() == ApprVacType.HALF_LEAVE) {
+						text.append(halfType(d.getHalfType())).append(" ");
+					}
+				}
+			}
+
+			Annual ann = getOrCreateAnnual(appr.getEmpId(), appr.getRequestAt().getYear());
+			ann.setAnnUse(text.toString().contains("연차") ? 1.0 : 0.5); // 임시 연차 사용량
+
+			Personnel emp = getPersonnel(appr.getEmpId());
+
+			AnnualDTO dto = new AnnualDTO(ann, emp);
+			dto.setAnnType(text.toString().trim()); // 화면에 표시할 텍스트
+			return dto;
+		})
+		.filter(dto -> dto != null)
+		.collect(Collectors.toList());
 	}
 	
 

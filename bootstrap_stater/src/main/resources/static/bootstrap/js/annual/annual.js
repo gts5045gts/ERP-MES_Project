@@ -104,7 +104,7 @@ fetch(`/attendance/annualList/chart`)
 				solid: true,
 				dataLabels: { 
 					visible: true, 
-					offsetY: -25, formatter: (value) => `사용률 ${value.value}%` },
+					offsetY: -27, formatter: (value) => `사용률 ${value.value}%` },
 			},
 			theme: {
 				circularAxis: {
