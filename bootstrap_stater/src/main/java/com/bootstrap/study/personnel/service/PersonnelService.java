@@ -100,6 +100,7 @@ public class PersonnelService {
     public List<PersonnelDTO> getEmployeesByDepartmentId(String comDtId) {
         List<Personnel> personnels = personnelRepository.findByDepartment_ComDtId(comDtId);
         return personnels.stream()
+        		.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()))	//퇴직자는 리스트에서 안보이게 하기 위함
                 .map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
                 .collect(Collectors.toList());
     }
@@ -122,6 +123,7 @@ public class PersonnelService {
  		// Personnel 엔티티 목록을 가져와서 DTO로 변환
  		List<Personnel> personnelList = personnelRepository.findAll();
  		return personnelList.stream()
+ 				.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()) )	//퇴직자는 리스트에서 안보이게 하기 위함
  				.map(PersonnelDTO::fromEntity)
  				.collect(Collectors.toList());
  	}
@@ -174,16 +176,15 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
- 	    // 수정된 부분
-// 	    personnel.setName(personnelDTO.getName());
-// 	    personnel.setPasswd(personnelDTO.getPasswd());
-// 	    personnel.setPhone(personnelDTO.getPhone());
-// 	    personnel.setResident(personnelDTO.getResident());
-// 	    personnel.setEmail(personnelDTO.getEmail());
-// 	    personnel.setAddrNum(personnelDTO.getAddrNum());
-// 	    personnel.setAddr1(personnelDTO.getAddr1());
-// 	    personnel.setAddr2(personnelDTO.getAddr2());
+ 	    // 수정시 오류 방지 
+ 	    //받아온 PASSWD 값이 NULL 값이 아니면 수정되겠금 변경
+ 	    if(personnelDTO.getPasswd() != null) {
+ 	    	String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());			
+ 	  	    personnelDTO.setPasswd(encodedPassword);
+ 	    }
  	    
+ 	    //수정시 해싱 암호로 들어가도록 변경
+ 	  
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
  	    
