@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ScheduleDTO {
     private Long schId;
-    private Long empId;
+    private String empId;
     private String schTitle;
     private String schContent;
     private String schType;
@@ -26,7 +26,7 @@ public class ScheduleDTO {
     // ⭐ Entity -> DTO 변환 생성자
     public ScheduleDTO(Schedule schedule) {
         this.schId = schedule.getSchId();
-        this.empId = schedule.getEmpId();
+        this.empId = schedule.getEmployee().getEmpId();
         this.schTitle = schedule.getSchTitle();
         this.schContent = schedule.getSchContent();
         this.schType = schedule.getSchType();

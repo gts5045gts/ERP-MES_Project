@@ -31,7 +31,7 @@
 								<input type="search" id="codeSearch" />
 							</div>
 						</div>
-						<div class="codeContainer">
+						<div class="codeContainer" style="height:430px; overflow-y:auto;">
 							<div class="table-responsive">
 								<table id ="bigTable" class="table table-bordered">
 									<thead>
@@ -66,13 +66,13 @@
 							<button class="btn btn-danger btn-sm" id="btnDeleteDetail">삭제</button>
                         </div>
                      </div>
-                     <div class="col-6" style="padding: 10px 0 5px 12px;">
+                     <div class="col-6" style="padding: 10px 0 5px 12px; display: none;">
                      	<div class="filterCode">
 							<label for="codeSearch" class="codeSearch">검색</label>
 							<input type="search" id="codeDetailSearch" />
 						</div>
 					 </div>
-                     <div class="card-body" id="detailArea" style="display:none;">
+                     <div class="card-body" id="detailArea" style="display:none; height:430px; overflow-y:auto;">
                      	<table id ="smallTable" class="table table-bordered">
 							<thead>
 								<tr>

@@ -1,4 +1,4 @@
-package com.bootstrap.study.security;
+package com.bootstrap.study.commonCode.security;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;

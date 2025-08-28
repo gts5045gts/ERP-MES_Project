@@ -79,7 +79,7 @@
 										<th scope="row">
 											<label for="emp_yn" class="form-label">재직현황</label></th>
 										<td colspan="3">
-											<select id="emp_yn" name="status" class="form-select w-75">
+											<select id="emp_yn" name="staId" class="form-select w-75">
 												<th:block th:each=" status: ${status}">
 													<option th:value="${status.comDtId}" th:text="${status.comDtNm}">
 												</th:block>
@@ -125,7 +125,7 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_lv" class="form-label">보안등급</label></th>
 										<td colspan="3">
-											<select id="emp_lv" name="level" class="form-select w-75">
+											<select id="emp_lv" name="levId" class="form-select w-75">
 												<option value="">보안등급을 선택하세요</option>
 												<th:block th:each="level : ${level}">
 													<option th:value="${level.comDtId}" th:text="${level.comDtNm}">
@@ -180,6 +180,10 @@
 </th:block>
 
 <th:block layout:fragment="script">
+<script th:src="@{/personnel/js/personnel_regist.js}"></script>
+
+	 	
+	
 
 </th:block>
 </body>

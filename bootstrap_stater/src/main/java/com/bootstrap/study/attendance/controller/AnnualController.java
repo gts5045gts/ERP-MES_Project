@@ -1,16 +1,89 @@
 package com.bootstrap.study.attendance.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.bootstrap.study.attendance.dto.AnnualDTO;
+import com.bootstrap.study.attendance.entity.Annual;
+import com.bootstrap.study.attendance.service.AnnualService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
 
 @Controller
-@RequestMapping("")
+@RequestMapping("/attendance")
 @Log4j2
 @RequiredArgsConstructor
 public class AnnualController {
+	
+	private final AnnualService annService;
+	
+	
+// ============================================================
+	
+	// 화면이동
+	@GetMapping("/annualList")
+	public String annualList() {
+		return "commute/annual_list";
+	}
+	
+
+	// 내 연차 조회하기 
+	@GetMapping("/annualList/{empId}/{annYear}")
+	public String myAnnList(@PathVariable("empId") String empId, @PathVariable("annYear") String annYear, Model model) {
+		
+		AnnualDTO myAnn = annService.myAnnual(empId, annYear);
+		model.addAttribute("myAnn", myAnn);
+		return "commute/annual_list";
+	}
+	
+	// 내 사용률(도넛 차트)
+	@GetMapping("/annualList/chart/{id}")
+	@ResponseBody
+	public AnnualDTO myAnnPercent(@PathVariable("id") Long id) {
+		return annService.findById(id); 
+	}
+	
+	// 모든 사원 연차 내역
+	@GetMapping("/annListAll/{annYear}")
+	@ResponseBody
+	public Map<String, Object> annListAll(@PathVariable("annYear") String annYear, 
+			@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "20") int size) {
+		
+		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(annYear, PageRequest.of(page, size));
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("totalPages", annPage.getTotalPages());
+		result.put("page", page);
+		result.put("data", annPage.getContent());
+		
+		return result;
+	}
+	
+	// 검색창
+	@GetMapping("/annSearch")
+	@ResponseBody
+	public List<AnnualDTO> annSearch(@RequestParam("keyword") String keyword) {
+		
+		return annService.searchAnn(keyword);
+		
+	}
+	
+	
+
+	
 
 }

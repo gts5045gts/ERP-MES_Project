@@ -1,20 +1,19 @@
-package com.bootstrap.study.util;
+package com.bootstrap.study.commonCode.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class HolidayService {
@@ -31,11 +30,15 @@ public class HolidayService {
         this.objectMapper = objectMapper;
     }
 
-    public List<HolidayDTO> getHolidays(int year, int month) {
+    public List<HolidayDTO> getHolidays(Integer year, Integer month) {
+    	
+    	int finalYear = (year != null) ? year : Year.now().getValue();
+        int finalMonth = (month != null) ? month : java.time.MonthDay.now().getMonthValue();
+
         String url = UriComponentsBuilder.fromHttpUrl(API_URL)
                 .queryParam("serviceKey", serviceKey)
-                .queryParam("solYear", year)
-                .queryParam("solMonth", String.format("%02d", month)) // 01, 02 형식으로 변환
+                .queryParam("solYear", finalYear) // ⭐ finalYear 변수 사용
+                .queryParam("solMonth", String.format("%02d", finalMonth)) // ⭐ finalMonth 변수 사용
                 .queryParam("_type", "json")
                 .build()
                 .toUriString();
@@ -44,7 +47,11 @@ public class HolidayService {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             String jsonString = response.getBody();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            // API 호출 시 간혹 HTML 에러 페이지를 반환하는 경우를 대비해 JSON 파싱 전에 문자열을 확인합니다.
+            if (jsonString == null || jsonString.startsWith("<")) {
+                throw new Exception("API 응답이 유효한 JSON 형식이 아닙니다.");
+            }
+
             JsonNode rootNode = objectMapper.readTree(jsonString);
             JsonNode itemNode = rootNode.path("response").path("body").path("items").path("item");
 

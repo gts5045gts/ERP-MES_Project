@@ -2,6 +2,7 @@ package com.bootstrap.study.approval.service;
 
 import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
+import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprDetailDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
@@ -69,42 +70,42 @@ public class ApprService {
     }
 
     // 0827 결재 목록 조회 (페이징, 상태별 + 사용자별 필터링 지원)
-    @Transactional(readOnly = true)
     public Page<ApprDTO> getApprovalList(Pageable pageable, String status, String userId) {
-        log.info("결재 목록 조회 - 상태 필터: {}, 사용자 ID: {}", status, userId);
-        
-        if (userId == null) {
-            throw new IllegalArgumentException("로그인 정보가 필요합니다.");
-        }
-        
-        List<Object[]> allResults;
-        
-        // "my"는 내가 기안한 문서, 나머지는 내가 결재할 문서
-        if ("my".equals(status)) {
-            allResults = apprRepository.findMyDraftedApprovalList(userId);  // 내가 기안한 문서
-        } else {
-            allResults = apprRepository.findApprovalListWithJoin(userId);  // 내가 결재할 문서
-        }
-        
-        List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
-        
-        // 상태별 필터링 (my는 이미 필터링됨)
-        List<ApprDTO> filteredList;
-        if ("my".equals(status)) {
-            filteredList = allDtoList;  // 추가 필터링 불필요
-        } else {
-            filteredList = filterByStatus(allDtoList, status);
-        }
-        
-        return createPagedResult(filteredList, pageable);
-    }
+	   log.info("결재 목록 조회 - 상태 필터: {}, 사용자 ID: {}", status, userId);
+	   
+	   if (userId == null) {
+	       throw new IllegalArgumentException("로그인 정보가 필요합니다.");
+	   }
+	   
+	   List<Object[]> allResults;
+	   
+	   if ("my".equals(status)) {
+	       // 내가 기안한 문서만 조회
+	       allResults = apprRepository.findMyDraftedApprovalList(userId);
+	   } else {
+	       // 내가 결재해야 할 문서만 조회 (내가 기안한 문서 제외)
+	       allResults = apprLineRepository.findToApproveList(userId);
+	   }
+	   
+	   List<ApprDTO> allDtoList = convertToApprDTOList(allResults);
+	   
+	   // 상태별 필터링
+	   List<ApprDTO> filteredList;
+	   if ("my".equals(status)) {
+	       filteredList = allDtoList;  // 이미 내 기안 문서만 있으니 추가 필터링 불필요
+	   } else {
+	       filteredList = filterByStatus(allDtoList, status);
+	   }
+	   
+	   return createPagedResult(filteredList, pageable);
+	}
 
-    // 0827 결재 상세 정보 조회
+    // 0827-2 결재 상세 정보 조회
     @Transactional(readOnly = true)
     public ApprFullDTO getApprovalDetail(Long reqId) {
         log.info("결재 상세 조회 - reqId: {}", reqId);
         
-        // 특정 문서 조회는 WHERE절에 reqId 조건만 추가
+        // 기본 결재 정보 조회
         List<Object[]> results = apprRepository.findApprovalByReqId(reqId);
         
         if (!results.isEmpty()) {
@@ -115,49 +116,58 @@ public class ApprService {
             Appr appr = findApprovalById(reqId);
             dto.setContent(appr.getContent());
             
-            log.info("결재 상세 조회 완료 - 기안자: {}", dto.getDrafterName());
+            // 결재선 정보 조회 및 설정
+            List<Object[]> lineResults = apprLineRepository.findApprovalLinesByReqId(reqId);
+            List<ApprFullDTO.ApprLineInfo> approvalLines = lineResults.stream()
+                .map(this::convertToApprLineInfo)
+                .collect(Collectors.toList());
+            dto.setApprovalLines(approvalLines);
+            
             return dto;
         }
         
         throw new IllegalArgumentException("해당 결재 문서를 찾을 수 없습니다. id=" + reqId);
     }
-
-    @Transactional
-    public void approveRequestWithComments(Long reqId, String comments, String loginId) {
-        log.info("승인 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
+    // 0827-2 결재 상세 정보 조회
+    private ApprFullDTO.ApprLineInfo convertToApprLineInfo(Object[] result) {
+        ApprFullDTO.ApprLineInfo lineInfo = new ApprFullDTO.ApprLineInfo();
+        lineInfo.setStepNo(((Number) result[0]).intValue());
+        lineInfo.setApprId((String) result[1]);
+        lineInfo.setApprName((String) result[2]);
+        lineInfo.setDecision((String) result[3]);
         
-        // apprLineRepository로 변경
-        int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "ACCEPT", comments);
-        
-        if (updatedRows == 0) {
-            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
+        if (result[4] != null && result[4] instanceof java.sql.Timestamp) {
+            lineInfo.setDecDate(((java.sql.Timestamp) result[4]).toLocalDateTime());
         }
         
-        // apprLineRepository로 변경
+        lineInfo.setComments((String) result[5]);
+        return lineInfo;
+    }
+    
+    @Transactional  
+    public void approveRequestWithComments(Long reqId, String comments, String loginId) {
+        // 결재선에 ACCEPT 처리
+        apprLineRepository.updateMyApprovalLine(reqId, loginId, "ACCEPT", comments);
+        
+        // 남은 결재자 수 확인
         int remainingCount = apprLineRepository.countRemainingApprovals(reqId);
         
         if (remainingCount == 0) {
-            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경");
+            // 모든 결재 완료 → FINISHED
             apprRepository.updateApprovalStatus(reqId, "FINISHED");
         } else {
-            log.info("남은 결재자: {}명", remainingCount);
+            // 아직 결재자 남음 → PROCESSING
             apprRepository.updateApprovalStatus(reqId, "PROCESSING");
         }
     }
 
     @Transactional
     public void rejectRequestWithComments(Long reqId, String comments, String loginId) {
-        log.info("반려 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
-        
-        // apprLineRepository로 변경
+        // 결재선에 DENY 처리
         int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "DENY", comments);
         
-        if (updatedRows == 0) {
-            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
-        }
-        
-        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경");
-        apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        // 문서 상태를 CANCELED로 변경 (한 명이라도 반려하면 즉시 취소)
+        apprRepository.updateApprovalStatus(reqId, "CANCELED");
     }
     
     // ==================== Private 헬퍼 메서드 ====================
@@ -179,14 +189,13 @@ public class ApprService {
         for(int i = 0; i < result.length; i++) {
             log.info("result[{}]: {}", i, result[i]);
         }
-        dto.setStepNo((Integer) result[0]);
-        dto.setTitle((String) result[1]);
-        dto.setDrafterName((String) result[2]);
         
         // 부서, 직급 설정 전 로그
         log.info("부서명 raw: {}", result[3]);
         log.info("직급명 raw: {}", result[4]);
-        
+        dto.setStepNo(((Number) result[0]).intValue());
+        dto.setTitle((String) result[1]);
+        dto.setDrafterName((String) result[2]);
         dto.setDepartment(result[3] != null ? (String) result[3] : "-");  
         dto.setPosition(result[4] != null ? (String) result[4] : "-");    
         
@@ -226,6 +235,22 @@ public class ApprService {
         dto.setEmpId((String) result[10]);
         dto.setCurrentApprover("-");
         
+        // 0827 기안신청, 진행중, 완료 표시(ApprStatus)
+        String decision = (String) result[7];
+        if ("DENY".equals(decision)) {
+            dto.setStatus(ApprStatus.FINISHED);
+        } else if ("ACCEPT".equals(decision)) {
+            // 모든 결재가 끝났는지는 별도 확인 필요
+            dto.setStatus(ApprStatus.PROCESSING); 
+        } else {
+            dto.setStatus(ApprStatus.REQUESTED);
+        }
+        
+        // STATUS 필드 추가
+        if (result.length > 11 && result[11] != null) {
+            String statusStr = (String) result[11];
+            dto.setStatus(ApprStatus.valueOf(statusStr));
+        }
         return dto;
     }
     
@@ -240,7 +265,13 @@ public class ApprService {
         
         // REQUEST_AT 처리 - result[5]로 수정
         Object requestAtObj = result[5];
-        // ... 날짜 처리 코드 ...
+        if (requestAtObj != null) {
+            if (requestAtObj instanceof java.sql.Date) {
+                dto.setCreateAt(((java.sql.Date) requestAtObj).toLocalDate().atStartOfDay());
+            } else if (requestAtObj instanceof java.sql.Timestamp) {
+                dto.setCreateAt(((java.sql.Timestamp) requestAtObj).toLocalDateTime());
+            }
+        }
         
         dto.setReqType((String) result[9]);
         dto.setEmpId((String) result[10]);
