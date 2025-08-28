@@ -157,7 +157,7 @@ public class Personnel {
 	public void fromDTOUpdate( PersonnelDTO dto , CommonDetailCodeRepository repo) {
 			
 		this.setName(dto.getName());
-	    this.setPasswd(dto.getPasswd());
+//	    this.setPasswd(dto.getPasswd());	//조건문을 두기 위해 주석 처리
 	    this.setResident(dto.getResident());
 	    this.setAddrNum(dto.getAddrNum());
 	    this.setAddr1(dto.getAddr1());
