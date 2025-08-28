@@ -1,4 +1,4 @@
-package com.bootstrap.study.commonCode.security;
+package com.bootstrap.study.config.security;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     	return httpSecurity
-        .csrf(csrf -> csrf.disable())
+//        .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
                 .anyRequest().authenticated()

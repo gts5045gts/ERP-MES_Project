@@ -69,9 +69,9 @@
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">인사관리 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/personnel/current}">인사현황</a>
-						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> <a
-							class="collapse-item" th:href="@{/personnel/app}">인사발령</a> <a
-							class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
+						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a>
+						<a class="collapse-item" th:href="@{/personnel/trans}">인사발령</a>
+						<a class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>						
 					</div>
 				</div></li>
 
@@ -189,55 +189,46 @@
 								</form>
 							</div></li>
 
-						<!-- Nav Item - Alerts -->
-						<li class="nav-item dropdown no-arrow mx-1"><a
-							class="nav-link dropdown-toggle" href="#" id="alertsDropdown"
-							role="button" data-toggle="dropdown" aria-haspopup="true"
-							aria-expanded="false"> <i class="fas fa-bell fa-fw"></i> <!-- Counter - Alerts -->
-								<span class="badge badge-danger badge-counter">3+</span>
-						</a> <!-- Dropdown - Alerts -->
-							<div
-								class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-								aria-labelledby="alertsDropdown">
-								<h6 class="dropdown-header">Alerts Center</h6>
-								<a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="mr-3">
-										<div class="icon-circle bg-primary">
-											<i class="fas fa-file-alt text-white"></i>
-										</div>
-									</div>
-									<div>
-										<div class="small text-gray-500">December 12, 2019</div>
-										<span class="font-weight-bold">A new monthly report is
-											ready to download!</span>
-									</div>
-								</a> <a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="mr-3">
-										<div class="icon-circle bg-success">
-											<i class="fas fa-donate text-white"></i>
-										</div>
-									</div>
-									<div>
-										<div class="small text-gray-500">December 7, 2019</div>
-										$290.29 has been deposited into your account!
-									</div>
-								</a> <a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="mr-3">
-										<div class="icon-circle bg-warning">
-											<i class="fas fa-exclamation-triangle text-white"></i>
-										</div>
-									</div>
-									<div>
-										<div class="small text-gray-500">December 2, 2019</div>
-										Spending Alert: We've noticed unusually high spending for your
-										account.
-									</div>
-								</a> <a class="dropdown-item text-center small"
-									style="color: black;"
-									th:href="@{/approval/approval_list(status='pending')}">전자결재
-									대기목록 페이지로 바로가기</a>
-							</div></li>
-
+						<!-- 0828 결재대기 종 알림 -->
+						<li class="nav-item dropdown no-arrow mx-1">
+						    <a class="nav-link dropdown-toggle position-relative" href="#" id="alertsDropdown"
+						       role="button" data-toggle="dropdown" aria-haspopup="true"
+						       aria-expanded="false"> 
+						        <i class="fas fa-bell fa-fw" style="font-size: 1.5rem;"></i>
+						        <span class="badge badge-danger badge-counter" id="totalAlertCount">0</span>
+						        <!-- 빨간 점 추가 -->
+						        <span class="position-absolute" id="newAlertDot" 
+						              style="top: 0; right: 0; width: 8px; height: 8px; 
+						                     background-color: #dc3545; border-radius: 50%; 
+						                     display: none;"></span>
+						    </a> 
+						    <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+						         aria-labelledby="alertsDropdown" style="width: 500px;">
+						        <h6 class="dropdown-header text-center" style="font-size: 16px;">전자결재 바로가기</h6>
+						        
+						        <div class="p-3 d-flex justify-content-between">
+						            <a class="btn btn-outline-primary flex-fill mr-2 position-relative" 
+						               th:href="@{/approval/approval_list(status='my')}"
+						               style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+						                <i class="fas fa-folder-open mb-2" style="font-size: 30px;"></i>
+						                <div>내결재목록</div>
+						                <small class="text-muted mt-1"><span id="myPendingCount">0</span>건</small>
+						                <span class="badge badge-danger position-absolute" id="myPendingBadge" 
+						                      style="top: 5px; right: 5px; display: none;">New</span>
+						            </a>
+						            
+						            <a class="btn btn-outline-warning flex-fill position-relative" 
+						               th:href="@{/approval/approval_list(status='pending')}"
+						               style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+						                <i class="fas fa-clock mb-2" style="font-size: 30px;"></i>
+						                <div>결재대기</div>
+						                <small class="text-muted mt-1"><span id="toApproveCount">0</span>건</small>
+						                <span class="badge badge-danger position-absolute" id="toApproveBadge" 
+						                      style="top: 5px; right: 5px; display: none;">New</span>
+						            </a>
+						        </div>
+						    </div>
+						</li>
 						<!-- Nav Item - Messages -->
 						<li class="nav-item dropdown no-arrow mx-1"><a
 							class="nav-link dropdown-toggle" href="#" id="messagesDropdown"

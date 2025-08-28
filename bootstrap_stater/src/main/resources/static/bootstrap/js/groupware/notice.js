@@ -1,4 +1,12 @@
 $(document).ready(function() {
+	let token = $("meta[name='_csrf']").attr("content");
+	let header = $("meta[name='_csrf_header']").attr("content");
+
+	$(document).ajaxSend(function(e, xhr, options) {
+		if (token && header) {
+			xhr.setRequestHeader(header, token);
+		}
+	});
 	// DataTables 초기화
 	$('#dataTable1').DataTable({
 		dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6'f>>"
@@ -16,21 +24,21 @@ $(document).ready(function() {
 		searching: true,
 		info: true
 	});
-	
+
 	// body 태그에서 현재 로그인한 사용자 ID를 가져옴
-	var currentUsername = $('body').data('current-user-id');
-	
+	let currentUsername = $('body').data('current-user-id');
+
 	// 모달이 열릴 때의 이벤트
 	$('#noticeModal').on('show.bs.modal', function(event) {
-		var button = $(event.relatedTarget);
-		var noticeId = button.data('id');
-		var title = button.data('title');
-		var content = button.data('content');
-		var author = button.data('author');
-		var date = button.data('date');
-		var authorUsername = button.data('author-username');
+		let button = $(event.relatedTarget);
+		let noticeId = button.data('id');
+		let title = button.data('title');
+		let content = button.data('content');
+		let author = button.data('author');
+		let date = button.data('date');
+		let authorUsername = button.data('author-username');
 
-		var modal = $(this);
+		let modal = $(this);
 
 		// 읽기 모드에 내용 채우기
 		modal.find('#modalTitle').text(title);
@@ -53,17 +61,17 @@ $(document).ready(function() {
 			$('#editNoticeBtn').hide();
 			$('#deleteNoticeBtn').hide();
 		}
-		
+
 		// 초기 상태는 읽기 모드입니다.
 		$('#readModeContent').show();
 		$('#editForm').hide();
-	}); 
+	});
 
 	// 수정 버튼 클릭 시 모달 모드 전환 이벤트
 	$('#editNoticeBtn').on('click', function() {
-		var noticeId = $(this).attr('data-id');
-		var title = $('#modalTitle').text();
-		var content = $('#modalContent').text();
+		let noticeId = $(this).attr('data-id');
+		let title = $('#modalTitle').text();
+		let content = $('#modalContent').text();
 
 		// 읽기 모드 숨기기
 		$('#readModeContent').hide();

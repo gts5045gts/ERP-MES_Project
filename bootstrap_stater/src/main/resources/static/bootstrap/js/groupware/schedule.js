@@ -1,13 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
+	let token = $("meta[name='_csrf']").attr("content");
+	let header = $("meta[name='_csrf_header']").attr("content");
+
+	$(document).ajaxSend(function(e, xhr, options) {
+		if (token && header) {
+			xhr.setRequestHeader(header, token);
+		}
+	});
 
 	// body 태그에서 현재 로그인한 사용자 ID를 가져옴
-	var currentEmpId = $('body').data('current-emp-id');
-	var empDeptId = $('body').data('emp-dept-id');
-	var empDeptName = $('body').data('emp-dept-name');
+	let currentEmpId = $('body').data('current-emp-id');
+	let currentEmpName = $('body').data('current-emp-name');
+	let empDeptId = $('body').data('emp-dept-id');
+	let empDeptName = $('body').data('emp-dept-name');
 
-	var calendarEl1 = document.getElementById('calendar1');
+	let calendarEl1 = document.getElementById('calendar1');
 	if (calendarEl1) {
-		var calendar1 = new FullCalendar.Calendar(calendarEl1, {
+		let calendar1 = new FullCalendar.Calendar(calendarEl1, {
 			initialView: 'dayGridMonth',
 			timeZone: 'local',
 			locale: 'ko',
@@ -17,50 +26,37 @@ document.addEventListener('DOMContentLoaded', function() {
 				{
 					url: '/schedule/events/all',
 					method: 'GET'
-				},
-				// 2. 공휴일 데이터 소스
-				{
-					url: '/schedule/holidays',
-					method: 'GET',
-					extraParams: function() {
-						if (calendar1 && calendar1.view) {
-							var title = calendar1.view.title;
-							var parts = title.split('년');
-							if (parts.length === 2) {
-								var year = parts[0];
-								var month = parts[1].trim().replace('월', '');
-								// ⭐ 년도와 월이 유효한 숫자인지 확인
-								if (!isNaN(parseInt(year)) && !isNaN(parseInt(month))) {
-									return { year: year, month: month };
-								}
-							}
-						}
-						return {};
-					},
-					className: 'holiday-event',
-					color: '#dc3545', // 부트스트랩의 'danger' 색상
-					editable: false
 				}
+				// 2. 공휴일 데이터 소스
+				//				{
+				//					url: '/schedule/holidays',
+				//					method: 'GET',
+				//					className: 'holiday-event',
+				//					color: '#dc3545', 
+				//					editable: false
+				//				}
 			],
 			dateClick: function(info) {
-				var clickedDate = info.dateStr;
+				let clickedDate = info.dateStr;
 				$('#addScheduleModal').modal('show');
 				$('#modalStartDate').val(clickedDate);
 				$('#modalEndDate').val(clickedDate);
 			},
 			eventClick: function(info) {
-				var eventId = info.event.id;
+				let eventId = info.event.id;
 				$.ajax({
 					url: '/schedule/' + eventId,
 					type: 'GET',
 					success: function(response) {
 						if (response.success) {
-							var schedule = response.schedule;
+							let schedule = response.schedule;
+							let empName = response.empName;
 
 							console.log("로그인 사용자 ID:", typeof currentEmpId, currentEmpId);
 							console.log("일정 작성자 ID:", typeof schedule.empId, schedule.empId);
 							// 상세 정보 표시
 							$('#detailTitle').text(schedule.schTitle);
+							$('#detailEmpName').text(empName);
 							$('#detailContent').text(schedule.schContent);
 							$('#detailStartDate').text(schedule.starttimeAt);
 							$('#detailEndDate').text(schedule.endtimeAt);
@@ -92,14 +88,32 @@ document.addEventListener('DOMContentLoaded', function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
 					}
 				});
+			},
+			// datesSet 이벤트 핸들러 추가
+			datesSet: function(info) {
+				let year = info.view.currentStart.getFullYear();
+				let month = info.view.currentStart.getMonth() + 1;
+				let holidaySource = calendar1.getEventSourceById('holiday-source-1');
+				if (holidaySource) {
+					holidaySource.remove();
+				}
+				calendar1.addEventSource({
+					id: 'holiday-source-1',
+					url: '/schedule/holidays',
+					method: 'GET',
+					extraParams: { year: year, month: month },
+					className: 'holiday-event',
+					color: '#dc3545',
+					editable: false
+				});
 			}
 		});
 		calendar1.render();
 	}
 
-	var calendarEl2 = document.getElementById('calendar2');
+	let calendarEl2 = document.getElementById('calendar2');
 	if (calendarEl2) {
-		var calendar2 = new FullCalendar.Calendar(calendarEl2, {
+		let calendar2 = new FullCalendar.Calendar(calendarEl2, {
 			initialView: 'dayGridMonth',
 			timeZone: 'local',
 			locale: 'ko',
@@ -115,42 +129,34 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						return {};
 					}
-				},
-				// 2. 공휴일 데이터 소스
-				{
-					url: '/schedule/holidays',
-					method: 'GET',
-					extraParams: function() {
-						// calendar2 객체가 존재할 때만 view 속성에 접근하도록 합니다.
-						if (calendar2 && calendar2.view) {
-							var title = calendar2.view.title;
-							var year = title.split('년')[0];
-							var month = title.split('년')[1].trim().replace('월', '');
-							return { year: year, month: month };
-						}
-						return {};
-					},
-					className: 'holiday-event',
-					color: '#dc3545',
-					editable: false
 				}
+				// 2. 공휴일 데이터 소스
+				//				{
+				//					url: '/schedule/holidays',
+				//					method: 'GET',
+				//					className: 'holiday-event',
+				//					color: '#dc3545',
+				//					editable: false
+				//				}
 			],
 			dateClick: function(info) {
-				var clickedDate = info.dateStr;
+				let clickedDate = info.dateStr;
 				$('#addScheduleModal').modal('show');
 				$('#modalStartDate').val(clickedDate);
 				$('#modalEndDate').val(clickedDate);
 			},
 			eventClick: function(info) {
-				var eventId = info.event.id;
+				let eventId = info.event.id;
 				$.ajax({
 					url: '/schedule/' + eventId,
 					type: 'GET',
 					success: function(response) {
 						if (response.success) {
-							var schedule = response.schedule;
+							let schedule = response.schedule;
+							let empName = response.empName;
 							// 상세 정보 표시
 							$('#detailTitle').text(schedule.schTitle);
+							$('#detailEmpName').text(empName);
 							$('#detailContent').text(schedule.schContent);
 							$('#detailStartDate').text(schedule.starttimeAt);
 							$('#detailEndDate').text(schedule.endtimeAt);
@@ -172,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								$('#editScheduleBtn').hide();
 								$('#deleteScheduleBtn').hide();
 							}
+							console.log(empName);
 
 							$('#scheduleDetailModal').modal('show');
 						} else {
@@ -181,6 +188,24 @@ document.addEventListener('DOMContentLoaded', function() {
 					error: function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
 					}
+				});
+			},
+			// datesSet 이벤트 핸들러 추가
+			datesSet: function(info) {
+				let year = info.view.currentStart.getFullYear();
+				let month = info.view.currentStart.getMonth() + 1;
+				let holidaySource = calendar2.getEventSourceById('holiday-source-2');
+				if (holidaySource) {
+					holidaySource.remove();
+				}
+				calendar2.addEventSource({
+					id: 'holiday-source-2',
+					url: '/schedule/holidays',
+					method: 'GET',
+					extraParams: { year: year, month: month },
+					className: 'holiday-event',
+					color: '#dc3545',
+					editable: false
 				});
 			}
 		});
@@ -193,11 +218,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// 모달이 열릴 때 이벤트
 	$('#addScheduleModal').on('show.bs.modal', function() {
-		$('#modalAuthor').val(currentEmpId);
+		$('#modalAuthor').val(currentEmpName);
 		$('#modalEmpId').val(currentEmpId);
 	});
 
-	// ⭐ 수정 버튼 클릭 이벤트
+	// 수정 버튼 클릭 이벤트
 	$('#editScheduleBtn').on('click', function() {
 		$('#readModeContent').hide();
 		$('#editScheduleForm').show();
@@ -217,16 +242,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	$('#addScheduleModal form').on('submit', function(e) {
 		e.preventDefault();
-		var startDate = $('#modalStartDate').val();
-		var endDate = $('#modalEndDate').val();
-		var schTypeVal;
+		let startDate = $('#modalStartDate').val();
+		let endDate = $('#modalEndDate').val();
+		let schTypeVal;
 		if ($('#schType').length) { // #schType(드롭다운)이 존재하면
-		        schTypeVal = $('#schType').val();
-		    } else { 
-		        schTypeVal = $('input[name="schType"]').val(); // 숨겨진 필드의 값을 가져옴
-		    }
+			schTypeVal = $('#schType').val();
+		} else {
+			schTypeVal = $('input[name="schType"]').val(); // 숨겨진 필드의 값을 가져옴
+		}
 
-		var formData = {
+		let formData = {
 			schTitle: $('#modalTitle').val(),
 			schContent: $('#modalContent').val(),
 			starttimeAt: startDate + 'T00:00:00', // 날짜 + 자정 시간
@@ -260,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	$('#editScheduleForm').on('submit', function(e) {
 		e.preventDefault();
 
-		var formData = {
+		let formData = {
 			schId: $('#editScheduleId').val(),
 			schTitle: $('#editTitle').val(),
 			schContent: $('#editContent').val(),
@@ -292,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	$('#deleteScheduleBtn').on('click', function() {
-		var eventId = $('#editScheduleId').val(); // 숨겨진 폼에서 ID 가져오기
+		let eventId = $('#editScheduleId').val(); // 숨겨진 폼에서 ID 가져오기
 
 		if (confirm('이 일정을 삭제하시겠습니까?')) {
 			$.ajax({
@@ -320,15 +345,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	$('#writeForm').on('submit', function(e) {
 		e.preventDefault(); // 기본 폼 제출 동작을 막음
 
+		let schTypeVal;
+		// isAdmin에 따라 schType 값을 다르게 가져오는 로직 추가
+		if ($('#schType').length) {
+			schTypeVal = $('#schType').val();
+		} else {
+			schTypeVal = $('#schType_hidden').val();
+		}
 		// 폼 데이터 구성
-		var formData = {
+		let formData = {
 			schTitle: $('#modalTitle').val(),
 			schContent: $('#modalContent').val(),
 			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
 			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
-			// schType 필드를 가져와야 합니다.
-			// 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
-			schType: $('#schType').val() || $('#schType_hidden').val(),
+			schType: schTypeVal,
 			empId: $('#modalEmpId').val() // 작성자 ID
 		};
 
