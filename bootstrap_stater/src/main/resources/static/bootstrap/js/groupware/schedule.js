@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// body 태그에서 현재 로그인한 사용자 ID를 가져옴
 	var currentEmpId = $('body').data('current-emp-id');
+	var currentEmpName = $('body').data('current-emp-name');
 	var empDeptId = $('body').data('emp-dept-id');
 	var empDeptName = $('body').data('emp-dept-name');
 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				});
 			},
-			// ⭐ datesSet 이벤트 핸들러 추가
+			// datesSet 이벤트 핸들러 추가
 			datesSet: function(info) {
 			    var year = info.view.currentStart.getFullYear();
 			    var month = info.view.currentStart.getMonth() + 1;
@@ -176,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				});
 			},
-			// ⭐ datesSet 이벤트 핸들러 추가
+			// datesSet 이벤트 핸들러 추가
 			datesSet: function(info) {
 			    var year = info.view.currentStart.getFullYear();
 			    var month = info.view.currentStart.getMonth() + 1;
@@ -204,11 +205,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// 모달이 열릴 때 이벤트
 	$('#addScheduleModal').on('show.bs.modal', function() {
-		$('#modalAuthor').val(currentEmpId);
+		$('#modalAuthor').val(currentEmpName);
 		$('#modalEmpId').val(currentEmpId);
 	});
 
-	// ⭐ 수정 버튼 클릭 이벤트
+	// 수정 버튼 클릭 이벤트
 	$('#editScheduleBtn').on('click', function() {
 		$('#readModeContent').hide();
 		$('#editScheduleForm').show();

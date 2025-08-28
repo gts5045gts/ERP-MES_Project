@@ -78,6 +78,7 @@ public class ScheduleController {
     	
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long currentEmpId = null;
+        String currentEmpName = null;
         String empDeptId = null;
         String empDeptName = null;
         String empName = null; 
@@ -86,6 +87,7 @@ public class ScheduleController {
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
             currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpName = personnelLoginDTO.getName();
             empName = personnelLoginDTO.getName(); // ⭐ 사용자 이름 가져오기
             empDeptId = personnelLoginDTO.getEmpDeptId();
 
@@ -104,6 +106,7 @@ public class ScheduleController {
         }
         
         model.addAttribute("currentEmpId", currentEmpId);
+        model.addAttribute("currentEmpName", currentEmpName);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("empDeptName", empDeptName);
         model.addAttribute("empDeptId", empDeptId);
