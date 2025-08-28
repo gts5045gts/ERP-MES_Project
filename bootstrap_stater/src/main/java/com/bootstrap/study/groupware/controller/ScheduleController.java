@@ -2,14 +2,13 @@ package com.bootstrap.study.groupware.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,21 +35,30 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("/schedule")
 @Log4j2
 public class ScheduleController {
+	
+	@Autowired
+    private ScheduleService scheduleService;
+	@Autowired
+    private HolidayService holidayService;
+	@Autowired
+	private CommonCodeService commonCodeService;
 
-    private final ScheduleService scheduleService;
-    private final HolidayService holidayService;
-    private final CommonCodeService commonCodeService;
-
-    public ScheduleController(HolidayService holidayService, ScheduleService scheduleService, CommonCodeService commonCodeService) {
-        this.holidayService = holidayService;
-        this.scheduleService = scheduleService;
-        this.commonCodeService = commonCodeService;
-    }
 
     @GetMapping("/holidays")
     @ResponseBody
-    public List<Map<String, Object>> getHolidaysForCalendar(@RequestParam("year") int year, @RequestParam("month") int month) {
-        List<HolidayDTO> holidays = holidayService.getHolidays(year, month);
+    public List<Map<String, Object>> getHolidaysForCalendar(
+    	    @RequestParam(value = "year", required = false) Integer year, // required = false 추가
+    	    @RequestParam(value = "month", required = false) Integer month) { // required = false 추가
+    	    
+    	int currentYear = (year != null) ? year : java.time.YearMonth.now().getYear();
+        int currentMonth = (month != null) ? month : java.time.YearMonth.now().getMonthValue();
+        
+    	    // year 또는 month가 null이면 현재 연도/월로 기본값 설정
+    	    if (year == null || month == null) {
+    	        // 기본값 로직을 여기에 추가
+    	    }
+    	    List<HolidayDTO> holidays = holidayService.getHolidays(currentYear, currentMonth);
+
         
         List<Map<String, Object>> calendarEvents = new ArrayList<>();
         for (HolidayDTO holiday : holidays) {
@@ -189,8 +197,15 @@ public class ScheduleController {
 
     @GetMapping("/events/dept")
     @ResponseBody
-    public List<Map<String, Object>> getDeptSchedules(@RequestParam("empDeptName") String empDeptName) {
-        List<Schedule> schedules = scheduleService.findByEmpDeptName(empDeptName);
+    public List<Map<String, Object>> getDeptSchedules(
+    	    @RequestParam(value = "empDeptName", required = false) String empDeptName) { // required = false 추가
+    	    
+    	    List<Schedule> schedules;
+    	    if (empDeptName == null || empDeptName.isEmpty()) {
+    	        schedules = scheduleService.findAllSchedules(); // 부서 이름이 없으면 전체 일정 가져오기
+    	    } else {
+    	        schedules = scheduleService.findByEmpDeptName(empDeptName);
+    	    }
         List<Map<String, Object>> events = schedules.stream()
             .map(schedule -> {
                 Map<String, Object> event = new HashMap<>();

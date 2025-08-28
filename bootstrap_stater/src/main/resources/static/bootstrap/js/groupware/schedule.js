@@ -17,30 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
 				{
 					url: '/schedule/events/all',
 					method: 'GET'
-				},
-				// 2. 공휴일 데이터 소스
-				{
-					url: '/schedule/holidays',
-					method: 'GET',
-					extraParams: function() {
-						if (calendar1 && calendar1.view) {
-							var title = calendar1.view.title;
-							var parts = title.split('년');
-							if (parts.length === 2) {
-								var year = parts[0];
-								var month = parts[1].trim().replace('월', '');
-								// ⭐ 년도와 월이 유효한 숫자인지 확인
-								if (!isNaN(parseInt(year)) && !isNaN(parseInt(month))) {
-									return { year: year, month: month };
-								}
-							}
-						}
-						return {};
-					},
-					className: 'holiday-event',
-					color: '#dc3545', // 부트스트랩의 'danger' 색상
-					editable: false
 				}
+				// 2. 공휴일 데이터 소스
+//				{
+//					url: '/schedule/holidays',
+//					method: 'GET',
+//					className: 'holiday-event',
+//					color: '#dc3545', 
+//					editable: false
+//				}
 			],
 			dateClick: function(info) {
 				var clickedDate = info.dateStr;
@@ -92,6 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
 					}
 				});
+			},
+			// ⭐ datesSet 이벤트 핸들러 추가
+			datesSet: function(info) {
+			    var year = info.view.currentStart.getFullYear();
+			    var month = info.view.currentStart.getMonth() + 1;
+			    var holidaySource = calendar1.getEventSourceById('holiday-source-1');
+			    if (holidaySource) {
+			        holidaySource.remove();
+			    }
+			    calendar1.addEventSource({
+			        id: 'holiday-source-1',
+			        url: '/schedule/holidays',
+			        method: 'GET',
+			        extraParams: { year: year, month: month },
+			        className: 'holiday-event',
+			        color: '#dc3545',
+			        editable: false
+			    });
 			}
 		});
 		calendar1.render();
@@ -115,25 +118,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 						return {};
 					}
-				},
-				// 2. 공휴일 데이터 소스
-				{
-					url: '/schedule/holidays',
-					method: 'GET',
-					extraParams: function() {
-						// calendar2 객체가 존재할 때만 view 속성에 접근하도록 합니다.
-						if (calendar2 && calendar2.view) {
-							var title = calendar2.view.title;
-							var year = title.split('년')[0];
-							var month = title.split('년')[1].trim().replace('월', '');
-							return { year: year, month: month };
-						}
-						return {};
-					},
-					className: 'holiday-event',
-					color: '#dc3545',
-					editable: false
 				}
+				// 2. 공휴일 데이터 소스
+//				{
+//					url: '/schedule/holidays',
+//					method: 'GET',
+//					className: 'holiday-event',
+//					color: '#dc3545',
+//					editable: false
+//				}
 			],
 			dateClick: function(info) {
 				var clickedDate = info.dateStr;
@@ -182,11 +175,29 @@ document.addEventListener('DOMContentLoaded', function() {
 						alert('일정 정보를 불러오는 중 오류가 발생했습니다.');
 					}
 				});
+			},
+			// ⭐ datesSet 이벤트 핸들러 추가
+			datesSet: function(info) {
+			    var year = info.view.currentStart.getFullYear();
+			    var month = info.view.currentStart.getMonth() + 1;
+			    var holidaySource = calendar2.getEventSourceById('holiday-source-2');
+			    if (holidaySource) {
+			        holidaySource.remove();
+			    }
+			    calendar2.addEventSource({
+			        id: 'holiday-source-2',
+			        url: '/schedule/holidays',
+			        method: 'GET',
+			        extraParams: { year: year, month: month },
+			        className: 'holiday-event',
+			        color: '#dc3545',
+			        editable: false
+			    });
 			}
 		});
 		calendar2.render();
 	}
-
+	
 	// =========================================================
 	// 모달 관련 이벤트 처리
 	// =========================================================

@@ -98,12 +98,6 @@ public class CommuteService {
 		return commute;
 	}
 	
-	// 관리자 근태관리 리스트
-//	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
-//	public List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap) {
-//		System.out.println("paramMap : " + paramMap);
-//		return commuteMapper.getAdminDeptCommuteList(paramMap);
-//	}
 
 	// 부서 공통코드
 	public List<CommonDetailCodeDTO> getCommonDept() {
