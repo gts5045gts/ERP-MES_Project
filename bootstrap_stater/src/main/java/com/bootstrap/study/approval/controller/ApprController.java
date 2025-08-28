@@ -29,8 +29,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.approval.constant.ApprReqType;
+import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
+import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -170,6 +172,27 @@ public class ApprController {
         }
     }
     
+    // 0828 - 결재 취소 처리 API
+    @PostMapping("/api/cancel/{reqId}")
+    @ResponseBody
+    public ResponseEntity<String> cancelRequest(@PathVariable("reqId") Long reqId, 
+                                               Authentication authentication) {
+        try {
+            String loginId = authentication.getName();
+            
+            // Service를 통해 취소 처리
+            apprService.cancelApproval(reqId, loginId);
+            
+            return ResponseEntity.ok("결재가 취소되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("결재 취소 실패 - reqId: {}, 오류: {}", reqId, e.getMessage());
+            return ResponseEntity.status(500).body("결재 취소 중 오류가 발생했습니다.");
+        }
+    }
     
     //요청 본문에서 comments 추출
     private String extractComments(Map<String, String> requestBody) {

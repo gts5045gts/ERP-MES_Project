@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
 
@@ -49,6 +50,7 @@ public class ApprDTO {
     private String department;      // 기안자 부서
     private String position;
     private String currentApprover; // 현재 결재자 이름
+    private boolean hasRejection = false;
     
     private LocalDateTime decDate; // 결재일자 추가
     private String decision; // 결재 상태 (PENDING, ACCEPT, DENY)
@@ -64,9 +66,14 @@ public class ApprDTO {
     
     // 0827 내가 기안한 문서의 상태 표시
     public String getMyApprovalStatus() {
-        if 		(this.status == ApprStatus.FINISHED) 		return "완료";
-        else if (this.status == ApprStatus.CANCELED) 	return "반려됨"; 
-        else if (this.status == ApprStatus.PROCESSING) 	return "진행중";
+    	if (this.status == ApprStatus.FINISHED) return "완료";
+        else if (this.status == ApprStatus.CANCELED) {
+            if (this.hasRejection) {
+                return "반려됨";  // 결재자가 반려
+            }
+            return "취소됨";  // 기안자가 직접 취소
+        }
+        else if (this.status == ApprStatus.PROCESSING) return "진행중";
         else return "대기";
     }
     

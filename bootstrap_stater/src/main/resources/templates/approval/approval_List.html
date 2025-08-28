@@ -218,6 +218,16 @@
 								    </span>
 								</td>
 								<td>
+									<!-- 내결재목록에서 대기 상태인 경우 취소 버튼 표시 -->
+								    <button th:if="${currentStatus == 'my' and appr.myApprovalStatus == '대기'}"
+								            type="button" class="btn btn-warning btn-sm cancel-approval-btn"
+								            th:data-req-id="${appr.reqId}">결재취소</button>
+								    
+								    <!-- 내결재목록에서 완료/진행중/취소된 경우 상세보기 버튼 -->
+								    <button th:if="${currentStatus == 'my' and appr.myApprovalStatus != '대기'}"
+								            type="button" class="btn btn-info btn-sm view-approval-btn"
+								            th:data-req-id="${appr.reqId}">상세보기</button>
+								
 								    <!-- 대기 중인 경우 결재하기 버튼 -->
 								    <button th:if="${currentStatus != 'my' and appr.statusLabel == '대기'}"
 								            type="button" class="btn btn-primary btn-sm approval-btn"
@@ -328,6 +338,7 @@
 		                            </div>
 		                        </div>
 		                    </div>
+		                    
 		
 		                    <div class="approval-line-section mt-4">
 		                        <h6 class="approval-line-header"><i class="fas fa-stream"></i> 결재선</h6>
@@ -401,7 +412,8 @@
        const API_ENDPOINTS = {
            detail: (reqId) => `/approval/api/detail/${reqId}`,
            approve: (reqId) => `/approval/api/approve/${reqId}`,
-           reject: (reqId) => `/approval/api/reject/${reqId}`
+           reject: (reqId) => `/approval/api/reject/${reqId}`,
+           cancel: (reqId) => `/approval/api/cancel/${reqId}`
        };
 
        const STATUS_CLASSES = {
@@ -430,6 +442,34 @@
            initializeModal(reqId);
            fetchApprovalDetail(reqId);
        };
+       
+		// 결재 취소 함수 추가
+		function cancelApproval(reqId) {
+		    if (!confirm('결재를 취소하시겠습니까?\n취소된 결재는 복구할 수 없습니다.')) {
+		        return;
+		    }
+		    
+		    fetch(API_ENDPOINTS.cancel(reqId), {
+		        method: 'POST',
+		        headers: { 'Content-Type': 'application/json' }
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            return response.text().then(text => {
+		                throw new Error(text);
+		            });
+		        }
+		        return response.text();
+		    })
+		    .then(result => {
+		        alert('결재가 취소되었습니다.');
+		        location.reload(); // 페이지 새로고침
+		    })
+		    .catch(error => {
+		        console.error('결재 취소 실패:', error);
+		        alert(error.message || '결재 취소 중 오류가 발생했습니다.');
+		    });
+		}
 
        // 모달 상태 관리 함수들
        function showModalState(activeElement) {
@@ -818,6 +858,11 @@
                    const reqId = e.target.getAttribute('data-req-id');
                    console.log('결재확인 버튼 클릭:', reqId);
                    openViewApprovalModal(reqId);
+               }
+               if (e.target && e.target.classList.contains('cancel-approval-btn')) {
+                   const reqId = e.target.getAttribute('data-req-id');
+                   console.log('결재취소 버튼 클릭:', reqId);
+                   cancelApproval(reqId);
                }
            });
            
