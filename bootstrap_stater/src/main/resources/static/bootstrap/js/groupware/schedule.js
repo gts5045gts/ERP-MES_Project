@@ -163,14 +163,15 @@ document.addEventListener('DOMContentLoaded', function() {
 							$('#editEndDate').val(schedule.endtimeAt.substring(0, 16));
 
 							// ⭐ 권한에 따라 버튼 표시/숨김
-							if (schedule.employee.empId === String(currentEmpId)) {
+							if (String(schedule.empId) === String(currentEmpId)) {
 								$('#editScheduleBtn').show();
 								$('#deleteScheduleBtn').show();
 							} else {
 								$('#editScheduleBtn').hide();
 								$('#deleteScheduleBtn').hide();
 							}
-
+							console.log(empName);
+		
 							$('#scheduleDetailModal').modal('show');
 						} else {
 							alert(response.message);
