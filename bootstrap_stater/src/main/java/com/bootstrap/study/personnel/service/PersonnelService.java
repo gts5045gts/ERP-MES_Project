@@ -108,8 +108,8 @@ public class PersonnelService {
     private PersonnelDTO convertToDto(Personnel personnel) {
     	PersonnelDTO dto = new PersonnelDTO();
         dto.setEmpId(personnel.getEmpId()); 
-        dto.setDeptName(personnel.getDepartment().getComDtId());
-        dto.setPosName(personnel.getPosition().getComDtId());
+        dto.setDeptName(personnel.getDepartment().getComDtNm());
+        dto.setPosName(personnel.getPosition().getComDtNm());
         dto.setName(personnel.getName());
         dto.setPhone(personnel.getPhone());
         dto.setEmail(personnel.getEmail());
@@ -176,7 +176,7 @@ public class PersonnelService {
 
  	    // 수정된 부분
 // 	    personnel.setName(personnelDTO.getName());
-// 	    personnel.setPasswd(personnelDTO.getPasswd());
+// 삭제
 // 	    personnel.setPhone(personnelDTO.getPhone());
 // 	    personnel.setResident(personnelDTO.getResident());
 // 	    personnel.setEmail(personnelDTO.getEmail());
