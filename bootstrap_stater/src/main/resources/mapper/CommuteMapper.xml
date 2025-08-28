@@ -48,7 +48,7 @@
 	        FROM employee
 	        WHERE emp_id = #{empId}
 	    )
-	    ORDER BY commute_date
+	    ORDER BY commute_date desc
 
 	</select> 
 
@@ -131,6 +131,7 @@
 		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
 	    WHERE TRUNC(c.check_in_time) 
 	          BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+	    ORDER BY commuteDate desc
 	</select>
 	
 	<!-- 관리자 특정 부서인원 조회(오늘날짜) -->
@@ -148,6 +149,7 @@
 		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
 		WHERE e.emp_dept_id = #{deptId} 
 			AND TRUNC(c.check_in_time) BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+		ORDER BY commuteDate desc
 	</select>
 	
 	<!-- 근무상태 공통코드 들고오기 -->	
