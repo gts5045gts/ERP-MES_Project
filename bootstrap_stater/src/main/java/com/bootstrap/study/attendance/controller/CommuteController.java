@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
+import com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO;
+import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -237,5 +239,35 @@ public class CommuteController {
 	    return ResponseEntity.ok(result);
 		
 	}
+	
+	// 출근기록 삭제
+	@ResponseBody
+	@PostMapping("/deleteWork")
+	public ResponseEntity<CommuteDeleteLogDTO> deleteWork() {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+			// 로그인 안 된 경우 401 Unauthorized 반환
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+//		System.out.println("로그인 사용자 ID: " + empId);
+		
+		// 퇴근 처리
+//		try {
+//			CommuteDTO commuteCheckOut = commuteService.checkOut(empId);
+////			System.out.println("commuteCheckOut : " + commuteCheckOut);
+//			return ResponseEntity.ok(commuteCheckOut);
+//		} catch (IllegalStateException e) {
+//			// 이미 출근 기록 있을 경우 409 Conflict 반환
+//			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+//		}
+		return null;
+	}
+	
 
 }

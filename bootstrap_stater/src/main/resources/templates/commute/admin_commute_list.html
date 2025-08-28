@@ -31,7 +31,7 @@
 				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
-						<select id="dept" th:name="dept" class="form-control form-control-sm">
+						<select id="dept" th:name="dept" class="form-control form-control-sm" style="margin-right:55px;">
 						    <option th:value="ALL" th:text="'전체'" th:selected="${selectedDept == 'ALL'}"></option>
 						    <option th:each="dept : ${commonDept}" 
 						            th:value="${dept.comDtId}" 
@@ -39,10 +39,10 @@
 						            th:selected="${dept.comDtId == selectedDept}">
 						    </option>
 						</select>
-					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
-					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}">
-					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button>
-				        <button id="updateStatusBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">수정</button>
+					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}" style="min-width: 130px;">~
+					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}" style="min-width: 130px; margin-right:20px;">
+					    <button type="submit" id="searchBtn" class="btn btn-secondary btn-sm" style="min-width: 80px; margin-right:70px;">조회</button>
+				        <button id="updateStatusBtn" class="btn btn-primary btn-sm" style="min-width: 80px; margin-right:190px;">수정</button>
 				    </div>
 				</div>
 	            <div class="card-body">
@@ -51,24 +51,25 @@
 	                        <thead>
 		                        <tr>
 		                            <th>날짜</th>
-		                            <th>출근시간</th>
-		                            <th>퇴근시간</th>
 		                            <th>사번</th>
 		                            <th>사원 이름</th>
 		                            <th>부서</th>
 		                            <th>직책</th>
+		                            <th>출근시간</th>
+		                            <th>퇴근시간</th>
 		                            <th>근무상태</th>
+		                            <th>출근기록</th>
 		                        </tr>
 	                        </thead>
 	                        <tbody>
 		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}">
 		                            <td th:text="${c.commuteDate}"></td>
-									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
-									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
 		                            <td th:text="${c.empId}"></td>
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
+									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
+									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
 		                            <td>
 								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" 
 								        		th:data-emp-id="${c.empId}" th:data-commute-date="${c.commuteDate}" 
@@ -80,11 +81,36 @@
 								            </option>
 								        </select>
 								    </td>
+								    <td>
+								    	<button class="deleteBtn btn btn-danger btn-sm"
+								    			th:data-emp-id="${c.empId}"
+								    			th:data-commute-date="${commuteDate}"
+								    			th:data-check-in-time="${c.checkInTime}"
+								    	 		style="min-width: 80px;">삭제
+								    	 </button>
+								    </td>
 		                        </tr>
 		                        <tr th:if="${#lists.isEmpty(adminCommuteList)}">
-									<td colspan="8" class="text-center text-muted">출근한 사람이 없습니다.</td>
+									<td colspan="9" class="text-center text-muted">출근한 사람이 없습니다.</td>
 								</tr>
 	                        </tbody>
+	                        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+							  <div class="modal-dialog">
+							    <div class="modal-content">
+							      <div class="modal-header">
+							        <h5 class="modal-title">출근기록 삭제</h5>
+							      </div>
+							      <div class="modal-body">
+							        <p id="deleteModalMessage"></p>
+							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요"></textarea>
+							      </div>
+							      <div class="modal-footer">
+							        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+							        <button type="button" class="btn btn-danger" id="confirmDeleteBtn" >삭제</button>
+							      </div>
+							    </div>
+							  </div>
+							</div>
 	                    </table>
 	                </div>
 	            </div>
@@ -151,6 +177,32 @@
 		        }
 		    });
 		});
+		
+		// 삭제 버튼(모달창)
+		let deleteTarget = [];
+		
+		document.querySelectorAll(".deleteBtn").forEach(button => {
+		    button.addEventListener("click", function () {
+		        const empId = this.getAttribute("data-emp-id");
+		        const commuteDate = this.getAttribute("data-commute-date");
+		        const checkInTime = this.getAttribute("data-check-in-time");
+
+		        // 모달 메시지에 값 넣기
+		        const modalMsg = document.getElementById("deleteModalMessage");
+		        if(modalMsg) {
+		            modalMsg.textContent =
+		                "사원ID: " + empId +
+		                ", 날짜: " + commuteDate +
+		                ", 출근기록: " + checkInTime +
+		                " 출근기록을 삭제하시겠습니까?";
+		        }
+
+		        // 모달 열기
+		        const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
+		        deleteModal.show();
+		    });
+		});
+		
 	    
 	</script>
 	</th:block>
