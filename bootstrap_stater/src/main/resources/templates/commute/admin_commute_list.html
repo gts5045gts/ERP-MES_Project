@@ -32,17 +32,17 @@
 				    
 				    <div class="d-flex align-items-center gap-2">
 						<select id="dept" th:name="dept" class="form-control form-control-sm">
+						    <option th:value="ALL" th:text="'전체'" th:selected="${selectedDept == 'ALL'}"></option>
 						    <option th:each="dept : ${commonDept}" 
 						            th:value="${dept.comDtId}" 
 						            th:text="${dept.comDtNm}"
-						            th:selected="${dept.comId == selectedDept}">
+						            th:selected="${dept.comDtId == selectedDept}">
 						    </option>
 						</select>
 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~
 					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}">
 					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button>
-				        <button id="checkInBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">출근</button>
-				        <button id="checkOutBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">퇴근</button>
+				        <button id="updateStatusBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">수정</button>
 				    </div>
 				</div>
 	            <div class="card-body">
@@ -69,8 +69,19 @@
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
-		                            <td th:text="${c.workStatusNm}"></td>
+		                            <td>
+								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" class="form-control form-control-sm">
+								            <option th:each="status : ${commonStatus}" 
+								                    th:value="${status.comDtId}" 
+								                    th:text="${status.comDtNm}"
+								                    th:selected="${status.comDtId == c.workStatus}">
+								            </option>
+								        </select>
+								    </td>
 		                        </tr>
+		                        <tr th:if="${#lists.isEmpty(adminCommuteList)}">
+									<td colspan="8" class="text-center text-muted">출근한 사람이 없습니다.</td>
+								</tr>
 	                        </tbody>
 	                    </table>
 	                </div>
@@ -83,24 +94,45 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
+		
+// 		console.log("버튼 클릭!");
+		
+		// 부서랑 날짜조회
+		document.getElementById("searchBtn").addEventListener("click", function() {
+		    const startDate = document.querySelector("input[name='startDate']").value;
+		    const endDate = document.querySelector("input[name='endDate']").value;
+		    const deptId = document.querySelector("#dept").value || "ALL"; // 선택된 부서 값
+		    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
+		});
+		
+	    // =====================================================================================
+	    // 수정버튼
+		document.getElementById("updateStatusBtn").addEventListener("click", function() {
+		    const rows = document.querySelectorAll("tbody tr"); // tbody에 있는 tr들 한줄씩 가져와서 배열로 만듦
+		    let updateList = []; // 나중에 empId, workStatus 객체를 담아야함
 	
-	console.log("버튼 클릭!");
+		    rows.forEach(row => { // 행 반복
+		        const empId = row.querySelector("td:first-child").innerText;
+		        const status = row.querySelector("select").value;
 	
-	document.getElementById("searchBtn").addEventListener("click", function() {
-	    const startDate = document.querySelector("input[name='startDate']").value;
-	    const endDate = document.querySelector("input[name='endDate']").value;
-	    const deptId = document.querySelector("#dept").value; // 선택된 부서 값
-	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
-	});
+		        updateList.push({
+		            empId: empId,
+		            workStatus: status
+		        });
+		    });
 	
-	
-// 	const deptSelect = document.querySelector("#dept");
-// 	deptSelect.addEventListener("change", function() {
-// 	    const startDate = document.querySelector("input[name='startDate']").value;
-// 	    const endDate = document.querySelector("input[name='endDate']").value;
-// 	    const deptId = this.value;
-// 	    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
-// 	});
+		    fetch('/attendance/updateWorkStatus', {
+		        method: 'POST',
+		        headers: { 'Content-Type': 'application/json' },
+		        body: JSON.stringify(updateList)
+		    })
+		    .then(response => response.json())
+		    .then(data => {
+		        alert(data.message);
+		        location.reload();
+		    })
+		    .catch(err => console.error(err));
+		});
 
 	</script>
 	</th:block>
