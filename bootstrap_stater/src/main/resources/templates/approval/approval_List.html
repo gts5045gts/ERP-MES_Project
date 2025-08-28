@@ -225,8 +225,8 @@
 								    
 								    <!-- 승인/반려 완료된 경우 결재확인 버튼 -->
 								    <button th:if="${currentStatus != 'my' and (appr.statusLabel == '승인' or appr.statusLabel == '반려')}"
-								            type="button" class="btn btn-info btn-sm view-approval-btn"
-								            th:data-req-id="${appr.reqId}">결재확인</button>
+								        type="button" class="btn btn-info btn-sm view-approval-btn"
+								        th:data-req-id="${appr.reqId}">결재확인</button>
 								</td>
                             </tr>
                             </tbody>
@@ -332,20 +332,19 @@
 		                    <div class="approval-line-section mt-4">
 		                        <h6 class="approval-line-header"><i class="fas fa-stream"></i> 결재선</h6>
 		                        <table class="table table-bordered table-sm text-center">
-		                            <thead class="thead-light">
-		                                <tr>
-		                                    <th style="width: 25%;">작성자</th>
-		                                    <th style="width: 25%;" id="approver-header-1">1차 결재자</th>
-		                                    <th style="width: 25%;" id="approver-header-2">2차 결재자</th>
-		                                    <th style="width: 25%;" id="approver-header-3">3차 결재자</th>
-		                                </tr>
-		                            </thead>
-		                            <tbody id="approval-line-tbody">
-		                                <!-- JavaScript로 동적 생성 -->
-		                            </tbody>
-		                        </table>
-		                    </div>
-		
+								    <thead class="thead-light">
+								        <tr>
+								            <th style="width: 25%;">기안자</th>
+								            <th style="width: 25%;" id="approver-header-1">1차 결재자</th>
+								            <th style="width: 25%;" id="approver-header-2">2차 결재자</th>
+								            <th style="width: 25%;" id="approver-header-3">3차 결재자</th>
+								        </tr>
+								    </thead>
+								    <tbody id="approval-line-tbody">
+								        <!-- JavaScript로 동적 생성 -->
+								    </tbody>
+								</table>	                   
+							</div>
 		                    <div class="form-group mt-4">
 		                        <label for="modal-comments" class="font-weight-bold">
 		                            <i class="fas fa-comment-dots"></i> 승인/반려 사유 <small class="text-muted">(선택사항)</small>
@@ -583,55 +582,44 @@
 		    
 		    const drafterName = document.getElementById('modal-drafterName').textContent;
 		    
-		    // 헤더 업데이트
+		    // 실제 결재자 수 확인
+		    const approverCount = approvalLines ? approvalLines.length : 0;
+		    
+		    // 헤더 업데이트 - 실제 결재자 수만큼만 표시
 		    for (let i = 1; i <= 3; i++) {
 		        const headerCell = document.getElementById(`approver-header-${i}`);
 		        if (headerCell) {
-		            headerCell.style.display = 'none';
-		        }
-		    }
-		    
-		    // 테이블 본문 생성 (이름과 상태만)
-		    let nameRow = '<tr><td style="text-align: center;">' + drafterName + '</td>';
-		    let statusRow = '<tr><td style="text-align: center;"><span class="badge badge-primary">작성완료</span></td>';
-		    
-		    if (approvalLines && approvalLines.length > 0) {
-		        // 결재자들 처리
-		        for (let i = 0; i < Math.min(3, approvalLines.length); i++) {
-		            const line = approvalLines[i];
-		            
-		            // 헤더 표시
-		            const headerCell = document.getElementById(`approver-header-${i + 1}`);
-		            if (headerCell) {
-		                headerCell.textContent = `${line.stepNo}차 결재자`;
+		            if (i <= approverCount) {
+		                headerCell.textContent = `${i}차 결재자`;
 		                headerCell.style.display = 'table-cell';
+		            } else {
+		                headerCell.style.display = 'none';  // 빈 헤더 숨기기
 		            }
-		            
-		            // 이름 행
-		            nameRow += '<td style="text-align: center;">' + (line.apprName || '-') + '</td>';
-		            
-		            // 상태 행
-		            const status = getApprovalStatus(line.decision);
-		            statusRow += `<td style="text-align: center;"><span style="font-size: 12px; ${getStatusStyle(line.decision)}">${status}</span></td>`;
-		        }
-		        
-		        // 빈 칸 채우기
-		        for (let i = approvalLines.length; i < 3; i++) {
-		            nameRow += '<td style="text-align: center;">-</td>';
-		            statusRow += '<td style="text-align: center;">-</td>';
-		        }
-		    } else {
-		        // 결재선이 없는 경우
-		        for (let i = 0; i < 3; i++) {
-		            nameRow += '<td style="text-align: center;">-</td>';
-		            statusRow += '<td style="text-align: center;">-</td>';
 		        }
 		    }
+		    
+		    // 테이블 본문 생성
+		    let nameRow = '<tr>';
+		    let statusRow = '<tr>';
+		    
+		    // 기안자 추가
+		    nameRow += '<td style="text-align: center;">관리자</td>';
+		    statusRow += '<td style="text-align: center;"><span class="badge badge-primary">기안올림</span></td>';
+		    
+		    // 실제 결재자만 표시 (빈 칸 없이)
+		    for (let i = 0; i < approverCount; i++) {
+		        const line = approvalLines[i];
+		        nameRow += '<td style="text-align: center;">' + (line.apprName || '-') + '</td>';
+		        
+		        const status = getApprovalStatus(line.decision);
+		        statusRow += `<td style="text-align: center;"><span style="font-size: 12px; ${getStatusStyle(line.decision)}">${status}</span></td>`;
+		    }
+		    
+		    // 빈 칸 추가하지 않음 (실제 결재자 수만큼만 표시)
 		    
 		    nameRow += '</tr>';
 		    statusRow += '</tr>';
 		    
-		    // 코멘트 행 제거하고 이름과 상태 행만 표시
 		    tbody.innerHTML = nameRow + statusRow;
 		}
     	
@@ -648,20 +636,33 @@
        }
        
        function populateModalFields(data) {
-           console.log('받은 데이터:', data);
-           
-           Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
-               const element = document.getElementById(elementId);
-               if (element) {
-                   console.log(`${key} -> ${elementId}:`, data[key]);
-                   if (key === 'createAt' && data[key]) {
-                       element.textContent = formatDate(data[key]);
-                   } else {
-                       element.textContent = data[key] || '-';
-                   }
-               }
-           });
-       }
+    	    console.log('받은 데이터:', data);
+    	    
+    	    // empId도 hidden으로 저장 (필터링용)
+    	    const empIdElement = document.getElementById('modal-empId');
+    	    if (!empIdElement) {
+    	        // empId를 저장할 hidden 요소가 없으면 생성
+    	        const hiddenDiv = document.createElement('div');
+    	        hiddenDiv.id = 'modal-empId';
+    	        hiddenDiv.style.display = 'none';
+    	        hiddenDiv.textContent = data.empId;
+    	        document.getElementById('modalContent').appendChild(hiddenDiv);
+    	    } else {
+    	        empIdElement.textContent = data.empId;
+    	    }
+    	    
+    	    // 나머지 필드들 채우기
+    	    Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
+    	        const element = document.getElementById(elementId);
+    	        if (element) {
+    	            if (key === 'createAt' && data[key]) {
+    	                element.textContent = formatDate(data[key]);
+    	            } else {
+    	                element.textContent = data[key] || '-';
+    	            }
+    	        }
+    	    });
+    	}
 
        function formatDate(dateString) {
            try {
