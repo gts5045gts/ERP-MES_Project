@@ -44,8 +44,7 @@ public class GroupwareController {
 		List<DocumentDTO> documents = documentService.getAllDocuments();
 		model.addAttribute("documents", documents);
 		
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+documents);
-		
+//		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+documents);
 		return "/gw/document";
 	}
 	
@@ -78,13 +77,15 @@ public class GroupwareController {
 		return "redirect:/groupware/document";
 	}
 	
-	@GetMapping("/docView")
-	public ResponseEntity<DocumentDTO> docView(@PathVariable("docId") Long docId, Model model) {
+	@GetMapping("/docView/{docId}")
+	public String docView(@PathVariable("docId") Long docId, Model model) {
+		
+		DocumentDTO documentDTO = documentService.getDocument(docId);
+		log.info(documentDTO);
 		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
-		model.addAttribute("documentDTO", new DocumentDTO());
+		model.addAttribute("documentDTO", documentDTO);
 		
-		return null;
-		
+		return "/gw/docView";
 	}
 }

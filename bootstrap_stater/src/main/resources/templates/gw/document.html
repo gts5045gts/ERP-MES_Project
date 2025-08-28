@@ -10,7 +10,6 @@
 <link
 	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
 	rel="stylesheet">
-<link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 <body>
 	<th:block layout:fragment="content">
@@ -40,13 +39,13 @@
 							</thead>
 							<tbody>
 								<tr th:each="doc : ${documents}">
-									<td th:text="${doc.docType}">보고서</td>
+									<td th:text="${doc.doctypename}">보고서</td>
 									<td>
-										<a th:href="@{/groupware/docView(docId=${doc.docId})}" 
-										   th:text="${doc.docTitle}" 
-										   ></a>
+										<a th:href="@{/groupware/docView/{docId}(docId=${doc.docId})}"
+										   th:text="${doc.docTitle}"> 
+									   </a>
 									</td>
-									<td th:text="${doc.empId}"></td>
+									<td th:text="|${doc.empName} (${doc.deptName}/${doc.positionName})|"></td>
 									<td th:text="${doc.createAt != null} ? ${#temporals.format(doc.createAt, 'yyyy-MM-dd')} : ''"></td>
 								</tr>
 							</tbody>

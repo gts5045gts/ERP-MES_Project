@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.modelmapper.ModelMapper;
 
 import com.bootstrap.study.groupware.entity.Document;
+import com.bootstrap.study.personnel.entity.Personnel;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,13 @@ public class DocumentDTO {
     private String docType;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
+    
+//    private Personnel emp;
+    
+    private String empName;
+    private String deptName;
+    private String positionName;
+    private String doctypename;
     
     @Builder
 	public DocumentDTO(Long docId, String empId, String docTitle, String docContent, String docType, LocalDateTime createAt,
