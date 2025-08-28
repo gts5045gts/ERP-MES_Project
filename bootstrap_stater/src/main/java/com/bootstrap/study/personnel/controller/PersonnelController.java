@@ -137,14 +137,14 @@ public class PersonnelController {
 
 		return "/hrn/personnelCurrent";
 	}
-	
+	/**		인사발령 페이지 필요 없음 
 	@GetMapping("/app")
 	public String app() {
 		log.info("PersonnelController app()");
 		
 		return "/hrn/personnelApp";
 	}
-	
+	**/
 // 현재에 맞게 다시 수정 
 @GetMapping("/orgChart")
     public String showOrgChart(Model model) {

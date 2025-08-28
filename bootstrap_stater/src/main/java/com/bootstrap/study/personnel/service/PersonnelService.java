@@ -174,16 +174,15 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
- 	    // 수정된 부분
-// 	    personnel.setName(personnelDTO.getName());
-// 삭제
-// 	    personnel.setPhone(personnelDTO.getPhone());
-// 	    personnel.setResident(personnelDTO.getResident());
-// 	    personnel.setEmail(personnelDTO.getEmail());
-// 	    personnel.setAddrNum(personnelDTO.getAddrNum());
-// 	    personnel.setAddr1(personnelDTO.getAddr1());
-// 	    personnel.setAddr2(personnelDTO.getAddr2());
+ 	    // 수정시 오류 방지 
+ 	    //받아온 PASSWD 값이 NULL 값이 아니면 수정되겠금 변경
+ 	    if(personnelDTO.getPasswd() != null) {
+ 	    	String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());			
+ 	  	    personnelDTO.setPasswd(encodedPassword);
+ 	    }
  	    
+ 	    //수정시 해싱 암호로 들어가도록 변경
+ 	  
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
  	    

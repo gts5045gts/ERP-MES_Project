@@ -123,7 +123,7 @@ public class NoticeController {
 	        noticeTypes.add(empDeptName);
 	    }
 	    
-	    // 모델에 데이터 추가
+	    // 모델에 데이터 추가 
 	    NoticeDTO noticeDTO = new NoticeDTO();
 	    noticeDTO.setEmpId(empName);
 	    
