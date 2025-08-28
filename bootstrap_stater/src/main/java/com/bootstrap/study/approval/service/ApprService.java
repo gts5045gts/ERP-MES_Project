@@ -144,42 +144,30 @@ public class ApprService {
         return lineInfo;
     }
     
-    @Transactional
+    @Transactional  
     public void approveRequestWithComments(Long reqId, String comments, String loginId) {
-        log.info("승인 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
+        // 결재선에 ACCEPT 처리
+        apprLineRepository.updateMyApprovalLine(reqId, loginId, "ACCEPT", comments);
         
-        // apprLineRepository로 변경
-        int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "ACCEPT", comments);
-        
-        if (updatedRows == 0) {
-            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
-        }
-        
-        // apprLineRepository로 변경
+        // 남은 결재자 수 확인
         int remainingCount = apprLineRepository.countRemainingApprovals(reqId);
         
         if (remainingCount == 0) {
-            log.info("모든 결재 완료 - 문서 상태를 FINISHED로 변경");
+            // 모든 결재 완료 → FINISHED
             apprRepository.updateApprovalStatus(reqId, "FINISHED");
         } else {
-            log.info("남은 결재자: {}명", remainingCount);
+            // 아직 결재자 남음 → PROCESSING
             apprRepository.updateApprovalStatus(reqId, "PROCESSING");
         }
     }
 
     @Transactional
     public void rejectRequestWithComments(Long reqId, String comments, String loginId) {
-        log.info("반려 처리 시작 - reqId: {}, loginId: {}", reqId, loginId);
-        
-        // apprLineRepository로 변경
+        // 결재선에 DENY 처리
         int updatedRows = apprLineRepository.updateMyApprovalLine(reqId, loginId, "DENY", comments);
         
-        if (updatedRows == 0) {
-            throw new RuntimeException("이미 처리했거나 결재 권한이 없습니다.");
-        }
-        
-        log.info("반려로 인한 결재 종료 - 문서 상태를 FINISHED로 변경");
-        apprRepository.updateApprovalStatus(reqId, "FINISHED");
+        // 문서 상태를 CANCELED로 변경 (한 명이라도 반려하면 즉시 취소)
+        apprRepository.updateApprovalStatus(reqId, "CANCELED");
     }
     
     // ==================== Private 헬퍼 메서드 ====================
