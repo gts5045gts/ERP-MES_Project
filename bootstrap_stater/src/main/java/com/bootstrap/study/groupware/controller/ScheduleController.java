@@ -86,7 +86,7 @@ public class ScheduleController {
     	log.info("ScheduleController scheduleList()");
     	
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long currentEmpId = null;
+        String currentEmpId = null;
         String currentEmpName = null;
         String empDeptId = null;
         String empDeptName = null;
@@ -95,7 +95,7 @@ public class ScheduleController {
         
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
-            currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpId = personnelLoginDTO.getEmpId();
             currentEmpName = personnelLoginDTO.getName();
             empName = personnelLoginDTO.getName(); // ⭐ 사용자 이름 가져오기
             empDeptId = personnelLoginDTO.getEmpDeptId();
@@ -107,7 +107,7 @@ public class ScheduleController {
                 }
             }
             
-            if ("관리자".equals(empName)) {
+            if ("AUT001".equals(personnelLoginDTO.getEmpLevelId())) {
                 isAdmin = true;
                 List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
                 model.addAttribute("allDepartments", allDepartments);
@@ -129,17 +129,21 @@ public class ScheduleController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         String empName = null;
-        boolean isAdmin = false;
         String empDeptName = null;
-        Long currentEmpId = null;
+        String empLevelId = null; 
+        String currentEmpId = null;
+        boolean isAdmin = false;
         List<CommonDetailCode> allDepartments = new ArrayList<>();
 
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
             empName = personnelLoginDTO.getName();
-            currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpId = personnelLoginDTO.getEmpId();
+            empLevelId = personnelLoginDTO.getEmpLevelId();
+            
+            isAdmin = "AUT001".equals(empLevelId);
+            
             String empDeptId = personnelLoginDTO.getEmpDeptId();
-
             if (commonCodeService != null) {
                 CommonDetailCode deptCode = commonCodeService.getCommonDetailCode(empDeptId);
                 if (deptCode != null) {
@@ -147,15 +151,14 @@ public class ScheduleController {
                 }
             }
             
-            if ("관리자".equals(empName)) {
-                isAdmin = true;
+            if (isAdmin) {
                 allDepartments = commonCodeService.findByComId("DEP");
+                model.addAttribute("allDepartments", allDepartments);
             }
         }
         
         model.addAttribute("empName", empName);
         model.addAttribute("isAdmin", isAdmin);
-        model.addAttribute("allDepartments", allDepartments);
         model.addAttribute("empDeptName", empDeptName);
         model.addAttribute("currentEmpId", currentEmpId);
 

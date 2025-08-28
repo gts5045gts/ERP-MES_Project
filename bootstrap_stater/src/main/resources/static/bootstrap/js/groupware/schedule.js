@@ -337,15 +337,20 @@ document.addEventListener('DOMContentLoaded', function() {
 	$('#writeForm').on('submit', function(e) {
 		e.preventDefault(); // 기본 폼 제출 동작을 막음
 
+		var schTypeVal;
+		// isAdmin에 따라 schType 값을 다르게 가져오는 로직 추가
+		    if ($('#schType').length) {
+		        schTypeVal = $('#schType').val();
+		    } else { 
+		        schTypeVal = $('#schType_hidden').val();
+		    }
 		// 폼 데이터 구성
 		var formData = {
 			schTitle: $('#modalTitle').val(),
 			schContent: $('#modalContent').val(),
 			starttimeAt: $('#modalStartDate').val() + 'T' + $('#modalStartTime').val(),
 			endtimeAt: $('#modalEndDate').val() + 'T' + $('#modalEndTime').val(),
-			// schType 필드를 가져와야 합니다.
-			// 관리자일 경우 select box, 일반 사용자일 경우 hidden 필드에서 값을 가져옴
-			schType: $('#schType').val() || $('#schType_hidden').val(),
+			schType: schTypeVal,
 			empId: $('#modalEmpId').val() // 작성자 ID
 		};
 
