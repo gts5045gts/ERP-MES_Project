@@ -100,6 +100,7 @@ public class PersonnelService {
     public List<PersonnelDTO> getEmployeesByDepartmentId(String comDtId) {
         List<Personnel> personnels = personnelRepository.findByDepartment_ComDtId(comDtId);
         return personnels.stream()
+        		.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()))	//퇴직자는 리스트에서 안보이게 하기 위함
                 .map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
                 .collect(Collectors.toList());
     }
@@ -122,6 +123,7 @@ public class PersonnelService {
  		// Personnel 엔티티 목록을 가져와서 DTO로 변환
  		List<Personnel> personnelList = personnelRepository.findAll();
  		return personnelList.stream()
+ 				.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()) )	//퇴직자는 리스트에서 안보이게 하기 위함
  				.map(PersonnelDTO::fromEntity)
  				.collect(Collectors.toList());
  	}
