@@ -64,7 +64,7 @@ public class ApprDTO {
         else return "대기";
     }
     
-    // 0827 내가 기안한 문서의 상태 표시
+    // 0828 내가 기안한 문서의 상태 표시
     public String getMyApprovalStatus() {
     	if (this.status == ApprStatus.FINISHED) return "완료";
         else if (this.status == ApprStatus.CANCELED) {

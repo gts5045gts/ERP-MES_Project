@@ -94,4 +94,15 @@ public interface ApprLineRepository extends JpaRepository<ApprLine,Long> {
 		    ORDER BY al.step_no ASC
 		    """, nativeQuery = true)
 		List<Object[]> findApprovalLinesByReqId(@Param("reqId") Long reqId);
+		
+		// 0828 결재대기 알람
+		@Query(value = """
+		    SELECT COUNT(*) 
+		    FROM approval_line al
+		    JOIN approval a ON al.req_id = a.req_id
+		    WHERE al.appr_id = :loginId 
+		    AND a.emp_id != :loginId
+		    AND (al.decision IS NULL OR al.decision = 'PENDING')
+		    """, nativeQuery = true)
+		int countMyPendingApprovals(@Param("loginId") String loginId);
 }

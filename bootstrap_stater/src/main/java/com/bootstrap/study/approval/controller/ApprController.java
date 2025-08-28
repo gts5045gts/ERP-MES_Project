@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Log4j2
 public class ApprController {
 	
-    private final ApprService apprService;
+	private final ApprService apprService;
 	
     @GetMapping("/doc_list")
     public String getDocList(){
@@ -192,6 +193,24 @@ public class ApprController {
             log.error("결재 취소 실패 - reqId: {}, 오류: {}", reqId, e.getMessage());
             return ResponseEntity.status(500).body("결재 취소 중 오류가 발생했습니다.");
         }
+    }
+    // 0828 알림창
+    @GetMapping("/api/counts")
+    @ResponseBody
+    public Map<String, Object> getApprovalCounts(Authentication authentication) {
+        String loginId = authentication.getName();
+        Map<String, Object> result = new HashMap<>();
+        
+        // 내결재목록 대기 건수
+        result.put("myPending", apprService.getMyPendingCount(loginId));
+        
+        // 결재대기 건수
+        result.put("toApprove", apprService.getToApproveCount(loginId));
+        
+        // 내결재목록 전체 상태 정보 (상태 변화 감지용)
+        result.put("myApprovalStatus", apprService.getMyApprovalStatusSummary(loginId));
+        
+        return result;
     }
     
     //요청 본문에서 comments 추출

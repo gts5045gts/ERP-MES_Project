@@ -338,32 +338,30 @@
 		                            </div>
 		                        </div>
 		                    </div>
-		                    
 		
 		                    <div class="approval-line-section mt-4">
-		                        <h6 class="approval-line-header"><i class="fas fa-stream"></i> 결재선</h6>
-		                        <table class="table table-bordered table-sm text-center">
-								    <thead class="thead-light">
-								        <tr>
-								            <th style="width: 25%;">기안자</th>
-								            <th style="width: 25%;" id="approver-header-1">1차 결재자</th>
-								            <th style="width: 25%;" id="approver-header-2">2차 결재자</th>
-								            <th style="width: 25%;" id="approver-header-3">3차 결재자</th>
-								        </tr>
-								    </thead>
-								    <tbody id="approval-line-tbody">
-								        <!-- JavaScript로 동적 생성 -->
-								    </tbody>
-								</table>	                   
+							    <h6 class="approval-line-header"><i class="fas fa-stream"></i> 결재선</h6>
+							    <table class="table table-bordered table-sm text-center">
+							        <thead class="thead-light">
+							            <tr>
+							                <th style="width: 25%;">기안자</th>
+							                <th style="width: 25%;" id="approver-header-1">1차 결재자</th>
+							                <th style="width: 25%;" id="approver-header-2">2차 결재자</th>
+							                <th style="width: 25%;" id="approver-header-3">3차 결재자</th>
+							            </tr>
+							        </thead>
+							        <tbody id="approval-line-tbody">
+							            <!-- JavaScript로 동적 생성 -->
+							        </tbody>
+							    </table>
+							    
+							    <div id="approval-comments-section" class="mt-3" style="display: none;">
+							        <h6 class="mb-3"><i class="fas fa-comments"></i> 결재 의견</h6>
+							        <div id="approval-comments-list">
+							            <!-- JavaScript로 동적 생성 -->
+							        </div>
+							    </div>
 							</div>
-		                    <div class="form-group mt-4">
-		                        <label for="modal-comments" class="font-weight-bold">
-		                            <i class="fas fa-comment-dots"></i> 승인/반려 사유 <small class="text-muted">(선택사항)</small>
-		                        </label>
-		                        <textarea class="form-control" id="modal-comments" rows="3" placeholder="승인 또는 반려 사유를 입력하세요..." maxlength="500"></textarea>
-		                        <small class="form-text text-muted text-right">최대 500자까지 입력 가능합니다.</small>
-		                    </div>
-		
 		                </div>
 		                
 		                <div id="modalError" style="display: none;" class="alert alert-danger">
@@ -621,11 +619,9 @@
 		    if (!tbody) return;
 		    
 		    const drafterName = document.getElementById('modal-drafterName').textContent;
-		    
-		    // 실제 결재자 수 확인
 		    const approverCount = approvalLines ? approvalLines.length : 0;
 		    
-		    // 헤더 업데이트 - 실제 결재자 수만큼만 표시
+		    // 헤더 업데이트
 		    for (let i = 1; i <= 3; i++) {
 		        const headerCell = document.getElementById(`approver-header-${i}`);
 		        if (headerCell) {
@@ -633,7 +629,7 @@
 		                headerCell.textContent = `${i}차 결재자`;
 		                headerCell.style.display = 'table-cell';
 		            } else {
-		                headerCell.style.display = 'none';  // 빈 헤더 숨기기
+		                headerCell.style.display = 'none';
 		            }
 		        }
 		    }
@@ -643,10 +639,10 @@
 		    let statusRow = '<tr>';
 		    
 		    // 기안자 추가
-		    nameRow += '<td style="text-align: center;">관리자</td>';
+		    nameRow += '<td style="text-align: center;">' + drafterName + '</td>';
 		    statusRow += '<td style="text-align: center;"><span class="badge badge-primary">기안올림</span></td>';
 		    
-		    // 실제 결재자만 표시 (빈 칸 없이)
+		    // 결재자들 표시
 		    for (let i = 0; i < approverCount; i++) {
 		        const line = approvalLines[i];
 		        nameRow += '<td style="text-align: center;">' + (line.apprName || '-') + '</td>';
@@ -655,12 +651,13 @@
 		        statusRow += `<td style="text-align: center;"><span style="font-size: 12px; ${getStatusStyle(line.decision)}">${status}</span></td>`;
 		    }
 		    
-		    // 빈 칸 추가하지 않음 (실제 결재자 수만큼만 표시)
-		    
 		    nameRow += '</tr>';
 		    statusRow += '</tr>';
 		    
 		    tbody.innerHTML = nameRow + statusRow;
+		    
+		    // 결재 의견 표시 (승인/반려 사유가 있는 경우만)
+		    displayApprovalComments(approvalLines);
 		}
     	
        function getApprovalStatus(decision) {
@@ -827,7 +824,68 @@
                }
            });
        }
+		
+    // 결재 의견 표시 함수 추가
+       function displayApprovalComments(approvalLines) {
+           const commentsSection = document.getElementById('approval-comments-section');
+           const commentsList = document.getElementById('approval-comments-list');
+           
+           if (!approvalLines || approvalLines.length === 0) {
+               commentsSection.style.display = 'none';
+               return;
+           }
+           
+           let hasComments = false;
+           let commentsHtml = '';
+           
+           approvalLines.forEach((line, index) => {
+               if (line.comments && line.comments.trim() !== '') {
+                   hasComments = true;
+                   const status = line.decision === 'ACCEPT' ? '승인' : 
+                                 line.decision === 'DENY' ? '반려' : '대기';
+                   const statusClass = line.decision === 'ACCEPT' ? 'success' : 
+                                      line.decision === 'DENY' ? 'danger' : 'warning';
+                   
+                   commentsHtml += `
+                       <div class="card mb-2">
+                           <div class="card-header py-2 bg-light">
+                               <div class="d-flex justify-content-between align-items-center">
+                                   <div>
+                                       <strong>${index + 1}차 결재자: ${line.apprName}</strong>
+                                       <span class="badge badge-${statusClass} ml-2">${status}</span>
+                                   </div>
+                                   <small class="text-muted">
+                                       ${line.decDate ? formatDateTime(line.decDate) : ''}
+                                   </small>
+                               </div>
+                           </div>
+                           <div class="card-body py-2">
+                               <p class="mb-0">${line.comments}</p>
+                           </div>
+                       </div>
+                   `;
+               }
+           });
+           
+           if (hasComments) {
+               commentsList.innerHTML = commentsHtml;
+               commentsSection.style.display = 'block';
+           } else {
+               commentsSection.style.display = 'none';
+           }
+       }
 
+       // 날짜 시간 포맷 함수
+       function formatDateTime(dateString) {
+           try {
+               const date = new Date(dateString);
+               return date.toLocaleDateString('ko-KR') + ' ' + 
+                      date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+           } catch {
+               return '';
+           }
+       }
+       
        function searchByDrafter(searchTerm) {
            const normalizedSearchTerm = searchTerm.trim().toLowerCase();
            const tableRows = document.querySelectorAll('#dataTable tbody tr');

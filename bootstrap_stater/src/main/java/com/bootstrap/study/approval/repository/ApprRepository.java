@@ -99,7 +99,24 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		    """, nativeQuery = true)
 		List<Object[]> findApprovalListWithJoin(@Param("loginId") String loginId);
 
-    
+    // 0828 결재대기 알람
+	@Query(value = """
+	    SELECT COUNT(*) 
+	    FROM approval 
+	    WHERE emp_id = :loginId 
+	    AND status = 'REQUESTED'
+	    """, nativeQuery = true)
+	int countMyPendingApprovals(@Param("loginId") String loginId);
+	// 0828 결재대기 알람
+	@Query(value = """
+		    SELECT COUNT(*) 
+		    FROM approval 
+		    WHERE emp_id = :loginId 
+		    AND status = :status
+		    """, nativeQuery = true)
+		int countMyApprovalsByStatus(@Param("loginId") String loginId, @Param("status") String status);
+		
+		
     // 0821
    	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
 	@Transactional
