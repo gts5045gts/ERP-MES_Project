@@ -121,6 +121,11 @@ public class CommuteService {
 //		System.out.println("commonStatus : " + commonStatus);
 		return commonStatus;
 	}
+
+	// 관리자 수정버튼
+//	public List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList) {
+//		return commuteMapper.updateWorkStatus(updateList);
+//	}
 	
 
 }

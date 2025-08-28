@@ -91,7 +91,7 @@ public class CommuteController {
 	// 출근버튼
 	@ResponseBody
 	@PostMapping("/checkIn")
-	public ResponseEntity<CommuteDTO> checkIn(@RequestBody Map<String, String> request) {
+	public ResponseEntity<CommuteDTO> checkIn() {
 		
 	    // 로그인한 사용자 객체 꺼내기
 	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -119,7 +119,7 @@ public class CommuteController {
 	// 퇴근버튼
 	@ResponseBody
 	@PostMapping("/checkOut")
-	public ResponseEntity<CommuteDTO> checkOut(@RequestBody Map<String, String> request) {
+	public ResponseEntity<CommuteDTO> checkOut() {
 		
 		// 로그인한 사용자 객체 꺼내기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -167,9 +167,6 @@ public class CommuteController {
 	    }
 	    // ==============================================================================
 	    
-//		List<CommuteDTO> commuteDTOList = commuteService.getAdminDeptCommuteList(paramMap);
-//		model.addAttribute("commuteDTOList", commuteDTOList);
-
 		// 공통코드로 된 해당 부서인원 값 조회
 		List<CommonDetailCodeDTO> commonDept = commuteService.getCommonDept();
 		System.out.println("commonDept : " + commonDept);
@@ -217,33 +214,26 @@ public class CommuteController {
 	}
 	
 	// 수정버튼
-	@ResponseBody
-	@PostMapping("/updateWorkStatus")
-	public ResponseEntity<CommuteDTO> updateWorkStatus(@RequestBody Map<String, String> request) {
-		
-		// 로그인한 사용자 객체 꺼내기
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		
-		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-			// 로그인 안 된 경우 401 Unauthorized 반환
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-		
-		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-		String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-//		System.out.println("로그인 사용자 ID: " + empId);
-		
-		// ================================================================================
-		
-		// 수정 처리
-		try {
-			CommuteDTO commuteCheckOut = commuteService.checkOut(empId);
-//			System.out.println("commuteCheckOut : " + commuteCheckOut);
-			return ResponseEntity.ok(commuteCheckOut);
-		} catch (IllegalStateException e) {
-			// 이미 출근 기록 있을 경우 409 Conflict 반환
-			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-		}
-	}
+//	@ResponseBody
+//	@PostMapping("/updateWorkStatus")
+//	public ResponseEntity<List<AdminCommuteDTO>> updateWorkStatus(@RequestBody List<AdminCommuteDTO> updateList) {
+//		
+//		// 로그인한 사용자 객체 꺼내기
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		
+//		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+//			// 로그인 안 된 경우 401 Unauthorized 반환
+//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//		}
+//		
+////		System.out.println("로그인 사용자 ID: " + empId);
+//		
+//		// ================================================================================
+//		
+//		// 수정버튼 처리
+//		List<AdminCommuteDTO> updateWorkStatusList = commuteService.updateWorkStatus(updateList);
+//		
+//		return ResponseEntity.ok(updateWorkStatusList);
+//	}
 
 }

@@ -42,5 +42,8 @@ public interface CommuteMapper {
 	// 근무상태 공통코드 조회
 	List<CommonDetailCodeDTO> getCommonStatus(String comId);
 
+	// 관리자 수정버튼
+//	List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList);
+
 
 }
