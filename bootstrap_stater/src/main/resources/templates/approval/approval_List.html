@@ -14,14 +14,14 @@
         
         /* 결재 상태 전용 배지 스타일 */
         .approval-status-badge {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-weight: 500;
-            display: inline-block;
-            text-align: center;
-            min-width: 60px;
-        }
+		    font-size: 0.8rem;
+		    padding: 0.4rem 0.8rem;
+		    border-radius: 20px;
+		    font-weight: 500;
+		    display: inline-block;
+		    text-align: center;
+		    min-width: 60px;
+		}
         
         /* 승인 - 연한 파랑 */
         .approval-status-approved {
@@ -50,6 +50,12 @@
             color: #383d41 !important;
             border: 1px solid #d6d8db;
         }
+        /* 반려됨 */
+        .approval-status-canceled {
+		    background-color: #f8d7da !important;
+		    color: #721c24 !important;
+		    border: 1px solid #f5c6cb;
+		}
         
         /* 호버 효과 */
         .approval-status-badge:hover {
@@ -193,22 +199,23 @@
                                 <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
                                 <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td>
                                 <td>
-								    <!-- 내결재목록일 때 -->
 								    <span th:if="${currentStatus == 'my'}" 
 								          th:text="${appr.myApprovalStatus}"
 								          th:class="'approval-status-badge ' + 
 								                   ${appr.myApprovalStatus == '완료' ? 'approval-status-approved' : 
 								                     appr.myApprovalStatus == '진행중' ? 'approval-status-pending' : 
-								                     'approval-status-pending'}">진행중</span>
+								                     appr.myApprovalStatus == '반려됨' ? 'approval-status-canceled' :
+								                     'approval-status-pending'}">
+								    </span>
 								    
-								    <!-- 다른 탭일 때 -->
 								    <span th:unless="${currentStatus == 'my'}"
 								          th:text="${appr.statusLabel}" 
 								          th:class="'approval-status-badge ' + 
 								                   ${appr.statusLabel == '승인' ? 'approval-status-approved' : 
 								                     appr.statusLabel == '대기' ? 'approval-status-pending' : 
-								                     appr.statusLabel == '반려' ? 'approval-status-rejected' : 
-								                     'approval-status-unknown'}">대기</span>
+								                     appr.statusLabel == '반려됨' ? 'approval-status-canceled' : 
+								                     'approval-status-unknown'}">
+								    </span>
 								</td>
 								<td>
 								    <!-- 대기 중인 경우 결재하기 버튼 -->
@@ -400,7 +407,7 @@
 
        const STATUS_CLASSES = {
            '승인': 'approval-status-approved',
-           '반려': 'approval-status-rejected'
+           '반려됨': 'approval-status-canceled'
        };
 
        // 결재하기 모달 (편집 가능)
