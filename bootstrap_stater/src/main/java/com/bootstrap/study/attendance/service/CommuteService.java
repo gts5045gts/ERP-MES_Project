@@ -58,9 +58,9 @@ public class CommuteService {
 		
 	    String workStatus;
 	    if (nowTime.isAfter(startTime)) {
-	        workStatus = "STA004"; // 지각
+	        workStatus = "WSTA003"; // 지각
 	    } else {
-	        workStatus = "STA001"; // 출근
+	        workStatus = "WSTA001"; // 출근
 	    }
 		
 		CommuteDTO commute = new CommuteDTO();
@@ -91,7 +91,7 @@ public class CommuteService {
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
 		commute.setCheckOutTime(now);
-		commute.setWorkStatus("STA002");
+		commute.setWorkStatus("WSTA002");
 		
 		commuteMapper.updateCommuteCheckOut(commute);
 		
@@ -117,15 +117,21 @@ public class CommuteService {
 
 	// 근무상태 공통코드
 	public List<CommonDetailCodeDTO> getCommonStatus() {
-		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("STA");
+		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("WSTA");
 //		System.out.println("commonStatus : " + commonStatus);
 		return commonStatus;
 	}
 
 	// 관리자 수정버튼
-//	public List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList) {
-//		return commuteMapper.updateWorkStatus(updateList);
-//	}
+	public int updateWorkStatus(List<AdminCommuteDTO> updateList) {
+		int updatedCount = 0;
+		
+        for (AdminCommuteDTO dto : updateList) {
+            updatedCount += commuteMapper.updateWorkStatus(dto); // 개별 UPDATE 호출
+        }
+		
+	    return updatedCount;
+	}
 	
 
 }
