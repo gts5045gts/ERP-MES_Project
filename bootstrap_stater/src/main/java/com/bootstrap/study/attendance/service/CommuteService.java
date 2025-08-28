@@ -102,7 +102,7 @@ public class CommuteService {
 	// 부서 공통코드
 	public List<CommonDetailCodeDTO> getCommonDept() {
 		List<CommonDetailCodeDTO> commonDept = commuteMapper.getCommonDept("DEP");
-		System.out.println("commonDept : " + commonDept);
+//		System.out.println("commonDept : " + commonDept);
 		return commonDept;
 	}
 
@@ -116,8 +116,15 @@ public class CommuteService {
 	}
 
 	// 근무상태 공통코드
-//	public List<CommonDetailCodeDTO> getCommonStatus() {
-//		return commuteMapper.getCommonStatus();
+	public List<CommonDetailCodeDTO> getCommonStatus() {
+		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("STA");
+//		System.out.println("commonStatus : " + commonStatus);
+		return commonStatus;
+	}
+
+	// 관리자 수정버튼
+//	public List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList) {
+//		return commuteMapper.updateWorkStatus(updateList);
 //	}
 	
 
