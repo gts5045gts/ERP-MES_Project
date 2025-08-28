@@ -28,6 +28,8 @@ import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
+import com.bootstrap.study.personnel.entity.Personnel;
+import com.bootstrap.study.personnel.repository.PersonnelRepository;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -36,15 +38,22 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ScheduleController {
 	
-	@Autowired
-    private ScheduleService scheduleService;
-	@Autowired
-    private HolidayService holidayService;
-	@Autowired
-	private CommonCodeService commonCodeService;
+    private final ScheduleService scheduleService;
+    private final HolidayService holidayService;
+	private final CommonCodeService commonCodeService;
+	private final PersonnelRepository personnelRepository;
+	
 
 
-    @GetMapping("/holidays")
+    public ScheduleController(ScheduleService scheduleService, HolidayService holidayService,
+			CommonCodeService commonCodeService, PersonnelRepository personnelRepository) {
+		this.scheduleService = scheduleService;
+		this.holidayService = holidayService;
+		this.commonCodeService = commonCodeService;
+		this.personnelRepository = personnelRepository;
+	}
+
+	@GetMapping("/holidays")
     @ResponseBody
     public List<Map<String, Object>> getHolidaysForCalendar(
     	    @RequestParam(value = "year", required = false) Integer year, // required = false 추가
@@ -78,6 +87,7 @@ public class ScheduleController {
     	
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long currentEmpId = null;
+        String currentEmpName = null;
         String empDeptId = null;
         String empDeptName = null;
         String empName = null; 
@@ -86,6 +96,7 @@ public class ScheduleController {
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
             currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpName = personnelLoginDTO.getName();
             empName = personnelLoginDTO.getName(); // ⭐ 사용자 이름 가져오기
             empDeptId = personnelLoginDTO.getEmpDeptId();
 
@@ -104,6 +115,7 @@ public class ScheduleController {
         }
         
         model.addAttribute("currentEmpId", currentEmpId);
+        model.addAttribute("currentEmpName", currentEmpName);
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("empDeptName", empDeptName);
         model.addAttribute("empDeptId", empDeptId);
@@ -156,10 +168,11 @@ public class ScheduleController {
         log.info("ScheduleController saveSchedule()", scheduleDTO);
         
         String empIdString = principal.getName();
-        Long currentEmpId = Long.parseLong(empIdString);
+        Personnel currentEmp = personnelRepository.findById(empIdString)
+        		.orElseThrow(() -> new RuntimeException("직원 정보를 찾을 수 없습니다."));
         
         Schedule schedule = new Schedule();
-        schedule.setEmpId(currentEmpId);
+        schedule.setEmployee(currentEmp);
         schedule.setSchTitle(scheduleDTO.getSchTitle());
         schedule.setSchContent(scheduleDTO.getSchContent());
         schedule.setStarttimeAt(scheduleDTO.getStarttimeAt());
@@ -188,7 +201,7 @@ public class ScheduleController {
                 event.put("start", schedule.getStarttimeAt());
                 event.put("end", schedule.getEndtimeAt());
                 event.put("schType", schedule.getSchType());
-                event.put("empId", schedule.getEmpId());
+                event.put("empId", schedule.getEmployee().getEmpId());
                 return event;
             })
             .collect(Collectors.toList());
@@ -213,7 +226,9 @@ public class ScheduleController {
                 event.put("title", schedule.getSchTitle());
                 event.put("start", schedule.getStarttimeAt());
                 event.put("end", schedule.getEndtimeAt());
-                event.put("empId", schedule.getEmpId());
+                event.put("schType", schedule.getSchType());
+                event.put("empId", schedule.getEmployee().getEmpId());
+                event.put("empName", schedule.getEmployee().getName());
                 return event;
             })
             .collect(Collectors.toList());
@@ -226,10 +241,23 @@ public class ScheduleController {
         log.info("Requesting schedule detail for ID: {}", schId);
         Schedule schedule = scheduleService.findById(schId);
         Map<String, Object> result = new HashMap<>();
-        
+
         if (schedule != null) {
+        	
+        	ScheduleDTO scheduleDTO = new ScheduleDTO(schedule);
+        	
         	result.put("success", true);
-        	result.put("schedule", schedule);
+        	result.put("schedule", scheduleDTO);
+
+        	// 1. schedule 객체에서 empId 가져오기
+        	String empId = schedule.getEmployee().getEmpId();
+
+        	// 2. empId를 이용해 empName을 조회하는 서비스 메서드 호출
+        	String empName = scheduleService.getEmpNameById(empId);
+
+        	// 3. 응답 맵에 empName 추가
+        	result.put("empName", empName);
+
         } else {
         	result.put("success", false);
         	result.put("message", "일정 정보를 찾을 수 없습니다.");
@@ -239,17 +267,17 @@ public class ScheduleController {
 
     @PostMapping("/update")
     @ResponseBody
-    public Map<String, Object> updateSchedule(@RequestBody Schedule schedule, Principal principal) {
-        log.info("ScheduleController updateSchedule()", schedule);
+    public Map<String, Object> updateSchedule(@RequestBody ScheduleDTO scheduleDTO, Principal principal) {
+        log.info("ScheduleController updateSchedule()", scheduleDTO);
         Map<String, Object> response = new HashMap<>();
         
-        if (!scheduleService.isScheduleOwner(schedule.getSchId(), Long.parseLong(principal.getName()))) {
+        if (!scheduleService.isScheduleOwner(scheduleDTO.getSchId(), principal.getName())) {
             response.put("success", false);
             response.put("message", "수정 권한이 없습니다.");
             return response;
         }
 
-        scheduleService.updateSchedule(schedule);
+        scheduleService.updateSchedule(scheduleDTO);
         response.put("success", true);
         response.put("message", "일정이 성공적으로 수정되었습니다.");
         return response;
@@ -261,7 +289,7 @@ public class ScheduleController {
         log.info("ScheduleController deleteSchedule() for ID: {}", schId);
         Map<String, Object> response = new HashMap<>();
 
-        if (!scheduleService.isScheduleOwner(schId, Long.parseLong(principal.getName()))) {
+        if (!scheduleService.isScheduleOwner(schId, principal.getName())) {
             response.put("success", false);
             response.put("message", "삭제 권한이 없습니다.");
             return response;
