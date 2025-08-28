@@ -1,6 +1,10 @@
 package com.bootstrap.study.groupware.dto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
+import org.modelmapper.ModelMapper;
+
+import com.bootstrap.study.groupware.entity.Document;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -19,12 +23,12 @@ public class DocumentDTO {
     private String docTitle;
     private String docContent;
     private String docType;
-    private Date createAt;
-    private Date updateAt;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
     
     @Builder
-	public DocumentDTO(Long docId, String empId, String docTitle, String docContent, String docType, Date createAt,
-			Date updateAt) {
+	public DocumentDTO(Long docId, String empId, String docTitle, String docContent, String docType, LocalDateTime createAt,
+			LocalDateTime updateAt) {
 		this.docId = docId;
 		this.empId = empId;
 		this.docTitle = docTitle;
@@ -33,4 +37,8 @@ public class DocumentDTO {
 		this.createAt = createAt;
 		this.updateAt = updateAt;
 	}
+    
+    private static ModelMapper modelMapper = new ModelMapper();
+    
+    public static DocumentDTO fromEntity(Document document) { return modelMapper.map(document, DocumentDTO.class); }
 }

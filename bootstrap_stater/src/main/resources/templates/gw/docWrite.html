@@ -21,7 +21,7 @@
 					<form method="post" th:action="@{/groupware/save}" th:object="${documentDTO}">
 						<div class="form-group">
 							<label for="templateSelector2">문서 종류 선택</label>
-							<select class="form-control" >
+							<select class="form-control" th:field="*{docType}">
 								<option 
 										th:each="detail : ${dtCodes}"
 										th:value="${detail.comDtId}"

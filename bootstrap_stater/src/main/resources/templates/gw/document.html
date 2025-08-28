@@ -40,22 +40,14 @@
 							</thead>
 							<tbody>
 								<tr th:each="doc : ${documents}">
-									<td th:text="${doc.templateType}">보고서</td>
+									<td th:text="${doc.docType}">보고서</td>
 									<td>
-										<a href="#" th:text="${doc.templateTitle}" 
-										   data-toggle="modal" data-target="#documentModal"
-										   th:attr="data-id=${doc.id}, data-title=${doc.templateTitle}, data-author=${doc.author}, data-date=${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}, data-content=${doc.content}"></a>
+										<a th:href="@{/groupware/docView(docId=${doc.docId})}" 
+										   th:text="${doc.docTitle}" 
+										   ></a>
 									</td>
-									<td th:text="${doc.author}">홍길동</td>
-									<td th:text="${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}">2025-08-17</td>
-								</tr>
-								
-								<tr>
-									<td>보고서</td>
-									<td><a href="#" data-toggle="modal" data-target="#documentModal" 
-										   data-title="주간 업무 보고서 양식" data-author="관리자" data-date="2025-08-15" data-content="여기에 보고서 상세 내용이 들어갑니다.">주간 업무 보고서 양식</a></td>
-									<td>관리자</td>
-									<td>2025-08-15</td>
+									<td th:text="${doc.empId}"></td>
+									<td th:text="${doc.createAt != null} ? ${#temporals.format(doc.createAt, 'yyyy-MM-dd')} : ''"></td>
 								</tr>
 							</tbody>
 						</table>
@@ -64,50 +56,10 @@
 			</div>
 		</div>
 	</th:block>
-
-	<div class="modal fade" id="documentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="documentModalLabel">문서 상세 내용</h5>
-					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">×</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<h4 id="modalTitle"></h4>
-					<p><small id="modalAuthor"></small> <small id="modalDate"></small></p>
-					<hr>
-					<pre id="modalContent"></pre>
-				</div>
-				<div class="modal-footer">
-					<button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-    <script src="js/sb-admin-2.min.js"></script>
-
-    <script>
-    $('#documentModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget); // 모달을 실행시킨 버튼
-      var title = button.data('title');
-      var author = button.data('author');
-      var date = button.data('date');
-      var content = button.data('content');
-
-      var modal = $(this);
-      modal.find('#modalTitle').text(title);
-      modal.find('#modalAuthor').text('작성자: ' + author);
-      modal.find('#modalDate').text('작성일: ' + date);
-      modal.find('#modalContent').text(content);
-    });
-    </script>
+	
+	<th:block layout:fragment="script">
+	    <script>
+	    </script>
+	</th:block>    
 </body>
 </html>

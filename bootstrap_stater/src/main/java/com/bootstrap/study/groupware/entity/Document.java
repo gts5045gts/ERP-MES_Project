@@ -1,6 +1,11 @@
 package com.bootstrap.study.groupware.entity;
 
+import java.time.LocalDateTime;
 import java.util.Date;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.bootstrap.study.personnel.entity.Personnel;
 
@@ -15,10 +20,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Document {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "doc_seq_gen")
+    @SequenceGenerator(
+        name = "doc_seq_gen",
+        sequenceName = "SHARED_DOCUMENT_SEQ", // DB 시퀀스명과 동일하게!
+        allocationSize = 1                   // 오라클은 1 권장
+    )
+    
     @Column(name = "DOC_ID")
     private Long docId;
 
@@ -35,10 +47,12 @@ public class Document {
     @Column(nullable = false, name = "DOC_TYPE", length = 100)
     private String docType;
 
-    @Column(nullable = false, name = "CREATE_AT")
-    private Date createAt;
+    @CreatedDate
+    @Column(nullable = false, name = "CREATE_AT", updatable = false)
+    private LocalDateTime createAt;
 
+    @LastModifiedBy
     @Column(name = "UPDATE_AT")
-    private Date updateAt;
+    private LocalDateTime updateAt;
 
 }

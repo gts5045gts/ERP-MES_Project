@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<!--summernote  css-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
+
+<!--summernote  css-->
+
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h1 class="h3 mb-4 text-gray-800">사내 공통 문서 양식 상세</h1>
+
+			<div class="card shadow mb-4">
+				<div class="card-body">
+					<div class="mt-4" id="formContainer"></div>
+					<form method="post" th:action="@{/groupware/save}" th:object="${documentDTO}">
+						<div class="form-group">
+							<label for="templateSelector2">문서 종류 선택</label>
+							<select class="form-control" th:field="*{docType}">
+								<option 
+										th:each="detail : ${dtCodes}"
+										th:value="${detail.comDtId}"
+										th:text="${detail.comDtNm}"
+										>
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="docTitle">제목</label>
+							<input type="text" th:field="*{docTitle}" id="docTitle" class="form-control" />
+						</div>
+						<div class="form-group">
+							<label for="summernote">내용</label>
+							<textarea th:field="*{docContent}" id="summernote" class="form-control"></textarea>
+						</div>
+						<button type="submit" class="btn btn-primary">등록</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+<th:block layout:fragment="script">
+	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+	<script>
+		$('#summernote').summernote({
+			tabsize: 2,
+			height: 200,
+			focus: true,
+			toolbar: [
+				['style', ['style']],
+				['font', ['bold', 'underline', 'clear']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph']],
+				['table', ['table']],
+				['insert', ['link', 'picture']],
+				['view', ['fullscreen', 'codeview', 'help']]
+			]
+		});
+	
+		// 각 양식 종류에 맞는 HTML 폼 템플릿을 정의
+		const formTemplates = {
+			report: `
+				<form>
+					<div class="form-group">
+						<label for="reportTitle">보고서 제목</label>
+						<input type="text" class="form-control" id="reportTitle" name="title" required>
+					</div>
+					<div class="form-group">
+						<label for="reportDate">보고 일자</label>
+						<input type="date" class="form-control" id="reportDate" name="date">
+					</div>
+					<div class="form-group">
+						<label for="reportContent">보고 내용</label>
+						<textarea class="form-control" id="reportContent" name="content" rows="10"></textarea>
+					</div>
+					<button type="submit" class="btn btn-success">작성 완료</button>
+				</form>
+			`,
+			contract: `
+				<form>
+					<div class="form-group">
+						<label for="contractTitle">계약서 제목</label>
+						<input type="text" class="form-control" id="contractTitle" name="title" required>
+					</div>
+					<div class="form-group">
+						<label for="contractParty">계약 상대방</label>
+						<input type="text" class="form-control" id="contractParty" name="party" required>
+					</div>
+					<div class="form-group">
+						<label for="contractTerm">계약 기간</label>
+						<input type="text" class="form-control" id="contractTerm" name="term">
+					</div>
+					<div class="form-group">
+						<label for="contractContent">계약 내용</label>
+						<textarea class="form-control" id="contractContent" name="content" rows="10"></textarea>
+					</div>
+					<button type="submit" class="btn btn-success">작성 완료</button>
+				</form>
+			`,
+			// 나머지 양식(proposal, memo 등)에 대한 폼 템플릿도 여기에 추가
+			proposal: `<p>품의서 양식 폼이 여기에 들어갑니다.</p>`,
+			memo: `<p>사내 메모 양식 폼이 여기에 들어갑니다.</p>`
+		};
+
+		/* const selector = document.getElementById('templateSelector');
+		const formContainer = document.getElementById('formContainer');
+
+		selector.addEventListener('change', (event) => {
+			const selectedValue = event.target.value;
+			const formHTML = formTemplates[selectedValue];
+
+			if (formHTML) {
+				formContainer.innerHTML = formHTML;
+			} else {
+				formContainer.innerHTML = "";
+			}
+		}); */
+	</script>
+</th:block>
+</body>
+</html>

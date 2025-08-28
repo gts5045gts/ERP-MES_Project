@@ -1,25 +1,27 @@
 package com.bootstrap.study.groupware.controller;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
 import com.bootstrap.study.groupware.repository.DocumentRepository;
-import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
-import com.bootstrap.study.personnel.entity.Personnel;
-import com.bootstrap.study.personnel.repository.PersonnelRepository;
+import com.bootstrap.study.groupware.service.DocumentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
@@ -32,20 +34,24 @@ public class GroupwareController {
 	private final CommonCodeService comService;
 	
 	@Autowired
-	private PersonnelRepository personnelRepository;
-	@Autowired
 	private DocumentRepository documentRepository;
 	
+	private final DocumentService documentService;
+	
 	@GetMapping("/document")
-	public String document() {
-		log.info("GroupwareController document()");
+	public String document(Model model) {
+		
+		List<DocumentDTO> documents = documentService.getAllDocuments();
+		model.addAttribute("documents", documents);
+		
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+documents);
 		
 		return "/gw/document";
 	}
 	
 	@GetMapping("/docWrite")
 	public String docWrite(Model model) {
-//		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+codeDetail);
+//		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", new DocumentDTO());
 		
@@ -62,19 +68,23 @@ public class GroupwareController {
 
 		Document doc = new Document();
 		
-		log.info("asdfffffaasdfasdf>>>>>>>>>>>>>>>>>>>>>>>"+documentDTO.getEmpId());
-
 		doc.setDocTitle(documentDTO.getDocTitle());
 		doc.setDocContent(documentDTO.getDocContent());
-		doc.setEmpId(documentDTO.getEmpId());
+		doc.setEmpId(loginEmpId);
 		doc.setDocType(documentDTO.getDocType());
-		doc.setCreateAt(new Date());
-		doc.setUpdateAt(new Date());
 
-//		documentRepository.save(doc);
+		documentRepository.save(doc);
+		
+		return "redirect:/groupware/document";
+	}
+	
+	@GetMapping("/docView")
+	public ResponseEntity<DocumentDTO> docView(@PathVariable("docId") Long docId, Model model) {
+		
+		model.addAttribute("dtCodes", comService.findByComId("DOC"));
+		model.addAttribute("documentDTO", new DocumentDTO());
 		
 		return null;
-
-//		return "redirect:/document";
+		
 	}
 }
