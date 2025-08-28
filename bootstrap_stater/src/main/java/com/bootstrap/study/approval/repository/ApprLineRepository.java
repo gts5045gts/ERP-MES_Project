@@ -88,7 +88,9 @@ public interface ApprLineRepository extends JpaRepository<ApprLine,Long> {
 		        al.comments
 		    FROM approval_line al
 		    JOIN employee e ON al.appr_id = e.emp_id
+		    JOIN approval a ON al.req_id = a.req_id  -- approval 테이블 JOIN 추가
 		    WHERE al.req_id = :reqId
+		    AND al.appr_id != a.emp_id  -- 기안자 제외
 		    ORDER BY al.step_no ASC
 		    """, nativeQuery = true)
 		List<Object[]> findApprovalLinesByReqId(@Param("reqId") Long reqId);
