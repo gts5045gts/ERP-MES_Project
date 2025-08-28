@@ -42,7 +42,7 @@
 	    LEFT JOIN common_dt_code p 
 	        ON e.emp_position = p.com_dt_id AND p.com_id = 'POS'
 	    LEFT JOIN common_dt_code ws
-	        ON c.work_status = ws.com_dt_id AND ws.com_id = 'STA'
+	        ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
 	    WHERE e.emp_dept_id = (
 	        SELECT emp_dept_id
 	        FROM employee
@@ -114,23 +114,23 @@
 	
 	<!-- 관리자 전체 부서인원 조회(오늘날짜) -->
 	<select id="getAllDeptCommuteList" resultType="com.bootstrap.study.attendance.dto.AdminCommuteDTO">
-    SELECT e.emp_id, 
-           e.emp_name, 
-           d.com_dt_nm AS deptName, 
-           c.check_in_time,
-           c.check_out_time, 
-           TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate,
-           p.com_dt_nm AS posName, 
-           s.com_dt_id AS workStatus,
-           ws.com_dt_nm AS workStatusNm
-    FROM employee e
-    JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
-    JOIN common_dt_code p ON e.emp_position = p.com_dt_id
-    JOIN commute_record c ON e.emp_id = c.emp_id
-    JOIN common_dt_code s ON c.work_status = s.com_dt_id
-	JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'STA'
-    WHERE TRUNC(c.check_in_time) 
-          BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+	    SELECT e.emp_id, 
+	           e.emp_name, 
+	           d.com_dt_nm AS deptName, 
+	           c.check_in_time,
+	           c.check_out_time, 
+	           TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate,
+	           p.com_dt_nm AS posName, 
+	           s.com_dt_id AS workStatus,
+	           ws.com_dt_nm AS workStatusNm
+	    FROM employee e
+	    JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
+	    JOIN common_dt_code p ON e.emp_position = p.com_dt_id
+	    JOIN commute_record c ON e.emp_id = c.emp_id
+	    JOIN common_dt_code s ON c.work_status = s.com_dt_id
+		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
+	    WHERE TRUNC(c.check_in_time) 
+	          BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
 	</select>
 	
 	<!-- 관리자 특정 부서인원 조회(오늘날짜) -->
@@ -145,7 +145,7 @@
 		JOIN common_dt_code p ON e.emp_position = p.com_dt_id
 		JOIN commute_record c ON e.emp_id = c.emp_id
 		JOIN common_dt_code s ON c.work_status = s.com_dt_id
-		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'STA'
+		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
 		WHERE e.emp_dept_id = #{deptId} 
 			AND TRUNC(c.check_in_time) BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
 	</select>
@@ -159,6 +159,15 @@
 		FROM common_dt_code
 		WHERE com_id = #{comId}
 	</select>
+	
+	<!-- 관리자 수정버튼 -->
+	<update id="updateWorkStatus" parameterType="com.bootstrap.study.attendance.dto.AdminCommuteDTO">
+	    UPDATE commute_record
+	    SET work_status = #{workStatus}
+	    WHERE emp_id = #{empId}
+	      AND TO_CHAR(check_in_time, 'YYYY-MM-DD') = #{commuteDate}
+	</update>
+	
 	
 </mapper>
 

@@ -70,7 +70,9 @@
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
 		                            <td>
-								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" class="form-control form-control-sm">
+								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" 
+								        		th:data-emp-id="${c.empId}" th:data-commute-date="${c.commuteDate}" 
+								        		class="workStatusSelect form-control form-control-sm">
 								            <option th:each="status : ${commonStatus}" 
 								                    th:value="${status.comDtId}" 
 								                    th:text="${status.comDtNm}"
@@ -107,33 +109,49 @@
 		
 	    // =====================================================================================
 	    // 수정버튼
-		document.getElementById("updateStatusBtn").addEventListener("click", function() {
-		    const rows = document.querySelectorAll("tbody tr"); // tbody에 있는 tr들 한줄씩 가져와서 배열로 만듦
-		    let updateList = []; // 나중에 empId, workStatus 객체를 담아야함
-	
-		    rows.forEach(row => { // 행 반복
-		        const empId = row.querySelector("td:first-child").innerText;
-		        const status = row.querySelector("select").value;
-	
+		let updateList = [];
+	    
+		$(".workStatusSelect").on("change", function() {
+		    let empId = $(this).data("emp-id");
+		    let newStatus = $(this).val();
+		    let commuteDate = $(this).data("commute-date");
+
+		    // 이미 updatedList에 존재하는 empId면 업데이트
+		    let existing = updateList.find(item => item.empId === empId);
+		    if (existing) {
+		        existing.workStatus = newStatus;
+		    } else {
 		        updateList.push({
 		            empId: empId,
-		            workStatus: status
+		            workStatus: newStatus,
+		            commuteDate: commuteDate
 		        });
-		    });
-	
-		    fetch('/attendance/updateWorkStatus', {
-		        method: 'POST',
-		        headers: { 'Content-Type': 'application/json' },
-		        body: JSON.stringify(updateList)
-		    })
-		    .then(response => response.json())
-		    .then(data => {
-		        alert(data.message);
-		        location.reload();
-		    })
-		    .catch(err => console.error(err));
+		    }
+		    console.log(updateList);
 		});
+		
+		
+		$("#updateStatusBtn").on("click", function() {
+		    if (updateList.length === 0) {
+		        alert("변경된 데이터가 없습니다.");
+		        return;
+		    }
 
+		    $.ajax({
+		        url: "/attendance/updateWorkStatus",
+		        type: "POST",
+		        contentType: "application/json",
+		        data: JSON.stringify(updateList),
+		        success: function(response) {
+		            alert("수정 완료");
+		            console.log(response);
+		        },
+		        error: function(xhr) {
+		            alert("업데이트 실패: " + xhr.status);
+		        }
+		    });
+		});
+	    
 	</script>
 	</th:block>
 </body>

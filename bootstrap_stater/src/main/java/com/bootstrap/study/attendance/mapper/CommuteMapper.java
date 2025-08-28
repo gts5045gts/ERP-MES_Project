@@ -43,7 +43,8 @@ public interface CommuteMapper {
 	List<CommonDetailCodeDTO> getCommonStatus(String comId);
 
 	// 관리자 수정버튼
-//	List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList);
+	int updateWorkStatus(AdminCommuteDTO dto);
+
 
 
 }

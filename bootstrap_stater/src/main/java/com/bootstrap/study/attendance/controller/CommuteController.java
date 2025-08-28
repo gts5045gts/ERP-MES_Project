@@ -214,26 +214,28 @@ public class CommuteController {
 	}
 	
 	// 수정버튼
-//	@ResponseBody
-//	@PostMapping("/updateWorkStatus")
-//	public ResponseEntity<List<AdminCommuteDTO>> updateWorkStatus(@RequestBody List<AdminCommuteDTO> updateList) {
-//		
-//		// 로그인한 사용자 객체 꺼내기
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//		
-//		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-//			// 로그인 안 된 경우 401 Unauthorized 반환
-//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//		}
-//		
-////		System.out.println("로그인 사용자 ID: " + empId);
-//		
-//		// ================================================================================
-//		
-//		// 수정버튼 처리
-//		List<AdminCommuteDTO> updateWorkStatusList = commuteService.updateWorkStatus(updateList);
-//		
-//		return ResponseEntity.ok(updateWorkStatusList);
-//	}
+	@ResponseBody
+	@PostMapping("/updateWorkStatus")
+	public ResponseEntity<Map<String, Object>> updateWorkStatus(@RequestBody List<AdminCommuteDTO> updateList) {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+			// 로그인 안 된 경우 401 Unauthorized 반환
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+//		System.out.println("로그인 사용자 ID: " + empId);
+		
+		// ================================================================================
+		
+		// 수정버튼 처리
+		int updateCount = commuteService.updateWorkStatus(updateList);
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("message", updateCount + "건 업데이트 완료");
+	    return ResponseEntity.ok(result);
+		
+	}
 
 }
