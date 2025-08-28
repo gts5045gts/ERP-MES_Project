@@ -11,6 +11,9 @@
 <meta name="_csrf" th:content="${_crsf.token}">
 <meta name="_csrf_header" th:content="${_crsf.headerName}">
 
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+
 <title>부산 아아티윌</title>
 
 <link th:href="@{/bootstrap/vendor/fontawesome-free/css/all.min.css}"
@@ -40,19 +43,17 @@
 	<script th:src="@{/bootstrap/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
 	<script th:src="@{/bootstrap/vendor/jquery-easing/jquery.easing.min.js}"></script>
 
-	<script th:src="@{/bootstrap/vendor/datatables/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/bootstrap/vendor/datatables/dataTables.bootstrap4.min.js}"></script>
+	<script th:src="@{/bootstrap/vendor/datatables/jquery.dataTables.min.js}"></script> <!-- 부트스트랩 표테이블 jQuery -->
+	<script th:src="@{/bootstrap/vendor/datatables/dataTables.bootstrap4.min.js}"></script> <!-- 부트스트랩 표테이블 js -->
 
 	<script th:src="@{/bootstrap/vendor/chart.js/Chart.min.js}"></script>
-	<script
-		th:src="@{https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js}"></script>
-	<script th:src="@{/bootstrap/js/groupware/groupware.js}"></script>
-
 	<script th:src="@{/bootstrap/js/sb-admin-2.min.js}"></script>
 	<script th:src="@{/bootstrap/js/demo/chart-area-demo.js}"></script>
 	<script th:src="@{/bootstrap/js/demo/chart-pie-demo.js}"></script>
-	<script th:src="@{/bootstrap/js/groupware/notice.js}"></script>
-	<script th:src="@{/bootstrap/js/groupware/schedule.js}"></script>
+	<!-- 그룹웨어 관련 js -->
+	<script	th:src="@{https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js}"></script> <!-- 달력관련 js -->
+	<script th:src="@{/bootstrap/js/groupware/notice.js}"></script> <!-- 공지사항관련 js -->
+	<script th:src="@{/bootstrap/js/groupware/schedule.js}"></script> <!-- 일정관리관련 js -->
 
 	<script th:src="@{/bootstrap/js/demo/chart-bar-demo.js}"></script>
 
