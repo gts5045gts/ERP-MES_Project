@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<title>문서 목록</title>
+<link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+	type="text/css">
+<link
+	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+	rel="stylesheet">
+<link href="css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h1 class="h3 mb-4 text-gray-800">문서 목록</h1>
+
+			<div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+					<h6 class="m-0 font-weight-bold text-primary">사내 공통 문서</h6>
+					<a href="/groupware/docWrite" class="btn btn-primary btn-icon-split" sec:authorize="!hasAuthority('AUT001')">
+						<span class="icon text-white-50">
+							<i class="fas fa-plus"></i>
+						</span>
+						<span class="text">등록</span>
+					</a>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-bordered" id="documentTable" width="100%" cellspacing="0">
+							<thead>
+								<tr>
+									<th>문서 종류</th>
+									<th>제목</th>
+									<th>작성자</th>
+									<th>작성일</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="doc : ${documents}">
+									<td th:text="${doc.templateType}">보고서</td>
+									<td>
+										<a href="#" th:text="${doc.templateTitle}" 
+										   data-toggle="modal" data-target="#documentModal"
+										   th:attr="data-id=${doc.id}, data-title=${doc.templateTitle}, data-author=${doc.author}, data-date=${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}, data-content=${doc.content}"></a>
+									</td>
+									<td th:text="${doc.author}">홍길동</td>
+									<td th:text="${#temporals.format(doc.createdAt, 'yyyy-MM-dd')}">2025-08-17</td>
+								</tr>
+								
+								<tr>
+									<td>보고서</td>
+									<td><a href="#" data-toggle="modal" data-target="#documentModal" 
+										   data-title="주간 업무 보고서 양식" data-author="관리자" data-date="2025-08-15" data-content="여기에 보고서 상세 내용이 들어갑니다.">주간 업무 보고서 양식</a></td>
+									<td>관리자</td>
+									<td>2025-08-15</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+	<div class="modal fade" id="documentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="documentModalLabel">문서 상세 내용</h5>
+					<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<h4 id="modalTitle"></h4>
+					<p><small id="modalAuthor"></small> <small id="modalDate"></small></p>
+					<hr>
+					<pre id="modalContent"></pre>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" type="button" data-dismiss="modal">닫기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<th:block layout:fragment="script">
+	<script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <script src="js/sb-admin-2.min.js"></script>
+
+    <script>
+	    $('#documentModal').on('show.bs.modal', function (event) {
+	      var button = $(event.relatedTarget); // 모달을 실행시킨 버튼
+	      var title = button.data('title');
+	      var author = button.data('author');
+	      var date = button.data('date');
+	      var content = button.data('content');
+	
+	      var modal = $(this);
+	      modal.find('#modalTitle').text(title);
+	      modal.find('#modalAuthor').text('작성자: ' + author);
+	      modal.find('#modalDate').text('작성일: ' + date);
+	      modal.find('#modalContent').text(content);
+	    });
+    </script>
+</th:block>    
+</body>
+</html>
