@@ -158,12 +158,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         </thead><tbody>`;
 
 			data.forEach(emp => {
+				
+				let annType = emp.annType === '연차' ? 'leave-full' : 'leave-half';
+				
 				html += `<tr>
                             <td>${emp.empId}</td>
                             <td>${emp.empName}</td>
                             <td>${emp.depName}</td>
                             <td>${emp.empPos}</td>
-                            <td>${emp.annType}</td>
+                            <td><span class="leave-btn ${annType}">${emp.annType}</span></td>
                          </tr>`;
 			});
 
