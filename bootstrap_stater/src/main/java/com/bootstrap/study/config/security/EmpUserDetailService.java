@@ -1,15 +1,14 @@
-package com.bootstrap.study.security;
+package com.bootstrap.study.config.security;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.config.util.ModelMapperUtils;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
-import com.bootstrap.study.util.ModelMapperUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

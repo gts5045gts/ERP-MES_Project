@@ -16,6 +16,7 @@ $(document).ready(function() {
 		$.get("/admin/detail/" + selectedParentId, function(fragment) {
 			$('#detailArea').html(fragment);
 			$('#detailArea').show(); // 클릭 시 테이블 보이게
+			$('#codeDetailSearch').closest('.col-6').show();
 		});
 	});
 

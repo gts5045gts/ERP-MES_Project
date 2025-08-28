@@ -1,4 +1,4 @@
-package com.bootstrap.study.util;
+package com.bootstrap.study.config.util;
 
 import org.modelmapper.ModelMapper;
 

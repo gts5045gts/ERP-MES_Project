@@ -1,47 +1,79 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
 <head>
-  <meta charset="UTF-8">
-  <title>일정 등록</title>
-  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>일정 등록</title>
+<link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet"
+	type="text/css">
+<link
+	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+	rel="stylesheet">
+<link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 <body>
-  <th:block layout:fragment="content">
-    <div class="container-fluid">
-      <h1 class="h3 mb-4 text-gray-800">일정 등록</h1>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h1 class="h3 mb-4 text-gray-800">일정 등록</h1>
 
-      <div class="card shadow mb-4">
-        <div class="card-body">
-          <form th:action="@{/schedule/write}" method="post">
-            <div class="form-group">
-              <label for="title">일정 제목</label>
-              <input type="text" class="form-control" id="title" name="title" required>
-            </div>
+			<div class="card shadow mb-4">
+				<div class="card-body">
+					<form th:action="@{/schedule/save}" method="post" id="writeForm">
+						<div class="form-group">
+							<label for="modalAuthor">작성자</label> <input type="text"
+								class="form-control" id="modalAuthor" name="authorName" readonly
+								th:value="${empName}"> <input type="hidden"
+								id="modalEmpId" name="empId" th:value="${currentEmpId}">
+						</div>
 
-            <div class="form-group">
-              <label for="content">일정 내용</label>
-              <textarea class="form-control" id="content" name="content" rows="4"></textarea>
-            </div>
+						<div class="form-group">
+							<label for="schType">일정 타입</label> <select class="form-control"
+								id="schType" name="schType" th:if="${isAdmin}">
+								<option value="전체">전체 일정</option>
+								<option th:each="dept : ${allDepartments}"
+									th:value="${dept.comDtNm}" th:text="${dept.comDtNm + ' 일정'}"></option>
+							</select>
 
-            <div class="form-group">
-              <label for="startDate">시작일</label>
-              <input type="date" class="form-control" id="startDate" name="startDate" required>
-            </div>
-            
-            <div class="form-group">
-              <label for="endDate">종료일</label>
-              <input type="date" class="form-control" id="endDate" name="endDate" required>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">등록</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </th:block>
+							<div th:unless="${isAdmin}">
+								<input type="text" class="form-control" id="schType_readonly"
+									th:value="${empDeptName}" readonly>
+								<input type="hidden" id="schType_hidden" name="schType"
+									th:value="${empDeptName}">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="modalTitle">일정 제목</label> <input type="text"
+								class="form-control" id="modalTitle" name="schTitle" required>
+						</div>
+
+						<div class="form-group">
+							<label for="modalContent">일정 내용</label>
+							<textarea class="form-control" id="modalContent"
+								name="schContent" rows="4"></textarea>
+						</div>
+
+						<div class="form-group">
+							<label for="modalStartDate">시작일</label> <input type="date"
+								class="form-control" id="modalStartDate" name="startDate"
+								required> <label for="modalStartTime">시작시간</label> <input
+								type="time" class="form-control" id="modalStartTime"
+								name="starttimeAt" required>
+						</div>
+
+						<div class="form-group">
+							<label for="modalEndDate">종료일</label> <input type="date"
+								class="form-control" id="modalEndDate" name="endDate" required>
+							<label for="modalEndTime">종료시간</label> <input type="time"
+								class="form-control" id="modalEndTime" name="endtimeAt" required>
+						</div>
+
+						<button type="submit" class="btn btn-primary">등록</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</th:block>
 </body>
 </html>

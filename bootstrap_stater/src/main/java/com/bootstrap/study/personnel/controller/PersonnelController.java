@@ -1,5 +1,6 @@
 package com.bootstrap.study.personnel.controller;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
@@ -130,21 +132,21 @@ public class PersonnelController {
 	}
 	
 	@PostMapping("/registPro")
-	public String registPro(PersonnelDTO personnelDTO) {
+	public String registPro(PersonnelDTO personnelDTO, @RequestParam("empImg") MultipartFile empImg) throws IOException {
 		log.info("등록할 사원 정보 : " + personnelDTO.toString());
 		
-		personnelService.personRegist(personnelDTO);
+		personnelService.personRegist(personnelDTO, empImg);
 
 		return "/hrn/personnelCurrent";
 	}
-	
+	/**		인사발령 페이지 필요 없음 
 	@GetMapping("/app")
 	public String app() {
 		log.info("PersonnelController app()");
 		
 		return "/hrn/personnelApp";
 	}
-	
+	**/
 // 현재에 맞게 다시 수정 
 @GetMapping("/orgChart")
     public String showOrgChart(Model model) {

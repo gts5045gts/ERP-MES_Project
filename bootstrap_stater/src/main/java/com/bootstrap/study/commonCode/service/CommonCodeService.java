@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,6 +139,37 @@ public class CommonCodeService {
         dtCode.setComDtOrder(comDtOrder);
         dtCode.setUseYn(useYn);
     }
+
+// ================================================ 검색 ===========================================
+	
+	// 공통코드 검색
+	public List<CommonCodeDTO> searchCode(String keyword) {
+		List<CommonCode> results = comRepository.searchCode(keyword);
+        
+		return results.stream()
+                .map(CommonCodeDTO::fromEntity)
+                .toList();
+	}
+
+	// 상세코드 검색
+	public List<CommonDetailCodeDTO> searchDtCode(String parentId, String keyword) {
+		 List<CommonDetailCode> results;
+
+		    if (keyword != null && !keyword.isEmpty()) {
+		        // 검색어가 있을 때: parentId + keyword 필터
+		        results = comDetailRepository.searchByParentAndKeyword(parentId, keyword);
+		    } else {
+		        // 검색어가 없을 때: parentId 기준만
+		        results = comDetailRepository.findByComId_ComId(parentId);
+		    }
+
+		    return results.stream()
+		                  .map(CommonDetailCodeDTO::fromEntity)
+		                  .toList();
+	}
+
+
+ 
 
 	
 	
