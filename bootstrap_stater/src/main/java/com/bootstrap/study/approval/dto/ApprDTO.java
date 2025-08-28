@@ -57,29 +57,17 @@ public class ApprDTO {
     
     // 0827 상태를 한글로 변환하는 메서드 추가
     public String getStatusLabel() {
-        // decision이 null, 빈 문자열, 또는 PENDING이면 "대기"
-        if (decision == null || decision.trim().isEmpty() || "PENDING".equals(decision)) {
-            return "대기";
-        } else if ("ACCEPT".equals(decision)) {
-            return "승인";
-        } else if ("DENY".equals(decision)) {
-            return "반려";
-        }
-        return "미정";
+        if 		("ACCEPT".equals(decision)) return "승인";
+        else if ("DENY".equals(decision)) 	return "반려";
+        else return "대기";
     }
     
     // 0827 내가 기안한 문서의 상태 표시
     public String getMyApprovalStatus() {
-        if (this.status == ApprStatus.FINISHED) {
-            // FINISHED 상태일 때 결재선 확인해서 반려 있으면 "반려", 없으면 "승인완료"
-            // 간단히 "완료"로 표시
-            return "완료";
-        } else if (this.status == ApprStatus.PROCESSING) {
-            return "진행중";
-        } else if (this.status == ApprStatus.REQUESTED) {
-            return "대기";
-        }
-        return "대기";
+        if 		(this.status == ApprStatus.FINISHED) 		return "완료";
+        else if (this.status == ApprStatus.CANCELED) 	return "반려됨"; 
+        else if (this.status == ApprStatus.PROCESSING) 	return "진행중";
+        else return "대기";
     }
     
  	private List<ApprLineDTO> ApprLineDTOList;
