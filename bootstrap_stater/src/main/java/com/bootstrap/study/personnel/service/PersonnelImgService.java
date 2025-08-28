@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelImg;
+import com.bootstrap.study.personnel.repository.PersonnelImgRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,6 +28,8 @@ public class PersonnelImgService {
 	
 	@Value("${file.itemImgLocation}")
 	private String itemImgLocation;
+	
+	private final PersonnelImgRepository personnelImgRepository;
 
 	public void registImg(Personnel personnel, MultipartFile empImg) throws IOException {
 		
@@ -58,11 +61,17 @@ public class PersonnelImgService {
 
 		
 		PersonnelImg perImg = new PersonnelImg();
-		perImg.setPersonnel(personnel);
-		perImg.setImgId(fileName);
-		perImg.setFileName(originalFileName);
-//		perImg.getLocation(itemImgLocation);
+		List<PersonnelImg> imgId = personnelImgRepository.findAll();
+		int number = imgId.size() + 1;
+		String id = String.format("IMG%03d", number);
 		
+		perImg.setImgId(id);
+		perImg.setPersonnel(personnel);
+		perImg.setName(fileName);
+		perImg.setFileName(originalFileName);
+		perImg.setLocation(itemImgLocation);
+		
+		personnelImgRepository.save(perImg);
 	}
 	
 	

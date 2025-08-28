@@ -49,6 +49,8 @@ public class PersonnelController {
         // Service를 통해 해당 사원의 상세 정보를 가져와 모델에 추가
         Optional<PersonnelDTO> personnelOpt = personnelService.getPersonnelDetails(empId);
         
+        
+        
         if (personnelOpt.isPresent()) {
             model.addAttribute("personnel", personnelOpt.get());
         } else {
