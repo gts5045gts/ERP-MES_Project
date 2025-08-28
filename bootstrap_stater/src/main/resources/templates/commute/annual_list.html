@@ -18,14 +18,14 @@
 
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-7">
+			<div class="col-3.5">
 				<div class="card shadow mb-4">
 					<div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #f3f4f7;">
 						<h6 class="m-0 font-weight-bold">연차사용내역</h6>
 					</div>
+					<div id="chart-area"></div>
 					<div class="d-flex align-items-start">
-						<div id="chart-area"></div>
-						<div class="card-body" id="MyAnnArea" style="margin-top : 10px;">
+						<div class="card-body" id="MyAnnArea" style="height: 305px">
 							<table id ="MyAnnAreaTable" class="table table-bordered">
 								<tbody>
 									<tr>
@@ -54,34 +54,42 @@
                      </div>
 				</div>
 			</div>
-		  
-			<div class="col-5">
-				<div class="card shadow mb-4">
+		  	<div class="col-9">
+		  		<div class="card shadow mb-4">
 					<div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #f3f4f7;">
-						<h6 class="m-0 font-weight-bold">오늘의 연차사원</h6>
-                    </div>
-                     <div class="card-body" id="todayAnnArea" style="height: 307px; overflow-y: auto;">
-                     	<table id ="todayAnnTable" class="table table-bordered">
-							
-						</table>
-                     </div>
-                 </div>
-             </div>
+						<h6 class="m-0 font-weight-bold">사원연차내역</h6>
+						<div>
+							<button type="button" class="btn btn-primary btn-sm" id="todayAnnButton">오늘 연차자 조회</button>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="col-md-4" style="padding: 10px 0 5px 0px;">
+							<div class="filterAnn">
+								<label for="AnnSearch" class="AnnSearch">검색</label>
+								<input type="search" id="AnnSearch" placeholder="사원번호/이름/부서/직급">
+							</div>
+						</div>
+						<div id="grid"></div>
+					</div>
+				</div> 		  		
+		  	</div>
 		</div>	  
 	</div>
 
-	<div class="card-body">
-		<div class="annHeader">
-			<h5 class="m-0 font-weight-bold">사원 연차 내역</h5>
-		</div>
-		<div class="col-md-3" style="padding: 10px 0 5px 0px;">
-			<div class="filterAnn">
-				<label for="AnnSearch" class="AnnSearch">검색</label>
-				<input type="search" id="AnnSearch" placeholder="사원번호/이름/부서/직급">
+
+	<!-- 오늘자 모달창 -->
+	<div class="Annual-container" id="todayAnnModal">
+		<div class="Annual-area">
+			<div class="Annual-header">
+				<div class="Annual-header-title" style="font-weight: 600">오늘 연차자 조회</div>
+				<button class="close-Annual-button"></button>
+			</div>
+			<div class="Annual-body">
+				 <table id="todayAnnTable" class="table"></table>
 			</div>
 		</div>
-		<div id="grid"></div>
-	</div>  
+	</div>
+	 
 	
 
    

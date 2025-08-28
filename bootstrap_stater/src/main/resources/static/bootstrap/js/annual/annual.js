@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         el: document.getElementById('grid'),
         data: [],
         columns: columns,
-        bodyHeight: 400,
-        rowHeaders: ['rowNum'],
+        bodyHeight: 370,
+        rowHeaders: [],
         scrollX: false,
         emptyMessage: '조회결과가 없습니다.'
     });
@@ -93,8 +93,8 @@ fetch(`/attendance/annualList/chart`)
 
 		const options = {
 			chart: {
-				width: 270,
-				height: 300
+				width: 200,
+				height: 200
 			},
 			gaugeScale: { min: 0, max: 100 },
 			exportMenu: {
@@ -120,7 +120,7 @@ fetch(`/attendance/annualList/chart`)
 				},
 				series: {
 					dataLabels: {
-						fontSize: 20,
+						fontSize: 15,
 						fontFamily: 'Impact',
 						fontWeight: 500,
 						color: '#00a9ff',
@@ -135,43 +135,60 @@ fetch(`/attendance/annualList/chart`)
 		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options });
 	});
 
-// 오늘의 연차사원
+/*오늘의 연차자 모달*/
 document.addEventListener('DOMContentLoaded', function() {
 	const table = document.getElementById('todayAnnTable');
+	const modal = document.getElementById('todayAnnModal');
+    const openBtn = document.getElementById('todayAnnButton');
+    const closeBtn = document.querySelector('.close-Annual-button');
+	
+	function loadAnnData() {	
+		fetch('/attendance/todayAnn')
+			.then(response => response.json())
+			.then(data => {
+				if (data.length === 0) {
+					table.innerHTML = '<tr><td colspan="5" class="text-center">오늘 연차 사원이 없습니다.</td></tr>';
+					return;
+				}
+	
+				let html = `<thead>
+	                            <tr>
+	                                <th>사원ID</th>
+	                                <th>이름</th>
+	                                <th>부서</th>
+	                                <th>직급</th>
+	                                <th>휴가종류</th>
+	                            </tr>
+	                        </thead><tbody>`;
+	
+				data.forEach(emp => {
+					
+					let annType = emp.annType === '연차' ? 'leave-full' : 'leave-half';
+					
+					html += `<tr>
+	                            <td>${emp.empId}</td>
+	                            <td>${emp.empName}</td>
+	                            <td>${emp.depName}</td>
+	                            <td>${emp.empPos}</td>
+	                            <td><span class="leave-btn ${annType}">${emp.annType}</span></td>
+	                         </tr>`;
+				});
+	
+				html += '</tbody>';
+				table.innerHTML = html;
+			})
+			.catch(err => console.error('오늘 연차 조회 실패', err));
+		}
+		
+		openBtn.addEventListener('click', function() {
+			loadAnnData();
+			modal.classList.add('open');
+		});
 
-	fetch('/attendance/todayAnn')
-		.then(response => response.json())
-		.then(data => {
-			if (data.length === 0) {
-				table.innerHTML = '<tr><td colspan="5" class="text-center">오늘 연차 사원이 없습니다.</td></tr>';
-				return;
-			}
-
-			let html = `<thead>
-                            <tr>
-                                <th>사원ID</th>
-                                <th>이름</th>
-                                <th>부서</th>
-                                <th>직급</th>
-                                <th>휴가종류</th>
-                            </tr>
-                        </thead><tbody>`;
-
-			data.forEach(emp => {
-				
-				let annType = emp.annType === '연차' ? 'leave-full' : 'leave-half';
-				
-				html += `<tr>
-                            <td>${emp.empId}</td>
-                            <td>${emp.empName}</td>
-                            <td>${emp.depName}</td>
-                            <td>${emp.empPos}</td>
-                            <td><span class="leave-btn ${annType}">${emp.annType}</span></td>
-                         </tr>`;
-			});
-
-			html += '</tbody>';
-			table.innerHTML = html;
-		})
-		.catch(err => console.error('오늘 연차 조회 실패', err));
+		// 닫기 버튼 → 모달 닫기
+		closeBtn.addEventListener('click', function() {
+			modal.classList.remove('open');
+		});
 });
+
+

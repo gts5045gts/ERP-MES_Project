@@ -119,6 +119,19 @@ public class AnnualService {
 			ann.setAnnRemain(ann.getAnnTotal() - ann.getAnnUse());
 			return new AnnualDTO(ann, emp); // DTO 생성자에서 annPeriod, annExpire 계산됨
 		}).collect(Collectors.toList());
+		
+		List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();
+		
+		List<Personnel> updateEmps = empRepository.findAll().stream()
+				.filter(emp -> !existingEmps.contains(emp.getEmpId())).toList();
+		
+		for(Personnel emp : updateEmps) {
+			int totalAnn = getAnnByPosition(emp.getPosition());
+			Annual zeroAnn = new Annual(emp.getEmpId(), annYear, 0.0, totalAnn);
+			annRepository.save(zeroAnn);
+			AnnualDTO dto = new AnnualDTO(zeroAnn, emp);
+			dtoList.add(dto);
+		}
 
 		// 3. Page<AnnualDTO>로 변환
 		return new PageImpl<>(dtoList, pageable, dtoList.size());

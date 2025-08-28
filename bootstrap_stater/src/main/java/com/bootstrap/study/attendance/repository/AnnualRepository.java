@@ -31,6 +31,8 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 			"OR LOWER(p.department.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
 			"OR LOWER(p.position.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 	List<Object[]> searchAnn(@Param("keyword") String keyword);
+
+
 	
 	
 
