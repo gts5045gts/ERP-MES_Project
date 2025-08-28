@@ -183,7 +183,9 @@ public class PersonnelService {
 // 	    personnel.setAddrNum(personnelDTO.getAddrNum());
 // 	    personnel.setAddr1(personnelDTO.getAddr1());
 // 	    personnel.setAddr2(personnelDTO.getAddr2());
- 	    
+ 	 //수정시 해싱 암호로 들어가도록 변경
+ 	    String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());			
+ 	    personnelDTO.setPasswd(encodedPassword);
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
  	    
