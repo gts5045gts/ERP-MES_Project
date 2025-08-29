@@ -53,7 +53,7 @@ let stompClient = null;
                messageElement.classList.add('bg-success', 'text-white');
                messageElement.textContent = message.senderName + ' 님이 입장하셨습니다.';
            } else {
-               if (message.senderId === userId) {
+               if (String(message.senderId) === String(userId)) {
                    messageElement.classList.add('bg-primary', 'text-white', 'text-right');
                    messageElement.textContent = message.content;
                } else {

@@ -23,13 +23,13 @@ public class ChatController {
 
 	private final SimpMessageSendingOperations messagingTemplate;
 
-	@MessageMapping("/app/chat.sendMessage")
+	@MessageMapping("/chat.sendMessage")
 	public void sendMessage(@Payload ChatMessageDTO chatMessage) {
 		messagingTemplate.convertAndSend("/topic/publicChat", chatMessage);
 		log.info("메시지 전송: {}", chatMessage);
 	}
 
-	@MessageMapping("/app/chat.addUser")
+	@MessageMapping("/chat.addUser")
 	public void addUser(@Payload ChatMessageDTO chatMessage, SimpMessageHeaderAccessor headerAccessor) {
 		log.info("사용자 입장: {}", chatMessage);
 		// 웹소켓 세션에 사용자 ID와 이름을 추가
