@@ -1,10 +1,6 @@
 package com.bootstrap.study.approval.controller;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,9 +36,8 @@ import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 
 import jakarta.validation.Valid;
-
-import com.bootstrap.study.approval.dto.ApprDetailDTO;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Controller
 @RequestMapping("/approval")
@@ -54,6 +49,7 @@ public class ApprController {
 	
     @GetMapping("/doc_list")
     public String getDocList(){
+    	
         return "/approval/appr_doc_list";
     }
 

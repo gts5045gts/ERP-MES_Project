@@ -37,6 +37,7 @@ public class PersonnelController {
 		return "/hrn/personnelCurrent";
 	}
 	
+	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
     public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
         List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
@@ -141,16 +142,37 @@ public class PersonnelController {
 
 		return "/hrn/personnelCurrent";
 	}
-	/**		인사발령 페이지 필요 없음 
-	@GetMapping("/app")
-	public String app() {
-		log.info("PersonnelController app()");
+	
+	// 인사발령
+	@GetMapping("/trans")
+	public String trans(Model model) {
+		log.info("PersonnelController trans()");
 		
-		return "/hrn/personnelApp";
+		return "/hrn/personnelTrans";
 	}
-	**/
-// 현재에 맞게 다시 수정 
-@GetMapping("/orgChart")
+	
+	// 발령 등록 폼
+	@GetMapping("/trans/save")
+    public String transSave(Model model) {
+        log.info("PersonnelController transSave()");
+        
+        // 팝업 페이지에 필요한 부서, 직급 리스트 추가
+        List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
+        model.addAttribute("departments", departments);
+
+        List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
+        model.addAttribute("position", position);
+        
+        // 전체 사원 리스트
+        List<PersonnelDTO> allEmployees = personnelService.getAllPersonnels();
+        model.addAttribute("allEmployees", allEmployees);
+
+        return "/hrn/personnelTransSave"; // 
+    }
+
+	
+	// 현재에 맞게 다시 수정 
+	@GetMapping("/orgChart")
     public String showOrgChart(Model model) {
         // 모든 부서 목록을 가져와 모델에 추가
         List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
