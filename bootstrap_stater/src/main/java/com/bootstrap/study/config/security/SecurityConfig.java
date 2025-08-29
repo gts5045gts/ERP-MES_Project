@@ -38,7 +38,13 @@ public class SecurityConfig {
     	return httpSecurity
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
-                .requestMatchers("//personnel/regist").hasAnyRole("AUT001")
+                .requestMatchers("/personnel/**").permitAll()
+                .requestMatchers("/groupware/**").permitAll()
+                .requestMatchers("/notice/**").permitAll()
+                .requestMatchers("/schedule/**").permitAll()
+                .requestMatchers("/admin/**").permitAll()
+                .requestMatchers("/attendance/**").permitAll()
+                .requestMatchers("/approval/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
