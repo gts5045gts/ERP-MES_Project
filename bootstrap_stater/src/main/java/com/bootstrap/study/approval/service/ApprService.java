@@ -261,25 +261,33 @@ public class ApprService {
         return dto;
     }
     // 0828 - 올린 결재 취소 처리
-    @Transactional
-    public void cancelApproval(Long reqId, String loginId) {
-        // 결재 문서 조회
-        Appr appr = apprRepository.findById(reqId)
-            .orElseThrow(() -> new IllegalArgumentException("결재를 찾을 수 없습니다."));
-        
-        // 본인이 올린 결재인지 확인
-        if (!appr.getEmpId().equals(loginId)) {
-            throw new SecurityException("본인이 작성한 결재만 취소할 수 있습니다.");
-        }
-        
-        // 대기 상태인지 확인
-        if (appr.getStatus() != ApprStatus.REQUESTED) {
-            throw new IllegalArgumentException("대기 상태의 결재만 취소할 수 있습니다.");
-        }
-        
-        // 상태를 CANCELED로 변경
-        apprRepository.updateApprovalStatus(reqId, "CANCELED");
-    }
+	@Transactional
+	public void cancelApproval(Long reqId, String loginId) {
+	    log.info("결재 취소 시도 - reqId: {}, loginId: {}", reqId, loginId);
+	    
+	    // 결재 문서 조회
+	    Appr appr = apprRepository.findById(reqId)
+	        .orElseThrow(() -> new IllegalArgumentException("결재를 찾을 수 없습니다."));
+	    
+	    log.info("문서 작성자: {}, 요청자: {}", appr.getEmpId(), loginId);
+	    
+	    // empId 비교 시 trim() 추가
+	    if (!appr.getEmpId().trim().equals(loginId.trim())) {
+	        log.error("권한 없음 - 문서작성자: [{}], 요청자: [{}]", appr.getEmpId(), loginId);
+	        throw new SecurityException("본인이 작성한 결재만 취소할 수 있습니다.");
+	    }
+	    
+	    // 대기 상태인지 확인
+	    if (appr.getStatus() != ApprStatus.REQUESTED) {
+	        log.error("상태 불일치 - 현재상태: {}", appr.getStatus());
+	        throw new IllegalArgumentException("대기 상태의 결재만 취소할 수 있습니다.");
+	    }
+	    
+	    // DELETE 처리
+	    apprRepository.deleteById(reqId);
+	    log.info("결재 삭제 완료 - reqId: {}", reqId);
+	}
+	
     // 0828 결재대기 알림
     public int getMyPendingCount(String loginId) {
         // 내가 올린 대기 상태 결재 건수
