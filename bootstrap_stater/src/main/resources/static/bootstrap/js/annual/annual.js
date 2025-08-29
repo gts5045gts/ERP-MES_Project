@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         el: document.getElementById('grid'),
         data: [],
         columns: columns,
-        bodyHeight: 370,
+        bodyHeight: 360,
         rowHeaders: [],
         scrollX: false,
         emptyMessage: '조회결과가 없습니다.'
@@ -72,68 +72,6 @@ $('#AnnSearch').on('keyup', function() {
 	});
 });
 
-// 차트 
-const chartEl = document.getElementById('chart-area');
-
-fetch(`/attendance/annualList/chart`)
-	.then(res => res.json())
-	.then(data => {
-		const annTotal = Number(data.annTotal) || 0;
-		const annUse = Number(data.annUse) || 0;
-		const annPercent = annTotal === 0 ? 0 : Math.round((annUse / annTotal) * 100);
-		
-		const chartData = {
-			series: [
-				{ 
-					name: '사용률', 
-					data: [{value: annPercent}] 
-				}
-			]
-		};
-
-		const options = {
-			chart: {
-				width: 200,
-				height: 200
-			},
-			gaugeScale: { min: 0, max: 100 },
-			exportMenu: {
-				visible: false
-			},
-			series: {
-				solid: true,
-				dataLabels: { 
-					visible: true, 
-					offsetY: -27, formatter: (value) => `사용률 ${value.value}%` },
-			},
-			theme: {
-				circularAxis: {
-					lineWidth: 0,
-					strokeStyle: 'rgba(0, 0, 0, 0)',
-					tick: {
-						lineWidth: 0,
-						strokeStyle: 'rgba(0, 0, 0, 0)',
-					},
-					label: {
-						color: 'rgba(0, 0, 0, 0)',
-					},
-				},
-				series: {
-					dataLabels: {
-						fontSize: 15,
-						fontFamily: 'Impact',
-						fontWeight: 500,
-						color: '#00a9ff',
-						textBubble: {
-							visible: false,
-						},
-					},
-				},
-			},
-		};
-
-		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options });
-	});
 
 /*오늘의 연차자 모달*/
 document.addEventListener('DOMContentLoaded', function() {
@@ -187,6 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// 닫기 버튼 → 모달 닫기
 		closeBtn.addEventListener('click', function() {
+			modal.classList.remove('open');
+		});
+		
+		modal.addEventListener('click', function(e){
 			modal.classList.remove('open');
 		});
 });

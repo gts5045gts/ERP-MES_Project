@@ -55,6 +55,22 @@ input[type="search"] {
 }
 
 
+.annPerson {
+	font-size: 90px;
+    color: #4d72dec9;
+}
+
+
+.icon-wrapper {
+  text-align: center; /* 가로 중앙 */
+  margin-top: 60px;   /* 세로 간격 조정 */
+  margin-bottom: 57px;   /* 세로 간격 조정 */
+}
+
+.person-icon {
+  filter: grayscale(100%) brightness(0%) sepia(100%) hue-rotate(180deg);
+}
+
 /* 그리드 글씨체 */
 .tui-grid-row-odd, .tui-grid-row-even {
 	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
@@ -138,3 +154,5 @@ input[type="search"] {
     font-size: 15px;
     background-color: #fff;
 }
+
+

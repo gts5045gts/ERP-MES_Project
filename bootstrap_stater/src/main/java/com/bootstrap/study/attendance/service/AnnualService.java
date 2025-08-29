@@ -113,15 +113,17 @@ public class AnnualService {
 	public Page<AnnualDTO> getAllAnnByYearPaged(String annYear, Pageable pageable) {
 		Page<Annual> annPage = annRepository.findByAnnYear(annYear, pageable); 
 
-		// 2. Annual -> AnnualDTO 변환
 		List<AnnualDTO> dtoList = annPage.stream().map(ann -> {
 			Personnel emp = getPersonnel(ann.getEmpId());
 			ann.setAnnRemain(ann.getAnnTotal() - ann.getAnnUse());
 			return new AnnualDTO(ann, emp); // DTO 생성자에서 annPeriod, annExpire 계산됨
 		}).collect(Collectors.toList());
 		
+		// ---------------------------------------------------------------------------
+		// perssonel쪽에 save()추가하면 불필요한 코드
 		List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();
 		
+		// 등록된 사원
 		List<Personnel> updateEmps = empRepository.findAll().stream()
 				.filter(emp -> !existingEmps.contains(emp.getEmpId())).toList();
 		
@@ -133,7 +135,8 @@ public class AnnualService {
 			dtoList.add(dto);
 		}
 
-		// 3. Page<AnnualDTO>로 변환
+		//--------------------------------------------------------
+		
 		return new PageImpl<>(dtoList, pageable, dtoList.size());
 	}
 
@@ -141,23 +144,13 @@ public class AnnualService {
 	// 검색창
 	public List<AnnualDTO> searchAnn(String keyword) {
 		
-		List<Object[]> results = annRepository.searchAnn(keyword);
+		List<Object[]> results = annRepository.searchAnn(keyword); // annual과 pesonnel 같이 담아야해서.
 
 	    return results.stream()
 	    		.map(obj -> new AnnualDTO((Annual) obj[0], (Personnel) obj[1])).toList();
 	}
 
 
-	// 내 연차 사용률(도넛차트)
-	public AnnualDTO findById(Long id) {
-		Annual ann = annRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("해당 사원의 연차가 없습니다.")); 
-		
-		Personnel emp = getPersonnel(ann.getEmpId());
-		
-		return new AnnualDTO(ann, emp);
-	}
-	
 
 	// 사원등록시 연차 초기 생성
 	public void annListUpdate(String empId) {
@@ -172,13 +165,13 @@ public class AnnualService {
 	// 기안서 승인 시 연차 변경
 	@Transactional
 	public void AnnUpdate() {
-		// FINISHED + VACATION 결재 조회
+		
 		List<Appr> allApprovals = apprRepository.findAll();
 
 		for (Appr appr : allApprovals) {
 			if (appr.getStatus() != ApprStatus.FINISHED || !"VACATION".equalsIgnoreCase(appr.getReqType())) continue; 
 
-			Long reqId = appr.getReqId();
+			Long reqId = appr.getReqId(); // 결재 문서 ID
 
 			Annual ann = getOrCreateAnnual(appr.getEmpId(), appr.getRequestAt().getYear());
 
@@ -206,7 +199,7 @@ public class AnnualService {
 	// 오늘 연차자 조회
 	@Transactional(readOnly = true)
 	public List<AnnualDTO> getTodayAnn() {
-		LocalDate today = LocalDate.now();
+		LocalDate today = LocalDate.now(); // 오늘 날짜 가져오기
 
 		List<Appr> approvals = apprRepository.findAll().stream()
 				.filter(a -> a.getStatus() == ApprStatus.FINISHED && "VACATION".equalsIgnoreCase(a.getReqType()))

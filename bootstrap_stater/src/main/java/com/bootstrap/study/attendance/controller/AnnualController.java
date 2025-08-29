@@ -50,31 +50,21 @@ public class AnnualController {
 	        annYear = String.valueOf(java.time.LocalDate.now().getYear()); // 기본: 올해
 	    }
 		
-	    annService.AnnUpdate();
+	    annService.AnnUpdate(); // 연차 변경
 	    
-		AnnualDTO myAnn = annService.myAnnual(empId, annYear);
+		AnnualDTO myAnn = annService.myAnnual(empId, annYear); // 내 연차 조회
 		model.addAttribute("myAnn", myAnn);
 		return "commute/annual_list";
 	}
 	
-	// 내 사용률(도넛 차트)
-	@GetMapping("/annualList/chart")
-	@ResponseBody
-	public AnnualDTO myAnnPercent(@RequestParam(value="year", required=false) String annYear, Authentication authentication) {
-		String empId = authentication.getName();
-
-		if(annYear == null) {
-			annYear = String.valueOf(java.time.LocalDate.now().getYear());
-		}
-
-		return annService.myAnnual(empId, annYear); 
-	}
 	
-	// 모든 사원 연차 내역
+	// 모든 사원 연차 내역(무한스크롤)
 	@GetMapping("/annListAll/{annYear}")
 	@ResponseBody
 	public Map<String, Object> annListAll(@PathVariable("annYear") String annYear, 
-			@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "20") int size) {
+			@RequestParam(value = "page", defaultValue = "0") int page, 
+			@RequestParam(value = "size", defaultValue = "20") int size) {
+		
 		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(annYear, PageRequest.of(page, size));
 		
 		Map<String, Object> result = new HashMap<>();
