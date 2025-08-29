@@ -31,8 +31,10 @@ public class EmpUserDetailService implements UserDetailsService {
 		personnelLoginDTO.setName(personnel.getName());
 		personnelLoginDTO.setPasswd(personnel.getPasswd());
 		personnelLoginDTO.setEmpDeptId(personnel.getDepartment().getComDtId());
+		personnelLoginDTO.setEmpLevelId(personnel.getLevel().getComDtId());
 		log.info("로그인객체 : " + personnelLoginDTO.toString());
 		return personnelLoginDTO;
+//		return User.builder().username(personnel.getEmpId()).password(personnel.getPasswd()).roles(personnel.getLevel().getComDtId()).build();
 	}
 
 }
