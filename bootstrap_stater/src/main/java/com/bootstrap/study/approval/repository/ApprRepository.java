@@ -18,88 +18,86 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApprRepository extends JpaRepository<Appr,Long> {
 	
-	// 0827 내가 기안한 문서 조회
+	// 내가 기안한 문서 조회
+	@Query(value = """
+		SELECT
+		    1 as step_no,
+		    a.title,
+		    e.emp_name,
+		    dept.com_dt_nm,
+		    pos.com_dt_nm,
+		    a.request_at,
+		    a.create_at,
+		    a.status,
+		    a.req_id,
+		    a.req_type,
+		    a.emp_id,
+		    a.status,
+		    CASE 
+		        WHEN EXISTS (SELECT 1 FROM approval_line al 
+		                    WHERE al.req_id = a.req_id 
+		                    AND al.decision = 'DENY') 
+		        THEN 'DENY' 
+		        ELSE NULL 
+		    END as has_rejection  -- 12번째: 반려 여부
+		FROM approval a
+		JOIN employee e ON a.emp_id = e.emp_id
+		LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+		LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+		WHERE a.emp_id = :loginId
+		ORDER BY a.create_at DESC
+		""", nativeQuery = true)
+	List<Object[]> findMyDraftedApprovalList(@Param("loginId") String loginId);
+	
+	// 인사 결재 목록 세부조회
 	@Query(value = """
 	    SELECT
-	        1 as step_no,
-	        a.title,
-	        e.emp_name,
-	        dept.com_dt_nm,
-	        pos.com_dt_nm,
-	        a.request_at,
-	        a.create_at,
-	        a.status,
-	        a.req_id,
-	        a.req_type,
-	        a.emp_id,
-	        a.status,
-	        CASE 
-	            WHEN EXISTS (SELECT 1 FROM approval_line al 
-	                        WHERE al.req_id = a.req_id 
-	                        AND al.decision = 'DENY') 
-	            THEN 'DENY' 
-	            ELSE NULL 
-	        END as has_rejection  -- 12번째: 반려 여부
-	    FROM approval a
+	        al.step_no,           -- 0
+	        a.title,              -- 1
+	        e.emp_name,           -- 2
+	        dept.com_dt_nm,       
+	        pos.com_dt_nm,        
+	        a.request_at,         
+	        al.dec_date,          
+	        al.decision,          
+	        a.req_id,             
+	        a.req_type,           
+	        a.emp_id              -- 10
+	    FROM approval_line al
+	    JOIN approval a ON al.req_id = a.req_id
 	    JOIN employee e ON a.emp_id = e.emp_id
 	    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
 	    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
-	    WHERE a.emp_id = :loginId
-	    ORDER BY a.create_at DESC
+	    WHERE a.req_id = :reqId
+	    ORDER BY al.step_no ASC
 	    """, nativeQuery = true)
-	List<Object[]> findMyDraftedApprovalList(@Param("loginId") String loginId);
+	List<Object[]> findApprovalByReqId(@Param("reqId") Long reqId);
 	
-	// 0827
-	// 인사 결재 목록 세부조회
-	@Query(value = """
-		    SELECT
-		        al.step_no,           -- 0
-		        a.title,              -- 1
-		        e.emp_name,           -- 2
-		        dept.com_dt_nm,       
-		        pos.com_dt_nm,        
-		        a.request_at,         
-		        al.dec_date,          
-		        al.decision,          
-		        a.req_id,             
-		        a.req_type,           
-		        a.emp_id              -- 10
-		    FROM approval_line al
-		    JOIN approval a ON al.req_id = a.req_id
-		    JOIN employee e ON a.emp_id = e.emp_id
-		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
-		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
-		    WHERE a.req_id = :reqId
-		    ORDER BY al.step_no ASC
-		    """, nativeQuery = true)
-		List<Object[]> findApprovalByReqId(@Param("reqId") Long reqId);
-	
-	// 0827
 	// 인사 결재 목록 조회
 	@Query(value = """
-		    SELECT
-		        al.step_no,           -- 0
-		        a.title,              -- 1
-		        e.emp_name,           -- 2
-		        dept.com_dt_nm,       -- 3
-		        pos.com_dt_nm,        -- 4
-		        a.request_at,         -- 5
-		        al.dec_date,          -- 6
-		        al.decision,          -- 7
-		        a.req_id,             -- 8
-		        a.req_type,           -- 9
-		        a.emp_id              -- 10
-		    FROM approval_line al
-		    JOIN approval a ON al.req_id = a.req_id
-		    JOIN employee e ON a.emp_id = e.emp_id
-		    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
-		    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
-		    WHERE al.appr_id = :loginId  -- 결재자
-		    ORDER BY a.request_at DESC, al.step_no ASC
-		    """, nativeQuery = true)
-		List<Object[]> findApprovalListWithJoin(@Param("loginId") String loginId);
+	    SELECT
+	        al.step_no,           -- 0
+	        a.title,              -- 1
+	        e.emp_name,           -- 2
+	        dept.com_dt_nm,       -- 3
+	        pos.com_dt_nm,        -- 4
+	        a.request_at,         -- 5
+	        al.dec_date,          -- 6
+	        al.decision,          -- 7
+	        a.req_id,             -- 8
+	        a.req_type,           -- 9
+	        a.emp_id              -- 10
+	    FROM approval_line al
+	    JOIN approval a ON al.req_id = a.req_id
+	    JOIN employee e ON a.emp_id = e.emp_id
+	    LEFT JOIN common_dt_code dept ON e.emp_dept_id = dept.com_dt_id
+	    LEFT JOIN common_dt_code pos ON e.emp_position = pos.com_dt_id
+	    WHERE al.appr_id = :loginId  -- 결재자
+	    ORDER BY a.request_at DESC, al.step_no ASC
+	    """, nativeQuery = true)
+	List<Object[]> findApprovalListWithJoin(@Param("loginId") String loginId);
 
-    // 0828 결재대기 알람
+    // 결재대기 알람
 	@Query(value = """
 	    SELECT COUNT(*) 
 	    FROM approval 
@@ -107,7 +105,8 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 	    AND status = 'REQUESTED'
 	    """, nativeQuery = true)
 	int countMyPendingApprovals(@Param("loginId") String loginId);
-	// 0828 결재대기 알람
+	
+	// 결재대기 알람
 	@Query(value = """
 		    SELECT COUNT(*) 
 		    FROM approval 
@@ -116,9 +115,7 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 		    """, nativeQuery = true)
 		int countMyApprovalsByStatus(@Param("loginId") String loginId, @Param("status") String status);
 		
-		
-    // 0821
-   	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
+	// 승인버튼 누를시 승인처리되게 하기 (결재목록에서 대기 -> 승인으로 바뀜, 데이터도 반영)
 	@Transactional
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query(value = """
@@ -132,8 +129,8 @@ public interface ApprRepository extends JpaRepository<Appr,Long> {
 	int updateApprovalLineDecision(@Param("reqId") Long reqId, 
 	                              @Param("decision") String decision,
 	                              @Param("comments") String comments);
-    // 0826
-    // 결재 문서 상태 업데이트 메서드 추가
+    
+	// 결재 문서 상태 업데이트 메서드 추가
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(value = """
         UPDATE approval 
