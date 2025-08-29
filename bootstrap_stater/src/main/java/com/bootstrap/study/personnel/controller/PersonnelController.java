@@ -1,15 +1,20 @@
 package com.bootstrap.study.personnel.controller;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.RequiredArgsConstructor;
@@ -143,8 +149,16 @@ public class PersonnelController {
 	
 	// 인사발령
 	@GetMapping("/trans")
-	public String trans(Model model) {
+	public String trans(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
 		log.info("PersonnelController trans()");
+		
+		// 로그인한 사용자의 부서 정보 확인
+		String userDeptId = userDetails.getEmpDeptId(); 
+
+        // 부서 코드가 'DEP001'(인사팀)일 경우, 버튼 표시 여부를 true로 설정
+        boolean isHrTeam = "DEP001".equals(userDeptId);
+        
+        model.addAttribute("isHRTeam", isHrTeam);
 		
 		return "/hrn/personnelTrans";
 	}
@@ -164,8 +178,26 @@ public class PersonnelController {
         // 전체 사원 리스트
         List<PersonnelDTO> allEmployees = personnelService.getAllPersonnels();
         model.addAttribute("allEmployees", allEmployees);
+        
+        // 인사팀 and 중간관리자 or 상위관리자 사원 목록
+        List<PersonnelDTO> approvers = personnelService.getEmployeesByDeptIdLevel("DEP001", "AUT001", "AUT002");
+        model.addAttribute("approvers", approvers);
 
-        return "/hrn/personnelTransSave"; // 
+        return "/hrn/personnelTransSave";  
+    }
+	
+	@PostMapping("/api/trans")
+    public ResponseEntity<String> transPersonnel(@RequestBody Map<String, Object> payload, Principal principal) {
+        log.info("인사 발령 요청 수신: {}", payload);
+        String loginEmpId = principal.getName(); // 로그인한 사용자 ID
+        try {
+            // Service 계층으로 발령 데이터 전달
+            personnelService.submitTransPersonnel(payload, loginEmpId);
+            return ResponseEntity.ok("인사 발령 신청이 성공적으로 처리되었습니다.");
+        } catch (Exception e) {
+            log.error("인사 발령 처리 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("인사 발령 처리 실패: " + e.getMessage());
+        }
     }
 
 	

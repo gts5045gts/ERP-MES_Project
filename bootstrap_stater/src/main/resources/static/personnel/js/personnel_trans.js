@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		// 팝업 윈도우 설정
 		const popupUrl = '/personnel/trans/save'; // 팝업 페이지 URL
 		const windowName = 'personnelTransPopup';
-		const windowFeatures = 'width=950,height=850,scrollbars=yes,resizable=yes';
+		const windowFeatures = 'width=950,height=920,scrollbars=yes,resizable=yes';
 
 		window.open(popupUrl, windowName, windowFeatures);
     });

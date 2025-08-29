@@ -1,6 +1,7 @@
 package com.bootstrap.study.commonCode.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ public interface CommonDetailCodeRepository extends JpaRepository<CommonDetailCo
 			")")
 	List<CommonDetailCode> searchByParentAndKeyword(@Param("parentId") String parentId, @Param("keyword") String keyword);
 
+	Optional<CommonDetailCode> findByComDtId(String comDtId);
 
 
 }

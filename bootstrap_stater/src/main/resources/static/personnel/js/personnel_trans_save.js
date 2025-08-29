@@ -19,8 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	// 숨겨진 입력 필드 (발령 정보 저장 시 사용)
 	const hiddenSelectedEmployeeDbId = document.getElementById('hiddenSelectedEmployeeDbId');
 
+	const saveBtn = document.getElementById('saveBtn');
 
-	// '검색' 버튼 클릭 이벤트 리스너
+	// 결재자 드롭다운
+	const approverSelect = document.getElementById('approverSelect');
+
+	// 검색 버튼 클릭 이벤트 리스너
 	searchButton.addEventListener('click', () => {
 		const deptId = deptSelect.value;
 		const positionId = positionSelect.value;
@@ -74,4 +78,62 @@ document.addEventListener('DOMContentLoaded', () => {
 			employeeTableBody.appendChild(row);
 		});
 	}
+
+	// 페이지 로드 시 결재자 드롭다운
+	function populateApprovers() {
+		if (approversData && approversData.length > 0) {
+			approversData.forEach(employee => {
+				const option = document.createElement('option');
+				option.value = employee.empId;
+				option.textContent = employee.name + ' (' + employee.levName + ')';
+				approverSelect.appendChild(option);
+			});
+		}
+	}
+
+	populateApprovers();
+
+	// 신청 버튼 클릭 이벤트 리스너
+	document.getElementById('saveBtn').addEventListener('click', async () => {
+	    const selectedEmpId = document.getElementById('hiddenSelectedEmployeeDbId').value;
+	    const transType = document.getElementById('transTypeSelect').value;
+	    const transDate = document.getElementById('transDateInput').value;
+	    const transDept = document.getElementById('transDeptSelect').value;
+	    const transPos = document.getElementById('transPosSelect').value;
+	    const approverId = document.getElementById('approverSelect').value;
+
+	    if (!selectedEmpId || !transType || !transDate || !transDept || !transPos || !approverId) {
+	        alert('모든 발령 정보를 입력해주세요.');
+	        return;
+	    }
+
+	    const payload = {
+	        empId: selectedEmpId,
+	        transType: transType,
+	        transDate: transDate,
+	        transDept: transDept,
+	        transPos: transPos,
+	        approverId: approverId
+	    };
+
+	    try {
+	        const response = await fetch('/personnel/api/trans', {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify(payload)
+	        });
+
+	        if (response.ok) {
+	            alert('인사 발령 신청이 성공적으로 제출되었습니다.');
+	            window.close(); // 팝업 닫기
+	        } else {
+	            const errorMessage = await response.text();
+	            alert('인사 발령 신청 실패: ' + errorMessage);
+	        }
+	    } catch (error) {
+	        console.error('API 호출 중 오류:', error);
+	        alert('인사 발령 신청 중 오류가 발생했습니다.');
+	    }
+	});
+
 });

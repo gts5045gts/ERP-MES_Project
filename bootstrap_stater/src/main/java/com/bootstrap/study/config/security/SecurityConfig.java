@@ -39,6 +39,7 @@ public class SecurityConfig {
 //        .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
+//                .requestMatchers("/personnel/regist").hasAnyRole("AUT001")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

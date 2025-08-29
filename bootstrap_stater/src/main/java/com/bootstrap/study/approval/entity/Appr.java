@@ -16,9 +16,11 @@ import com.bootstrap.study.approval.constant.ApprStatus;
 @Entity
 @Table(name = "approval")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Appr {
 
