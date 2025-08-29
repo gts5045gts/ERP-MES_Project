@@ -22,7 +22,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		// 서버의 @Controller로 라우팅될 메시지 prefix
 		registry.setApplicationDestinationPrefixes("/app");
 		// 메시지 브로커로 라우팅될 메시지 prefix (구독)
-		registry.enableSimpleBroker("/topic", "/queue");
+		registry.enableSimpleBroker("/topic", "/queue", "/user");
+		registry.setUserDestinationPrefix("/user");
 	}
 
 }

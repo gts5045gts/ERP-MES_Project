@@ -15,6 +15,7 @@ public class ChatMessageDTO {
 	private String chatRoomId;
 	private String senderId;
 	private String senderName;
+	private String receiverId;
 	private String content;
 
 }
