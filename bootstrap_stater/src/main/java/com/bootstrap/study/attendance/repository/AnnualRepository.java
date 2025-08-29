@@ -19,6 +19,7 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 	
 	// 내 연차 조회
 	Optional<Annual> findByEmpIdAndAnnYear(String empId, String annYear);
+	
 
 	// 전체 사원 조회 + 무한스크롤
 	Page<Annual> findByAnnYear(String annYear, Pageable pageable);
@@ -30,6 +31,8 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 			"OR LOWER(p.department.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
 			"OR LOWER(p.position.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 	List<Object[]> searchAnn(@Param("keyword") String keyword);
+
+
 	
 	
 
