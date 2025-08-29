@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -228,8 +229,6 @@ public class CommuteController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 		
-//		System.out.println("로그인 사용자 ID: " + empId);
-		
 		// ================================================================================
 		
 		// 수정버튼 처리
@@ -242,8 +241,9 @@ public class CommuteController {
 	
 	// 출근기록 삭제
 	@ResponseBody
-	@PostMapping("/deleteWork")
-	public ResponseEntity<CommuteDeleteLogDTO> deleteWork() {
+	@PostMapping("/deleteCommuteRecord")
+	public ResponseEntity<Map<String, Object>>deleteCommuteRecord(
+			@RequestBody Map<String, Object> deleteLogData) {
 		
 		// 로그인한 사용자 객체 꺼내기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -254,19 +254,25 @@ public class CommuteController {
 		}
 		
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-		String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-//		System.out.println("로그인 사용자 ID: " + empId);
+		String adminEmpId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+//		System.out.println("로그인 관리자 ID: " + adminEmpId);
 		
-		// 퇴근 처리
-//		try {
-//			CommuteDTO commuteCheckOut = commuteService.checkOut(empId);
-////			System.out.println("commuteCheckOut : " + commuteCheckOut);
-//			return ResponseEntity.ok(commuteCheckOut);
-//		} catch (IllegalStateException e) {
-//			// 이미 출근 기록 있을 경우 409 Conflict 반환
-//			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-//		}
-		return null;
+		
+		// 삭제처리
+		deleteLogData.put("adminEmpId", adminEmpId);
+		
+	    String checkInTimeStr = (String) deleteLogData.get("checkInTime");
+	    LocalDateTime checkInTime = LocalDateTime.parse(checkInTimeStr,
+	            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+	    deleteLogData.put("checkInTime", checkInTime);
+		
+		String commuteDeleteLog = commuteService.deleteCommuteRecord(deleteLogData);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("success", true);
+		response.put("message", commuteDeleteLog);
+		
+		return ResponseEntity.ok(response);
 	}
 	
 

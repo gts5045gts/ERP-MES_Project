@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>사내 메신저</title>
+    </head>
+<body th:data-current-emp-id="${currentEmpId}" th:data-current-emp-name="${currentEmpName}">
+    <th:block layout:fragment="content">
+        <div id="chat-page" class="container-fluid">
+            <h1>사내 메신저</h1>
+            <div id="messageArea" class="card-body bg-light" style="height: 400px; overflow-y: scroll;">
+                </div>
+            <form id="messageForm" name="messageForm" class="input-group mb-3">
+                <input type="text" id="messageInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off">
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary">보내기</button>
+                </div>
+            </form>
+        </div>
+    </th:block>
+
+</body>
+</html>

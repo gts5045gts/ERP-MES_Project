@@ -72,3 +72,27 @@ input[type="search"] {
     font-size: 17px;
     font-weight: 500;
 }
+
+/* mes rep 구분 버튼 */
+.nav-btn {
+	display: inline-block;
+	padding: 6px 14px;
+	margin-right: 5px;
+	color: #000;               /* 기본 글자색 검정 */
+	background-color: rgb(233 233 233 / 72%);     /* 기본 배경 흰색 */
+	text-decoration: none;    /* 밑줄 제거 */
+	border-radius: 30px;       /* 모서리 둥글게 */
+	transition: background 0.3s;
+	font-size: 15px;
+	margin-bottom: 7px;
+}
+
+.nav-btn.active {
+  background-color: #000;    /* 선택된 탭 검정 배경 */
+  color: #fff;               /* 글자 흰색 */
+}
+
+.main-header.navbar {
+  padding-top: 0.1rem;    /* 상단 패딩 줄임 */
+  padding-left: 28px;
+}
