@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -22,8 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
-import com.bootstrap.study.commonCode.util.HolidayDTO;
-import com.bootstrap.study.commonCode.util.HolidayService;
+import com.bootstrap.study.config.util.HolidayDTO;
+import com.bootstrap.study.config.util.HolidayService;
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;

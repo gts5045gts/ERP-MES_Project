@@ -1,5 +1,6 @@
 package com.bootstrap.study.personnel.controller;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
@@ -35,6 +37,7 @@ public class PersonnelController {
 		return "/hrn/personnelCurrent";
 	}
 	
+	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
     public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
         List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
@@ -130,23 +133,44 @@ public class PersonnelController {
 	}
 	
 	@PostMapping("/registPro")
-	public String registPro(PersonnelDTO personnelDTO) {
+	public String registPro(PersonnelDTO personnelDTO, @RequestParam("empImg") MultipartFile empImg) throws IOException {
 		log.info("등록할 사원 정보 : " + personnelDTO.toString());
 		
-		personnelService.personRegist(personnelDTO);
+		personnelService.personRegist(personnelDTO, empImg);
 
 		return "/hrn/personnelCurrent";
 	}
 	
-	@GetMapping("/app")
-	public String app() {
-		log.info("PersonnelController app()");
+	// 인사발령
+	@GetMapping("/trans")
+	public String trans(Model model) {
+		log.info("PersonnelController trans()");
 		
-		return "/hrn/personnelApp";
+		return "/hrn/personnelTrans";
 	}
 	
-// 현재에 맞게 다시 수정 
-@GetMapping("/orgChart")
+	// 발령 등록 폼
+	@GetMapping("/trans/save")
+    public String transSave(Model model) {
+        log.info("PersonnelController transSave()");
+        
+        // 팝업 페이지에 필요한 부서, 직급 리스트 추가
+        List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
+        model.addAttribute("departments", departments);
+
+        List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
+        model.addAttribute("position", position);
+        
+        // 전체 사원 리스트
+        List<PersonnelDTO> allEmployees = personnelService.getAllPersonnels();
+        model.addAttribute("allEmployees", allEmployees);
+
+        return "/hrn/personnelTransSave"; // 
+    }
+
+	
+	// 현재에 맞게 다시 수정 
+	@GetMapping("/orgChart")
     public String showOrgChart(Model model) {
         // 모든 부서 목록을 가져와 모델에 추가
         List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();

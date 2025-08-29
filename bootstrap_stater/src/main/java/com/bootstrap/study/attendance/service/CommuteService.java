@@ -58,9 +58,9 @@ public class CommuteService {
 		
 	    String workStatus;
 	    if (nowTime.isAfter(startTime)) {
-	        workStatus = "STA004"; // 지각
+	        workStatus = "WSTA003"; // 지각
 	    } else {
-	        workStatus = "STA001"; // 출근
+	        workStatus = "WSTA001"; // 출근
 	    }
 		
 		CommuteDTO commute = new CommuteDTO();
@@ -91,24 +91,18 @@ public class CommuteService {
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
 		commute.setCheckOutTime(now);
-		commute.setWorkStatus("STA002");
+		commute.setWorkStatus("WSTA002");
 		
 		commuteMapper.updateCommuteCheckOut(commute);
 		
 		return commute;
 	}
 	
-	// 관리자 근태관리 리스트
-//	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
-//	public List<CommuteDTO> getAdminDeptCommuteList(Map<String, Object> paramMap) {
-//		System.out.println("paramMap : " + paramMap);
-//		return commuteMapper.getAdminDeptCommuteList(paramMap);
-//	}
 
 	// 부서 공통코드
 	public List<CommonDetailCodeDTO> getCommonDept() {
 		List<CommonDetailCodeDTO> commonDept = commuteMapper.getCommonDept("DEP");
-		System.out.println("commonDept : " + commonDept);
+//		System.out.println("commonDept : " + commonDept);
 		return commonDept;
 	}
 
@@ -122,9 +116,22 @@ public class CommuteService {
 	}
 
 	// 근무상태 공통코드
-//	public List<CommonDetailCodeDTO> getCommonStatus() {
-//		return commuteMapper.getCommonStatus();
-//	}
+	public List<CommonDetailCodeDTO> getCommonStatus() {
+		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("WSTA");
+//		System.out.println("commonStatus : " + commonStatus);
+		return commonStatus;
+	}
+
+	// 관리자 수정버튼
+	public int updateWorkStatus(List<AdminCommuteDTO> updateList) {
+		int updatedCount = 0;
+		
+        for (AdminCommuteDTO dto : updateList) {
+            updatedCount += commuteMapper.updateWorkStatus(dto); // 개별 UPDATE 호출
+        }
+		
+	    return updatedCount;
+	}
 	
 
 }

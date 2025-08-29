@@ -1,4 +1,4 @@
-package com.bootstrap.study.controller;
+package com.bootstrap.study.config.defaultController;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
