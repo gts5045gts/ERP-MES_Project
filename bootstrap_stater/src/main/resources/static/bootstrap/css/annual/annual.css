@@ -55,6 +55,22 @@ input[type="search"] {
 }
 
 
+.annPerson {
+	font-size: 90px;
+    color: #4d72dec9;
+}
+
+
+.icon-wrapper {
+  text-align: center; /* 가로 중앙 */
+  margin-top: 60px;   /* 세로 간격 조정 */
+  margin-bottom: 57px;   /* 세로 간격 조정 */
+}
+
+.person-icon {
+  filter: grayscale(100%) brightness(0%) sepia(100%) hue-rotate(180deg);
+}
+
 /* 그리드 글씨체 */
 .tui-grid-row-odd, .tui-grid-row-even {
 	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
@@ -74,4 +90,69 @@ input[type="search"] {
 }
 
 
+/* 오늘의 연차자 */
+.leave-btn {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  width: 65px;
+  height: 25px;
+  text-align: center;
+}
+
+.leave-full { background-color: #4caf50; }   /* 연차 - 초록 */
+.leave-half { background-color: #ff9800; }   /* 반차 - 주황 */
+
 /* 차트 */
+#MyAnnArea {
+  flex: 0 0 auto !important; /* 자동 늘어남 방지 */
+}
+
+#chart-area {
+  text-align: center; /* inline-block 요소인 canvas를 가운데 */
+}
+
+#chart-area canvas {
+  display: inline-block;
+}
+
+/* 오늘 연차 사원 모달 */
+.Annual-container {
+    position: fixed;
+    top: 0;
+    right: -500px;          /* 처음에는 화면 밖으로 숨김 */
+    width: 500px;           /* 너비 */
+    height: 100%;
+    background-color: #f8f8f8;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 모달 열리면 오른쪽으로 슬라이드 */
+.Annual-container.open {
+    right: 0;
+}
+
+/* 헤더 */
+.Annual-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 모달 내용 영역 */
+.Annual-body {
+    flex: 1;               /* 남은 영역 채움 */
+    padding: 20px;
+    overflow-y: auto;
+    font-size: 15px;
+    background-color: #fff;
+}
+
+

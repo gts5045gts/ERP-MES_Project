@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
         el: document.getElementById('grid'),
         data: [],
         columns: columns,
-        bodyHeight: 400,
-        rowHeaders: ['rowNum'],
+        bodyHeight: 360,
+        rowHeaders: [],
         scrollX: false,
         emptyMessage: '조회결과가 없습니다.'
     });
@@ -72,65 +72,65 @@ $('#AnnSearch').on('keyup', function() {
 	});
 });
 
-// 차트 
-const chartEl = document.getElementById('chart-area');
-const id = 2;
 
-fetch(`/attendance/annualList/chart/${id}`)
-	.then(res => res.json())
-	.then(data => {
-		const annTotal = Number(data.annTotal) || 0;
-		const annUse = Number(data.annUse) || 0;
-		const annPercent = annTotal === 0 ? 0 : Math.round((annUse / annTotal) * 100);
-		
-		const chartData = {
-			series: [
-				{ 
-					name: '사용률', 
-					data: [annPercent] 
+/*오늘의 연차자 모달*/
+document.addEventListener('DOMContentLoaded', function() {
+	const table = document.getElementById('todayAnnTable');
+	const modal = document.getElementById('todayAnnModal');
+    const openBtn = document.getElementById('todayAnnButton');
+    const closeBtn = document.querySelector('.close-Annual-button');
+	
+	function loadAnnData() {	
+		fetch('/attendance/todayAnn')
+			.then(response => response.json())
+			.then(data => {
+				if (data.length === 0) {
+					table.innerHTML = '<tr><td colspan="5" class="text-center">오늘 연차 사원이 없습니다.</td></tr>';
+					return;
 				}
-			]
-		};
+	
+				let html = `<thead>
+	                            <tr>
+	                                <th>사원ID</th>
+	                                <th>이름</th>
+	                                <th>부서</th>
+	                                <th>직급</th>
+	                                <th>휴가종류</th>
+	                            </tr>
+	                        </thead><tbody>`;
+	
+				data.forEach(emp => {
+					
+					let annType = emp.annType === '연차' ? 'leave-full' : 'leave-half';
+					
+					html += `<tr>
+	                            <td>${emp.empId}</td>
+	                            <td>${emp.empName}</td>
+	                            <td>${emp.depName}</td>
+	                            <td>${emp.empPos}</td>
+	                            <td><span class="leave-btn ${annType}">${emp.annType}</span></td>
+	                         </tr>`;
+				});
+	
+				html += '</tbody>';
+				table.innerHTML = html;
+			})
+			.catch(err => console.error('오늘 연차 조회 실패', err));
+		}
+		
+		openBtn.addEventListener('click', function() {
+			loadAnnData();
+			modal.classList.add('open');
+		});
 
-		const options = {
-			chart: {
-				width: 270,
-				height: 300
-			},
-			gaugeScale: { min: 0, max: 100 },
-			exportMenu: {
-				visible: false
-			},
-			series: {
-				solid: true,
-				dataLabels: { visible: true, offsetY: 40, formatter: (value) => `사용률 ${value}%` },
-			},
-			theme: {
-				circularAxis: {
-					lineWidth: 0,
-					strokeStyle: 'rgba(0, 0, 0, 0)',
-					tick: {
-						lineWidth: 0,
-						strokeStyle: 'rgba(0, 0, 0, 0)',
-					},
-					label: {
-						color: 'rgba(0, 0, 0, 0)',
-					},
-				},
-				series: {
-					dataLabels: {
-						fontSize: 15,
-						fontFamily: 'Impact',
-						fontWeight: 500,
-						color: '#00a9ff',
-						textBubble: {
-							visible: false,
-						},
-					},
-				},
-			},
-		};
+		// 닫기 버튼 → 모달 닫기
+		closeBtn.addEventListener('click', function() {
+			modal.classList.remove('open');
+		});
+		
+		modal.addEventListener('click', function(e){
+			modal.classList.remove('open');
+		});
+});
 
-		toastui.Chart.gaugeChart({ el: chartEl, data: chartData, options: options });
-	});
 
