@@ -155,6 +155,11 @@ public class CommuteService {
 		
 		return "삭제 완료";
 	}
+
+	// 삭제된 출근 로그데이터 가져오기
+	public List<CommuteDeleteLogDTO> getLogData() {
+		return commuteMapper.getLogData();
+	}
 	
 
 }
