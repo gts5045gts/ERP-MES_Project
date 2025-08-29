@@ -63,11 +63,12 @@
 		                            <th>출근시간</th>
 		                            <th>퇴근시간</th>
 		                            <th>근무상태</th>
-		                            <th>출근기록</th>
+		                            <th style="width: 110px;">출근기록</th>
 		                        </tr>
 	                        </thead>
 	                        <tbody>
-		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}">
+		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}"
+		                        	th:data-check-in-time="${#temporals.format(c.checkInTime, 'yyyy-MM-dd HH:mm:ss')}">
 		                            <td th:text="${c.commuteDate}"></td>
 		                            <td th:text="${c.empId}"></td>
 		                            <td th:text="${c.empName}"></td>
@@ -110,7 +111,7 @@
 							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요"></textarea>
 							      </div>
 							      <div class="modal-footer">
-							        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+							        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
 							        <button type="button" class="btn btn-danger" id="confirmDeleteBtn" >삭제</button>
 							      </div>
 							    </div>
@@ -178,14 +179,12 @@
 		            console.log(response);
 		        },
 		        error: function(xhr) {
-		            alert("업데이트 실패: " + xhr.status);
+		            alert("업데이트 실패 : " + xhr.status);
 		        }
 		    });
 		});
-		
+		// =====================================================================================
 		// 삭제 버튼(모달창)
-		let deleteTarget = [];
-		
 		document.querySelectorAll(".deleteBtn").forEach(button => {
 		    button.addEventListener("click", function () {
 		        const empId = this.getAttribute("data-emp-id");
@@ -196,20 +195,79 @@
 		        const modalMsg = document.getElementById("deleteModalMessage");
 		        if(modalMsg) {
 		            modalMsg.textContent =
-		                "사원ID : " + empId + "\n" + 
-		                "날짜 : " + commuteDate + "\n" +
-		                "출근기록 : " + checkInTime + "\n" +
-		                "출근기록을 삭제하시겠습니까?";
+		                "- 사원ID : " + empId + "\n" + 
+		                "- 날짜 : " + commuteDate + "\n" +
+		                "- 출근기록 : " + checkInTime + "\n" +
+		                "- 출근기록을 삭제하시겠습니까?";
+		            
+		            modalMsg.setAttribute("data-emp-id", empId);
+		            modalMsg.setAttribute("data-commute-date", commuteDate);
+		            modalMsg.setAttribute("data-check-in-time", checkInTime);
+		            
 		        }
 
 		        // 모달 열기
-		        const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-		        deleteModal.show();
+ 				$('#deleteModal').modal('show');
+		        
+// 		        console.log(empId, commuteDate, checkInTime);
 		    });
 		});
 		
+		document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
+			const modalData = document.getElementById("deleteModalMessage");
+			
+			// 삭제할 정보 가져오기
+			const empId = modalData.getAttribute("data-emp-id");
+			const commuteDate = modalData.getAttribute("data-commute-date");
+			const checkInTime = modalData.getAttribute("data-check-in-time");
+			const deleteReason = $("#deleteReason").val();
+			
+			$.ajax({
+				url: "/attendance/deleteCommuteRecord",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					targetEmpId: empId,
+					commuteDate: commuteDate,
+					checkInTime: checkInTime,
+					deleteReason: deleteReason
+				}),
+				success: function(data) {
+					
+					if(data.success) {
+						alert(data.message);
+
+				        // 모달 닫기
+					    $('#deleteModal').modal('hide');
+				        
+				        // 행 지우기 목적
+					    location.reload();
+					    
+					} else {
+						alert("삭제 실패 : " + data.message);
+					}
+					
+				},
+				error: function(xhr, status, error) {
+					console.log("삭제실패", error);
+				}
+			});
+		});
 	    
 	</script>
 	</th:block>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
