@@ -63,7 +63,7 @@
 		                            <th>출근시간</th>
 		                            <th>퇴근시간</th>
 		                            <th>근무상태</th>
-		                            <th>출근기록</th>
+		                            <th style="width: 110px;">출근기록</th>
 		                        </tr>
 	                        </thead>
 	                        <tbody>
@@ -111,7 +111,7 @@
 							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요"></textarea>
 							      </div>
 							      <div class="modal-footer">
-							        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+							        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
 							        <button type="button" class="btn btn-danger" id="confirmDeleteBtn" >삭제</button>
 							      </div>
 							    </div>
@@ -207,8 +207,7 @@
 		        }
 
 		        // 모달 열기
-		        const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
-		        deleteModal.show();
+ 				$('#deleteModal').modal('show');
 		        
 // 		        console.log(empId, commuteDate, checkInTime);
 		    });
@@ -240,14 +239,11 @@
 						alert(data.message);
 
 				        // 모달 닫기
-		                const deleteModalEl = document.getElementById("deleteModal");
-		                const deleteModal = bootstrap.Modal.getInstance(deleteModalEl) || new bootstrap.Modal(deleteModalEl);
-		                deleteModal.hide();
-				
-				        // 모달 닫힌 후 테이블 행 제거
-		                const row = document.querySelector(`tr[data-emp-id="${empId}"][data-check-in-time="${checkInTime}"]`);
-		                if (row) row.remove();
-						
+					    $('#deleteModal').modal('hide');
+				        
+				        // 행 지우기 목적
+					    location.reload();
+					    
 					} else {
 						alert("삭제 실패 : " + data.message);
 					}
