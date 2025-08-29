@@ -179,14 +179,12 @@
 		            console.log(response);
 		        },
 		        error: function(xhr) {
-		            alert("업데이트 실패: " + xhr.status);
+		            alert("업데이트 실패 : " + xhr.status);
 		        }
 		    });
 		});
 		// =====================================================================================
 		// 삭제 버튼(모달창)
-		let deleteTarget = [];
-		
 		document.querySelectorAll(".deleteBtn").forEach(button => {
 		    button.addEventListener("click", function () {
 		        const empId = this.getAttribute("data-emp-id");
@@ -201,43 +199,65 @@
 		                "- 날짜 : " + commuteDate + "\n" +
 		                "- 출근기록 : " + checkInTime + "\n" +
 		                "- 출근기록을 삭제하시겠습니까?";
+		            
+		            modalMsg.setAttribute("data-emp-id", empId);
+		            modalMsg.setAttribute("data-commute-date", commuteDate);
+		            modalMsg.setAttribute("data-check-in-time", checkInTime);
+		            
 		        }
 
 		        // 모달 열기
 		        const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
 		        deleteModal.show();
+		        
+// 		        console.log(empId, commuteDate, checkInTime);
 		    });
 		});
 		
-// 		document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
-// 			const modalData = document.getElementById("deleteModalMessage");
+		document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
+			const modalData = document.getElementById("deleteModalMessage");
 			
-// 			// 삭제할 정보 가져오기
-// 			const empId = modalData.getAttribute("data-emp-id");
-// 			const commuteDate = modalData.getAttribute("data-commute-date");
-// 			const checkInTime = modalData.getAttribute("data-check-in-time");
-// 			const deleteReason = $("#deleteReason").val();
+			// 삭제할 정보 가져오기
+			const empId = modalData.getAttribute("data-emp-id");
+			const commuteDate = modalData.getAttribute("data-commute-date");
+			const checkInTime = modalData.getAttribute("data-check-in-time");
+			const deleteReason = $("#deleteReason").val();
 			
-// 			$.ajax({
-// 				url: "attendance/deleteCommuteRecord",
-// 				type: "POST",
-// 				contentType: "application/json",
-// 				data: JSON.stringify({
-// 					targetEmpId: empId,
-// 					commuteDate: commuteDate,
-// 					checkInTime: checkInTime,
-// 					deleteReason: deleteReason
-// 				}),
-// 				success: function(data) {
-// 					alert("삭제 완료: " + data.message); // 무슨 메세지?
+			$.ajax({
+				url: "/attendance/deleteCommuteRecord",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					targetEmpId: empId,
+					commuteDate: commuteDate,
+					checkInTime: checkInTime,
+					deleteReason: deleteReason
+				}),
+				success: function(data) {
 					
-// 					// 테이블에서 지워질 행 제거
-// 					const row = $(`tr[data-emp-id="${empId}"][data-check-in-time="${checkInTime}"])
-// 				}
-// 			});
-			
-			
-// 		});
+					if(data.success) {
+						alert(data.message);
+
+				        // 모달 닫기
+		                const deleteModalEl = document.getElementById("deleteModal");
+		                const deleteModal = bootstrap.Modal.getInstance(deleteModalEl) || new bootstrap.Modal(deleteModalEl);
+		                deleteModal.hide();
+				
+				        // 모달 닫힌 후 테이블 행 제거
+		                const row = document.querySelector(`tr[data-emp-id="${empId}"][data-check-in-time="${checkInTime}"]`);
+		                if (row) row.remove();
+						
+					} else {
+						alert("삭제 실패 : " + data.message);
+					}
+					
+				},
+				error: function(xhr, status, error) {
+					console.log("삭제실패", error);
+				}
+			});
+		});
 	    
 	</script>
 	</th:block>
