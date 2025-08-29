@@ -55,6 +55,9 @@ public interface CommuteMapper {
 	// 삭제한 출근기록 데이터 로그저장
 	int insertLogData(Map<String, Object> deleteLogData);
 
+	// 삭제된 출근 로그 데이터 가져오기
+	List<CommuteDeleteLogDTO> getLogData();
+
 
 
 

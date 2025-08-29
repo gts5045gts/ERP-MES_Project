@@ -194,6 +194,10 @@
 		)
 	</insert>
 	
+	<select id="getLogData" resultType="com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO">
+	
+	</select>
+	
 </mapper>
 
 

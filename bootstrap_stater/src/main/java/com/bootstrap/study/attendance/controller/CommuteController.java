@@ -62,8 +62,8 @@ public class CommuteController {
 	        System.out.println("로그인 사용자 ID: " + empId);
 	    } else {
 	        // 로그인 안 된 상태라면 로그인 페이지로
-//	        return "redirect:/login";
-	        return "/commute/commute_list";
+	        return "redirect:/login";
+//	        return "/commute/commute_list";
 	    }
 	    // ==============================================================================
 		
@@ -274,6 +274,34 @@ public class CommuteController {
 		
 		return ResponseEntity.ok(response);
 	}
+	
+	// 출근 기록 삭제 로그 조회
+	@GetMapping("/adminCommuteLog")
+	public String getMethodName() {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		String empId = null;
+		
+	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+	        System.out.println("로그인 사용자 ID: " + empId);
+	    } else {
+	        // 로그인 안 된 상태라면 로그인 페이지로
+	        return "redirect:/login";
+//	        return "/commute/commute_list";
+	    }
+	    
+	    // 삭제된 출근 로그데이터 가져오기
+	    List<CommuteDeleteLogDTO> CommuteDeleteLogDTOList = commuteService.getLogData();
+	    
+	    
+		
+		return "/commute/commute_data_log_list";
+	}
+	
 	
 
 }
