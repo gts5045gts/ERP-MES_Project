@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
+import com.bootstrap.study.personnel.service.PersonnelImgService;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,16 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class PersonnelController {
     private final PersonnelService personnelService;
+    private final PersonnelImgService personnelImgService;
+    
+    //이미지 경로 
+    @Value("${file.uploadBaseLocation}")
+	private String uploadBaseLocation;
+	
+	@Value("${file.itemImgLocation}")
+	private String itemImgLocation;
+    
+    
     
 	@GetMapping("/current")
 	public String current(Model model) {
@@ -37,6 +50,7 @@ public class PersonnelController {
 		return "/hrn/personnelCurrent";
 	}
 	
+	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
     public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
         List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
@@ -48,6 +62,8 @@ public class PersonnelController {
     public String detailInfo(@RequestParam("empId") String empId, Model model) {
         // Service를 통해 해당 사원의 상세 정보를 가져와 모델에 추가
         Optional<PersonnelDTO> personnelOpt = personnelService.getPersonnelDetails(empId);
+        
+        
         
         if (personnelOpt.isPresent()) {
             model.addAttribute("personnel", personnelOpt.get());
@@ -81,6 +97,14 @@ public class PersonnelController {
 
 		//추가 된 부분 ----------------------------------------------------
 		
+        
+        //첨부파일 정보 불러오기
+//        Optional<PersonnelImgDTO> imgLocation = personnelImgService.findByImg(empId); 
+//        
+//        model.addAttribute("img",imgLocation.get());
+//        model.addAttribute("location",uploadBaseLocation);
+//        
+        
 
         return "/hrn/personnelDetailInfo";
     }
@@ -139,16 +163,37 @@ public class PersonnelController {
 
 		return "/hrn/personnelCurrent";
 	}
-	/**		인사발령 페이지 필요 없음 
-	@GetMapping("/app")
-	public String app() {
-		log.info("PersonnelController app()");
+	
+	// 인사발령
+	@GetMapping("/trans")
+	public String trans(Model model) {
+		log.info("PersonnelController trans()");
 		
-		return "/hrn/personnelApp";
+		return "/hrn/personnelTrans";
 	}
-	**/
-// 현재에 맞게 다시 수정 
-@GetMapping("/orgChart")
+	
+	// 발령 등록 폼
+	@GetMapping("/trans/save")
+    public String transSave(Model model) {
+        log.info("PersonnelController transSave()");
+        
+        // 팝업 페이지에 필요한 부서, 직급 리스트 추가
+        List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();
+        model.addAttribute("departments", departments);
+
+        List<CommonDetailCodeDTO> position = personnelService.getAllPositions();
+        model.addAttribute("position", position);
+        
+        // 전체 사원 리스트
+        List<PersonnelDTO> allEmployees = personnelService.getAllPersonnels();
+        model.addAttribute("allEmployees", allEmployees);
+
+        return "/hrn/personnelTransSave"; // 
+    }
+
+	
+	// 현재에 맞게 다시 수정 
+	@GetMapping("/orgChart")
     public String showOrgChart(Model model) {
         // 모든 부서 목록을 가져와 모델에 추가
         List<CommonDetailCodeDTO> departments = personnelService.getAllDepartments();

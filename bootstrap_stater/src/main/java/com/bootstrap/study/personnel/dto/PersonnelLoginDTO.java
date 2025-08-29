@@ -1,10 +1,11 @@
 package com.bootstrap.study.personnel.dto;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.bootstrap.study.personnel.entity.Personnel;
 
@@ -46,7 +47,9 @@ public class PersonnelLoginDTO implements UserDetails {
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		
-		return null;
+		return Collections.singletonList(
+		        new SimpleGrantedAuthority("ROLE_" + empLevelId)
+		        );
 	}
 
 	@Override

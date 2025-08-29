@@ -30,7 +30,7 @@ public class PersonnelService {
 	private final PersonnelRepository personnelRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonDetailCodeRepository commonDetailCodeRepository;
-//    private final PersonnelImgService personnelImgService;
+    private final PersonnelImgService personnelImgService;
     
     // 부서 리스트 조회
     public List<CommonDetailCodeDTO> getAllDepartments() {
@@ -167,7 +167,7 @@ public class PersonnelService {
  	      
  	      
  	      //personnelImg 로 personnelDTO , 와 empImg  값 넘겨 주기 위함 
-// 	     personnelImgService.registImg( personnel, empImg);
+ 	     personnelImgService.registImg( personnel, empImg);
  	      
 
 	}
@@ -206,4 +206,3 @@ public class PersonnelService {
  	
 
 }
-
