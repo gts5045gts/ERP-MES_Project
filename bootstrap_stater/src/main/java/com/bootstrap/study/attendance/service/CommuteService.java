@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
+import com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.mapper.CommuteMapper;
 import com.bootstrap.study.attendance.mapper.CommuteScheduleMapper;
@@ -131,6 +133,27 @@ public class CommuteService {
         }
 		
 	    return updatedCount;
+	}
+
+	// 출근기록 삭제
+	public String deleteCommuteRecord(Map<String, Object> deleteLogData) {
+		
+		// 삭제할 출근기록 조회
+		CommuteDTO checkWork =  commuteMapper.checkTodayWork(deleteLogData);
+		System.out.println("checkWork : " + checkWork);
+		if (checkWork == null) {
+		    throw new IllegalArgumentException("삭제할 출근 기록이 존재하지 않습니다.");
+		}
+		
+		// 출근기록 삭제
+		int deleteWork = commuteMapper.deleteWorkData(deleteLogData);
+		System.out.println("deleteWork : " + deleteWork);
+		
+		// 출근기록 삭제한 데이터 로그저장
+		int insertLogData = commuteMapper.insertLogData(deleteLogData);
+		System.out.println("insertLogData : " + insertLogData);
+		
+		return "삭제 완료";
 	}
 	
 
