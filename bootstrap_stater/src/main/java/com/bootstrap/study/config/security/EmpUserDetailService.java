@@ -5,7 +5,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.bootstrap.study.config.util.ModelMapperUtils;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
@@ -26,15 +25,14 @@ public class EmpUserDetailService implements UserDetailsService {
 		Personnel personnel = personnelRepository.findById(empId)
 				.orElseThrow(() -> new UsernameNotFoundException(empId + " : 사용자 조회 실패"));
 
-		PersonnelLoginDTO personnelLoginDTO = ModelMapperUtils.convertObjectByMap(personnel, PersonnelLoginDTO.class);
-		personnelLoginDTO.setEmpId(personnel.getEmpId());
-		personnelLoginDTO.setName(personnel.getName());
-		personnelLoginDTO.setPasswd(personnel.getPasswd());
-		personnelLoginDTO.setEmpDeptId(personnel.getDepartment().getComDtId());
-		personnelLoginDTO.setEmpLevelId(personnel.getLevel().getComDtId());
-		log.info("로그인객체 : " + personnelLoginDTO.toString());
-		return personnelLoginDTO;
-//		return User.builder().username(personnel.getEmpId()).password(personnel.getPasswd()).roles(personnel.getLevel().getComDtId()).build();
+//		PersonnelLoginDTO personnelLoginDTO = ModelMapperUtils.convertObjectByMap(personnel, PersonnelLoginDTO.class);
+//		personnelLoginDTO.setEmpId(personnel.getEmpId());
+//		personnelLoginDTO.setName(personnel.getName());
+//		personnelLoginDTO.setPasswd(personnel.getPasswd());
+//		personnelLoginDTO.setEmpDeptId(personnel.getDepartment().getComDtId());
+//		personnelLoginDTO.setEmpLevelId(personnel.getLevel().getComDtId());
+//		log.info("로그인객체 : " + personnelLoginDTO.toString());
+		return  new PersonnelLoginDTO(personnel);
 	}
 
 }
