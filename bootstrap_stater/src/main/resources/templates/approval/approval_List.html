@@ -4,6 +4,8 @@
       layout:decorate="~{layouts/layout}">
 
 <head>
+	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <th:block layout:fragment="style">
     <style>
         .table-compact th,
@@ -369,6 +371,12 @@
 		                    결재 정보를 불러오는데 실패했습니다. 다시 시도해주세요.
 		                </div>
 		            </div>
+		            <!-- 0829 -->
+		            <div class="form-group mt-3">
+					    <label for="modal-comments">결재 의견</label>
+					    <textarea class="form-control" id="modal-comments" rows="3" 
+					              placeholder="승인/반려 사유를 입력하세요 (선택사항)"></textarea>
+					</div>
 		
 		            <div class="modal-footer">
 		                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
@@ -389,7 +397,14 @@
        // 전역 변수 및 상수
        let currentReqId = null;
        let isViewMode = false; // 조회 모드 여부
-
+		
+		// 상수 정의 부분에 추가
+		const REQ_TYPE_LABELS = {
+		    'BASIC': '기본',
+		    'VACATION': '휴가신청서',
+		    'SPENDING': '지출결의서'
+		};
+       
        const MODAL_ELEMENTS = {
            loading: 'modalLoading',
            content: 'modalContent',
@@ -443,13 +458,27 @@
        
 		// 결재 취소 함수 추가
 		function cancelApproval(reqId) {
-		    if (!confirm('결재를 취소하시겠습니까?\n취소된 결재는 복구할 수 없습니다.')) {
-		        return;
-		    }
+		    // 먼저 상세보기 모달 열기
+		    openViewApprovalModal(reqId);
+		    
+		    // 모달이 로드된 후 취소 확인
+		    setTimeout(() => {
+		        if (confirm('이 결재를 취소하시겠습니까?\n취소된 결재는 완전히 삭제되며 복구할 수 없습니다.')) {
+		            processCancelApproval(reqId);
+		        }
+		    }, 1000);
+		}
+		
+		function processCancelApproval(reqId) {
+		    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+		    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 		    
 		    fetch(API_ENDPOINTS.cancel(reqId), {
 		        method: 'POST',
-		        headers: { 'Content-Type': 'application/json' }
+		        headers: { 
+		            'Content-Type': 'application/json',
+		            [header]: token  // CSRF 토큰 추가
+		        }
 		    })
 		    .then(response => {
 		        if (!response.ok) {
@@ -460,15 +489,16 @@
 		        return response.text();
 		    })
 		    .then(result => {
-		        alert('결재가 취소되었습니다.');
-		        location.reload(); // 페이지 새로고침
+		        alert('결재가 취소(삭제)되었습니다.');
+		        $('#approvalModal').modal('hide');
+		        location.reload();
 		    })
 		    .catch(error => {
 		        console.error('결재 취소 실패:', error);
-		        alert(error.message || '결재 취소 중 오류가 발생했습니다.');
+		        alert('결재 취소 중 오류가 발생했습니다.');
 		    });
 		}
-
+		
        // 모달 상태 관리 함수들
        function showModalState(activeElement) {
            const elements = ['modalLoading', 'modalContent', 'modalError'];
@@ -490,32 +520,34 @@
            toggleActionButtons(false);
        }
 
-       function showModalContent() {
-           showModalState('modalContent');
-           
-           // 조회 모드에 따라 버튼 및 입력창 제어
-           const approveBtn = document.getElementById('approveBtn');
-           const rejectBtn = document.getElementById('rejectBtn');
-           const commentsTextarea = document.getElementById('modal-comments');
-           
-           if (isViewMode) {
-               // 조회 모드: 버튼 숨기기, 입력창 비활성화
-               if (approveBtn) approveBtn.style.display = 'none';
-               if (rejectBtn) rejectBtn.style.display = 'none';
-               if (commentsTextarea) commentsTextarea.disabled = true;
-           } else {
-               // 결재 모드: 버튼 보이기, 입력창 활성화
-               if (approveBtn) {
-                   approveBtn.style.display = 'inline-block';
-                   approveBtn.disabled = false;
-               }
-               if (rejectBtn) {
-                   rejectBtn.style.display = 'inline-block';
-                   rejectBtn.disabled = false;
-               }
-               if (commentsTextarea) commentsTextarea.disabled = false;
-           }
-       }
+		function showModalContent() {
+			showModalState('modalContent');
+		    
+			const approveBtn = document.getElementById('approveBtn');
+			const rejectBtn = document.getElementById('rejectBtn');
+			const commentsTextarea = document.getElementById('modal-comments');
+			
+			if (isViewMode) {
+			    // 조회 모드: 버튼 숨기고, 입력창 비활성화
+			    if (approveBtn) approveBtn.style.display = 'none';
+			    if (rejectBtn) rejectBtn.style.display = 'none';
+			    if (commentsTextarea) commentsTextarea.disabled = true;
+			} else {
+				// 결재 모드: 버튼 보이고, 입력창 활성화
+				if (approveBtn) {
+				    approveBtn.style.display = 'inline-block';
+				    approveBtn.disabled = false;
+				}
+				if (rejectBtn) {
+				    rejectBtn.style.display = 'inline-block';
+				    rejectBtn.disabled = false;
+				}
+				if (commentsTextarea) {
+				    commentsTextarea.disabled = false;
+				    commentsTextarea.placeholder = "승인/반려 사유를 입력하세요 (선택사항)";
+				}
+		    }
+		}
 
        function toggleActionButtons(enabled) {
            const approveBtn = document.getElementById('approveBtn');
@@ -660,7 +692,7 @@
 		    displayApprovalComments(approvalLines);
 		}
     	
-       function getApprovalStatus(decision) {
+		function getApprovalStatus(decision) {
            if (decision === 'ACCEPT') return '승인완료';
            if (decision === 'DENY') return '반려';
            return '대기중';
@@ -672,34 +704,36 @@
            return 'color: #ffc107; font-weight: bold;';
        }
        
-       function populateModalFields(data) {
-    	    console.log('받은 데이터:', data);
-    	    
-    	    // empId도 hidden으로 저장 (필터링용)
-    	    const empIdElement = document.getElementById('modal-empId');
-    	    if (!empIdElement) {
-    	        // empId를 저장할 hidden 요소가 없으면 생성
-    	        const hiddenDiv = document.createElement('div');
-    	        hiddenDiv.id = 'modal-empId';
-    	        hiddenDiv.style.display = 'none';
-    	        hiddenDiv.textContent = data.empId;
-    	        document.getElementById('modalContent').appendChild(hiddenDiv);
-    	    } else {
-    	        empIdElement.textContent = data.empId;
-    	    }
-    	    
-    	    // 나머지 필드들 채우기
-    	    Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
-    	        const element = document.getElementById(elementId);
-    	        if (element) {
-    	            if (key === 'createAt' && data[key]) {
-    	                element.textContent = formatDate(data[key]);
-    	            } else {
-    	                element.textContent = data[key] || '-';
-    	            }
-    	        }
-    	    });
-    	}
+		function populateModalFields(data) {
+			console.log('받은 데이터:', data);
+			
+			// empId hidden으로 저장
+			const empIdElement = document.getElementById('modal-empId');
+			if (!empIdElement) {
+			    const hiddenDiv = document.createElement('div');
+			    hiddenDiv.id = 'modal-empId';
+			    hiddenDiv.style.display = 'none';
+			    hiddenDiv.textContent = data.empId;
+			    document.getElementById('modalContent').appendChild(hiddenDiv);
+			} else {
+			    empIdElement.textContent = data.empId;
+			}
+		    
+			// 필드들 채우기
+			Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
+			    const element = document.getElementById(elementId);
+			    if (element) {
+			        if (key === 'createAt' && data[key]) {
+			            element.textContent = formatDate(data[key]);
+			        } else if (key === 'reqType' && data[key]) {
+			            // reqType을 한글로 변환
+			            element.textContent = REQ_TYPE_LABELS[data[key]] || data[key];
+			        } else {
+			            element.textContent = data[key] || '-';
+			        }
+			    }
+			});
+		}
 
        function formatDate(dateString) {
            try {
@@ -733,29 +767,35 @@
            return commentsElement ? commentsElement.value.trim() : '';
        }
 
-       function sendApprovalRequest(endpoint, comments, successMessage, actionKorean) {
-           const requestOptions = {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ comments })
-           };
-           
-           console.log('결재 처리 요청:', endpoint, requestOptions);
-           
-           fetch(endpoint, requestOptions)
-               .then(response => {
-   			    console.log('결재 처리 응답:', response.status);
-   			    if (!response.ok) {
-   			        throw new Error(`서버 응답 오류: ${response.status}`);
-   			    }
-   			    return response.text();
-   			})
-               .then(result => {
-                   console.log('결재 처리 성공:', result);
-                   handleApprovalSuccess(successMessage, actionKorean);
-               })
-               .catch(error => handleApprovalError(error, actionKorean));
-       }
+		function sendApprovalRequest(endpoint, comments, successMessage, actionKorean) {
+			const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+			const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+			
+			const requestOptions = {
+			    method: 'POST',
+			    headers: { 
+			        'Content-Type': 'application/json',
+			        [header]: token  // 이 줄 추가
+			    },
+			    body: JSON.stringify({ comments })
+			};
+		
+			console.log('결재 처리 요청:', endpoint, requestOptions);
+		
+			fetch(endpoint, requestOptions)
+				.then(response => {
+				    console.log('결재 처리 응답:', response.status);
+				    if (!response.ok) {
+				        throw new Error(`서버 응답 오류: ${response.status}`);
+				    }
+				    return response.text();
+				})
+				.then(result => {
+				    console.log('결재 처리 성공:', result);
+				    handleApprovalSuccess(successMessage, actionKorean);
+				})
+				.catch(error => handleApprovalError(error, actionKorean));
+		}
 
        function handleApprovalSuccess(successMessage, actionKorean) {
            alert(successMessage);
