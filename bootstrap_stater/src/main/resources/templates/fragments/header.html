@@ -197,7 +197,6 @@
 						       aria-expanded="false"> 
 						        <i class="fas fa-bell fa-fw" style="font-size: 1.5rem;"></i>
 						        <span class="badge badge-danger badge-counter" id="totalAlertCount">0</span>
-						        <!-- 빨간 점 추가 -->
 						        <span class="position-absolute" id="newAlertDot" 
 						              style="top: 0; right: 0; width: 8px; height: 8px; 
 						                     background-color: #dc3545; border-radius: 50%; 
@@ -206,6 +205,11 @@
 						    <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
 						        aria-labelledby="alertsDropdown" style="width: 500px;">
 						        <h6 class="dropdown-header text-center" style="font-size: 16px;">전자결재 바로가기</h6>
+						        
+						        <!-- 알림 메시지 추가 -->
+						        <div id="approvalAlert" class="alert alert-warning mx-3 mt-2 mb-0" style="display: none;">
+						            <i class="fas fa-exclamation-triangle"></i> 전자결재 대기문서가 있습니다
+						        </div>
 						        
 						        <div class="p-3 d-flex justify-content-between">
 						            <a class="btn btn-outline-primary flex-fill mr-2 position-relative" 
@@ -340,3 +344,36 @@
                 <!-- End of Topbar -->
 
 </th:block>
+<script>
+// 0829 결재 알림 업데이트
+function updateApprovalAlerts() {
+    fetch('/approval/api/counts')
+        .then(response => response.json())
+        .then(data => {
+            // 내결재목록 카운트
+            document.getElementById('myPendingCount').textContent = data.myPending;
+            
+            // 결재대기 카운트
+            document.getElementById('toApproveCount').textContent = data.toApprove;
+            
+            // 전체 카운트
+            const totalCount = data.myPending + data.toApprove;
+            document.getElementById('totalAlertCount').textContent = totalCount;
+            
+            // 결재대기 알림 메시지 표시
+            const alertDiv = document.getElementById('approvalAlert');
+            if (data.toApprove > 0) {
+                alertDiv.style.display = 'block';
+            } else {
+                alertDiv.style.display = 'none';
+            }
+        });
+}
+
+// 페이지 로드 시 실행
+document.addEventListener('DOMContentLoaded', function() {
+    updateApprovalAlerts();
+    // 30초마다 업데이트
+    setInterval(updateApprovalAlerts, 30000);
+});
+</script>
