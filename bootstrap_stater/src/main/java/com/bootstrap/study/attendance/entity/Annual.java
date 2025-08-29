@@ -62,5 +62,6 @@ public class Annual {
         this.annYear = annYear;
         this.annUse = annUse;
         this.annTotal = annTotal;
+        this.annRemain = annTotal - annUse; // 잔여연차 초기화
 	}
 }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import org.modelmapper.ModelMapper;
 
+import com.bootstrap.study.approval.constant.ApprVacType;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.entity.Personnel;
 
@@ -34,7 +35,7 @@ public class AnnualDTO {
 	private String joinDate; // 입사일
 	private String annPeriod; // 연차 산정 기간 
 	private String annExpire; // 휴가 소멸일
-
+	private String annType; // 연차 & 반차
 	
 	
 	
@@ -69,6 +70,14 @@ public class AnnualDTO {
         LocalDate end = start.plusYears(1).minusDays(1); // 종료일 = 입사일 기준 1년 뒤 - 1일
         this.annPeriod = start + " ~ " + end;
         this.annExpire = end.toString(); // 휴가 소멸일
+        
+        if (annual.getAnnUse() % 1 == 0) {
+        	this.annType = "연차";       // 연차
+        } else {
+        	this.annType = "반차";  // 반차
+        }
+        
+        
     }
 	
 	

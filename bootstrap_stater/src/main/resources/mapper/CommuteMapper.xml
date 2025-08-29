@@ -170,6 +170,33 @@
 	      AND TO_CHAR(check_in_time, 'YYYY-MM-DD') = #{commuteDate}
 	</update>
 	
+	<!-- 삭제할 출근기록 조회 -->
+	<select id="checkTodayWork" resultType="com.bootstrap.study.attendance.dto.CommuteDTO">
+		SELECT emp_id, check_in_time
+	    FROM commute_record
+	    WHERE emp_id = #{targetEmpId}
+	    AND check_in_time = #{checkInTime}
+	</select>
+	
+	<!-- 출근기록 삭제 -->
+	<delete id="deleteWorkData" parameterType="map">
+		DELETE FROM commute_record 
+	    WHERE emp_id = #{targetEmpId}
+	    AND check_in_time = #{checkInTime}
+	</delete>
+	
+	<!-- 삭제한 출근기록 데이터 로그저장 -->
+	<insert id="insertLogData" parameterType="map">
+		INSERT INTO commute_delete_log (
+			emp_id, target_emp_id, check_in_time, deleted_at, delete_reason)
+		VALUES (
+			#{adminEmpId}, #{targetEmpId}, #{checkInTime}, SYSDATE, #{deleteReason}
+		)
+	</insert>
+	
+	<select id="getLogData" resultType="com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO">
+	
+	</select>
 	
 </mapper>
 

@@ -6,11 +6,15 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.approval.constant.ApprStatus;
+import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.service.AnnualService;
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -34,34 +39,31 @@ public class AnnualController {
 	
 // ============================================================
 	
-	// 화면이동
-	@GetMapping("/annualList")
-	public String annualList() {
-		return "commute/annual_list";
-	}
 	
-
-	// 내 연차 조회하기 
-	@GetMapping("/annualList/{empId}/{annYear}")
-	public String myAnnList(@PathVariable("empId") String empId, @PathVariable("annYear") String annYear, Model model) {
+	// 화면 + 내 연차 조회하기 
+	@GetMapping("/annualList")
+	public String annualList(@RequestParam(value="year", required=false) String annYear, Model model,
+            Authentication authentication) {
 		
-		AnnualDTO myAnn = annService.myAnnual(empId, annYear);
+		String empId = authentication.getName(); // 로그인한 사원 empId
+	    if(annYear == null) {
+	        annYear = String.valueOf(java.time.LocalDate.now().getYear()); // 기본: 올해
+	    }
+		
+	    annService.AnnUpdate(); // 연차 변경
+	    
+		AnnualDTO myAnn = annService.myAnnual(empId, annYear); // 내 연차 조회
 		model.addAttribute("myAnn", myAnn);
 		return "commute/annual_list";
 	}
 	
-	// 내 사용률(도넛 차트)
-	@GetMapping("/annualList/chart/{id}")
-	@ResponseBody
-	public AnnualDTO myAnnPercent(@PathVariable("id") Long id) {
-		return annService.findById(id); 
-	}
 	
-	// 모든 사원 연차 내역
+	// 모든 사원 연차 내역(무한스크롤)
 	@GetMapping("/annListAll/{annYear}")
 	@ResponseBody
 	public Map<String, Object> annListAll(@PathVariable("annYear") String annYear, 
-			@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "20") int size) {
+			@RequestParam(value = "page", defaultValue = "0") int page, 
+			@RequestParam(value = "size", defaultValue = "20") int size) {
 		
 		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(annYear, PageRequest.of(page, size));
 		
@@ -72,17 +74,22 @@ public class AnnualController {
 		
 		return result;
 	}
+
 	
 	// 검색창
 	@GetMapping("/annSearch")
 	@ResponseBody
 	public List<AnnualDTO> annSearch(@RequestParam("keyword") String keyword) {
-		
 		return annService.searchAnn(keyword);
-		
 	}
-	
-	
+
+	// 오늘 연차자 조회
+	@GetMapping("/todayAnn") 
+	@ResponseBody
+	public List<AnnualDTO> todayAnn() {
+		return annService.getTodayAnn();
+	}
+
 
 	
 
