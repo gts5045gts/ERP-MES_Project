@@ -365,7 +365,11 @@
 					     결재 정보를 불러오는데 실패했습니다. 다시 시도해주세요.
 					</div>
 				</div>
-
+				<div class="form-group mt-3">
+				    <label for="modal-comments">결재 의견</label>
+				    <textarea class="form-control" id="modal-comments" rows="3" 
+				              placeholder="승인/반려 사유를 입력하세요 (선택사항)"></textarea>
+				</div>
 				<div class="modal-footer">
 				    <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
 				    <button type="button" class="btn btn-success" id="approveBtn" disabled>
@@ -509,31 +513,31 @@
 	}
 
 	function showModalContent() {
-		showModalState('modalContent');
+	    showModalState('modalContent');
 	    
-		const approveBtn = document.getElementById('approveBtn');
-		const rejectBtn = document.getElementById('rejectBtn');
-		const commentsTextarea = document.getElementById('modal-comments');
-		
-		if (isViewMode) {
-		    // 조회 모드: 버튼 숨기고, 입력창 비활성화
-		    if (approveBtn) approveBtn.style.display = 'none';
-		    if (rejectBtn) rejectBtn.style.display = 'none';
-		    if (commentsTextarea) commentsTextarea.disabled = true;
-		} else {
-			// 결재 모드: 버튼 보이고, 입력창 활성화
-			if (approveBtn) {
-			    approveBtn.style.display = 'inline-block';
-			    approveBtn.disabled = false;
-			}
-			if (rejectBtn) {
-			    rejectBtn.style.display = 'inline-block';
-			    rejectBtn.disabled = false;
-			}
-			if (commentsTextarea) {
-			    commentsTextarea.disabled = false;
-			    commentsTextarea.placeholder = "승인/반려 사유를 입력하세요 (선택사항)";
-			}
+	    const approveBtn = document.getElementById('approveBtn');
+	    const rejectBtn = document.getElementById('rejectBtn');
+	    const commentsTextarea = document.getElementById('modal-comments');
+	    
+	    if (isViewMode) {
+	        // 조회 모드: 버튼 숨기고, 입력창 비활성화
+	        if (approveBtn) approveBtn.style.display = 'none';
+	        if (rejectBtn) rejectBtn.style.display = 'none';
+	        if (commentsTextarea) commentsTextarea.disabled = true;
+	    } else {
+	        // 결재 모드: 버튼 보이고, 입력창 활성화
+	        if (approveBtn) {
+	            approveBtn.style.display = 'inline-block';
+	            approveBtn.disabled = false;
+	        }
+	        if (rejectBtn) {
+	            rejectBtn.style.display = 'inline-block';
+	            rejectBtn.disabled = false;
+	        }
+	        if (commentsTextarea) {
+	            commentsTextarea.disabled = false;
+	            commentsTextarea.placeholder = "승인/반려 사유를 입력하세요 (선택사항)";
+	        }
 	    }
 	}
 
