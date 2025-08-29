@@ -170,26 +170,32 @@ public class ApprController {
     }
     
     // 0828 - 결재 취소 처리 API
-    @PostMapping("/api/cancel/{reqId}")
-    @ResponseBody
-    public ResponseEntity<String> cancelRequest(@PathVariable("reqId") Long reqId, 
-                                               Authentication authentication) {
-        try {
-            String loginId = authentication.getName();
-            
-            // Service를 통해 취소 처리
-            apprService.cancelApproval(reqId, loginId);
-            
-            return ResponseEntity.ok("결재가 취소되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("결재 취소 실패 - reqId: {}, 오류: {}", reqId, e.getMessage());
-            return ResponseEntity.status(500).body("결재 취소 중 오류가 발생했습니다.");
-        }
-    }
+	@PostMapping("/api/cancel/{reqId}")
+	@ResponseBody
+	public ResponseEntity<String> cancelRequest(@PathVariable("reqId") Long reqId, 
+	                                           Authentication authentication) {
+	    try {
+	        String loginId = authentication.getName();
+	        log.info("=== 결재 취소 요청 ===");
+	        log.info("reqId: {}", reqId);
+	        log.info("loginId from authentication: {}", loginId);
+	        log.info("authentication principal: {}", authentication.getPrincipal());
+	        
+	        // Service를 통해 취소 처리
+	        apprService.cancelApproval(reqId, loginId);
+	        
+	        return ResponseEntity.ok("결재가 취소되었습니다.");
+	    } catch (IllegalArgumentException e) {
+	        log.error("IllegalArgumentException: {}", e.getMessage());
+	        return ResponseEntity.status(400).body(e.getMessage());
+	    } catch (SecurityException e) {
+	        log.error("SecurityException: {}", e.getMessage());
+	        return ResponseEntity.status(403).body(e.getMessage());
+	    } catch (Exception e) {
+	        log.error("결재 취소 실패 - reqId: {}, 오류: {}", reqId, e.getMessage(), e);
+	        return ResponseEntity.status(500).body("결재 취소 중 오류가 발생했습니다.");
+	    }
+	}
     // 0828 알림창
     @GetMapping("/api/counts")
     @ResponseBody
