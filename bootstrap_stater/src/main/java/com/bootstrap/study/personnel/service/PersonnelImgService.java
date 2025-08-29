@@ -5,12 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelImg;
 import com.bootstrap.study.personnel.repository.PersonnelImgRepository;
@@ -72,6 +75,17 @@ public class PersonnelImgService {
 		perImg.setLocation(itemImgLocation);
 		
 		personnelImgRepository.save(perImg);
+	}
+//저장된 이미지 정보 가지고 오기
+	public Optional<PersonnelImgDTO> findByImg(String empId) {
+		
+		Optional<PersonnelImg> profileImg  = personnelImgRepository.findById(empId); 
+		
+		
+		return profileImg.map(img -> {
+ 	        PersonnelImgDTO dto = PersonnelImgDTO.fromEntity(img);
+ 	        return dto;
+ 	    });
 	}
 	
 	

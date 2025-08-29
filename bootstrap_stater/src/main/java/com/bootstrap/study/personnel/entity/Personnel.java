@@ -81,7 +81,7 @@ public class Personnel {
 //	private String status;
 
 	// 부서
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "com_dt_id")
 	private CommonDetailCode department;
 
@@ -93,7 +93,7 @@ public class Personnel {
 	
 	//추가한 컬럼 보안등급---------------------------
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "emp_level_id", referencedColumnName = "com_dt_id")
 	private CommonDetailCode level;
 	

@@ -36,9 +36,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     	return httpSecurity
-//        .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
+                .requestMatchers("//personnel/regist").hasAnyRole("AUT001")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

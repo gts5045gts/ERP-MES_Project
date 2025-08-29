@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
+import com.bootstrap.study.personnel.service.PersonnelImgService;
 import com.bootstrap.study.personnel.service.PersonnelService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,16 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class PersonnelController {
     private final PersonnelService personnelService;
+    private final PersonnelImgService personnelImgService;
+    
+    //이미지 경로 
+    @Value("${file.uploadBaseLocation}")
+	private String uploadBaseLocation;
+	
+	@Value("${file.itemImgLocation}")
+	private String itemImgLocation;
+    
+    
     
 	@GetMapping("/current")
 	public String current(Model model) {
@@ -84,6 +97,14 @@ public class PersonnelController {
 
 		//추가 된 부분 ----------------------------------------------------
 		
+        
+        //첨부파일 정보 불러오기
+//        Optional<PersonnelImgDTO> imgLocation = personnelImgService.findByImg(empId); 
+//        
+//        model.addAttribute("img",imgLocation.get());
+//        model.addAttribute("location",uploadBaseLocation);
+//        
+        
 
         return "/hrn/personnelDetailInfo";
     }
