@@ -189,7 +189,7 @@
 								</form>
 							</div></li>
 
-						<!-- 0828 결재대기 종 알림 -->
+						<!-- 결재대기 종 알림 -->
 						<li class="nav-item dropdown no-arrow mx-1">
 						    <a class="nav-link dropdown-toggle position-relative" href="#" id="alertsDropdown"
 						       role="button" data-toggle="dropdown" aria-haspopup="true"
@@ -203,23 +203,22 @@
 						                     display: none;"></span>
 						    </a> 
 						    <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-						         aria-labelledby="alertsDropdown" style="width: 500px;">
+						        aria-labelledby="alertsDropdown" style="width: 500px;">
 						        <h6 class="dropdown-header text-center" style="font-size: 16px;">전자결재 바로가기</h6>
 						        
 						        <div class="p-3 d-flex justify-content-between">
 						            <a class="btn btn-outline-primary flex-fill mr-2 position-relative" 
-						               th:href="@{/approval/approval_list(status='my')}"
-						               style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+						                th:href="@{/approval/approval_list(status='my')}"
+						                style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
 						                <i class="fas fa-folder-open mb-2" style="font-size: 30px;"></i>
 						                <div>내결재목록</div>
 						                <small class="text-muted mt-1"><span id="myPendingCount">0</span>건</small>
 						                <span class="badge badge-danger position-absolute" id="myPendingBadge" 
 						                      style="top: 5px; right: 5px; display: none;">New</span>
 						            </a>
-						            
 						            <a class="btn btn-outline-warning flex-fill position-relative" 
-						               th:href="@{/approval/approval_list(status='pending')}"
-						               style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+						                th:href="@{/approval/approval_list(status='pending')}"
+						                style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
 						                <i class="fas fa-clock mb-2" style="font-size: 30px;"></i>
 						                <div>결재대기</div>
 						                <small class="text-muted mt-1"><span id="toApproveCount">0</span>건</small>
