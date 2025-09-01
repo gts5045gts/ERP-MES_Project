@@ -87,6 +87,54 @@ public class PersonnelImgService {
  	        return dto;
  	    });
 	}
+	public void updateImg(Personnel personnel, MultipartFile empImg) throws IOException {
+		
+		log.info("Service 이미지 저장시작");
+		String originalFileName = empImg.getOriginalFilename();
+		
+		//파일 이름 중복방지 대책
+		String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
+		
+		//기본 경로 + 상세 경로 서브 디렉토리 결합하여 디렉토리 생성
+		Path uploadDir = Paths.get(uploadBaseLocation, itemImgLocation).toAbsolutePath().normalize();
+		
+		
+		//생성된 Path 객체에 해당하는 디렉토리가 실제 디렉토리로 존재하지 않을 경우 해당 디렉토리 생성
+		if(!Files.exists(uploadDir)) { 
+			Files.createDirectories(uploadDir); // 하위 경로를 포함한 경로 상의 모든 디렉토리 생성
+		}
+		
+		
+		// 디렉토리와 파일명 결합하여 Path 객체 생성
+		// => 기존 경로를 담고 있는 Path 객체의 resolve() 메서드를 사용하여 기존 경로에 파일명 추가
+		Path uploadPath = uploadDir.resolve(fileName);
+		
+		
+		// 임시 경로에 보관되어 있는 첨부파일 1개를 실제 업로드 경로로 이동
+		empImg.transferTo(uploadPath);
+		
+		
+		
+		PersonnelImg perImg = personnelImgRepository.findById(personnel.getEmpId())
+		 	            .orElseGet(() -> {
+		 	            	List<PersonnelImg> imgId = personnelImgRepository.findAll();
+			 	   			int number = imgId.size() + 1;
+			 	   			String id = String.format("IMG%03d", number);
+		 	            
+			 	   			PersonnelImg newImg = new PersonnelImg();
+			 	   			newImg.setImgId(id);
+			 	   			newImg.setPersonnel(personnel);
+			 	   			return newImg;
+		 	            });
+				
+		perImg.setName(fileName);
+		perImg.setFileName(originalFileName);
+		perImg.setLocation(itemImgLocation);
+			
+		personnelImgRepository.save(perImg);
+		
+		
+	}
 	
 	
 }
