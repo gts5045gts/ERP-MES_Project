@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
+import com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -44,6 +45,19 @@ public interface CommuteMapper {
 
 	// 관리자 수정버튼
 	int updateWorkStatus(AdminCommuteDTO dto);
+
+	// 삭제하기 위한 출근기록 조회
+	CommuteDTO checkTodayWork(Map<String, Object> deleteLogData);
+
+	// 출근기록 삭제
+	int deleteWorkData(Map<String, Object> deleteLogData);
+
+	// 삭제한 출근기록 데이터 로그저장
+	int insertLogData(Map<String, Object> deleteLogData);
+
+	// 삭제된 출근 로그 데이터 가져오기
+	List<CommuteDeleteLogDTO> getLogData();
+
 
 
 

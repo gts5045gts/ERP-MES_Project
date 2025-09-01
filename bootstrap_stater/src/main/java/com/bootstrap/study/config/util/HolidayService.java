@@ -1,13 +1,11 @@
 package com.bootstrap.study.config.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.log4j.Log4j2;
+
 @Service
+@Log4j2
 public class HolidayService {
 
     @Value("${service.key}") // application.properties 파일에 저장된 API 키를 주입받습니다.
@@ -62,6 +67,8 @@ public class HolidayService {
                 holidays.add(objectMapper.convertValue(itemNode, HolidayDTO.class));
             }
 
+            log.info(finalYear + "/" + finalMonth + " 조회 결과 : " + holidays);
+            
             // isHoliday가 "Y"인 경우만 필터링하여 반환
             return holidays.stream()
                     .filter(h -> "Y".equals(h.getIsHoliday()))

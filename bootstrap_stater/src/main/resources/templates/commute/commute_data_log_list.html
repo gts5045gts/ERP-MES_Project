@@ -18,7 +18,7 @@
 	    <div class="container-fluid">
 	
 	        <!-- Page Heading -->
-	        <h1 class="h3 mb-2 text-gray-900">관리자 근태관리 출퇴근현황</h1>
+	        <h1 class="h3 mb-2 text-gray-900"></h1>
 	        
 	        <!-- 출근버튼 -->
 	        
@@ -33,7 +33,7 @@
 <!-- 	            	<input type="date"> -->
 <!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
-				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
+				    <h6 class="m-0 font-weight-bold text-primary">출근기록 삭제 데이터 로그</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
 						<select id="dept" th:name="dept" class="form-control form-control-sm" style="margin-right:55px;">
@@ -55,15 +55,12 @@
 	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
 	                        <thead>
 		                        <tr>
-		                            <th>날짜</th>
-		                            <th>사번</th>
-		                            <th>사원 이름</th>
-		                            <th>부서</th>
-		                            <th>직책</th>
-		                            <th>출근시간</th>
-		                            <th>퇴근시간</th>
-		                            <th>근무상태</th>
-		                            <th style="width: 110px;">출근기록</th>
+		                            <th>로그ID</th>
+		                            <th>삭제일시</th>
+		                            <th>삭제자</th>
+		                            <th>삭제사유</th>
+		                            <th>대상자</th>
+		                            <th>상세조회</th>
 		                        </tr>
 	                        </thead>
 	                        <tbody>
@@ -74,8 +71,6 @@
 		                            <td th:text="${c.empName}"></td>
 		                            <td th:text="${c.deptName}"></td>
 		                            <td th:text="${c.posName}"></td>
-									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
-									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
 		                            <td>
 								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" 
 								        		th:data-emp-id="${c.empId}" th:data-commute-date="${c.commuteDate}" 
@@ -87,17 +82,9 @@
 								            </option>
 								        </select>
 								    </td>
-								    <td>
-								    	<button class="deleteBtn btn btn-danger btn-sm"
-								    			th:data-emp-id="${c.empId}"
-								    			th:data-commute-date="${c.commuteDate}"
-								    			th:data-check-in-time="${#temporals.format(c.checkInTime, 'yyyy-MM-dd HH:mm:ss')}"
-								    	 		style="min-width: 80px;">삭제
-								    	 </button>
-								    </td>
 		                        </tr>
 		                        <tr th:if="${#lists.isEmpty(adminCommuteList)}">
-									<td colspan="9" class="text-center text-muted">출근한 사람이 없습니다.</td>
+									<td colspan="9" class="text-center text-muted">삭제된 출근기록이 없습니다.</td>
 								</tr>
 	                        </tbody>
 	                        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
