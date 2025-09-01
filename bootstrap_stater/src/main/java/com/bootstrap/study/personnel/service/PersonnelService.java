@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bootstrap.study.approval.constant.ApprDecision;
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
+import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.entity.ApprLine;
 import com.bootstrap.study.approval.repository.ApprLineRepository;
 import com.bootstrap.study.approval.repository.ApprRepository;
+import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
@@ -30,6 +34,8 @@ import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelTransfer;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
 import com.bootstrap.study.personnel.repository.PersonnelTransferRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -45,6 +51,7 @@ public class PersonnelService {
     private final PersonnelTransferRepository personnelTransferRepository;
     private final ApprRepository apprRepository;
     private final ApprLineRepository apprLineRepository;
+    private final ApprService apprService;
     
 //    private final PersonnelImgService personnelImgService;
     
@@ -225,68 +232,80 @@ public class PersonnelService {
     			.map(PersonnelDTO::fromEntity)
     			.collect(Collectors.toList());
     }
- 	
-    @Transactional // 인사발령, 전자결재 테이블에 대한 작업이 모두 성공하거나 실패
-    public void submitTransPersonnel(Map<String, Object> payload, String loginEmpId) {
+    
+    @Transactional
+    public void submitTransPersonnel(Map<String, Object> transInfo, String loginEmpId) throws IOException {
+        String empId = (String) transInfo.get("empId");
+        String empName = (String) transInfo.get("name");
+        String oldDeptName = (String) transInfo.get("oldDeptName");
+        String oldPosName = (String) transInfo.get("oldPosName");
+        String newDeptName = (String) transInfo.get("newDeptName");
+        String newPosName = (String) transInfo.get("newPosName");
+        String transType = (String) transInfo.get("transType");
+        String transDateStr = (String) transInfo.get("transDate");
+        String approverId = (String) transInfo.get("approverId");
         
-        // 1. 발령 정보 추출
-        String transEmpId = (String) payload.get("empId");			// 발령자 사번
-        String transType = (String) payload.get("transType");		// 발령타입
-        String transDeptId = (String) payload.get("transDept");		// 발령부서
-        String transPosId = (String) payload.get("transPos");		// 발령직급
-        String approverId = (String) payload.get("approverId");		// 결재자 사번
-        
-        // 2. 발령 대상 사원 정보 조회 (기존 부서/직급)
-        Personnel personnel = personnelRepository.findByEmpId(transEmpId)
-            .orElseThrow(() -> new IllegalArgumentException("발령 대상 사원을 찾을 수 없습니다."));
+        // 1. ApprService를 호출하여 전자결재 문서 저장
+        // 전자결재 문서의 제목과 내용을 동적으로 생성
+        String title = "인사발령 신청 (대상: " + empName + ")";
+        String content = "발령 구분: " + transType + "\n "
+                        + "발령 대상: " + empName + " (" + empId + ")\n "
+                        + "기존 부서/직급: " + oldDeptName + "/" + oldPosName + "\n "
+                        + "신규 부서/직급: " + newDeptName + "/" + newPosName + "\n "
+                        + "발령일: " + transDateStr;
 
-        String oldDeptId = personnel.getDepartment().getComDtId();
-        String oldPosId = personnel.getPosition().getComDtId();
-        String oldDeptName = personnel.getDepartment().getComDtNm();
-        String oldPosName = personnel.getPosition().getComDtNm();
-        String newDeptName = commonDetailCodeRepository.findByComDtId(transDeptId).get().getComDtNm();
-        String newPosName = commonDetailCodeRepository.findByComDtId(transPosId).get().getComDtNm();
+        ApprDTO apprDTO = new ApprDTO();
+        apprDTO.setReqType(ApprReqType.TRANSFER.getCode());
+        apprDTO.setTitle(title);
+        apprDTO.setContent(content);
+        apprDTO.setRequestAt(LocalDate.now());
+        
+        // 결재자 ID를 String 배열로 변환
+        String[] empIds = {loginEmpId, approverId}; // 09/01 17:25 현재 신청자(tot_step=1), 결재자(tot_step=2)로 설정
 
-        // 3. Approval 테이블에 저장
-        Appr appr = Appr.builder()
-        		.requestAt(LocalDate.now())
-        		.totStep(1) // 현재는 1단계 결재이므로 1로 설정
-                .empId(loginEmpId)          // 신청자(로그인) 사번
-                .reqType("인사발령")
-                .title(personnel.getName() + " 발령 신청")
-                .content(
-                        "발령구분: " + transType + "\n" +
-                        "사원번호: " + personnel.getEmpId() + "\n" +
-                        "기존부서: " + oldDeptName + " -> 신규부서: " + newDeptName + "\n" +
-                        "기존직급: " + oldPosName + " -> 신규직급: " + newPosName
-                 )
-                .status(ApprStatus.REQUESTED)
-                .build();
+        Long apprId = apprService.registAppr(apprDTO, empIds, loginEmpId);
         
-        // reqId가 DB에서 자동으로 생성
-        appr = apprRepository.save(appr);
+        // 2. PersonnelTransfer 엔티티 저장 (향후 구현 예정)
+        // 사용자 요청에 따라 이 부분은 다음 질문에서 다룰 예정입니다.
+        // 현재는 결재 문서만 생성하고 PersonnelTransfer 테이블에는 저장하지 않습니다.
         
-     // 4. ApprLine 엔티티 생성 및 저장
-        ApprLine apprLine = new ApprLine();
-        apprLine.setAppr(appr);
-        apprLine.setApprId(approverId);
-        apprLine.setStepNo(1); // 1단계 결재
-        apprLine.setDecision(ApprDecision.PENDING);
+        /*
+        // 인사발령 엔티티 생성 및 저장
+        String oldDeptId = (String) transInfo.get("oldDeptId");
+        String oldPosId = (String) transInfo.get("oldPosId");
+        String newDeptId = (String) transInfo.get("newDeptId");
+        String newPosId = (String) transInfo.get("newPosId");
         
-        apprLineRepository.save(apprLine);
-
-        // 5. Transfer 엔티티 생성 및 저장
-        PersonnelTransfer transfer = new PersonnelTransfer();
-        
-        transfer.setReqId(appr.getReqId()); // 위에서 저장된 appr의 reqId를 가져와 사용
-        transfer.setEmpId(transEmpId);
-        transfer.setTransferType(transType);
-        transfer.setOldDept(oldDeptId);
-        transfer.setNewDept(transDeptId);
-        transfer.setOldPosition(oldPosId);
-        transfer.setNewPosition(transPosId);
+        PersonnelTransfer transfer = PersonnelTransfer.builder()
+            .reqId(apprId) // 결재 문서 ID를 외래키로 사용
+            .empId(empId)
+            .transferType(transType)
+            .oldDept(oldDeptId)
+            .newDept(newDeptId)
+            .oldPosition(oldPosId)
+            .newPosition(newPosId)
+            .transDate(LocalDate.parse(transDateStr))
+            .build();
         
         personnelTransferRepository.save(transfer);
+        */
+        
+        // 실제 인사 정보(Personnel 엔티티) 업데이트
+        // 사용자 요청에 따라 이 부분은 나중에 'status'가 'FINISHED'일 때 실행하도록 변경될 예정입니다.
+        
+        /*
+        Personnel personnel = personnelRepository.findByEmpId(empId)
+            .orElseThrow(() -> new IllegalArgumentException("사원 정보 업데이트 실패"));
+        
+        CommonDetailCode newDept = commonDetailCodeRepository.findByComDtId(newDeptId)
+            .orElseThrow(() -> new IllegalArgumentException("신규 부서 코드 없음"));
+        CommonDetailCode newPos = commonDetailCodeRepository.findByComDtId(newPosId)
+            .orElseThrow(() -> new IllegalArgumentException("신규 직급 코드 없음"));
+        
+        personnel.setDepartment(newDept);
+        personnel.setPosition(newPos);
+        personnelRepository.save(personnel);
+        */
     }
     
 }

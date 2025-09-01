@@ -1,13 +1,24 @@
 package com.bootstrap.study.personnel.entity;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+
+import com.bootstrap.study.approval.constant.ApprStatus;
+import com.bootstrap.study.approval.entity.ApprDetail;
+import com.bootstrap.study.approval.entity.ApprLine;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +30,8 @@ import lombok.ToString;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PersonnelTransfer {
 	@Id
     @Column(name = "req_id", updatable = false)
@@ -42,7 +55,14 @@ public class PersonnelTransfer {
     @Column(name = "new_position", nullable = false, length = 50)
     private String newPosition; // 신규 직급
     
-    @UpdateTimestamp
-	@Column(nullable = false, name = "update_at")
-	private Timestamp update;
+    @Column(name = "transfer_at")
+	private LocalDate transDate;
+
+	@CreatedDate
+	@Column(updatable = false, name = "create_at")
+	private LocalDateTime create;
+
+	@LastModifiedBy
+	private LocalDateTime update;
+    
 }

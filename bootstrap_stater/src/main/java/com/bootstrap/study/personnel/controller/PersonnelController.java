@@ -186,7 +186,7 @@ public class PersonnelController {
         return "/hrn/personnelTransSave";  
     }
 	
-	@PostMapping("/api/trans")
+	@PostMapping("/trans/submit")
     public ResponseEntity<String> transPersonnel(@RequestBody Map<String, Object> payload, Principal principal) {
         log.info("인사 발령 요청 수신: {}", payload);
         String loginEmpId = principal.getName(); // 로그인한 사용자 ID

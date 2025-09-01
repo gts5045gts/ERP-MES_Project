@@ -8,7 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	const employeeTableBody = document.getElementById('modalEmployeeTableBody');
 
 	// 초기 사원 목록을 테이블에 표시 (페이지 로드 시)
-	displayEmployees(allEmployeesData);
+	if (typeof allEmployeesData !== 'undefined' && allEmployeesData.length > 0) {
+		displayEmployees(allEmployeesData);
+	}
 
 	// 선택된 사원 정보를 표시할 요소들
 	const selectedEmployeeName = document.getElementById('selectedEmployeeName');
@@ -19,8 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	// 숨겨진 입력 필드 (발령 정보 저장 시 사용)
 	const hiddenSelectedEmployeeDbId = document.getElementById('hiddenSelectedEmployeeDbId');
 
-	const saveBtn = document.getElementById('saveBtn');
-
 	// 결재자 드롭다운
 	const approverSelect = document.getElementById('approverSelect');
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	searchButton.addEventListener('click', () => {
 		const deptId = deptSelect.value;
 		const positionId = positionSelect.value;
-		const searchKeyword = searchInput.value.toLowerCase(); // 대소문자 구분을 없애기 위해 소문자로 변환
+		const searchKeyword = searchInput.value.toLowerCase();
 
 		// 전체 사원 목록에서 조건에 맞는 사원만 필터링
 		const filteredEmployees = allEmployeesData.filter(employee => {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${employee.posName}</td>
                 <td>${employee.phone}</td>
             `;
-			// 리스트의 행에 더블클릭 이벤트 리스너 추가
+			// 더블클릭 이벤트 리스너 추가
 			row.addEventListener('dblclick', () => {
 				// 선택된 행의 데이터로 '선택된 사원 정보' 영역 채움
 				selectedEmployeeName.textContent = employee.name;
@@ -72,14 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
 				selectedEmployeeCurrentDept.textContent = employee.deptName;
 				selectedEmployeeCurrentPosition.textContent = employee.posName;
 
-				// 추후 발령 정보 저장에 사용할 사원번호를 숨겨진 필드에 저장
+				// 발령 정보 저장에 사용할 사원번호를 숨겨진 필드에 저장
 				hiddenSelectedEmployeeDbId.value = employee.empId;
 			});
 			employeeTableBody.appendChild(row);
 		});
 	}
 
-	// 페이지 로드 시 결재자 드롭다운
+	// 결재자 드롭다운
 	function populateApprovers() {
 		if (approversData && approversData.length > 0) {
 			approversData.forEach(employee => {
@@ -91,49 +91,66 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
+	// 페이지 로드 시 결재자 드롭다운
 	populateApprovers();
 
 	// 신청 버튼 클릭 이벤트 리스너
 	document.getElementById('saveBtn').addEventListener('click', async () => {
-	    const selectedEmpId = document.getElementById('hiddenSelectedEmployeeDbId').value;
-	    const transType = document.getElementById('transTypeSelect').value;
-	    const transDate = document.getElementById('transDateInput').value;
-	    const transDept = document.getElementById('transDeptSelect').value;
-	    const transPos = document.getElementById('transPosSelect').value;
-	    const approverId = document.getElementById('approverSelect').value;
 
-	    if (!selectedEmpId || !transType || !transDate || !transDept || !transPos || !approverId) {
-	        alert('모든 발령 정보를 입력해주세요.');
-	        return;
-	    }
+		// 기존에 가져오던 값들 (ID)
+		const selectedEmpId = document.getElementById('hiddenSelectedEmployeeDbId').value;
+		const transType = document.getElementById('transTypeSelect').value;
+		const transDate = document.getElementById('transDateInput').value;
+		const approverId = document.getElementById('approverSelect').value;
 
-	    const payload = {
-	        empId: selectedEmpId,
-	        transType: transType,
-	        transDate: transDate,
-	        transDept: transDept,
-	        transPos: transPos,
-	        approverId: approverId
-	    };
+		// Service에서 필요로 하는 값들
+		const empName = document.getElementById('selectedEmployeeName').textContent;
+		const oldDeptName = document.getElementById('selectedEmployeeCurrentDept').textContent;
+		const oldPosName = document.getElementById('selectedEmployeeCurrentPosition').textContent;
+		const newDeptName = document.getElementById('transDeptSelect').options[document.getElementById('transDeptSelect').selectedIndex].text;
+		const newPosName = document.getElementById('transPosSelect').options[document.getElementById('transPosSelect').selectedIndex].text;
 
-	    try {
-	        const response = await fetch('/personnel/api/trans', {
-	            method: 'POST',
-	            headers: { 'Content-Type': 'application/json' },
-	            body: JSON.stringify(payload)
-	        });
+		// 유효성 검사 추가
+		if (!selectedEmpId || !transType || !transDate || !newDeptName || !newPosName || !approverId) {
+			alert('모든 발령 정보를 입력해주세요.');
+			return;
+		}
 
-	        if (response.ok) {
-	            alert('인사 발령 신청이 성공적으로 제출되었습니다.');
-	            window.close(); // 팝업 닫기
-	        } else {
-	            const errorMessage = await response.text();
-	            alert('인사 발령 신청 실패: ' + errorMessage);
-	        }
-	    } catch (error) {
-	        console.error('API 호출 중 오류:', error);
-	        alert('인사 발령 신청 중 오류가 발생했습니다.');
-	    }
+		const payload = {
+			empId: selectedEmpId,
+			name: empName, // Service의 "name" 키와 일치
+			oldDeptName: oldDeptName, 
+			oldPosName: oldPosName, 
+			newDeptName: newDeptName, 
+			newPosName: newPosName, 
+			transType: transType,
+			transDate: transDate,
+			approverId: approverId
+		};
+
+		console.log('payload:', payload);
+		console.log('Attempting to send request to /personnel/trans/submit');
+
+		try {
+			const response = await fetch('/personnel/trans/submit', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					[csrfHeaderName]: csrfToken
+				},
+				body: JSON.stringify(payload)
+			});
+
+			if (response.ok) {
+				alert('인사 발령 신청이 성공적으로 제출되었습니다.');
+				window.close(); 
+			} else {
+				const errorMessage = await response.text();
+				alert('인사 발령 신청 실패: ' + errorMessage);
+			}
+		} catch (error) {
+			console.error('API 호출 중 오류:', error);
+			alert('인사 발령 신청 중 오류가 발생했습니다.');
+		}
 	});
-
 });
