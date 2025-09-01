@@ -133,7 +133,6 @@ tr:has(.approval-checkbox:checked) { background: #fff3cd; }
 								<th>결재 완료일자</th>
 								<th>상태</th>
 								<th>결재여부</th>
-								<th>결재순번</th>
 			                 </tr>
 						</thead>
 						<tbody>
@@ -284,14 +283,13 @@ tr:has(.approval-checkbox:checked) { background: #fff3cd; }
 						</div>
                    		<hr>
 		                <div class="card my-3">
-		                    <div class="card-body">
-		                        <h5 class="card-title" id="modal-title">test3</h5>
-		                        <div class="content-box" id="modal-content-detail">
-		                            <p>test3</p>
-		                            <p>휴가 신청서 내용입니다. 잘 부탁드립니다.</p>
-		                        </div>
-		                    </div>
-		                </div>
+						    <div class="card-body">
+						        <h5 class="card-title" id="modal-title">문서 제목</h5>
+						        <div class="content-box border p-3" id="modal-content-detail" 
+						             style="background: #f8f9fa; overflow-x: auto;">
+						        </div>
+						    </div>
+						</div>
 						<div class="approval-line-section mt-4">
 						<h6 class="approval-line-header"><i class="fas fa-stream"></i> 결재선</h6>
 							<table class="table table-bordered table-sm text-center">
@@ -567,16 +565,14 @@ function populateModalFields(data) {
     } else {
         empIdElement.textContent = data.empId;
     }
-    
+    // 0901 공통양식 내용 추가
     Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
         const element = document.getElementById(elementId);
         if (element) {
-            if (key === 'createAt' && data[key]) {
-                try {
-                    element.textContent = new Date(data[key]).toLocaleDateString('ko-KR');
-                } catch {
-                    element.textContent = '-';
-                }
+            if (key === 'content') {
+                element.innerHTML = data[key] || '-';
+            } else if (key === 'createAt' && data[key]) {
+                element.textContent = new Date(data[key]).toLocaleDateString('ko-KR');
             } else if (key === 'reqType' && data[key]) {
                 element.textContent = REQ_TYPE_LABELS[data[key]] || data[key];
             } else {
