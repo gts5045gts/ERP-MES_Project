@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.groupware.dto.ChatMessageDTO;
 import com.bootstrap.study.groupware.service.ChatService;
@@ -99,6 +100,7 @@ public class ChatController {
     
     // 클라이언트의 '읽지 않은 메시지 불러오기' 요청을 처리합니다.
     @GetMapping("/api/messages/unread")
+    @ResponseBody
     public List<ChatMessageDTO> getUnreadMessages(Principal principal) {
         log.info("읽지 않은 메시지 불러오기 요청: {}", principal.getName());
         // Service 계층을 호출하여 데이터베이스에서 읽지 않은 메시지를 가져옵니다.
