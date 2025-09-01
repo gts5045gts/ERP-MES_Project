@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import jakarta.persistence.*;
@@ -46,6 +47,10 @@ public class Document {
 
     @Column(nullable = false, name = "DOC_TYPE", length = 100)
     private String docType;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "REQ_TYPE", length = 30)
+    private ApprReqType reqType;
 
     @CreatedDate
     @Column(nullable = false, name = "CREATE_AT", updatable = false)
