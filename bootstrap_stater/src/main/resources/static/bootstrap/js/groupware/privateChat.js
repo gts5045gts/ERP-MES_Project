@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	// 웹소켓 연결 실패 시 실행
 	function onError(error) {
-	    console.error("웹소켓 연결 실패: " + error);
+		console.error("웹소켓 연결 실패: " + error);
 	}
 
 	// 웹소켓 연결 성공 시 실행되는 함수
@@ -68,14 +68,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// 부서 목록을 불러오는 함수
 	function fetchDepartments() {
-		fetch('/api/departments')
+		fetch('/personnel/departments')
 			.then(response => response.json())
 			.then(departments => {
 				// 부서 목록을 순회하며 드롭다운에 추가합니다.
+				const departmentSelect = document.getElementById('deptSelect');
+
+				departmentSelect.innerHTML = '<option value="">부서 선택</option>';
 				departments.forEach(dept => {
 					const option = document.createElement('option');
-					option.value = dept.deptId;
-					option.textContent = dept.deptName;
+					option.value = dept.comDtId;
+					option.textContent = dept.comDtNm;
 					deptSelect.appendChild(option);
 				});
 			})
@@ -91,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		fetch(`/api/employees?deptId=${deptId}`)
+		fetch(`/personnel/employees?deptId=${deptId}`)
 			.then(response => response.json())
 			.then(employees => {
 				// 사원 목록을 순회하며 드롭다운에 추가합니다.

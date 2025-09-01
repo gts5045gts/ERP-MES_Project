@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -221,6 +222,13 @@ public class PersonnelController {
         List<PersonnelDTO> personnels = personnelService.getEmployeesByDepartmentId(comDtId);
 
         return ResponseEntity.ok(personnels);
+    }
+    
+    // 사원테이블에서 부서목록 json형태로 반환
+    @GetMapping("/departments") 
+    @ResponseBody
+    public List<CommonDetailCodeDTO> getDepartments() {
+        return personnelService.getAllDepartments();
     }
     
     

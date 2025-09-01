@@ -32,18 +32,18 @@ public class PersonnelService {
     private final CommonDetailCodeRepository commonDetailCodeRepository;
     private final PersonnelImgService personnelImgService;
     
-    // 부서 리스트 조회
+	// 부서 리스트 조회
     public List<CommonDetailCodeDTO> getAllDepartments() {
-    	
-        List<CommonDetailCode> comList = commonDetailCodeRepository.findAll();
-        log.info("depList" + comList.toString());
+        // 데이터베이스 쿼리로 직접 "DEP" 코드를 필터링합니다.
+        List<CommonDetailCode> comList = commonDetailCodeRepository.findByComId_ComId("DEP");
+        
+        log.info("부서 목록 조회 결과: " + comList.toString());
 
         List<CommonDetailCodeDTO> departments = comList.stream()
-        		.filter(result -> "DEP".equals(result.getComId().getComId()))
-        		.map(CommonDetailCodeDTO :: fromEntity)
-        		.collect(Collectors.toList());
+                .map(CommonDetailCodeDTO::fromEntity)
+                .collect(Collectors.toList());
          
-        log.info("필터 후 데이터 : " + departments.toString());
+        log.info("DTO 변환 후 데이터: " + departments.toString());
         return departments;
     }
     
