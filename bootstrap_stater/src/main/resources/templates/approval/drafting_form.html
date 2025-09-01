@@ -30,9 +30,7 @@
 			<div class="container-fluid">
 				<div class="card shadow mb-4">
 					<div class="card-header bg-primary text-white">
-						<h6 class="m-0 font-weight-bold">기안서작성 | 
-							<span th:text="${title}" id="targetTitle"></span>
-						</h6>
+						<h6 class="m-0 font-weight-bold">기안서작성</h6>
 					</div>
 					<div class="card-body">
 						<form th:action="@{/approval/save}" th:object="${apprDTO}" method="post" enctype="multipart/form-data" id="apprForm">
@@ -54,7 +52,7 @@
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">문서제목</label>
 								<div class="col-sm-8">
-									<input type="text" th:field="*{title}" class="form-control" maxlength="200" required>
+									<input type="text" name="title" th:value="${docTitle}" id="targetTitle" class="form-control" maxlength="200" required>
 								</div>
 							</div>
 
@@ -83,9 +81,9 @@
 								<div class="col-sm-2">
 									<select class="form-control selected-req-type" name="reqType">
 										<option th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
-												th:value="${reqType}"
+												th:value="${reqType.name()}"
 												th:text="${reqType.label}"
-												th:selected="${reqType.name() == selectedRole}"
+												th:selected="${reqType.name() == selectedRole.name()}"
 												>
 										</option>
 									</select>
@@ -169,7 +167,7 @@
 							<div class="form-group row">
 								<label for="summernote" class="col-sm-2 col-form-label">에디터 내용</label>
 								<div class="col-sm-8">
-									<textarea id="summernote" class="form-control" th:field="*{content}"></textarea>
+									<textarea id="summernote" class="form-control" name=content th:text="${docContent}"></textarea>
 								</div>
 							</div>
 						</form>
@@ -220,7 +218,7 @@
 
 		$('#summernote').summernote({
 			tabsize: 2,
-			height: 200,
+			height: 400,
 			focus: true,
 			toolbar: [
 				['style', ['style']],
@@ -324,7 +322,7 @@
 			let sel_val = $(this).val();
 			const title = $(this).find('option:selected').text();
 			
-			$("#targetTitle").text(title);
+			$("#targetTitle").val(title);
 
 			if (sel_val === 'VACATION')
 			{
@@ -336,6 +334,9 @@
 				$('.vac input[type="text"], .vac select, .vac input[type="radio"]').prop('disabled', true);
 				$(".vac").hide();
 			}
+			
+			$('.vac input[type="text"]').val('');
+			$('#summernote').summernote('code', '');
 		});
 		
 		$('#apprForm').on('submit', function(e) {

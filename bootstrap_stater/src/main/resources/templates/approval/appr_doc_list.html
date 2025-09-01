@@ -17,40 +17,41 @@
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">기안서 작성 (공통문서에서 가져오는걸로 로직 변경예정)</h6>
+                <h6 class="m-0 font-weight-bold text-primary">기안서 작성</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                         <thead>
-                        <tr>
-                            <th>정렬순서</th>
-                            <th>양식명</th>
-                            <th>구분</th>
-                            <th>결재문서</th>
-                        </tr>
+	                        <tr>
+	                            <!-- <th>정렬순서</th> -->
+	                            <th>업무 구분</th>
+								<th>양식 종류</th>
+	                            <th>양식명</th>
+	                        </tr>
                         </thead>
                         <tfoot>
-                        <tr>
-                            <th>정렬순서</th>
-                            <th>양식명</th>
-                            <th>구분</th>
-                            <th>결재문서</th>
-                        </tr>
+	                        <tr>
+	                            <!-- <th>정렬순서</th> -->
+	                            <th>업무 구분</th>
+								<th>양식 종류</th>
+	                            <th>양식명</th>
+	                        </tr>
                         </tfoot>
                         <tbody>
-                        <tr th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}">
-                            <td>00</td>
+                        <!-- <tr th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"> -->
+                        <tr th:each="doc : ${documents}">
+                            <!-- <td>00</td> -->
+                            <td th:text="${doc.doctypename}"></td>
+                            <td th:text="${doc.ReqType.label}"></td>
                             <td>
                                 <a class="openReqType"
                                    data-toggle="modal"
-                                   th:text="${reqType.label}"
+                                   th:text="${doc.docTitle}"
                                    href="#"
-                               	   th:data-item-id="${reqType}">
+                               	   th:data-item-id="${doc.docId}">
                                 </a>
                             </td>
-                            <td></td>
-                            <td></td>
                         </tr>
                         </tbody>
                     </table>
@@ -81,10 +82,10 @@
 		$(function() {
 			// 상품 목록에서 상품 클릭 시 상세정보 조회 요청
 			$(".openReqType").click(function() {
-			    const reqTypeVal = this.dataset.itemId;
+			    const docId = this.dataset.itemId;
 
 			    window.open(
-			        `/approval/new/${reqTypeVal}`,      // URL
+			        `/approval/new/${docId}`,      // URL
 			        'drafting_form',                // 창 이름
 			        'width=1138,height=642,location=no,status=no,scrollbars=yes'  // 옵션 문자열
 			    );
