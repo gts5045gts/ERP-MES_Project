@@ -1,6 +1,7 @@
 
 package com.bootstrap.study.personnel.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
@@ -16,6 +18,7 @@ import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -27,6 +30,7 @@ public class PersonnelService {
 	private final PersonnelRepository personnelRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonDetailCodeRepository commonDetailCodeRepository;
+    private final PersonnelImgService personnelImgService;
     
     // 부서 리스트 조회
     public List<CommonDetailCodeDTO> getAllDepartments() {
@@ -100,6 +104,7 @@ public class PersonnelService {
     public List<PersonnelDTO> getEmployeesByDepartmentId(String comDtId) {
         List<Personnel> personnels = personnelRepository.findByDepartment_ComDtId(comDtId);
         return personnels.stream()
+        		.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()))	//퇴직자는 리스트에서 안보이게 하기 위함
                 .map(this::convertToDto) // convertToDto 메소드를 사용해 DTO로 변환 - Entity -> DTO 변환 전용 메서드
                 .collect(Collectors.toList());
     }
@@ -122,13 +127,14 @@ public class PersonnelService {
  		// Personnel 엔티티 목록을 가져와서 DTO로 변환
  		List<Personnel> personnelList = personnelRepository.findAll();
  		return personnelList.stream()
+ 				.filter(res -> !"STA009".equalsIgnoreCase(res.getStatus().getComDtId()) )	//퇴직자는 리스트에서 안보이게 하기 위함
  				.map(PersonnelDTO::fromEntity)
  				.collect(Collectors.toList());
  	}
  	
  	
  	
- 	public void personRegist(PersonnelDTO personnelDTO) {
+ 	public void personRegist(PersonnelDTO personnelDTO, MultipartFile empImg) throws IOException {
  	      //현재 날짜
  	      LocalDate today = LocalDate.now();
  	      
@@ -157,6 +163,12 @@ public class PersonnelService {
  	      log.info("사원등록 정보: " + personnel.toString());
 
  	      personnelRepository.save(personnel);
+ 	      
+ 	      
+ 	      
+ 	      //personnelImg 로 personnelDTO , 와 empImg  값 넘겨 주기 위함 
+ 	     personnelImgService.registImg( personnel, empImg);
+ 	      
 
 	}
  	
@@ -174,18 +186,15 @@ public class PersonnelService {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
- 	    // 수정된 부분
-// 	    personnel.setName(personnelDTO.getName());
-// 	    personnel.setPasswd(personnelDTO.getPasswd());
-// 	    personnel.setPhone(personnelDTO.getPhone());
-// 	    personnel.setResident(personnelDTO.getResident());
-// 	    personnel.setEmail(personnelDTO.getEmail());
-// 	    personnel.setAddrNum(personnelDTO.getAddrNum());
-// 	    personnel.setAddr1(personnelDTO.getAddr1());
-// 	    personnel.setAddr2(personnelDTO.getAddr2());
- 	 //수정시 해싱 암호로 들어가도록 변경
- 	    String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());			
- 	    personnelDTO.setPasswd(encodedPassword);
+ 	    // 수정시 오류 방지 
+ 	    //받아온 PASSWD 값이 NULL 값이 아니면 수정되겠금 변경
+ 	    if(personnelDTO.getPasswd() != null) {
+ 	    	String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());			
+ 	  	    personnelDTO.setPasswd(encodedPassword);
+ 	    }
+ 	    
+ 	    //수정시 해싱 암호로 들어가도록 변경
+ 	  
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
  	    
@@ -197,4 +206,3 @@ public class PersonnelService {
  	
 
 }
-

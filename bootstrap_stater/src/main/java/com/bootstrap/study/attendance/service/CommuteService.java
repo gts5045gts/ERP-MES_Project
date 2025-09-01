@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
+import com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO;
 import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.mapper.CommuteMapper;
 import com.bootstrap.study.attendance.mapper.CommuteScheduleMapper;
@@ -58,9 +60,9 @@ public class CommuteService {
 		
 	    String workStatus;
 	    if (nowTime.isAfter(startTime)) {
-	        workStatus = "STA004"; // 지각
+	        workStatus = "WSTA003"; // 지각
 	    } else {
-	        workStatus = "STA001"; // 출근
+	        workStatus = "WSTA001"; // 출근
 	    }
 		
 		CommuteDTO commute = new CommuteDTO();
@@ -91,7 +93,7 @@ public class CommuteService {
 		CommuteDTO commute = new CommuteDTO();
 		commute.setEmpId(empId);
 		commute.setCheckOutTime(now);
-		commute.setWorkStatus("STA002");
+		commute.setWorkStatus("WSTA002");
 		
 		commuteMapper.updateCommuteCheckOut(commute);
 		
@@ -117,15 +119,47 @@ public class CommuteService {
 
 	// 근무상태 공통코드
 	public List<CommonDetailCodeDTO> getCommonStatus() {
-		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("STA");
+		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("WSTA");
 //		System.out.println("commonStatus : " + commonStatus);
 		return commonStatus;
 	}
 
 	// 관리자 수정버튼
-//	public List<AdminCommuteDTO> updateWorkStatus(List<AdminCommuteDTO> updateList) {
-//		return commuteMapper.updateWorkStatus(updateList);
-//	}
+	public int updateWorkStatus(List<AdminCommuteDTO> updateList) {
+		int updatedCount = 0;
+		
+        for (AdminCommuteDTO dto : updateList) {
+            updatedCount += commuteMapper.updateWorkStatus(dto); // 개별 UPDATE 호출
+        }
+		
+	    return updatedCount;
+	}
+
+	// 출근기록 삭제
+	public String deleteCommuteRecord(Map<String, Object> deleteLogData) {
+		
+		// 삭제할 출근기록 조회
+		CommuteDTO checkWork =  commuteMapper.checkTodayWork(deleteLogData);
+		System.out.println("checkWork : " + checkWork);
+		if (checkWork == null) {
+		    throw new IllegalArgumentException("삭제할 출근 기록이 존재하지 않습니다.");
+		}
+		
+		// 출근기록 삭제
+		int deleteWork = commuteMapper.deleteWorkData(deleteLogData);
+		System.out.println("deleteWork : " + deleteWork);
+		
+		// 출근기록 삭제한 데이터 로그저장
+		int insertLogData = commuteMapper.insertLogData(deleteLogData);
+		System.out.println("insertLogData : " + insertLogData);
+		
+		return "삭제 완료";
+	}
+
+	// 삭제된 출근 로그데이터 가져오기
+	public List<CommuteDeleteLogDTO> getLogData() {
+		return commuteMapper.getLogData();
+	}
 	
 
 }

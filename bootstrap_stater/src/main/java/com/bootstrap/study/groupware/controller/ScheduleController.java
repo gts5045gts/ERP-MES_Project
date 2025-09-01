@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -22,8 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
-import com.bootstrap.study.commonCode.util.HolidayDTO;
-import com.bootstrap.study.commonCode.util.HolidayService;
+import com.bootstrap.study.config.util.HolidayDTO;
+import com.bootstrap.study.config.util.HolidayService;
 import com.bootstrap.study.groupware.dto.ScheduleDTO;
 import com.bootstrap.study.groupware.entity.Schedule;
 import com.bootstrap.study.groupware.service.ScheduleService;
@@ -62,12 +61,14 @@ public class ScheduleController {
     	int currentYear = (year != null) ? year : java.time.YearMonth.now().getYear();
         int currentMonth = (month != null) ? month : java.time.YearMonth.now().getMonthValue();
         
-    	    // year 또는 month가 null이면 현재 연도/월로 기본값 설정
-    	    if (year == null || month == null) {
-    	        // 기본값 로직을 여기에 추가
-    	    }
-    	    List<HolidayDTO> holidays = holidayService.getHolidays(currentYear, currentMonth);
-
+	    // year 또는 month가 null이면 현재 연도/월로 기본값 설정
+	    if (year == null || month == null) {
+	        // 기본값 로직을 여기에 추가
+	    }
+	    
+	    List<HolidayDTO> holidays = holidayService.getHolidays(currentYear, currentMonth);
+	    holidays.addAll(holidayService.getHolidays(currentYear, currentMonth + 1));
+	    holidays.addAll(holidayService.getHolidays(currentYear, currentMonth - 1));
         
         List<Map<String, Object>> calendarEvents = new ArrayList<>();
         for (HolidayDTO holiday : holidays) {
@@ -78,6 +79,7 @@ public class ScheduleController {
             event.put("color", "red");
             calendarEvents.add(event);
         }
+        
         return calendarEvents;
     }
 
@@ -86,7 +88,7 @@ public class ScheduleController {
     	log.info("ScheduleController scheduleList()");
     	
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long currentEmpId = null;
+        String currentEmpId = null;
         String currentEmpName = null;
         String empDeptId = null;
         String empDeptName = null;
@@ -95,7 +97,7 @@ public class ScheduleController {
         
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
-            currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpId = personnelLoginDTO.getEmpId();
             currentEmpName = personnelLoginDTO.getName();
             empName = personnelLoginDTO.getName(); // ⭐ 사용자 이름 가져오기
             empDeptId = personnelLoginDTO.getEmpDeptId();
@@ -107,7 +109,7 @@ public class ScheduleController {
                 }
             }
             
-            if ("관리자".equals(empName)) {
+            if ("AUT001".equals(personnelLoginDTO.getEmpLevelId())) {
                 isAdmin = true;
                 List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
                 model.addAttribute("allDepartments", allDepartments);
@@ -129,17 +131,21 @@ public class ScheduleController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         String empName = null;
-        boolean isAdmin = false;
         String empDeptName = null;
-        Long currentEmpId = null;
+        String empLevelId = null; 
+        String currentEmpId = null;
+        boolean isAdmin = false;
         List<CommonDetailCode> allDepartments = new ArrayList<>();
 
         if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
             PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
             empName = personnelLoginDTO.getName();
-            currentEmpId = Long.parseLong(personnelLoginDTO.getEmpId());
+            currentEmpId = personnelLoginDTO.getEmpId();
+            empLevelId = personnelLoginDTO.getEmpLevelId();
+            
+            isAdmin = "AUT001".equals(empLevelId);
+            
             String empDeptId = personnelLoginDTO.getEmpDeptId();
-
             if (commonCodeService != null) {
                 CommonDetailCode deptCode = commonCodeService.getCommonDetailCode(empDeptId);
                 if (deptCode != null) {
@@ -147,15 +153,14 @@ public class ScheduleController {
                 }
             }
             
-            if ("관리자".equals(empName)) {
-                isAdmin = true;
+            if (isAdmin) {
                 allDepartments = commonCodeService.findByComId("DEP");
+                model.addAttribute("allDepartments", allDepartments);
             }
         }
         
         model.addAttribute("empName", empName);
         model.addAttribute("isAdmin", isAdmin);
-        model.addAttribute("allDepartments", allDepartments);
         model.addAttribute("empDeptName", empDeptName);
         model.addAttribute("currentEmpId", currentEmpId);
 

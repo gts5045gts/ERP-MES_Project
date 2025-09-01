@@ -1,4 +1,4 @@
-package com.bootstrap.study.commonCode.security;
+package com.bootstrap.study.config.security;
 
 import java.io.IOException;
 import java.net.URLEncoder;

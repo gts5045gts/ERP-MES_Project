@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.approval.constant.ApprStatus;
 
@@ -44,36 +45,41 @@ public class ApprDTO {
  	
  	private Integer totStep;
  	
- 	// 0826
-    private String drafterName;     // 기안자 이름
-    private String department;      // 기안자 부서
-    private String position;
-    private String currentApprover; // 현재 결재자 이름
+	private String drafterName;     // 기안자 이름
+	private String department;      // 기안자 부서
+	private String position;
+	private String currentApprover; // 현재 결재자 이름
+	private boolean hasRejection = false;
+	
+	private LocalDateTime decDate; // 결재일자 추가
+	private String decision; // 결재 상태 (PENDING, ACCEPT, DENY)
+	private Integer stepNo; // 결재순번 추가
     
-    private LocalDateTime decDate; // 결재일자 추가
-    private String decision; // 결재 상태 (PENDING, ACCEPT, DENY)
-    private Integer stepNo; // 결재순번 추가
     
+	// 상태를 한글로 변환하는 메서드 추가
+	public String getStatusLabel() {
+	    if 		("ACCEPT".equals(decision)) return "승인";
+	    else if ("DENY".equals(decision)) 	return "반려";
+	    else return "대기";
+	}
     
-    // 0827 상태를 한글로 변환하는 메서드 추가
-    public String getStatusLabel() {
-        if 		("ACCEPT".equals(decision)) return "승인";
-        else if ("DENY".equals(decision)) 	return "반려";
-        else return "대기";
-    }
-    
-    // 0827 내가 기안한 문서의 상태 표시
-    public String getMyApprovalStatus() {
-        if 		(this.status == ApprStatus.FINISHED) 		return "완료";
-        else if (this.status == ApprStatus.CANCELED) 	return "반려됨"; 
-        else if (this.status == ApprStatus.PROCESSING) 	return "진행중";
-        else return "대기";
-    }
+	// 내가 기안한 문서의 상태 표시
+	public String getMyApprovalStatus() {
+		if (this.status == ApprStatus.FINISHED) return "완료";
+	    else if (this.status == ApprStatus.CANCELED) {
+	        if (this.hasRejection) {
+	            return "반려됨";  // 결재자가 반려
+	        }
+	        return "취소됨";  // 기안자가 직접 취소
+	    }
+	    else if (this.status == ApprStatus.PROCESSING) return "진행중";
+	    else return "대기";
+	}
     
  	private List<ApprLineDTO> ApprLineDTOList;
  	private List<ApprDetailDTO> apprDetailDTOList;
 
- 	@Builder
+	@Builder
 	public ApprDTO(Long reqId, String empId, String reqType, String title, String content, LocalDate requestAt, LocalDateTime createAt,
 			LocalDateTime updateAt, ApprStatus status, Integer totStep) {
 		this.reqId = reqId;
@@ -89,9 +95,9 @@ public class ApprDTO {
 	}
 
 	private static ModelMapper modelMapper = new ModelMapper();
-
- 	public Appr toEntity() { return modelMapper.map(this, Appr.class); }
-
+	
+	public Appr toEntity() { return modelMapper.map(this, Appr.class); }
+	
 	public static ApprDTO fromEntity(Appr appr) { return modelMapper.map(appr, ApprDTO.class); }
 
 }

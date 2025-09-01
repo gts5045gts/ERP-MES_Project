@@ -100,38 +100,44 @@ public class NoticeController {
 	    String empId = null;
 	    String empName = null;
 	    String empDeptName = null;
+	    String empLevelId = null;
+	    boolean isAdmin = false;
 
 		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
 			PersonnelLoginDTO userDetails = (PersonnelLoginDTO) authentication.getPrincipal();
 			empId = userDetails.getEmpId();
 			empName = userDetails.getName();
-			empDeptName = commonCodeService.getCommonDetailCode(userDetails.getEmpDeptId()).getComDtNm();
+			empLevelId = userDetails.getEmpLevelId();
+			isAdmin = "AUT001".equals(empLevelId);
+			empDeptName = userDetails.getEmpDeptName();
 		}
 		// 드롭다운에 표시할 공지 유형 목록 생성
 	    List<String> noticeTypes = new ArrayList<>();
 	    
-	    if ("관리자".equals(empName)) { 
+	    if (isAdmin) { 
 	        noticeTypes.add("전체공지");
-	        
-	        // 관리자는 전체 부서 목록을 가져와 드롭다운에 추가
 	        List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
 	        for (CommonDetailCode dept : allDepartments) {
 	            noticeTypes.add(dept.getComDtNm());
 	        }
 	    } else if (empDeptName != null) {
-	        // 일반 사용자는 본인 부서만 추가
 	        noticeTypes.add(empDeptName);
 	    }
 	    
-	    // 모델에 데이터 추가
+	    // 모델에 데이터 추가 
 	    NoticeDTO noticeDTO = new NoticeDTO();
 	    noticeDTO.setEmpId(empName);
 	    
 	    model.addAttribute("noticeDTO", noticeDTO);
-	    model.addAttribute("noticeTypes", noticeTypes); // ✅ 공지 유형 목록 추가
 	    model.addAttribute("empName", empName);
-	    model.addAttribute("departments", commonCodeService.findByComId("DEP")); // ✅ 모든 부서 목록은 그대로 모델에 추가
+	    model.addAttribute("departments", commonCodeService.findByComId("DEP"));
+	    model.addAttribute("isAdmin", "AUT001".equals(empLevelId));
 
+	    if (!isAdmin) {
+	        model.addAttribute("empDeptName", empDeptName);
+	    } else {
+	        model.addAttribute("noticeTypes", noticeTypes);
+	    }
 	    return "gw/ntcWrite";
 	}
 

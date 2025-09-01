@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.attendance.dto.AdminCommuteDTO;
 import com.bootstrap.study.attendance.dto.CommuteDTO;
+import com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO;
+import com.bootstrap.study.attendance.dto.CommuteScheduleDTO;
 import com.bootstrap.study.attendance.service.CommuteService;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -59,8 +62,8 @@ public class CommuteController {
 	        System.out.println("로그인 사용자 ID: " + empId);
 	    } else {
 	        // 로그인 안 된 상태라면 로그인 페이지로
-//	        return "redirect:/login";
-	        return "/commute/commute_list";
+	        return "redirect:/login";
+//	        return "/commute/commute_list";
 	    }
 	    // ==============================================================================
 		
@@ -214,26 +217,91 @@ public class CommuteController {
 	}
 	
 	// 수정버튼
-//	@ResponseBody
-//	@PostMapping("/updateWorkStatus")
-//	public ResponseEntity<List<AdminCommuteDTO>> updateWorkStatus(@RequestBody List<AdminCommuteDTO> updateList) {
-//		
-//		// 로그인한 사용자 객체 꺼내기
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//		
-//		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-//			// 로그인 안 된 경우 401 Unauthorized 반환
-//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//		}
-//		
-////		System.out.println("로그인 사용자 ID: " + empId);
-//		
-//		// ================================================================================
-//		
-//		// 수정버튼 처리
-//		List<AdminCommuteDTO> updateWorkStatusList = commuteService.updateWorkStatus(updateList);
-//		
-//		return ResponseEntity.ok(updateWorkStatusList);
-//	}
+	@ResponseBody
+	@PostMapping("/updateWorkStatus")
+	public ResponseEntity<Map<String, Object>> updateWorkStatus(@RequestBody List<AdminCommuteDTO> updateList) {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+			// 로그인 안 된 경우 401 Unauthorized 반환
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+		// ================================================================================
+		
+		// 수정버튼 처리
+		int updateCount = commuteService.updateWorkStatus(updateList);
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("message", updateCount + "건 업데이트 완료");
+	    return ResponseEntity.ok(result);
+		
+	}
+	
+	// 출근기록 삭제
+	@ResponseBody
+	@PostMapping("/deleteCommuteRecord")
+	public ResponseEntity<Map<String, Object>>deleteCommuteRecord(
+			@RequestBody Map<String, Object> deleteLogData) {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+			// 로그인 안 된 경우 401 Unauthorized 반환
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		String adminEmpId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+//		System.out.println("로그인 관리자 ID: " + adminEmpId);
+		
+		
+		// 삭제처리
+		deleteLogData.put("adminEmpId", adminEmpId);
+		
+	    String checkInTimeStr = (String) deleteLogData.get("checkInTime");
+	    LocalDateTime checkInTime = LocalDateTime.parse(checkInTimeStr,
+	            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+	    deleteLogData.put("checkInTime", checkInTime);
+		
+		String commuteDeleteLog = commuteService.deleteCommuteRecord(deleteLogData);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("success", true);
+		response.put("message", commuteDeleteLog);
+		
+		return ResponseEntity.ok(response);
+	}
+	
+	// 출근 기록 삭제 로그 조회
+	@GetMapping("/adminCommuteLog")
+	public String getMethodName() {
+		
+		// 로그인한 사용자 객체 꺼내기
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		String empId = null;
+		
+	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
+	        System.out.println("로그인 사용자 ID: " + empId);
+	    } else {
+	        // 로그인 안 된 상태라면 로그인 페이지로
+	        return "redirect:/login";
+//	        return "/commute/commute_list";
+	    }
+	    
+	    // 삭제된 출근 로그데이터 가져오기
+	    List<CommuteDeleteLogDTO> CommuteDeleteLogDTOList = commuteService.getLogData();
+	    
+	    
+		
+		return "/commute/commute_data_log_list";
+	}
+	
+	
 
 }

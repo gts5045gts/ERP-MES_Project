@@ -81,7 +81,7 @@ public class Personnel {
 //	private String status;
 
 	// 부서
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "emp_dept_id", referencedColumnName = "com_dt_id")
 	private CommonDetailCode department;
 
@@ -93,7 +93,7 @@ public class Personnel {
 	
 	//추가한 컬럼 보안등급---------------------------
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false, name = "emp_level_id", referencedColumnName = "com_dt_id")
 	private CommonDetailCode level;
 	
@@ -157,7 +157,7 @@ public class Personnel {
 	public void fromDTOUpdate( PersonnelDTO dto , CommonDetailCodeRepository repo) {
 			
 		this.setName(dto.getName());
-	    this.setPasswd(dto.getPasswd());
+//	    this.setPasswd(dto.getPasswd());	//조건문을 두기 위해 주석 처리
 	    this.setResident(dto.getResident());
 	    this.setAddrNum(dto.getAddrNum());
 	    this.setAddr1(dto.getAddr1());
