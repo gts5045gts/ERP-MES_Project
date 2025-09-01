@@ -86,8 +86,6 @@ public class CommuteService {
 			throw new IllegalStateException("이미 오늘 퇴근 기록이 존재합니다.");
 		}
 		
-		
-		
 	    LocalDateTime now = LocalDateTime.now();
 		
 		CommuteDTO commute = new CommuteDTO();
