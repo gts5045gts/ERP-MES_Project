@@ -16,8 +16,14 @@
 
 			<form id="privateMessageForm" name="privateMessageForm"
 				class="input-group mb-3">
-				<input type="text" id="receiverIdInput" class="form-control"
-					placeholder="받는 사람 ID (예: 2025082801)" autocomplete="off">
+				<div class="input-group-prepend">
+					<select id="deptSelect" class="form-control">
+						<option value="">부서 선택</option>
+						</select>
+					<select id="employeeSelect" class="form-control" disabled>
+						<option value="">사원 선택</option>
+						</select>
+				</div>
 				<input type="text" id="privateMessageInput" class="form-control"
 					placeholder="메시지를 입력하세요..." autocomplete="off">
 				<div class="input-group-append">

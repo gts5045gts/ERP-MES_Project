@@ -1,6 +1,7 @@
 package com.bootstrap.study.groupware.controller;
 
 import java.security.Principal;
+import java.util.List;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -13,17 +14,23 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.bootstrap.study.groupware.dto.ChatMessageDTO;
+import com.bootstrap.study.groupware.service.ChatService;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Controller
-@RequiredArgsConstructor
 @Log4j2
 public class ChatController {
 
 	private final SimpMessageSendingOperations messagingTemplate;
+	private final ChatService chatService;
+
+	public ChatController(SimpMessageSendingOperations messagingTemplate, ChatService chatService) {
+		super();
+		this.messagingTemplate = messagingTemplate;
+		this.chatService = chatService;
+	}
 
 	@GetMapping("/chat")
 	public String chatPage(Model model) {
@@ -76,6 +83,8 @@ public class ChatController {
     public void privateMessage(@Payload ChatMessageDTO chatMessage, Principal principal) {
     	log.info("개인 메시지 전송: {}", chatMessage);
     	
+    	chatService.saveMessage(chatMessage);
+    	
     	// 메시지 수신자에게 메시지를 전송
     	// "/queue/private"는 클라이언트가 개인 메시지를 받을 구독 주소
     	messagingTemplate.convertAndSendToUser(
@@ -86,5 +95,14 @@ public class ChatController {
     	messagingTemplate.convertAndSendToUser(
     			principal.getName(), "/queue/private", chatMessage
     			);
+    }
+    
+    // 클라이언트의 '읽지 않은 메시지 불러오기' 요청을 처리합니다.
+    @GetMapping("/api/messages/unread")
+    public List<ChatMessageDTO> getUnreadMessages(Principal principal) {
+        log.info("읽지 않은 메시지 불러오기 요청: {}", principal.getName());
+        // Service 계층을 호출하여 데이터베이스에서 읽지 않은 메시지를 가져옵니다.
+        // `principal.getName()`은 현재 로그인한 사용자의 ID(Principal ID)를 반환합니다.
+        return chatService.getUnreadMessages(principal.getName());
     }
 }
