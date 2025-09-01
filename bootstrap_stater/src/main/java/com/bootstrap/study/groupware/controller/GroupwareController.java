@@ -38,26 +38,27 @@ public class GroupwareController {
 	
 	private final DocumentService documentService;
 	
+	//공통문서목록
 	@GetMapping("/document")
 	public String document(Model model) {
 		
 		List<DocumentDTO> documents = documentService.getAllDocuments();
 		model.addAttribute("documents", documents);
 		
-//		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+documents);
 		return "/gw/document";
 	}
 	
+	//공통 문서 작성
 	@GetMapping("/docWrite")
 	public String docWrite(Model model) {
-//		
+		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", new DocumentDTO());
 		
 		return "/gw/docWrite";
 	}
 
-	//공통 문서 작성
+	//공통 문서 저장
 	@PostMapping("/save")
 	public String saveDoc(DocumentDTO documentDTO) {
 		// 1. 현재 로그인한 사용자 정보 가져오기
@@ -77,6 +78,7 @@ public class GroupwareController {
 		return "redirect:/groupware/document";
 	}
 	
+	//공통문서 상세페이지
 	@GetMapping("/docView/{docId}")
 	public String docView(@PathVariable("docId") Long docId, Model model) {
 		
