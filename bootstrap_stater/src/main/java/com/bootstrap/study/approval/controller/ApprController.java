@@ -32,6 +32,8 @@ import com.bootstrap.study.approval.dto.ApprFullDTO;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.attendance.entity.Annual;
+import com.bootstrap.study.groupware.dto.DocumentDTO;
+import com.bootstrap.study.groupware.service.DocumentService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 
@@ -47,14 +49,20 @@ public class ApprController {
 	
 	private final ApprService apprService;
 	
+	private final DocumentService documentService;
+	
 	@GetMapping("/doc_list")
-	public String getDocList(){
+	public String getDocList(Model model){
+		
+		List<DocumentDTO> documents = documentService.getAllDocuments();
+		model.addAttribute("documents", documents);
+		
 		
 	    return "/approval/appr_doc_list";
 	}
 
-    @GetMapping("/new/{reqTypeVal}")
-    public String draftingForm(@PathVariable("reqTypeVal") String reqTypeVal, Model model, Authentication authentication){
+    @GetMapping("/new/{docId}")
+    public String draftingForm(@PathVariable("docId") Long docId, Model model, Authentication authentication){
     	
     	//사원정보
     	PersonnelLoginDTO principal = (PersonnelLoginDTO) authentication.getPrincipal();
@@ -63,15 +71,20 @@ public class ApprController {
     	Annual annual = apprService.getAnnualInfo(loginEmpId);
     	double remain = annual.getAnnTotal() - annual.getAnnUse();
     	//문서정보
-    	ApprReqType reqType = ApprReqType.fromName(reqTypeVal);
-    	String title = reqType.getLabel();
+    	DocumentDTO documentDTO = documentService.getDocument(docId);
+    	
+    	String docTitle = documentDTO.getDocTitle();
+    	String docContent = documentDTO.getDocContent();
+    	
+    	log.info(">>>>>>>>>>>>>>>>>>>>>"+ docContent);
     	    	
     	model.addAttribute("apprDTO", new ApprDTO());
-    	model.addAttribute("selectedRole", reqTypeVal); // 기본 선택값
+    	model.addAttribute("selectedRole", documentDTO.getReqType()); // 기본 선택값
     	model.addAttribute("loginEmpId", loginEmpId);
     	model.addAttribute("principal", principal);
     	model.addAttribute("remain", remain);
-    	model.addAttribute("title", title);
+    	model.addAttribute("docTitle", docTitle);
+    	model.addAttribute("docContent", docContent);
     	        
         return "approval/drafting_form";
     }

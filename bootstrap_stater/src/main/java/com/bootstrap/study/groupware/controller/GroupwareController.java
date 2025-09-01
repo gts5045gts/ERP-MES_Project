@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
@@ -69,6 +70,7 @@ public class GroupwareController {
 		doc.setDocContent(documentDTO.getDocContent());
 		doc.setEmpId(loginEmpId);
 		doc.setDocType(documentDTO.getDocType());
+		doc.setReqType(documentDTO.getReqType());
 
 		documentRepository.save(doc);
 		
@@ -80,7 +82,6 @@ public class GroupwareController {
 	public String docView(@PathVariable("docId") Long docId, Model model) {
 		
 		DocumentDTO documentDTO = documentService.getDocument(docId);
-		log.info(documentDTO);
 		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", documentDTO);
