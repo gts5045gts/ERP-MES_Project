@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
@@ -40,18 +41,23 @@ public class GroupwareController {
 	@GetMapping("/document")
 	public String document(Model model) {
 		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
 		List<DocumentDTO> documents = documentService.getAllDocuments();
 		model.addAttribute("documents", documents);
 		
 		return "/gw/document";
 	}
 	
-	//공통 문서 작성
+	//공통 문서 작성 & 수정
 	@GetMapping("/docWrite")
-	public String docWrite(Model model) {
+	public String docWrite(@RequestParam(name="docId", required = false) Long docId, Model model) {
 		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", new DocumentDTO());
+		
+		log.info(">>>>>>>>>>>>>>>>>>>>>>"+docId);
+		
 		
 		return "/gw/docWrite";
 	}
@@ -87,5 +93,16 @@ public class GroupwareController {
 		model.addAttribute("documentDTO", documentDTO);
 		
 		return "/gw/docView";
+	}
+	
+	//공통 문서 수정
+	@PostMapping("/modify")
+	private String updateDocument(Document document) {
+		
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"+document);
+		
+		return null;
+//		return "redirec:/document";
+		
 	}
 }

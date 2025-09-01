@@ -45,5 +45,10 @@ public class DocumentService {
 		
 		return documentDTO;
 	}
+
+	public Document findById(Long docId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }
