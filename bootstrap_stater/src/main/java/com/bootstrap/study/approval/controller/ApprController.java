@@ -140,6 +140,19 @@ public class ApprController {
     	
         return processApproval(reqId, requestBody, "REJECT", authentication);  
     }
+    // 0901 삭제
+    @PostMapping("/api/delete-selected")
+    @ResponseBody
+    public ResponseEntity<String> deleteSelected(@RequestParam("ids") List<Long> ids, 
+                                               Authentication authentication) {
+        try {
+            String loginId = authentication.getName();
+            apprService.deleteSelected(ids, loginId);
+            return ResponseEntity.ok("삭제 완료");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("삭제 실패: " + e.getMessage());
+        }
+    }
     
     // ==================== Private Helper Methods ====================
     

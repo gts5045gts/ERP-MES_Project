@@ -8,96 +8,38 @@
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <th:block layout:fragment="style">
 <style>
-	.table-compact th,
-	.table-compact td {
-	    padding: 0.5rem;
-	    vertical-align: middle;
-	}
-      
-      /* 결재 상태 전용 배지 스타일 */
-	.approval-status-badge {
-		font-size: 0.8rem;
-		padding: 0.4rem 0.8rem;
-		border-radius: 20px;
-		font-weight: 500;
-		display: inline-block;
-		text-align: center;
-		min-width: 60px;
-	}
-      
-	/* 승인 - 연한 파랑 */
-	.approval-status-approved {
-	    background-color: #d1ecf1 !important;
-	    color: #0c5460 !important;
-	    border: 1px solid #bee5eb;
-	}
-      
-	/* 대기 - 연한 노랑 */
-	.approval-status-pending {
-	    background-color: #fff3cd !important;
-	    color: #856404 !important;
-	    border: 1px solid #ffeaa7;
-	}
-      
-	/* 반려 - 연한 빨강 */
-	.approval-status-rejected {
-	    background-color: #f8d7da !important;
-	    color: #721c24 !important;
-	    border: 1px solid #f5c6cb;
-	}
-	
-	/* 미정 - 회색 */
-	.approval-status-unknown {
-	    background-color: #e2e3e5 !important;
-	    color: #383d41 !important;
-	    border: 1px solid #d6d8db;
-	}
-	
-	/* 반려됨 */
-	.approval-status-canceled {
-		background-color: #f8d7da !important;
-		color: #721c24 !important;
-		border: 1px solid #f5c6cb;
-	}
-      
-	/* 호버 효과 */
-	.approval-status-badge:hover {
-	    transform: scale(1.05);
-	    transition: transform 0.2s ease;
-	    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-	}
-      
-	/* 모달 스타일 */
-	.modal-header {
-	    background-color: #4e73df;
-	    color: white;
-	}
-	
-	.info-row {
-	    margin-bottom: 15px;
-	    padding: 10px;
-	    background-color: #f8f9fc;
-	    border-radius: 5px;
-	}
-      
-	.info-label {
-	    font-weight: bold;
-	    color: #5a5c69;
-	    margin-bottom: 5px;
-	}
-	
-	.info-value {
-	    color: #3a3b45;
-	    font-size: 14px;
-	}
-      
-	/* 모달 크기 */
-	#approvalModal .modal-body,
-	#approvalModal .modal-header,
-	#approvalModal .modal-footer {
-	    padding-top: 10px;
-	    padding-bottom: 10px;
-	}
+/* 테이블 */
+.table-compact th, .table-compact td { padding: 0.5rem; vertical-align: middle; }
+
+/* 결재 상태 배지 - 공통 */
+.approval-status-badge {
+    font-size: 0.8rem; padding: 0.4rem 0.8rem; border-radius: 20px;
+    font-weight: 500; display: inline-block; text-align: center; 
+    min-width: 60px; transition: transform 0.2s ease;
+}
+.approval-status-badge:hover { transform: scale(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+/* 상태별 색상 */
+.approval-status-approved { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+.approval-status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+.approval-status-rejected, 
+.approval-status-canceled { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.approval-status-unknown { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+
+/* 모달 */
+.modal-header { background: #4e73df; color: white; }
+#approvalModal .modal-body,
+#approvalModal .modal-header,
+#approvalModal .modal-footer { padding: 10px; }
+
+/* 정보 영역 */
+.info-row { margin-bottom: 15px; padding: 10px; background: #f8f9fc; border-radius: 5px; }
+.info-label { font-weight: bold; color: #5a5c69; margin-bottom: 5px; }
+.info-value { color: #3a3b45; font-size: 14px; }
+
+/* 0901 체크박스 선택 시 행 하이라이트 */
+tr:has(.approval-checkbox:checked) { background: #fff3cd; }
+.approval-checkbox { cursor: pointer; }
 </style>
 </th:block>
 </head>
@@ -152,70 +94,79 @@
 			</div>
 		</div>
 
-        <div class="card shadow mb-4">
+		<div class="card shadow mb-4">
 			<div class="card-header py-3">
-            	<ul class="nav nav-tabs card-header-tabs">
-                	<li class="nav-item">
-                    	<a class="nav-link" th:classappend="${currentStatus == 'all' ? 'active' : ''}" 
-                           th:href="@{/approval/approval_list(status='all')}">전체결재</a>
-                   </li>
+				<ul class="nav nav-tabs card-header-tabs">
 					<li class="nav-item">
-	    				<a class="nav-link" th:classappend="${currentStatus == 'my' ? 'active' : ''}" 
-	       				   th:href="@{/approval/approval_list(status='my')}">내결재목록</a>
+						<a class="nav-link" th:classappend="${currentStatus == 'all' ? 'active' : ''}" 
+							th:href="@{/approval/approval_list(status='all')}">전체결재</a>
 					</li>
-                   	<li class="nav-item">
-                    	<a class="nav-link" th:classappend="${currentStatus == 'pending' ? 'active' : ''}" 
-                           th:href="@{/approval/approval_list(status='pending')}">결재대기</a>
-                   </li>
-                   <li class="nav-item">
-                       <a class="nav-link" th:classappend="${currentStatus == 'completed' ? 'active' : ''}" 
-                          th:href="@{/approval/approval_list(status='completed')}">결재완료</a>
-                   </li>
-               </ul>
+					<li class="nav-item">
+		  				<a class="nav-link" th:classappend="${currentStatus == 'my' ? 'active' : ''}" 
+		   				   	th:href="@{/approval/approval_list(status='my')}">내결재목록</a>
+					</li>
+		           	<li class="nav-item">
+		               	<a class="nav-link" th:classappend="${currentStatus == 'pending' ? 'active' : ''}" 
+		                     th:href="@{/approval/approval_list(status='pending')}">결재대기</a>
+		            </li>
+		            <li class="nav-item">
+		                <a class="nav-link" th:classappend="${currentStatus == 'completed' ? 'active' : ''}" 
+		                   th:href="@{/approval/approval_list(status='completed')}">결재완료</a>
+		            </li>
+				</ul>
 			</div>
 			<div class="card-body">
 			     <div class="table-responsive">
 			         <table class="table table-hover text-center table-compact" id="dataTable" width="100%" cellspacing="0">
 			             <thead>
 			                 <tr>
-			                     <th>결재순번</th>
-			                     <th>문서제목</th>
-			                     <th>기안자</th>
-			                     <th>부서명</th>
-			                     <th>직급</th>
-			                     <th>생성일</th>
-			                     <th>결재 완료일자</th>
-			                     <th>상태</th>
-			                     <th>결재여부</th>
+			                 	<!-- 0901 삭제 -->
+			                 	<th th:if="${currentStatus == 'my' or currentStatus == 'completed'}">
+						            <input type="checkbox" id="selectAll">
+						        </th>
+								<th>결재순번</th>
+								<th>문서제목</th>
+								<th>기안자</th>
+								<th>부서명</th>
+								<th>직급</th>
+								<th>생성일</th>
+								<th>결재 완료일자</th>
+								<th>상태</th>
+								<th>결재여부</th>
+								<th>결재순번</th>
 			                 </tr>
 						</thead>
 						<tbody>
 							<tr th:each="appr, iterStat : ${approvalList}">
-	                             <td th:text="${totalElements - (currentPage * 5) - iterStat.index}">1</td>
-	                             <td th:text="${appr.title}">휴가 신청서</td>
-	                             <td th:text="${appr.drafterName}">이연수</td>
-	                             <td th:text="${appr.department}">재무팀</td>
-	                             <td th:text="${appr.position}">대리</td>
-	                             <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
-	                             <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td>
-	                             <td>
-									 <span th:if="${currentStatus == 'my'}" 
-								           th:text="${appr.myApprovalStatus}"
-								           th:class="'approval-status-badge ' + 
+								<!-- 0901 삭제 -->
+								<td th:if="${currentStatus == 'my' or currentStatus == 'completed'}">
+						            <input type="checkbox" class="row-checkbox" th:value="${appr.reqId}">
+						        </td>
+	                            <td th:text="${totalElements - (currentPage * 5) - iterStat.index}">1</td>
+	                            <td th:text="${appr.title}">휴가 신청서</td>
+	                            <td th:text="${appr.drafterName}">이연수</td>
+	                            <td th:text="${appr.department}">재무팀</td>
+	                            <td th:text="${appr.position}">대리</td>
+	                            <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
+	                            <td th:text="${appr.decDate != null ? #temporals.format(appr.decDate, 'yyyy-MM-dd') : '-'}">-</td>
+	                            <td>
+									<span th:if="${currentStatus == 'my'}" 
+								          th:text="${appr.myApprovalStatus}"
+								          th:class="'approval-status-badge ' + 
 								                    ${appr.myApprovalStatus == '완료' ? 'approval-status-approved' : 
 								                     appr.myApprovalStatus == '진행중' ? 'approval-status-pending' : 
 								                     appr.myApprovalStatus == '반려됨' ? 'approval-status-canceled' :
 								                     'approval-status-pending'}">
-									 </span>
+									</span>
 							    
-								     <span th:unless="${currentStatus == 'my'}"
-								           th:text="${appr.statusLabel}" 
-								           th:class="'approval-status-badge ' + 
+								    <span th:unless="${currentStatus == 'my'}"
+								          th:text="${appr.statusLabel}" 
+								          th:class="'approval-status-badge ' + 
 								                   ${appr.statusLabel == '승인' ? 'approval-status-approved' : 
 								                     appr.statusLabel == '대기' ? 'approval-status-pending' : 
 								                     appr.statusLabel == '반려됨' ? 'approval-status-canceled' : 
 								                     'approval-status-unknown'}">
-								     </span>
+								    </span>
 								</td>
 								<td>
 									<!-- 내결재목록에서 대기 상태인 경우 취소 버튼 표시 -->
@@ -267,7 +218,12 @@
                                th:href="${hasNext} ? @{/approval/approval_list(status=${currentStatus}, page=${currentPage + 1})} : '#'">다음</a>
                         </li>
                     </ul>
-                     
+                    <!-- 0901 삭제 -->
+                    <div th:if="${currentStatus == 'my' or currentStatus == 'completed'}" class="mt-2">
+						<button type="button" class="btn btn-danger btn-sm" id="deleteBtn" style="display:none;">
+						    <i class="fas fa-trash"></i> 선택 삭제
+						</button>
+					</div> 
                     <!-- 페이지 정보 표시 -->
 					<div class="text-center mt-2">
 					    <small class="text-muted">
@@ -280,6 +236,7 @@
 			</div>
 		</div>
 	</div>
+	
 
     <!-- 결재 모달 -->
 	<div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-labelledby="approvalModalLabel" aria-hidden="true">
@@ -386,632 +343,551 @@
 
 <th:block layout:fragment="script">
 <script th:inline="javascript">
-	// 전역 변수 및 상수
-	let currentReqId = null;
-	let isViewMode = false; // 조회 모드 여부
-		
-	// 상수 정의 부분에 추가
-	const REQ_TYPE_LABELS = {
-	    'BASIC': '기본',
-	    'VACATION': '휴가신청서',
-	    'SPENDING': '지출결의서'
-	};
-       
-	const MODAL_ELEMENTS = {
-	    loading: 'modalLoading',
-	    content: 'modalContent',
-	    error: 'modalError',
-	    comments: 'modal-comments'
-	};
+// 전역 변수 및 상수
+let currentReqId = null, isViewMode = false;
 
-	const MODAL_FIELDS = {
-	    reqId: 'modal-reqId',
-	    reqType: 'modal-reqType',
-	    drafterName: 'modal-drafterName',
-	    department: 'modal-department',
-	    title: 'modal-title',
-	    content: 'modal-content-detail',
-	    createAt: 'modal-createAt'
-	};
-	
-	const API_ENDPOINTS = {
-	    detail: (reqId) => `/approval/api/detail/${reqId}`,
-	    approve: (reqId) => `/approval/api/approve/${reqId}`,
-	    reject: (reqId) => `/approval/api/reject/${reqId}`,
-	    cancel: (reqId) => `/approval/api/cancel/${reqId}`
-	};
-	
-	const STATUS_CLASSES = {
-	    '승인': 'approval-status-approved',
-	    '반려됨': 'approval-status-canceled'
-	};
+const REQ_TYPE_LABELS = {
+    'BASIC': '기본',
+    'VACATION': '휴가신청서',
+    'SPENDING': '지출결의서'
+};
 
-	// 결재하기 모달 (편집 가능)
-	window.openApprovalModal = function(reqId) {
-	    console.log('결재 모달 열기 시도:', reqId);
-	    
-	    if (!validateReqId(reqId)) return;
-	    
-	    isViewMode = false;
-	    initializeModal(reqId);
-	    fetchApprovalDetail(reqId);
-	};
+const MODAL_FIELDS = {
+    reqId: 'modal-reqId',
+    reqType: 'modal-reqType',
+    drafterName: 'modal-drafterName',
+    department: 'modal-department',
+    title: 'modal-title',
+    content: 'modal-content-detail',
+    createAt: 'modal-createAt'
+};
 
-	// 결재확인 모달 (읽기 전용)
-	window.openViewApprovalModal = function(reqId) {
-	    console.log('결재확인 모달 열기 시도:', reqId);
-	    
-	    if (!validateReqId(reqId)) return;
-	    
-	    isViewMode = true;
-	    initializeModal(reqId);
-	    fetchApprovalDetail(reqId);
-	};
-       
-	// 결재 취소 함수 추가
-	function cancelApproval(reqId) {
-	    // 먼저 상세보기 모달 열기
-	    openViewApprovalModal(reqId);
-	    
-	    // 모달이 로드된 후 취소 확인
-	    setTimeout(() => {
-	        if (confirm('이 결재를 취소하시겠습니까?\n취소된 결재는 완전히 삭제되며 복구할 수 없습니다.')) {
-	            processCancelApproval(reqId);
-	        }
-	    }, 1000);
-	}
-		
-	function processCancelApproval(reqId) {
-	    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-	    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-	    
-	    fetch(API_ENDPOINTS.cancel(reqId), {
-	        method: 'POST',
-	        headers: { 
-	            'Content-Type': 'application/json',
-	            [header]: token  // CSRF 토큰 추가
-	        }
-	    })
-	    .then(response => {
-	        if (!response.ok) {
-	            return response.text().then(text => {
-	                throw new Error(text);
-	            });
-	        }
-	        return response.text();
-	    })
-	    .then(result => {
-	        alert('결재가 취소(삭제)되었습니다.');
-	        $('#approvalModal').modal('hide');
-	        location.reload();
-	    })
-	    .catch(error => {
-	        console.error('결재 취소 실패:', error);
-	        alert('결재 취소 중 오류가 발생했습니다.');
+const API_ENDPOINTS = {
+    detail: reqId => `/approval/api/detail/${reqId}`,
+    approve: reqId => `/approval/api/approve/${reqId}`,
+    reject: reqId => `/approval/api/reject/${reqId}`,
+    cancel: reqId => `/approval/api/cancel/${reqId}`
+};
+
+const STATUS_CLASSES = {
+    '승인': 'approval-status-approved',
+    '반려됨': 'approval-status-canceled'
+};
+
+// 모달 열기 통합 함수
+function openModal(reqId, viewMode = false) {
+    if (!reqId) {
+        alert('결재 번호가 없습니다.');
+        return;
+    }
+    
+    currentReqId = reqId;
+    isViewMode = viewMode;
+    
+    const commentsTextarea = document.getElementById('modal-comments');
+    if (commentsTextarea) commentsTextarea.value = '';
+    
+    $('#approvalModal').modal('show');
+    showModalState('modalLoading');
+    
+    fetch(API_ENDPOINTS.detail(reqId))
+        .then(response => {
+            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            displayModalContent(data);
+        })
+        .catch(error => {
+            showModalState('modalError');
+        });
+}
+
+window.openApprovalModal = reqId => openModal(reqId, false);
+window.openViewApprovalModal = reqId => openModal(reqId, true);
+
+// 결재 취소
+function cancelApproval(reqId) {
+    openModal(reqId, true);
+    
+    setTimeout(() => {
+        if (confirm('이 결재를 취소하시겠습니까?\n취소된 결재는 완전히 삭제되며 복구할 수 없습니다.')) {
+            const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            
+            fetch(API_ENDPOINTS.cancel(reqId), {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    [header]: token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.text();
+            })
+            .then(result => {
+                alert('결재가 취소(삭제)되었습니다.');
+                $('#approvalModal').modal('hide');
+                location.reload();
+            })
+            .catch(error => {
+                alert('결재 취소 중 오류가 발생했습니다.');
+            });
+        }
+    }, 1000);
+}
+
+// 모달 상태 관리 통합
+function showModalState(activeElement) {
+    ['modalLoading', 'modalContent', 'modalError'].forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.style.display = elementId === activeElement ? 'block' : 'none';
+        }
+    });
+    
+    if (activeElement === 'modalContent') {
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const commentsTextarea = document.getElementById('modal-comments');
+        
+        if (isViewMode) {
+            if (approveBtn) approveBtn.style.display = 'none';
+            if (rejectBtn) rejectBtn.style.display = 'none';
+            if (commentsTextarea) commentsTextarea.disabled = true;
+        } else {
+            if (approveBtn) {
+                approveBtn.style.display = 'inline-block';
+                approveBtn.disabled = false;
+            }
+            if (rejectBtn) {
+                rejectBtn.style.display = 'inline-block';
+                rejectBtn.disabled = false;
+            }
+            if (commentsTextarea) {
+                commentsTextarea.disabled = false;
+                commentsTextarea.placeholder = "승인/반려 사유를 입력하세요 (선택사항)";
+            }
+        }
+    } else {
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        if (approveBtn) approveBtn.disabled = true;
+        if (rejectBtn) rejectBtn.disabled = true;
+    }
+}
+
+// 모달 내용 표시
+function displayModalContent(data) {
+    try {
+        populateModalFields(data);
+        displayApprovalLines(data.approvalLines);
+        
+        if (isViewMode && data.approvalLines) {
+            displayExistingComments(data.approvalLines);
+        }
+        showModalState('modalContent');
+    } catch (error) {
+        showModalState('modalError');
+    }
+}
+
+// 기존 코멘트 표시
+function displayExistingComments(approvalLines) {
+    const commentsTextarea = document.getElementById('modal-comments');
+    if (!commentsTextarea || !approvalLines) return;
+    
+    const currentUserId = /*[[${#authentication.name}]]*/ 'defaultUser';
+    
+    const myApproval = approvalLines.find(line => 
+        line.apprId === currentUserId && 
+        (line.decision === 'ACCEPT' || line.decision === 'DENY') && 
+        line.comments && 
+        line.comments.trim() !== ''
+    );
+    
+    if (myApproval) {
+        commentsTextarea.value = myApproval.comments;
+    }
+}
+
+// 결재선 표시
+function displayApprovalLines(approvalLines) {
+    const tbody = document.getElementById('approval-line-tbody');
+    if (!tbody) return;
+    
+    const drafterName = document.getElementById('modal-drafterName').textContent;
+    const approverCount = approvalLines ? approvalLines.length : 0;
+    
+    // 헤더 업데이트
+    for (let i = 1; i <= 3; i++) {
+        const headerCell = document.getElementById(`approver-header-${i}`);
+        if (headerCell) {
+            if (i <= approverCount) {
+                headerCell.textContent = `${i}차 결재자`;
+                headerCell.style.display = 'table-cell';
+            } else {
+                headerCell.style.display = 'none';
+            }
+        }
+    }
+    
+    // 테이블 생성
+    let nameRow = `<tr><td style="text-align: center;">${drafterName}</td>`;
+    let statusRow = `<tr><td style="text-align: center;"><span class="badge badge-primary">기안올림</span></td>`;
+    
+    for (let i = 0; i < approverCount; i++) {
+        const line = approvalLines[i];
+        nameRow += `<td style="text-align: center;">${line.apprName || '-'}</td>`;
+        
+        const status = line.decision === 'ACCEPT' ? '승인완료' : 
+                      line.decision === 'DENY' ? '반려' : '대기중';
+        const color = line.decision === 'ACCEPT' ? '#28a745' : 
+                     line.decision === 'DENY' ? '#dc3545' : '#ffc107';
+        statusRow += `<td style="text-align: center;"><span style="font-size: 12px; color: ${color}; font-weight: bold;">${status}</span></td>`;
+    }
+    
+    tbody.innerHTML = nameRow + '</tr>' + statusRow + '</tr>';
+    
+    displayApprovalComments(approvalLines);
+}
+
+// 모달 필드 채우기
+function populateModalFields(data) {
+    const empIdElement = document.getElementById('modal-empId');
+    if (!empIdElement) {
+        const hiddenDiv = document.createElement('div');
+        hiddenDiv.id = 'modal-empId';
+        hiddenDiv.style.display = 'none';
+        hiddenDiv.textContent = data.empId;
+        document.getElementById('modalContent').appendChild(hiddenDiv);
+    } else {
+        empIdElement.textContent = data.empId;
+    }
+    
+    Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            if (key === 'createAt' && data[key]) {
+                try {
+                    element.textContent = new Date(data[key]).toLocaleDateString('ko-KR');
+                } catch {
+                    element.textContent = '-';
+                }
+            } else if (key === 'reqType' && data[key]) {
+                element.textContent = REQ_TYPE_LABELS[data[key]] || data[key];
+            } else {
+                element.textContent = data[key] || '-';
+            }
+        }
+    });
+}
+
+// 승인/반려 처리
+function processApproval(action, endpoint, successMessage) {
+    const actionKorean = action === 'approve' ? '승인' : '반려';
+    
+    if (!confirm(`${actionKorean}하시겠습니까?`)) return;
+    
+    const commentsElement = document.getElementById('modal-comments');
+    const comments = commentsElement ? commentsElement.value.trim() : '';
+    
+    if (action === 'reject' && !comments) {
+        if (!confirm('반려 사유가 입력되지 않았습니다. 그래도 반려하시겠습니까?')) {
+            return;
+        }
+    }
+    
+    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            [header]: token
+        },
+        body: JSON.stringify({ comments })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+        return response.text();
+    })
+    .then(result => {
+        alert(successMessage);
+        $('#approvalModal').modal('hide');
+        updateTableRow(currentReqId, actionKorean);
+    })
+    .catch(error => {
+        alert(`${actionKorean} 처리 중 오류가 발생했습니다.`);
+    });
+}
+
+// 테이블 업데이트
+function updateTableRow(reqId, newStatus) {
+    const tableRows = document.querySelectorAll('#dataTable tbody tr');
+    
+    tableRows.forEach(row => {
+        const approveButton = row.querySelector(`button[data-req-id="${reqId}"]`);
+        
+        if (approveButton) {
+            // 상태 업데이트
+            const statusCell = row.querySelector('td:nth-child(8) span');
+            if (statusCell) {
+                statusCell.textContent = newStatus;
+                statusCell.className = `approval-status-badge ${STATUS_CLASSES[newStatus] || ''}`;
+            }
+            
+            // 날짜 업데이트
+            const dateCell = row.querySelector('td:nth-child(7)');
+            if (dateCell) {
+                const today = new Date();
+                dateCell.textContent = today.getFullYear() + '-' + 
+                                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                     String(today.getDate()).padStart(2, '0');
+            }
+            
+            // 버튼 업데이트
+            const actionCell = row.querySelector('td:nth-child(9)');
+            if (actionCell) {
+                actionCell.innerHTML = `<button type="button" class="btn btn-info btn-sm view-approval-btn" data-req-id="${reqId}">결재확인</button>`;
+            }
+        }
+    });
+}
+
+// 결재 의견 표시
+function displayApprovalComments(approvalLines) {
+    const commentsSection = document.getElementById('approval-comments-section');
+    const commentsList = document.getElementById('approval-comments-list');
+    
+    if (!approvalLines || approvalLines.length === 0) {
+        commentsSection.style.display = 'none';
+        return;
+    }
+    
+    let hasComments = false;
+    let commentsHtml = '';
+    
+    approvalLines.forEach((line, index) => {
+        if (line.comments && line.comments.trim() !== '') {
+            hasComments = true;
+            const status = line.decision === 'ACCEPT' ? '승인' : 
+                          line.decision === 'DENY' ? '반려' : '대기';
+            const statusClass = line.decision === 'ACCEPT' ? 'success' : 
+                               line.decision === 'DENY' ? 'danger' : 'warning';
+            
+            let dateStr = '';
+            if (line.decDate) {
+                try {
+                    const date = new Date(line.decDate);
+                    dateStr = date.toLocaleDateString('ko-KR') + ' ' + 
+                             date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                } catch {}
+            }
+            
+            commentsHtml += `
+                <div class="card mb-2">
+                    <div class="card-header py-2 bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${index + 1}차 결재자: ${line.apprName}</strong>
+                                <span class="badge badge-${statusClass} ml-2">${status}</span>
+                            </div>
+                            <small class="text-muted">${dateStr}</small>
+                        </div>
+                    </div>
+                    <div class="card-body py-2">
+                        <p class="mb-0">${line.comments}</p>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    if (hasComments) {
+        commentsList.innerHTML = commentsHtml;
+        commentsSection.style.display = 'block';
+    } else {
+        commentsSection.style.display = 'none';
+    }
+}
+
+// 검색 기능
+function searchByDrafter(searchTerm) {
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+    const tableRows = document.querySelectorAll('#dataTable tbody tr');
+    
+    tableRows.forEach(row => {
+        if (row.cells.length === 1 && row.cells[0].colSpan === 8) return;
+        
+        const drafterCell = row.querySelector('td:nth-child(3)');
+        if (drafterCell) {
+            const drafterName = drafterCell.textContent.trim().toLowerCase();
+            row.style.display = drafterName.includes(normalizedSearchTerm) ? '' : 'none';
+        }
+    });
+}
+
+// ===== 체크박스 삭제 기능 추가 =====
+
+// 삭제 버튼 표시/숨김
+function toggleDeleteButton() {
+    const checked = document.querySelectorAll('.row-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.style.display = checked.length > 0 ? 'block' : 'none';
+    }
+}
+
+// 다중 삭제 실행
+function deleteSelectedApprovals() {
+    const checked = document.querySelectorAll('.row-checkbox:checked');
+    if (checked.length === 0) {
+        alert('삭제할 항목을 선택해주세요.');
+        return;
+    }
+    
+    // 비활성화된 체크박스가 선택되었는지 확인
+    const disabledChecked = document.querySelectorAll('.row-checkbox:checked:disabled');
+    if (disabledChecked.length > 0) {
+        alert('삭제할 수 없는 항목이 선택되었습니다.\n본인이 기안한 완료된 결재만 삭제 가능합니다.');
+        return;
+    }
+    
+    if (!confirm(checked.length + '건을 삭제하시겠습니까?\n삭제된 결재는 복구할 수 없습니다.')) return;
+    
+    const ids = Array.from(checked).map(cb => cb.value);
+    const formData = new FormData();
+    ids.forEach(id => formData.append('ids', id));
+    
+    // CSRF 토큰 추가
+    const token = document.querySelector('meta[name="_csrf"]').content;
+    const header = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    // 삭제 버튼 비활성화
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 삭제 중...';
+    }
+    
+    fetch('/approval/api/delete-selected', {
+        method: 'POST',
+        headers: { [header]: token },
+        body: formData
+    })
+    .then(response => response.text())
+    .then(result => {
+        // 부분 성공/실패 메시지 처리
+        if (result.includes('실패한 항목')) {
+            // 부분 실패인 경우
+            alert('일부 항목 삭제 완료:\n\n' + result);
+        } else {
+            // 전체 성공인 경우
+            alert(result);
+        }
+        location.reload();
+    })
+    .catch(error => {
+        alert('삭제 중 오류가 발생했습니다: ' + error);
+    })
+    .finally(() => {
+        // 버튼 상태 복원
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i> 선택 삭제';
+        }
+    });
+}
+
+// 이벤트 리스너 등록
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 클릭 이벤트 위임
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('approval-btn')) {
+            openModal(e.target.getAttribute('data-req-id'), false);
+        } else if (e.target.classList.contains('view-approval-btn')) {
+            openModal(e.target.getAttribute('data-req-id'), true);
+        } else if (e.target.classList.contains('cancel-approval-btn')) {
+            cancelApproval(e.target.getAttribute('data-req-id'));
+        }
+    });
+    
+    // 승인/반려 버튼
+    const approveBtn = document.getElementById('approveBtn');
+    if (approveBtn) {
+        approveBtn.addEventListener('click', () => {
+            processApproval('approve', API_ENDPOINTS.approve(currentReqId), '승인되었습니다!');
+        });
+    }
+    
+    const rejectBtn = document.getElementById('rejectBtn');
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', () => {
+            processApproval('reject', API_ENDPOINTS.reject(currentReqId), '반려되었습니다!');
+        });
+    }
+    
+    // 검색 기능
+    const searchButton = document.getElementById('searchButton');
+    const drafterNameInput = document.getElementById('drafterNameInput');
+    
+    if (searchButton && drafterNameInput) {
+        searchButton.addEventListener('click', () => searchByDrafter(drafterNameInput.value));
+        drafterNameInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter') searchByDrafter(drafterNameInput.value);
+        });
+    }
+    
+    // 전체 선택 체크박스
+	const selectAll = document.getElementById('selectAll');
+	if (selectAll) {
+	    selectAll.addEventListener('change', function() {
+	        // 비활성화되지 않은 체크박스만 선택/해제
+	        const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
+	        checkboxes.forEach(cb => cb.checked = this.checked);
+	        toggleDeleteButton();
 	    });
 	}
-		
-	// 모달 상태 관리 함수들
-	function showModalState(activeElement) {
-	    const elements = ['modalLoading', 'modalContent', 'modalError'];
-	    elements.forEach(elementId => {
-	        const element = document.getElementById(elementId);
-	        if (element) {
-	            element.style.display = elementId === activeElement ? 'block' : 'none';
-	        }
-	    });
-	}
-
-	function showModalLoading() {
-	    showModalState('modalLoading');
-	    toggleActionButtons(false);
-	}
-	
-	function showModalError() {
-	    showModalState('modalError');
-	    toggleActionButtons(false);
-	}
-
-	function showModalContent() {
-	    showModalState('modalContent');
-	    
-	    const approveBtn = document.getElementById('approveBtn');
-	    const rejectBtn = document.getElementById('rejectBtn');
-	    const commentsTextarea = document.getElementById('modal-comments');
-	    
-	    if (isViewMode) {
-	        // 조회 모드: 버튼 숨기고, 입력창 비활성화
-	        if (approveBtn) approveBtn.style.display = 'none';
-	        if (rejectBtn) rejectBtn.style.display = 'none';
-	        if (commentsTextarea) commentsTextarea.disabled = true;
-	    } else {
-	        // 결재 모드: 버튼 보이고, 입력창 활성화
-	        if (approveBtn) {
-	            approveBtn.style.display = 'inline-block';
-	            approveBtn.disabled = false;
-	        }
-	        if (rejectBtn) {
-	            rejectBtn.style.display = 'inline-block';
-	            rejectBtn.disabled = false;
-	        }
-	        if (commentsTextarea) {
-	            commentsTextarea.disabled = false;
-	            commentsTextarea.placeholder = "승인/반려 사유를 입력하세요 (선택사항)";
-	        }
-	    }
-	}
-
-	function toggleActionButtons(enabled) {
-	    const approveBtn = document.getElementById('approveBtn');
-	    const rejectBtn = document.getElementById('rejectBtn');
-	    
-	    if (approveBtn) approveBtn.disabled = !enabled;
-	    if (rejectBtn) rejectBtn.disabled = !enabled;
-	}
-	
-	// 모달 관련 함수들
-	function validateReqId(reqId) {
-	    if (!reqId) {
-	        console.error('결재 번호가 없습니다.');
-	        alert('결재 번호가 없습니다.');
-	        return false;
-	    }
-	    return true;
-	}
-	
-	function initializeModal(reqId) {
-	    currentReqId = reqId;
-	    console.log('현재 결재 ID 설정:', currentReqId, '조회모드:', isViewMode);
-	    
-	    // 코멘트 입력창 초기화
-	    const commentsTextarea = document.getElementById('modal-comments');
-	    if (commentsTextarea) {
-	        commentsTextarea.value = '';
-	    }
-	    
-	    $('#approvalModal').modal('show');
-	    showModalLoading();
-	}
-
-	function fetchApprovalDetail(reqId) {
-	    const apiUrl = API_ENDPOINTS.detail(reqId);
-	    console.log('API 호출 URL:', apiUrl);
-	    
-	    fetch(apiUrl)
-	        .then(handleResponse)
-	        .then(data => {
-	            console.log('결재 상세 데이터:', data);
-	            displayModalContent(data);
-	        })
-	        .catch(error => {
-	            console.error('결재 상세 조회 실패:', error);
-	            showModalError();
-	        });
-	}
-
-	function handleResponse(response) {
-	    console.log('서버 응답 상태:', response.status);
-	    if (!response.ok) {
-	        throw new Error(`서버 응답 오류: ${response.status}`);
-	    }
-	    return response.json();
-	}
-
-	function displayModalContent(data) {
-		try {
-		    populateModalFields(data);
-		    displayApprovalLines(data.approvalLines);
-		    
-		    // 조회 모드일 때 기존 코멘트 표시
-		    if (isViewMode && data.approvalLines) {
-		        displayExistingComments(data.approvalLines);
-		    }
-		    showModalContent();
-		} catch (error) {
-		    console.error('모달 내용 표시 중 오류:', error);
-		    showModalError();
-		}
-	}
-       
-	// 기존 결재 코멘트 표시 함수
-	function displayExistingComments(approvalLines) {
-	    const commentsTextarea = document.getElementById('modal-comments');
-	    if (!commentsTextarea || !approvalLines) return;
-	    
-	    // 현재 로그인한 사용자 ID 가져오기 (Spring Security에서)
-	    const currentUserId = /*[[${#authentication.name}]]*/ 'defaultUser';
-	    
-	    // 내가 결재한 코멘트만 찾기
-	    const myApproval = approvalLines.find(line => 
-	        line.apprId === currentUserId && 
-	        (line.decision === 'ACCEPT' || line.decision === 'DENY') && 
-	        line.comments && 
-	        line.comments.trim() !== ''
-	    );
-	    
-	    if (myApproval) {
-	        commentsTextarea.value = myApproval.comments;
-	    }
-	}
-
-	// 결재선 표시 함수
-	function displayApprovalLines(approvalLines) {
-	    console.log('결재선 데이터:', approvalLines);
-	    
-	    const tbody = document.getElementById('approval-line-tbody');
-	    if (!tbody) return;
-	    
-	    const drafterName = document.getElementById('modal-drafterName').textContent;
-	    const approverCount = approvalLines ? approvalLines.length : 0;
-	    
-	    // 헤더 업데이트
-	    for (let i = 1; i <= 3; i++) {
-	        const headerCell = document.getElementById(`approver-header-${i}`);
-	        if (headerCell) {
-	            if (i <= approverCount) {
-	                headerCell.textContent = `${i}차 결재자`;
-	                headerCell.style.display = 'table-cell';
-	            } else {
-	                headerCell.style.display = 'none';
-	            }
-	        }
-	    }
-	    
-	    // 테이블 본문 생성
-	    let nameRow = '<tr>';
-	    let statusRow = '<tr>';
-	    
-	    // 기안자 추가
-	    nameRow += '<td style="text-align: center;">' + drafterName + '</td>';
-	    statusRow += '<td style="text-align: center;"><span class="badge badge-primary">기안올림</span></td>';
-	    
-	    // 결재자들 표시
-	    for (let i = 0; i < approverCount; i++) {
-	        const line = approvalLines[i];
-	        nameRow += '<td style="text-align: center;">' + (line.apprName || '-') + '</td>';
-	        
-	        const status = getApprovalStatus(line.decision);
-	        statusRow += `<td style="text-align: center;"><span style="font-size: 12px; ${getStatusStyle(line.decision)}">${status}</span></td>`;
-	    }
-	    
-	    nameRow += '</tr>';
-	    statusRow += '</tr>';
-	    
-	    tbody.innerHTML = nameRow + statusRow;
-	    
-	    // 결재 의견 표시 (승인/반려 사유가 있는 경우만)
-	    displayApprovalComments(approvalLines);
-	}
-    	
-	function getApprovalStatus(decision) {
-		if (decision === 'ACCEPT') return '승인완료';
-		if (decision === 'DENY') return '반려';
-		return '대기중';
-	}
-
-	function getStatusStyle(decision) {
-		if (decision === 'ACCEPT') return 'color: #28a745; font-weight: bold;';
-		if (decision === 'DENY') return 'color: #dc3545; font-weight: bold;';
-		return 'color: #ffc107; font-weight: bold;';
-	}
-       
-	function populateModalFields(data) {
-	console.log('받은 데이터:', data);
-	
-	// empId hidden으로 저장
-	const empIdElement = document.getElementById('modal-empId');
-	if (!empIdElement) {
-	    const hiddenDiv = document.createElement('div');
-	    hiddenDiv.id = 'modal-empId';
-	    hiddenDiv.style.display = 'none';
-	    hiddenDiv.textContent = data.empId;
-	    document.getElementById('modalContent').appendChild(hiddenDiv);
-	} else {
-	    empIdElement.textContent = data.empId;
-	}
-	    
-	// 필드들 채우기
-	Object.entries(MODAL_FIELDS).forEach(([key, elementId]) => {
-	    const element = document.getElementById(elementId);
-	    if (element) {
-	        if (key === 'createAt' && data[key]) {
-	            element.textContent = formatDate(data[key]);
-	        } else if (key === 'reqType' && data[key]) {
-	            // reqType을 한글로 변환
-	            element.textContent = REQ_TYPE_LABELS[data[key]] || data[key];
-	        } else {
-	            element.textContent = data[key] || '-';
-	        }
-	    }
-	});
-	}
-
-	function formatDate(dateString) {
-		try {
-		    return new Date(dateString).toLocaleDateString('ko-KR');
-		} catch {
-		    return '-';
-		}
-	}
-
-	// 승인/반려 처리 함수들
-	function processApproval(action, endpoint, successMessage) {
-	    const actionKorean = action === 'approve' ? '승인' : '반려';
-	    
-	    if (!confirm(`${actionKorean}하시겠습니까?`)) {
-	        return;
-	    }
-	    
-	    const comments = getComments();
-	    
-	    if (action === 'reject' && !comments) {
-	        if (!confirm('반려 사유가 입력되지 않았습니다. 그래도 반려하시겠습니까?')) {
-	            return;
-	        }
-	    }
-	    
-	    sendApprovalRequest(endpoint, comments, successMessage, actionKorean);
-	}
-
-	function getComments() {
-	    const commentsElement = document.getElementById('modal-comments');
-	    return commentsElement ? commentsElement.value.trim() : '';
-	}
-
-	function sendApprovalRequest(endpoint, comments, successMessage, actionKorean) {
-		const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-		const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-		
-		const requestOptions = {
-		    method: 'POST',
-		    headers: { 
-		        'Content-Type': 'application/json',
-		        [header]: token  // 이 줄 추가
-		    },
-		    body: JSON.stringify({ comments })
-		};
-	
-		console.log('결재 처리 요청:', endpoint, requestOptions);
-	
-		fetch(endpoint, requestOptions)
-			.then(response => {
-			    console.log('결재 처리 응답:', response.status);
-			    if (!response.ok) {
-			        throw new Error(`서버 응답 오류: ${response.status}`);
-			    }
-			    return response.text();
-			})
-			.then(result => {
-			    console.log('결재 처리 성공:', result);
-			    handleApprovalSuccess(successMessage, actionKorean);
-			})
-			.catch(error => handleApprovalError(error, actionKorean));
-	}
-
-	function handleApprovalSuccess(successMessage, actionKorean) {
-	    alert(successMessage);
-	    $('#approvalModal').modal('hide');
-	    updateTableRow(currentReqId, actionKorean);
-	}
-	
-	function handleApprovalError(error, actionKorean) {
-	    console.error(`${actionKorean} 처리 실패:`, error);
-	    alert(`${actionKorean} 처리 중 오류가 발생했습니다.`);
-	}
-
-	// 테이블 업데이트 함수
-	function updateTableRow(reqId, newStatus) {
-	    const tableRows = document.querySelectorAll('#dataTable tbody tr');
-	    
-	    tableRows.forEach(row => {
-	        const approveButton = row.querySelector(`button[data-req-id="${reqId}"]`);
-	        
-	        if (approveButton) {
-	            updateRowStatus(row, newStatus);
-	            updateRowDate(row);
-	            updateActionButton(row, reqId);
-	        }
-	    });
-	}
-
-	function updateRowStatus(row, newStatus) {
-	    const statusCell = row.querySelector('td:nth-child(8) span');
-	    if (statusCell) {
-	        statusCell.textContent = newStatus;
-	        statusCell.className = `approval-status-badge ${STATUS_CLASSES[newStatus] || ''}`;
-	    }
-	}
-
-	function updateRowDate(row) {
-	    const dateCell = row.querySelector('td:nth-child(7)');
-	    if (dateCell) {
-	        const today = new Date();
-	        const formattedDate = today.getFullYear() + '-' + 
-	                            String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-	                            String(today.getDate()).padStart(2, '0');
-	        dateCell.textContent = formattedDate;
-	    }
-	}
-	
-	function updateActionButton(row, reqId) {
-	    const actionCell = row.querySelector('td:nth-child(9)');
-	    if (actionCell) {
-	        actionCell.innerHTML = `<button type="button" class="btn btn-info btn-sm view-approval-btn" data-req-id="${reqId}">결재확인</button>`;
-	    }
-	}
-
-	// 검색 기능
-	function initializeSearch() {
-	    const drafterNameInput = document.getElementById('drafterNameInput');
-	    const searchButton = document.getElementById('searchButton');
-	    
-	    if (!drafterNameInput || !searchButton) return;
-	    
-	    searchButton.addEventListener('click', () => searchByDrafter(drafterNameInput.value));
-	    
-	    drafterNameInput.addEventListener('keydown', (event) => {
-	        if (event.key === 'Enter') {
-	            searchByDrafter(drafterNameInput.value);
-	        }
-	    });
-	}
-		
-	// 결재 의견 표시 함수 추가
-	function displayApprovalComments(approvalLines) {
-	    const commentsSection = document.getElementById('approval-comments-section');
-	    const commentsList = document.getElementById('approval-comments-list');
-	    
-	    if (!approvalLines || approvalLines.length === 0) {
-	        commentsSection.style.display = 'none';
-	        return;
-	    }
-	    
-	    let hasComments = false;
-	    let commentsHtml = '';
-	    
-	    approvalLines.forEach((line, index) => {
-	        if (line.comments && line.comments.trim() !== '') {
-	            hasComments = true;
-	            const status = line.decision === 'ACCEPT' ? '승인' : 
-	                          line.decision === 'DENY' ? '반려' : '대기';
-	            const statusClass = line.decision === 'ACCEPT' ? 'success' : 
-	                               line.decision === 'DENY' ? 'danger' : 'warning';
-	            
-	            commentsHtml += `
-	                <div class="card mb-2">
-	                    <div class="card-header py-2 bg-light">
-	                        <div class="d-flex justify-content-between align-items-center">
-	                            <div>
-	                                <strong>${index + 1}차 결재자: ${line.apprName}</strong>
-	                                <span class="badge badge-${statusClass} ml-2">${status}</span>
-	                            </div>
-	                            <small class="text-muted">
-	                                ${line.decDate ? formatDateTime(line.decDate) : ''}
-	                            </small>
-	                        </div>
-	                    </div>
-	                    <div class="card-body py-2">
-	                        <p class="mb-0">${line.comments}</p>
-	                    </div>
-	                </div>
-	            `;
-	        }
-	    });
-	    
-	    if (hasComments) {
-	        commentsList.innerHTML = commentsHtml;
-	        commentsSection.style.display = 'block';
-	    } else {
-	        commentsSection.style.display = 'none';
-	    }
-	}
-
-	// 날짜 시간 포맷 함수
-	function formatDateTime(dateString) {
-	    try {
-	        const date = new Date(dateString);
-	        return date.toLocaleDateString('ko-KR') + ' ' + 
-	               date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-	    } catch {
-	        return '';
-	    }
-	}
-       
-	function searchByDrafter(searchTerm) {
-	    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-	    const tableRows = document.querySelectorAll('#dataTable tbody tr');
-	    
-	    tableRows.forEach(row => {
-	        if (row.cells.length === 1 && row.cells[0].colSpan === 8) {
-	            return;
-	        }
-	        
-	        const drafterCell = row.querySelector('td:nth-child(3)');
-	        if (drafterCell) {
-	            const drafterName = drafterCell.textContent.trim().toLowerCase();
-	            row.style.display = drafterName.includes(normalizedSearchTerm) ? '' : 'none';
-	        }
-	    });
-	}
-
-	// 이벤트 리스너 등록
-	function initializeEventListeners() {
-	    document.addEventListener('click', function(e) {
-	        if (e.target && e.target.classList.contains('approval-btn')) {
-	            const reqId = e.target.getAttribute('data-req-id');
-	            console.log('결재하기 버튼 클릭:', reqId);
-	            openApprovalModal(reqId);
-	        }
-	        
-	        if (e.target && e.target.classList.contains('view-approval-btn')) {
-	            const reqId = e.target.getAttribute('data-req-id');
-	            console.log('결재확인 버튼 클릭:', reqId);
-	            openViewApprovalModal(reqId);
-	        }
-	        if (e.target && e.target.classList.contains('cancel-approval-btn')) {
-	            const reqId = e.target.getAttribute('data-req-id');
-	            console.log('결재취소 버튼 클릭:', reqId);
-	            cancelApproval(reqId);
-	        }
-	    });
-	    
-	    const approveBtn = document.getElementById('approveBtn');
-	    if (approveBtn) {
-	        approveBtn.addEventListener('click', () => {
-	            console.log('승인 버튼 클릭, 현재 reqId:', currentReqId);
-	            processApproval(
-	                'approve', 
-	                API_ENDPOINTS.approve(currentReqId), 
-	                '승인되었습니다!'
-	            );
-	        });
-	    }
-	    
-	    const rejectBtn = document.getElementById('rejectBtn');
-	    if (rejectBtn) {
-	        rejectBtn.addEventListener('click', () => {
-	            console.log('반려 버튼 클릭, 현재 reqId:', currentReqId);
-	            processApproval(
-	                'reject', 
-	                API_ENDPOINTS.reject(currentReqId), 
-	                '반려되었습니다!'
-	            );
-	        });
-	    }
-	    
-	    initializeSearch();
-	    
-	    console.log('모든 이벤트 리스너가 초기화되었습니다.');
-	}
-
-	// 모달 닫힐 때 초기화
-	$(document).ready(function() {
-	    $('#approvalModal').on('hidden.bs.modal', function () {
-	        const approveBtn = document.getElementById('approveBtn');
-	        const rejectBtn = document.getElementById('rejectBtn');
-	        const commentsTextarea = document.getElementById('modal-comments');
-	        
-	        if (approveBtn) {
-	            approveBtn.style.display = 'inline-block';
-	            approveBtn.disabled = true;
-	        }
-	        if (rejectBtn) {
-	            rejectBtn.style.display = 'inline-block';
-	            rejectBtn.disabled = true;
-	        }
-	        if (commentsTextarea) {
-	            commentsTextarea.disabled = false;
-	        }
-	        
-	        isViewMode = false;
-	    });
-	});
-
-	// DOM 로드 완료 후 초기화
-	document.addEventListener('DOMContentLoaded', function() {
-	    console.log('DOM 로드 완료, 이벤트 리스너 초기화 시작');
-	    initializeEventListeners();
-	});
+    
+    // 개별 체크박스 변경 시
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('row-checkbox')) {
+            toggleDeleteButton();
+        }
+    });
+    
+    // 삭제 버튼 클릭
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteSelectedApprovals);
+    }
+    
+    // 모달 닫힐 때 초기화
+    $('#approvalModal').on('hidden.bs.modal', function () {
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        const commentsTextarea = document.getElementById('modal-comments');
+        
+        if (approveBtn) {
+            approveBtn.style.display = 'inline-block';
+            approveBtn.disabled = true;
+        }
+        if (rejectBtn) {
+            rejectBtn.style.display = 'inline-block';
+            rejectBtn.disabled = true;
+        }
+        if (commentsTextarea) {
+            commentsTextarea.disabled = false;
+        }
+        
+        isViewMode = false;
+    });
+});
 </script>
 </th:block>
 </body>
