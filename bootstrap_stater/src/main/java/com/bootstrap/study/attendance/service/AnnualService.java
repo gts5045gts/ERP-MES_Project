@@ -23,6 +23,9 @@ import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.repository.AnnualRepository;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
+import com.bootstrap.study.commonCode.repository.CommonCodeRepository;
+import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
+import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
 
@@ -39,7 +42,7 @@ public class AnnualService {
 	private final PersonnelRepository empRepository;
 	private final ApprRepository apprRepository;
 	private final ApprDetailRepository apprDtRepository;
-	
+	private final CommonDetailCodeRepository comDtRepository;
 
 // ====================================================================	
 // 공통부분 메서드로 추출
@@ -105,8 +108,10 @@ public class AnnualService {
 			case "POS005" : case "POS006" : return 25;
 			default: return 15;
 		}
+		
 	}
 	
+
 	
 	// 모든사원의 연차 조회 + 무한스크롤
 	@Transactional
@@ -119,6 +124,7 @@ public class AnnualService {
 			return new AnnualDTO(ann, emp); // DTO 생성자에서 annPeriod, annExpire 계산됨
 		}).collect(Collectors.toList());
 		
+	
 		// ---------------------------------------------------------------------------
 		// perssonel쪽에 save()추가하면 불필요한 코드
 		List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();

@@ -19,6 +19,7 @@ import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.service.AnnualService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +65,7 @@ public class AnnualController {
 	public Map<String, Object> annListAll(@PathVariable("annYear") String annYear, 
 			@RequestParam(value = "page", defaultValue = "0") int page, 
 			@RequestParam(value = "size", defaultValue = "20") int size) {
+		
 		
 		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(annYear, PageRequest.of(page, size));
 		
