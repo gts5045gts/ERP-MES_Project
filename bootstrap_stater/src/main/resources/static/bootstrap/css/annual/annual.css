@@ -64,7 +64,7 @@ input[type="search"] {
 .icon-wrapper {
   text-align: center; /* 가로 중앙 */
   margin-top: 60px;   /* 세로 간격 조정 */
-  margin-bottom: 57px;   /* 세로 간격 조정 */
+  margin-bottom: 35px;   /* 세로 간격 조정 */
 }
 
 .person-icon {

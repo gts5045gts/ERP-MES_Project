@@ -28,6 +28,8 @@ public class CommonCodeDTO {
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime updatedAt; // 수정일 
 	
+	private String systemType; // ERP인지 MES인지
+	
 	
 	// 변환
 	public static ModelMapper modelMapper = new ModelMapper();

@@ -42,7 +42,6 @@ public class CommonCodeController {
 	
 
 	// 화면이동
-	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/commonCode")
 	public String commonCode(Model model) {
 		
