@@ -37,7 +37,6 @@
 				    
 				    <div class="d-flex align-items-center gap-2">
 						<select id="dept" th:name="dept" class="form-control form-control-sm" style="margin-right:55px;">
-						    <option th:value="ALL" th:text="'전체'" th:selected="${selectedDept == 'ALL'}"></option>
 						    <option th:each="dept : ${commonDept}" 
 						            th:value="${dept.comDtId}" 
 						            th:text="${dept.comDtNm}"
