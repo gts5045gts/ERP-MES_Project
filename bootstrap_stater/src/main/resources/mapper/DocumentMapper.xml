@@ -44,6 +44,7 @@
 		<result property="empId" column="emp_id" />
 		<result property="docTitle" column="doc_title" />
 		<result property="docType" column="doc_type" />
+		<result property="reqType" column="req_type" />
 		<result property="createAt" column="create_at" />
 	
 	    <!-- 조인된 필드 -->
@@ -81,6 +82,7 @@
 		    i.doc_id,
 		    i.emp_id,
 		    i.doc_title,
+		    i.req_type,
 		    i.create_at,
 		    
 		    ii.emp_name,

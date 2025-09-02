@@ -135,40 +135,43 @@ public class PersonnelService {
  	
  	
  	public void personRegist(PersonnelDTO personnelDTO, MultipartFile empImg) throws IOException {
+ 		  
+ 		
+	    
  	      //현재 날짜
- 	      LocalDate today = LocalDate.now();
+	      LocalDate today = LocalDate.now();
+	      
+	        // yyyyMMdd 포맷 지정
+	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
+	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
+	   
+	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
+	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
+	
+	      //사원번호 생성
+	      List<Personnel> personnelList = personnelRepository.findAll();
+	      Long count = (long) (personnelList.size() + 1);                        //전체 사원수 +1 ex)2+1 
+	      String employeeId = empDate + String.format("%02d", count);            //count 표시 형식 ex) 03
+	                                                               //현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
+	      
+	      personnelDTO.setEmpId(employeeId);            //부서 아이디 부서타입의 변수에 저장
+	      personnelDTO.setJoinDate(todayStr);
+	      String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
+	   	  personnelDTO.setPasswd(encodedPassword);
+	      
+	      log.info("DTO 가져온 사원등록 데이터: " + personnelDTO.toString());
+	      
+	      Personnel personnel = new Personnel();
+	      personnel = personnel.fromDTO(personnelDTO, commonDetailCodeRepository);
+	      log.info("Entity 변환 후 사원등록 데이터: " + personnel.toString());
+	
+	      personnelRepository.save(personnel);
+	      
  	      
- 	        // yyyyMMdd 포맷 지정
- 	      DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");      
- 	      String todayStr = today.format(formatter1);                           //joinDate 넣어줄 타입 변환 Date값   
- 	   
- 	      DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMMdd");      //ex) 20250821 형태로 저장
- 	      String empDate = today.format(formatter2);                           //현재 날짜 String타입으로 저장
-
- 	      //사원번호 생성
- 	      List<Personnel> personnelList = personnelRepository.findAll();
- 	      Long count = (long) (personnelList.size() + 1);                        //전체 사원수 +1 ex)2+1 
- 	      String employeeId = empDate + String.format("%02d", count);            //count 표시 형식 ex) 03
- 	                                                               //현재날짜 String 타입으로 저장한 변수 + 03 ==> ex) 2025082103
- 	      
- 	      personnelDTO.setEmpId(employeeId);            //부서 아이디 부서타입의 변수에 저장
- 	      personnelDTO.setJoinDate(todayStr);
- 	      String encodedPassword = passwordEncoder.encode(personnelDTO.getPasswd());
- 	   	  personnelDTO.setPasswd(encodedPassword);
- 	      
- 	      log.info("사원등록 정보: " + personnelDTO.toString());
- 	      
- 	      Personnel personnel = new Personnel();
- 	      personnel = personnel.fromDTO(personnelDTO, commonDetailCodeRepository);
- 	      log.info("사원등록 정보: " + personnel.toString());
-
- 	      personnelRepository.save(personnel);
- 	      
- 	      
- 	      
- 	      //personnelImg 로 personnelDTO , 와 empImg  값 넘겨 주기 위함 
- 	     personnelImgService.registImg( personnel, empImg);
- 	      
+ 	      if(empImg != null && !empImg.isEmpty()) {
+ 	    	  //personnelImg 로 personnelDTO , 와 empImg  값 넘겨 주기 위함 
+ 	    	  personnelImgService.registImg(personnel, empImg);
+ 	      }
 
 	}
  	
@@ -182,7 +185,7 @@ public class PersonnelService {
  	}
 
  	// 사원 정보 수정
- 	public void updatePersonnel(PersonnelDTO personnelDTO) {
+ 	public void updatePersonnel(PersonnelDTO personnelDTO, MultipartFile empImg) throws IOException {
  	    Personnel personnel = personnelRepository.findById(personnelDTO.getEmpId())
  	            .orElseThrow(() -> new IllegalArgumentException("잘못된 사원 ID입니다: " + personnelDTO.getEmpId()));
 
@@ -198,11 +201,14 @@ public class PersonnelService {
  	    personnel.fromDTOUpdate(personnelDTO, commonDetailCodeRepository);
  	    
  	    
-
  	    personnelRepository.save(personnel);
+
+ 	    //이미지 파일과 사원 아이디를 이미지 서비스로 보내기
+ 	    if(empImg != null && !empImg.isEmpty()) {
+ 	    	personnelImgService.updateImg(personnel, empImg);
+ 	    }
+
  	}
-
-
  	
 
 }

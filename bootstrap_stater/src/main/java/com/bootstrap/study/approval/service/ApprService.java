@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -356,6 +357,60 @@ public class ApprService {
                 return userFilteredList;
         }
     }
+	// 0901 삭제
+	@Transactional
+	public void deleteSelected(List<Long> ids, String loginId) {
+	    List<String> errors = new ArrayList<>();
+	    int successCount = 0;
+	    
+	    for (Long id : ids) {
+	        try {
+	            Appr appr = apprRepository.findById(id)
+	                .orElseThrow(() -> new RuntimeException("결재를 찾을 수 없습니다"));
+	            
+	            // 권한 확인: 1) 기안자이거나 2) 결재자인 경우
+	            boolean isAuthor = appr.getEmpId().equals(loginId);
+	            boolean isApprover = isUserApprover(id, loginId);
+	            
+	            if (!isAuthor && !isApprover) {
+	                errors.add("ID " + id + ": 삭제 권한이 없습니다");
+	                continue;
+	            }
+	            
+	            // 기안자의 경우 진행중인 결재는 삭제 불가 (취소 후 삭제)
+	            if (isAuthor && (appr.getStatus() == ApprStatus.REQUESTED || 
+	                           appr.getStatus() == ApprStatus.PROCESSING)) {
+	                errors.add("ID " + id + ": 진행중인 결재는 취소 후 삭제하세요");
+	                continue;
+	            }
+	            
+	            apprRepository.deleteById(id);
+	            successCount++;
+	            
+	        } catch (Exception e) {
+	            errors.add("ID " + id + ": 삭제 실패 - " + e.getMessage());
+	        }
+	    }
+	    
+	    // 결과 메시지
+	    String resultMessage = successCount + "건 삭제 완료";
+	    if (!errors.isEmpty()) {
+	        resultMessage += "\n실패한 항목:\n" + String.join("\n", errors);
+	        throw new RuntimeException(resultMessage);
+	    }
+	}
+	
+	// 0901 삭제, 사용자가 해당 결재의 결재자인지 확인
+	private boolean isUserApprover(Long reqId, String loginId) {
+	    // approval_line 테이블에서 해당 사용자가 결재자인지 확인
+	    try {
+	        List<Object[]> approvers = apprLineRepository.findApprovalLinesByReqId(reqId);
+	        return approvers.stream()
+	                .anyMatch(line -> loginId.equals(line[1])); // appr_id 컬럼
+	    } catch (Exception e) {
+	        return false;
+	    }
+	}
     
     //페이징 결과 생성
     private Page<ApprDTO> createPagedResult(List<ApprDTO> filteredList, Pageable pageable) {

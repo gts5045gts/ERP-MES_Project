@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	};
 
 	// 모든 직원 데이터를 API에서 가져옴
+		
+	  let perList = /*[[${personnels}]]*/ [];		//추가된 부분
+	
+	
+	  
+	 
 	const fetchAllPersonnel = async () => {
 		try {
 			const response = await fetch('/personnel/api/personnels');
@@ -32,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			personnelTableBody.innerHTML = '<tr><td colspan="8">데이터를 불러오는 데 실패했습니다.</td></tr>';
 		}
 	};
-
+	
 	// 데이터 정렬
 	const sortData = () => {
 		const { key, direction } = currentSort;
@@ -228,5 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	// 페이지 로드 시 모든 데이터 가져오고 테이블 렌더링
-	fetchAllPersonnel();
+	//만약 받아온 정보가 한명 이상일경우에만 실행 변경된 부분
+	if(perList.length > 1){
+		fetchAllPersonnel();
+	}
 });
