@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
+import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 
 @Repository
 public interface AnnualRepository extends JpaRepository<Annual, Long> {
@@ -31,6 +32,13 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 			"OR LOWER(p.department.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))" +
 			"OR LOWER(p.position.comDtNm) LIKE LOWER(CONCAT('%', :keyword, '%'))")
 	List<Object[]> searchAnn(@Param("keyword") String keyword);
+
+
+	// 권한별 조회목록
+	@Query("SELECT a FROM Annual a JOIN Personnel p ON a.empId = p.empId " +
+		   "WHERE a.annYear = :annYear AND p.department.comDtId = :deptCode")
+	Page<Annual> findByAnnYearAndDepNm(@Param("annYear") String annYear, @Param("deptCode")String deptCode, Pageable pageable);
+	Page<Annual> findByAnnYearAndEmpId(@Param("annYear") String annYear, @Param("loginEmpId") String loginEmpId, Pageable pageable);
 
 
 	
