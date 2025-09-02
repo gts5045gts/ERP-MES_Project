@@ -351,25 +351,34 @@
 // 0829 결재 알림 업데이트
 function updateApprovalAlerts() {
     fetch('/approval/api/counts')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
-            // 내결재목록 카운트
-            document.getElementById('myPendingCount').textContent = data.myPending;
+            // error 체크 추가
+            if (data.error) {
+                console.log('인증 필요:', data.error);
+                return;
+            }
             
-            // 결재대기 카운트
+            document.getElementById('myPendingCount').textContent = data.myPending;
             document.getElementById('toApproveCount').textContent = data.toApprove;
             
-            // 전체 카운트
             const totalCount = data.myPending + data.toApprove;
             document.getElementById('totalAlertCount').textContent = totalCount;
             
-            // 결재대기 알림 메시지 표시
             const alertDiv = document.getElementById('approvalAlert');
             if (data.toApprove > 0) {
                 alertDiv.style.display = 'block';
             } else {
                 alertDiv.style.display = 'none';
             }
+        })
+        .catch(error => {
+            console.error('알림 업데이트 실패:', error);
         });
 }
 

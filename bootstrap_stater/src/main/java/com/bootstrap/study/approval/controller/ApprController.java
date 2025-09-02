@@ -105,6 +105,11 @@ public class ApprController {
 	    
 	    log.info("결재 목록 조회 - 상태: {}, 페이지: {}", status, page);
 	    
+	    if (authentication == null) {
+	        log.error("Authentication is null - redirecting to login");
+	        return "redirect:/login";
+	    }
+	    
 	    Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createAt"));
 	    
 	    // 항상 로그인 사용자 ID 전달 (내 결재만 보기)
@@ -229,6 +234,14 @@ public class ApprController {
 	public Map<String, Object> getApprovalCounts(Authentication authentication) {
 	    String loginId = authentication.getName();
 	    Map<String, Object> result = new HashMap<>();
+	    
+	    if (authentication == null || !authentication.isAuthenticated()) {
+	        result.put("myPending", 0);
+	        result.put("toApprove", 0);
+	        result.put("myApprovalStatus", "0-0-0-0");
+	        result.put("error", "not authenticated");
+	        return result;
+	    }
 	    
 	    // 내결재목록 대기 건수
 	    result.put("myPending", apprService.getMyPendingCount(loginId));
