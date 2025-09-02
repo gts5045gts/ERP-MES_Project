@@ -145,9 +145,7 @@ public class AnnualService {
 
 	    for(Personnel emp : updateEmps) {
 	        // 중간관리자는 부서 필터링
-	        if ("AUT002".equals(roleCode) && !deptCode.equals(emp.getDepartment().getComDtId())) continue;
-	        // 일반 사원는 자기 자신만
-	        if ("AUT003".equals(roleCode) && !empId.equals(emp.getEmpId())) continue;
+	    	if(annRepository.existsByEmpIdAndAnnYear(emp.getEmpId(), annYear)) continue;
 
 	        int totalAnn = getAnnByPosition(emp.getPosition());
 	        Annual zeroAnn = new Annual(emp.getEmpId(), annYear, 0.0, totalAnn);
