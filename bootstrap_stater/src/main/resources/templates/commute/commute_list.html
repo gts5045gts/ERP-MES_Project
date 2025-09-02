@@ -88,6 +88,14 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
+	// 부서랑 날짜조회
+	document.getElementById("searchBtn").addEventListener("click", function() {
+	    const startDate = document.querySelector("input[name='startDate']").value;
+	    const endDate = document.querySelector("input[name='endDate']").value;
+	    window.location.href = `/attendance/commuteList?startDate=${startDate}&endDate=${endDate}`;
+	});
+	
+	
 	// 출근 버튼
 	$(document).ready(function() {
 	    const checkInBtn = $("#checkInBtn");
