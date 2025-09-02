@@ -116,7 +116,7 @@ $(document).ready(function() {
 			data: JSON.stringify(requestData),
 			contentType: 'application/json', // JSON 형식으로 데이터 전송을 명시
 			
-			// ⭐ beforeSend를 사용하여 CSRF 토큰을 명시적으로 헤더에 추가
+			// beforeSend를 사용하여 CSRF 토큰을 명시적으로 헤더에 추가
 			beforeSend: function(xhr) {
 				if (token && header) {
 					xhr.setRequestHeader(header, token);
