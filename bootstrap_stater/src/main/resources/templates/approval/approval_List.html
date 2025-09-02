@@ -143,7 +143,7 @@ tr:has(.approval-checkbox:checked) { background: #fff3cd; }
 						        </td>
 	                            <td th:text="${totalElements - (currentPage * 5) - iterStat.index}">1</td>
 	                            <td th:text="${appr.title}">휴가 신청서</td>
-	                            <td th:text="${appr.drafterName}">이연수</td>
+	                            <td class="drafter-name" th:text="${appr.drafterName}">이연수</td>
 	                            <td th:text="${appr.department}">재무팀</td>
 	                            <td th:text="${appr.position}">대리</td>
 	                            <td th:text="${#temporals.format(appr.createAt, 'yyyy-MM-dd')}">2025-08-07</td>
@@ -718,9 +718,7 @@ function searchByDrafter(searchTerm) {
     const tableRows = document.querySelectorAll('#dataTable tbody tr');
     
     tableRows.forEach(row => {
-        if (row.cells.length === 1 && row.cells[0].colSpan === 8) return;
-        
-        const drafterCell = row.querySelector('td:nth-child(3)');
+        const drafterCell = row.querySelector('.drafter-name');  
         if (drafterCell) {
             const drafterName = drafterCell.textContent.trim().toLowerCase();
             row.style.display = drafterName.includes(normalizedSearchTerm) ? '' : 'none';
