@@ -4,6 +4,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
+apply plugin: 'war'
+
 group = 'com.bootstrap.study'
 version = '0.0.1-SNAPSHOT'
 
@@ -70,6 +72,9 @@ dependencies {
 	// 콘솔 컬러링, JPA SQL 로그 분석 등에 활용 가능한 log4j-slf4j-impl 라이브러리도 추가(선택사항)
 	// https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl
 	implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
+	
+	//배포시 내부 톰캣 사용안함 
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 }
 
 tasks.named('test') {

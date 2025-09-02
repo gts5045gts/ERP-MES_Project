@@ -22,7 +22,7 @@
 						<div class="form-group">
 							<label for="templateSelector2">업무 구분</label>
 							<select class="form-control" th:field="*{docType}">
-								<option 
+								<option th:if="${dtCodes != null}"
 										th:each="detail : ${dtCodes}"
 										th:value="${detail.comDtId}"
 										th:text="${detail.comDtNm}"

@@ -51,12 +51,14 @@ public class GroupwareController {
 	
 	//공통 문서 작성 & 수정
 	@GetMapping("/docWrite")
-	public String docWrite(@RequestParam(name="docId", required = false) Long docId, Model model) {
+	public String docWrite(Model model) {
+//		public String docWrite(@RequestParam(name="docId", required = false) Long docId, Model model) {
+		
 		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", new DocumentDTO());
 		
-		log.info(">>>>>>>>>>>>>>>>>>>>>>"+docId);
+//		log.info(">>>>>>>>>>>>>>>>>>>>>>"+docId);
 		
 		
 		return "/gw/docWrite";
@@ -92,7 +94,7 @@ public class GroupwareController {
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
 		model.addAttribute("documentDTO", documentDTO);
 		
-		return "/gw/docView";
+		return "gw/docView";
 	}
 	
 	//공통 문서 수정
