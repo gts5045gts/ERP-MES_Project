@@ -51,7 +51,7 @@ function leaveChat() {
 		const leaveMessage = {
 			senderId: userId,
 			senderName: userName,
-			type: 'LEAVE' // ⭐️ 메시지 타입을 'LEAVE'로 설정
+			type: 'LEAVE' // 메시지 타입을 'LEAVE'로 설정
 		};
 		// 서버에 퇴장 메시지 전송
 		stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(leaveMessage));
