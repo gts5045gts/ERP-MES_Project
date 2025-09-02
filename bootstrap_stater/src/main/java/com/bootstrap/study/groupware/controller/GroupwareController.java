@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.bootstrap.study.approval.constant.ApprReqType;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
@@ -107,7 +107,6 @@ public class GroupwareController {
 	//공통 문서 수정
 	@PutMapping("/modify/{docId}")
 	public ResponseEntity<?> updateDocument (@PathVariable("docId") Long docId, @RequestBody DocumentDTO documentDTO) {
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		
 		// id와 dto.docId 일치 여부 검증(optional)
         if (!docId.equals(documentDTO.getDocId())) {
@@ -118,5 +117,15 @@ public class GroupwareController {
 		
 		return ResponseEntity.ok().build();
 		
+	}
+	
+//	 번호로 삭제
+	@DeleteMapping("/removeById/{docId}")
+	public ResponseEntity<?> memberRemoveById(@PathVariable("docId") Long docId) {
+		// MemberService - removeMemberByName() 메서드 호출
+		// => 파라미터 : 번호   리턴타입 : void
+		documentService.removeMemberById(docId);
+		
+		return ResponseEntity.ok().build();
 	}
 }

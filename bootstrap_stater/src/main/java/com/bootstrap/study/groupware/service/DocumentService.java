@@ -1,7 +1,6 @@
 package com.bootstrap.study.groupware.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,6 @@ import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
 import com.bootstrap.study.groupware.mapper.DocumentMapper;
 import com.bootstrap.study.groupware.repository.DocumentRepository;
-import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -55,4 +53,14 @@ public class DocumentService {
         document.updateFromDto(dto);
         // 변경 감지 후 트랜잭션 커밋 시점에 DB 반영됨
     }
+
+	@Transactional
+	public void removeMemberById(Long id) {
+		// TODO Auto-generated method stub
+		Document document = documentRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Document not found: " + id));
+		
+		documentRepository.delete(document);
+		
+	}
 }
