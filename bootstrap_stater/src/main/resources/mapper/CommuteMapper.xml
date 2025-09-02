@@ -193,7 +193,8 @@
 			#{adminEmpId}, #{targetEmpId}, #{checkInTime}, CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul', #{deleteReason}
 		)
 	</insert>
-	
+
+	<!-- 삭제된 로그 데이터 들고오기 -->	
 	<select id="getLogData" resultType="com.bootstrap.study.attendance.dto.CommuteDeleteLogDTO">
 		SELECT l.log_id, l.emp_id, e.emp_name AS adminNm,
 				l.target_emp_id, ee.emp_name AS targetEmpNm, l.check_in_time, l.deleted_at, l.delete_reason,
