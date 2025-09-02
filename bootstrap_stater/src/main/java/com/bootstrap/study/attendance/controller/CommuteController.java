@@ -277,7 +277,7 @@ public class CommuteController {
 	
 	// 출근 기록 삭제 로그 조회
 	@GetMapping("/adminCommuteLog")
-	public String getMethodName() {
+	public String getMethodName(Model model) {
 		
 		// 로그인한 사용자 객체 꺼내기
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -296,7 +296,8 @@ public class CommuteController {
 	    
 	    // 삭제된 출근 로그데이터 가져오기
 	    List<CommuteDeleteLogDTO> CommuteDeleteLogDTOList = commuteService.getLogData();
-	    
+	    model.addAttribute("CommuteDeleteLogDTOList", CommuteDeleteLogDTOList);
+	    System.out.println("CommuteDeleteLogDTOList : " + CommuteDeleteLogDTOList);
 	    
 		
 		return "/commute/commute_data_log_list";

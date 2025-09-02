@@ -20,12 +20,23 @@
 					<div class="mt-4" id="formContainer"></div>
 					<form method="post" th:action="@{/groupware/modify}" th:object="${documentDTO}">
 						<div class="form-group">
-							<label for="templateSelector2">문서 종류 선택</label>
+							<label for="templateSelector2">업무 구분</label>
 							<select class="form-control" th:field="*{docType}">
 								<option 
 										th:each="detail : ${dtCodes}"
 										th:value="${detail.comDtId}"
 										th:text="${detail.comDtNm}"
+										>
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="templateSelector2">문서 양식 선택</label>
+							<select class="form-control" th:field="*{reqType}">
+								<option 
+										th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
+										th:value="${reqType}"
+										th:text="${reqType.label}"
 										>
 								</option>
 							</select>
