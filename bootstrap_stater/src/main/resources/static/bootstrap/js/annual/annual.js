@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         el: document.getElementById('grid'),
         data: [],
         columns: columns,
-        bodyHeight: 360,
+        bodyHeight: 500,
         rowHeaders: [],
         scrollX: false,
         emptyMessage: '조회결과가 없습니다.'

@@ -41,6 +41,9 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 	Page<Annual> findByAnnYearAndEmpId(@Param("annYear") String annYear, @Param("loginEmpId") String loginEmpId, Pageable pageable);
 
 
+	boolean existsByEmpIdAndAnnYear(String empId, String annYear);
+
+
 	
 	
 
