@@ -55,4 +55,14 @@ public class DocumentService {
         document.updateFromDto(dto);
         // 변경 감지 후 트랜잭션 커밋 시점에 DB 반영됨
     }
+
+	@Transactional
+	public void removeMemberById(Long id) {
+		// TODO Auto-generated method stub
+		Document document = documentRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Document not found: " + id));
+		
+		documentRepository.delete(document);
+		
+	}
 }
