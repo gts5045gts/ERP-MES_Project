@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,11 +24,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
-import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
-import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
@@ -153,11 +151,13 @@ public class ApprController {
             log.info("{} 사유: {}, 로그인ID: {}", action, comments, loginId);
             
             if ("APPROVE".equals(action)) {
-                apprService.approveRequestWithComments(reqId, comments, loginId);  // loginId 추가
+            	apprService.processApproval(reqId, loginId, ApprDecision.ACCEPT, comments);
+//                apprService.approveRequestWithComments(reqId, comments, loginId);  // loginId 추가
                 log.info("승인 처리 완료 - reqId: {}", reqId);
                 return ResponseEntity.ok("승인 처리가 완료되었습니다.");
             } else {
-                apprService.rejectRequestWithComments(reqId, comments, loginId);  // loginId 추가
+            	apprService.processApproval(reqId, loginId, ApprDecision.DENY, comments);
+//                apprService.rejectRequestWithComments(reqId, comments, loginId);  // loginId 추가
                 log.info("반려 처리 완료 - reqId: {}", reqId);
                 return ResponseEntity.ok("반려 처리가 완료되었습니다.");
             }

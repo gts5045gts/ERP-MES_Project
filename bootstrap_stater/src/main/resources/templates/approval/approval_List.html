@@ -447,6 +447,9 @@
 		        return;
 		    }
 		    
+		    const csrfToken = $('meta[name="_csrf"]').attr('content');
+	    	const csrfHeaderName = $('meta[name="_csrf_header"]').attr('content');
+		    
 		    fetch(API_ENDPOINTS.cancel(reqId), {
 		        method: 'POST',
 		        headers: {

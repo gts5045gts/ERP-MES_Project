@@ -1,8 +1,10 @@
 package com.bootstrap.study.approval.repository;
 
+import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.entity.ApprLine;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -105,4 +107,8 @@ public interface ApprLineRepository extends JpaRepository<ApprLine,Long> {
 		    AND (al.decision IS NULL OR al.decision = 'PENDING')
 		    """, nativeQuery = true)
 		int countMyPendingApprovals(@Param("loginId") String loginId);
+		
+	
+	// reqId(결재 문서 ID)와 apprId(결재자 ID)로 특정 결재 라인 찾기
+	Optional<ApprLine> findByApprReqIdAndApprId(Long reqId, String apprId);
 }

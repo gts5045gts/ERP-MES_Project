@@ -107,29 +107,32 @@ document.addEventListener('DOMContentLoaded', () => {
 		const empName = document.getElementById('selectedEmployeeName').textContent;
 		const oldDeptName = document.getElementById('selectedEmployeeCurrentDept').textContent;
 		const oldPosName = document.getElementById('selectedEmployeeCurrentPosition').textContent;
+		const newDeptId = document.getElementById('transDeptSelect').value;
+		const newPosId = document.getElementById('transPosSelect').value;
 		const newDeptName = document.getElementById('transDeptSelect').options[document.getElementById('transDeptSelect').selectedIndex].text;
 		const newPosName = document.getElementById('transPosSelect').options[document.getElementById('transPosSelect').selectedIndex].text;
 
 		// 유효성 검사 추가
-		if (!selectedEmpId || !transType || !transDate || !newDeptName || !newPosName || !approverId) {
+		if (!selectedEmpId || !transType || !transDate || !newDeptId || !newPosId || !approverId) {
 			alert('모든 발령 정보를 입력해주세요.');
 			return;
 		}
 
 		const payload = {
 			empId: selectedEmpId,
-			name: empName, // Service의 "name" 키와 일치
+			name: empName, 
 			oldDeptName: oldDeptName, 
 			oldPosName: oldPosName, 
 			newDeptName: newDeptName, 
-			newPosName: newPosName, 
+			newPosName: newPosName,
+			newDeptId: newDeptId,   
+			newPosId: newPosId,  
 			transType: transType,
 			transDate: transDate,
 			approverId: approverId
 		};
 
 		console.log('payload:', payload);
-		console.log('Attempting to send request to /personnel/trans/submit');
 
 		try {
 			const response = await fetch('/personnel/trans/submit', {

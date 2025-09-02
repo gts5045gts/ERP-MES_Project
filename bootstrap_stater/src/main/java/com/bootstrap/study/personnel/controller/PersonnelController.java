@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
@@ -34,6 +36,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class PersonnelController {
     private final PersonnelService personnelService;
+    private final ApprService apprService;
     
 	@GetMapping("/current")
 	public String current(Model model) {
@@ -192,7 +195,7 @@ public class PersonnelController {
         String loginEmpId = principal.getName(); // 로그인한 사용자 ID
         try {
             // Service 계층으로 발령 데이터 전달
-            personnelService.submitTransPersonnel(payload, loginEmpId);
+        	personnelService.submitTransPersonnel(payload, loginEmpId);
             return ResponseEntity.ok("인사 발령 신청이 성공적으로 처리되었습니다.");
         } catch (Exception e) {
             log.error("인사 발령 처리 중 오류 발생: {}", e.getMessage());

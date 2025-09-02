@@ -5,13 +5,12 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +29,7 @@ import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelTransfer;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
@@ -51,6 +51,8 @@ public class PersonnelService {
     private final PersonnelTransferRepository personnelTransferRepository;
     private final ApprRepository apprRepository;
     private final ApprLineRepository apprLineRepository;
+    private final PersonnelTransferService personnelTransferService;
+    @Lazy
     private final ApprService apprService;
     
 //    private final PersonnelImgService personnelImgService;
@@ -228,84 +230,63 @@ public class PersonnelService {
     	
     	return personnels.stream()
         		.filter(result -> "DEP001".equals(result.getDepartment().getComDtId())
-        	            && Arrays.stream(levId).anyMatch(id -> id.equals(result.getLevel().getComDtId()))) // contains() -> 대상 문자열에 특정 문자열이 포함되어 있는지 확인
+        	            && Arrays.stream(levId).anyMatch(id -> id.equals(result.getLevel().getComDtId()))) 
     			.map(PersonnelDTO::fromEntity)
     			.collect(Collectors.toList());
     }
     
     @Transactional
     public void submitTransPersonnel(Map<String, Object> transInfo, String loginEmpId) throws IOException {
-        String empId = (String) transInfo.get("empId");
+        //String empId = (String) transInfo.get("empId");
         String empName = (String) transInfo.get("name");
-        String oldDeptName = (String) transInfo.get("oldDeptName");
-        String oldPosName = (String) transInfo.get("oldPosName");
-        String newDeptName = (String) transInfo.get("newDeptName");
-        String newPosName = (String) transInfo.get("newPosName");
-        String transType = (String) transInfo.get("transType");
-        String transDateStr = (String) transInfo.get("transDate");
-        String approverId = (String) transInfo.get("approverId");
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        String contentJson;
+        try {
+            contentJson = objectMapper.writeValueAsString(transInfo);
+        } catch (JsonProcessingException e) {
+            // IOException으로 래핑하여 상위 호출자에게 전달
+            throw new IOException("인사발령 데이터를 JSON으로 변환하는 중 오류가 발생했습니다.", e);
+        }
         
         // 1. ApprService를 호출하여 전자결재 문서 저장
-        // 전자결재 문서의 제목과 내용을 동적으로 생성
         String title = "인사발령 신청 (대상: " + empName + ")";
-        String content = "발령 구분: " + transType + "\n "
-                        + "발령 대상: " + empName + " (" + empId + ")\n "
-                        + "기존 부서/직급: " + oldDeptName + "/" + oldPosName + "\n "
-                        + "신규 부서/직급: " + newDeptName + "/" + newPosName + "\n "
-                        + "발령일: " + transDateStr;
 
         ApprDTO apprDTO = new ApprDTO();
         apprDTO.setReqType(ApprReqType.TRANSFER.getCode());
         apprDTO.setTitle(title);
-        apprDTO.setContent(content);
+        apprDTO.setContent(contentJson);
         apprDTO.setRequestAt(LocalDate.now());
         
         // 결재자 ID를 String 배열로 변환
+        String approverId = (String) transInfo.get("approverId");
         String[] empIds = {loginEmpId, approverId}; // 09/01 17:25 현재 신청자(tot_step=1), 결재자(tot_step=2)로 설정
 
         Long apprId = apprService.registAppr(apprDTO, empIds, loginEmpId);
         
-        // 2. PersonnelTransfer 엔티티 저장 (향후 구현 예정)
-        // 사용자 요청에 따라 이 부분은 다음 질문에서 다룰 예정입니다.
-        // 현재는 결재 문서만 생성하고 PersonnelTransfer 테이블에는 저장하지 않습니다.
-        
-        /*
-        // 인사발령 엔티티 생성 및 저장
-        String oldDeptId = (String) transInfo.get("oldDeptId");
-        String oldPosId = (String) transInfo.get("oldPosId");
-        String newDeptId = (String) transInfo.get("newDeptId");
-        String newPosId = (String) transInfo.get("newPosId");
-        
-        PersonnelTransfer transfer = PersonnelTransfer.builder()
-            .reqId(apprId) // 결재 문서 ID를 외래키로 사용
-            .empId(empId)
-            .transferType(transType)
-            .oldDept(oldDeptId)
-            .newDept(newDeptId)
-            .oldPosition(oldPosId)
-            .newPosition(newPosId)
-            .transDate(LocalDate.parse(transDateStr))
-            .build();
-        
-        personnelTransferRepository.save(transfer);
-        */
-        
-        // 실제 인사 정보(Personnel 엔티티) 업데이트
-        // 사용자 요청에 따라 이 부분은 나중에 'status'가 'FINISHED'일 때 실행하도록 변경될 예정입니다.
-        
-        /*
-        Personnel personnel = personnelRepository.findByEmpId(empId)
-            .orElseThrow(() -> new IllegalArgumentException("사원 정보 업데이트 실패"));
-        
-        CommonDetailCode newDept = commonDetailCodeRepository.findByComDtId(newDeptId)
-            .orElseThrow(() -> new IllegalArgumentException("신규 부서 코드 없음"));
-        CommonDetailCode newPos = commonDetailCodeRepository.findByComDtId(newPosId)
-            .orElseThrow(() -> new IllegalArgumentException("신규 직급 코드 없음"));
-        
-        personnel.setDepartment(newDept);
-        personnel.setPosition(newPos);
-        personnelRepository.save(personnel);
-        */
+//        // 여기부터 추가!!!!!!!!!!!!!!!!!!!!!!!!
+//        // Appr 엔티티를 조회하여 PersonnelTransfer와 연결
+//        Appr appr = apprRepository.findById(apprId)
+//                .orElseThrow(() -> new IllegalArgumentException("Appr 엔티티를 찾을 수 없습니다: " + apprId));
+//
+//        // Map에서 DTO로 직접 변환
+//        PersonnelTransferDTO personnelTransferDTO = objectMapper.convertValue(transInfo, PersonnelTransferDTO.class);
+//        
+//        // PersonnelTransfer 엔티티를 생성하여 저장
+//        PersonnelTransfer personnelTransfer = PersonnelTransfer.builder()
+//            .appr(appr)
+//            .empId(personnelTransferDTO.getEmpId())
+//            .name(personnelTransferDTO.getName()) 
+//            .transferType(personnelTransferDTO.getTransferType())
+//            .oldDept(personnelTransferDTO.getOldDeptId())
+//            .newDept(personnelTransferDTO.getNewDeptId())
+//            .oldPosition(personnelTransferDTO.getOldPosId())
+//            .newPosition(personnelTransferDTO.getNewPosId())
+//            .transDate(personnelTransferDTO.getTransDate() != null ? personnelTransferDTO.getTransDate().toLocalDate() : null)
+//            .build();
+//
+//        personnelTransferRepository.save(personnelTransfer);
     }
+
     
 }

@@ -3,19 +3,19 @@ package com.bootstrap.study.personnel.entity;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 
-import com.bootstrap.study.approval.constant.ApprStatus;
-import com.bootstrap.study.approval.entity.ApprDetail;
-import com.bootstrap.study.approval.entity.ApprLine;
+import com.bootstrap.study.approval.entity.Appr;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +39,9 @@ public class PersonnelTransfer {
 
     @Column(name = "emp_id", nullable = false, length = 20)
     private String empId; // 발령 대상 사원
+    
+    @Column(name = "name", nullable = false, length = 20)
+    private String name; // 발령 대상 이름
 
     @Column(name = "transfer_type", nullable = false, length = 20)
     private String transferType; // 발령 구분 (승진, 부서이동)
@@ -58,11 +61,15 @@ public class PersonnelTransfer {
     @Column(name = "transfer_at")
 	private LocalDate transDate;
 
-	@CreatedDate
 	@Column(updatable = false, name = "create_at")
-	private LocalDateTime create;
+	private Timestamp create;
 
-	@LastModifiedBy
-	private LocalDateTime update;
+	@UpdateTimestamp
+	@Column(name = "update_at")
+	private Timestamp updateAt;
+	
+//	@OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "appr_id", nullable = false)
+//    private Appr appr;
     
 }

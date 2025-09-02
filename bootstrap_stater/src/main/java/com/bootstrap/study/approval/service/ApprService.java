@@ -14,12 +14,18 @@ import com.bootstrap.study.approval.repository.ApprLineRepository;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.service.PersonnelService;
+import com.bootstrap.study.personnel.service.PersonnelTransferService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +49,7 @@ public class ApprService {
 	private final ApprRepository apprRepository;
 	private final ApprLineService apprLineService;
 	private final ApprLineRepository apprLineRepository;
+	private final PersonnelTransferService personnelTransferService;
 
 	// 상수 정의
 	private static final String DEFAULT_DEPARTMENT = "인사부";
@@ -456,4 +463,37 @@ public class ApprService {
 		return annual;
 	}
 
+	@Transactional
+	public void processApproval(Long reqId, String apprId, ApprDecision decision, String comments) {
+		ApprLine apprLine = apprLineRepository.findByApprReqIdAndApprId(reqId, apprId)
+				.orElseThrow(() -> new IllegalArgumentException("결재 라인 정보를 찾을 수 없습니다."));
+		
+		// 현재 결재 단계 처리
+		apprLine.setDecision(decision);
+		apprLine.setDecDate(LocalDateTime.now());
+		apprLine.setComments(comments);
+		apprLineRepository.save(apprLine);
+
+		Appr appr = apprLine.getAppr();
+		int currentStep = apprLine.getStepNo();
+		int totalStep = appr.getTotStep();
+
+		if (decision == ApprDecision.ACCEPT) {
+			if (currentStep == totalStep) {
+				// 최종 승인
+				appr.setStatus(ApprStatus.FINISHED);
+				apprRepository.save(appr);
+
+				// 인사 발령 문서인 경우
+				if ("TRANSFER".equals(appr.getReqType())) {
+					personnelTransferService.processPersonnelTransfer(reqId);
+				}
+			}
+		} else if (decision == ApprDecision.DENY) {
+			appr.setStatus(ApprStatus.CANCELED);
+			appr.setHasRejection(true);
+			apprRepository.save(appr);
+		}
+	}
+	
 }

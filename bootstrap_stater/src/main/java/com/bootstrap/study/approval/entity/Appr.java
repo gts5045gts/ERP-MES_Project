@@ -84,4 +84,7 @@ public class Appr {
         this.apprDetails.add(detail);
         detail.setAppr(this);
     }
+    
+    @Transient // DB에는 저장 안됨
+    private boolean hasRejection;  
 }

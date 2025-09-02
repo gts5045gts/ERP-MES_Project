@@ -10,7 +10,7 @@ public enum ApprReqType {
 	BASIC("기본"),
 	VACATION("휴가신청서"),
 	SPENDING("지출결의서"),
-	TRANSFER("인사령");
+	TRANSFER("인사발령");
 	
 	private final String label;
 	
