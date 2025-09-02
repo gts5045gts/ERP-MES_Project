@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				employees.forEach(emp => {
 					const option = document.createElement('option');
 					option.value = emp.empId;
-					option.textContent = emp.empName;
+					option.textContent = emp.name;
 					employeeSelect.appendChild(option);
 				});
 				employeeSelect.disabled = false; // 사원 드롭다운 활성화
