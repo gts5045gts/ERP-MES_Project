@@ -87,7 +87,7 @@
 		
 		<!-- 현재 프로젝트(애플리케이션) 내의 특정 패키지에 대한 로그 설정 -->
 			<!-- INFO 이상의 심각도 레벨의 로그 출력(INFO < WARN < ERROR < FATAL) -->
-		<Logger name="com.bootstrap.study" level="INFO" additivity="false">
+		<Logger name="com.bootstrap.study" level="DEBUG" additivity="false">
 			<!-- WARN 이상의 심각도 레벨의 로그 출력(WARN < ERROR < FATAL) -->
 <!-- 		<Logger name="com.itwillbs.db" level="WARN" additivity="false"> -->
 <!-- 		<Logger name="com.itwillbs.db" level="OFF" additivity="false"> -->

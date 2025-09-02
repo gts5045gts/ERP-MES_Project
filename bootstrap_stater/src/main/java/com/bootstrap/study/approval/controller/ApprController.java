@@ -117,7 +117,7 @@ public class ApprController {
         Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable, status, currentUserId);
         addPaginationAttributes(model, approvalPage, status);
         
-        return "approval/approval_list";    
+        return "approval/approval_List";    
     }
     
     //결재 상세 정보 조회 API
