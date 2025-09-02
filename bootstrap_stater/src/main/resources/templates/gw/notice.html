@@ -40,7 +40,8 @@
 										<tbody>
 											<tr th:each="notice, stat : ${notices}">
 												<td th:text="${stat.count}">순번</td>
-												<td th:text="${notice.notType}">부서명</th>
+												<td th:text="${notice.notType}">부서명
+												</th>
 												<td><a href="#" data-toggle="modal"
 													data-target="#noticeModal"
 													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
@@ -66,7 +67,8 @@
 							<a href="#collapse2" class="text-decoration-none text-primary"
 								data-toggle="collapse" role="button" aria-expanded="true"
 								aria-controls="collapse2">
-								<h6 class="m-0 font-weight-bold" th:text="${empDeptName != null ? empDeptName + ' 공지사항' : '부서별 공지사항'}"></h6>
+								<h6 class="m-0 font-weight-bold"
+									th:text="${empDeptName != null ? empDeptName + ' 공지사항' : '부서별 공지사항'}"></h6>
 							</a> <a th:href="@{/notice/ntcWrite}" class="btn btn-sm btn-primary">공지
 								등록</a>
 						</div>
@@ -146,11 +148,11 @@
 							</div>
 						</form>
 					</div>
-					
+
 					<div class="modal-footer">
-						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a> <a
-							href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
-						<button type="submit" class="btn btn-primary" id="saveEditBtn"
+						<a href="#" class="btn btn-warning" id="editNoticeBtn">수정</a>
+						<a href="#" class="btn btn-danger" id="deleteNoticeBtn">삭제</a>
+						<button type="button" class="btn btn-primary" id="saveEditBtn"
 							form="editForm" style="display: none;">수정 완료</button>
 						<button class="btn btn-secondary" type="button"
 							data-dismiss="modal">닫기</button>
