@@ -18,11 +18,11 @@
 			<div class="card shadow mb-4">
 				<div class="card-body">
 					<div class="mt-4" id="formContainer"></div>
-					<form method="post" th:action="@{/groupware/save}" th:object="${documentDTO}">
+					<form id="documentForm" method="post" th:action="@{/groupware/save}" th:object="${documentDTO}">
 						<div class="form-group">
 							<label for="templateSelector2">업무 구분</label>
 							<select class="form-control" th:field="*{docType}">
-								<option 
+								<option th:if="${dtCodes != null}"
 										th:each="detail : ${dtCodes}"
 										th:value="${detail.comDtId}"
 										th:text="${detail.comDtNm}"
@@ -49,7 +49,12 @@
 							<label for="summernote">내용</label>
 							<textarea th:field="*{docContent}" id="summernote" class="form-control"></textarea>
 						</div>
-						<button type="submit" class="btn btn-primary">등록</button>
+						<div class="d-flex justify-content-end w-100">
+						  <a href="/groupware/document" class="btn btn-primary mr-2">목록으로</a>
+						  
+						  <button type="submit" class="btn btn-primary" th:if="${documentDTO.docId == null}">등록</button>
+						  <button type="button" class="btn btn-danger" id="modify-btn" th:if="${documentDTO.docId != null}" th:attr="data-id=${documentDTO.docId}">수정</button>
+						</div>
 					</form>
 				</div>
 			</div>
@@ -59,6 +64,43 @@
 <th:block layout:fragment="script">
 	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
 	<script>
+		$(document).on("click", "#modify-btn", function () {
+	      let docId = $(this).data("id");
+	      
+	      const form = document.getElementById('documentForm');
+	      
+	      const formData = new FormData(form);
+
+	      // FormData -> 객체 변환
+	      const dataObj = {};
+	      formData.forEach((value, key) => {
+	        dataObj[key] = value;
+	      });
+	      
+	      dataObj['docId'] = docId;
+	      
+	      // meta 태그로 삽입되어 있을 때
+		  let token = $('meta[name="_csrf"]').attr('content');       // 토큰 값
+		  let header = $('meta[name="_csrf_header"]').attr('content'); // 헤더 이름
+
+	      fetch(`/groupware/modify/${docId}`, {
+	          method: "PUT",
+	          headers: {
+	              "Content-Type": "application/json",
+	              [header]: token   // 동적으로 헤더 이름에 CSRF 토큰 넣기
+	          },
+	          body: JSON.stringify(dataObj)
+	      })
+	      .then(response => {
+	          if (response.ok) {
+	              location.href="/groupware/docView/"+docId;
+	          } else {
+	              console.log("수정 실패");
+	          }
+	      })
+	      .catch(error => console.error("Error:", error));
+	    });
+	
 		$('#summernote').summernote({
 			tabsize: 2,
 			height: 200,
@@ -73,65 +115,7 @@
 				['view', ['fullscreen', 'codeview', 'help']]
 			]
 		});
-	
-		// 각 양식 종류에 맞는 HTML 폼 템플릿을 정의
-		const formTemplates = {
-			report: `
-				<form>
-					<div class="form-group">
-						<label for="reportTitle">보고서 제목</label>
-						<input type="text" class="form-control" id="reportTitle" name="title" required>
-					</div>
-					<div class="form-group">
-						<label for="reportDate">보고 일자</label>
-						<input type="date" class="form-control" id="reportDate" name="date">
-					</div>
-					<div class="form-group">
-						<label for="reportContent">보고 내용</label>
-						<textarea class="form-control" id="reportContent" name="content" rows="10"></textarea>
-					</div>
-					<button type="submit" class="btn btn-success">작성 완료</button>
-				</form>
-			`,
-			contract: `
-				<form>
-					<div class="form-group">
-						<label for="contractTitle">계약서 제목</label>
-						<input type="text" class="form-control" id="contractTitle" name="title" required>
-					</div>
-					<div class="form-group">
-						<label for="contractParty">계약 상대방</label>
-						<input type="text" class="form-control" id="contractParty" name="party" required>
-					</div>
-					<div class="form-group">
-						<label for="contractTerm">계약 기간</label>
-						<input type="text" class="form-control" id="contractTerm" name="term">
-					</div>
-					<div class="form-group">
-						<label for="contractContent">계약 내용</label>
-						<textarea class="form-control" id="contractContent" name="content" rows="10"></textarea>
-					</div>
-					<button type="submit" class="btn btn-success">작성 완료</button>
-				</form>
-			`,
-			// 나머지 양식(proposal, memo 등)에 대한 폼 템플릿도 여기에 추가
-			proposal: `<p>품의서 양식 폼이 여기에 들어갑니다.</p>`,
-			memo: `<p>사내 메모 양식 폼이 여기에 들어갑니다.</p>`
-		};
 
-		/* const selector = document.getElementById('templateSelector');
-		const formContainer = document.getElementById('formContainer');
-
-		selector.addEventListener('change', (event) => {
-			const selectedValue = event.target.value;
-			const formHTML = formTemplates[selectedValue];
-
-			if (formHTML) {
-				formContainer.innerHTML = formHTML;
-			} else {
-				formContainer.innerHTML = "";
-			}
-		}); */
 	</script>
 </th:block>
 </body>
