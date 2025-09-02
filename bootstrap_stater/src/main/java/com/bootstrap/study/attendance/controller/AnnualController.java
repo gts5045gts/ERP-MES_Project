@@ -64,10 +64,12 @@ public class AnnualController {
 	@ResponseBody
 	public Map<String, Object> annListAll(@PathVariable("annYear") String annYear, 
 			@RequestParam(value = "page", defaultValue = "0") int page, 
-			@RequestParam(value = "size", defaultValue = "20") int size) {
+			@RequestParam(value = "size", defaultValue = "20") int size,
+			Authentication authentication) {
 		
+		String empId = authentication.getName(); 
 		
-		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(annYear, PageRequest.of(page, size));
+		Page<AnnualDTO> annPage = annService.getAllAnnByYearPaged(empId ,annYear, PageRequest.of(page, size));
 		
 		Map<String, Object> result = new HashMap<>();
 		result.put("totalPages", annPage.getTotalPages());

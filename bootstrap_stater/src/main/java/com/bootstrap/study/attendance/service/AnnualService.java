@@ -23,9 +23,6 @@ import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.repository.AnnualRepository;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
-import com.bootstrap.study.commonCode.repository.CommonCodeRepository;
-import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
-import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
 
@@ -42,7 +39,6 @@ public class AnnualService {
 	private final PersonnelRepository empRepository;
 	private final ApprRepository apprRepository;
 	private final ApprDetailRepository apprDtRepository;
-	private final CommonDetailCodeRepository comDtRepository;
 
 // ====================================================================	
 // 공통부분 메서드로 추출
@@ -113,38 +109,56 @@ public class AnnualService {
 	
 
 	
-	// 모든사원의 연차 조회 + 무한스크롤
+	// 사원의 권한별 연차 조회 + 무한스크롤
 	@Transactional
-	public Page<AnnualDTO> getAllAnnByYearPaged(String annYear, Pageable pageable) {
-		Page<Annual> annPage = annRepository.findByAnnYear(annYear, pageable); 
+	public Page<AnnualDTO> getAllAnnByYearPaged(String empId, String annYear, Pageable pageable) {
+	    Personnel loginUser = getPersonnel(empId);
+	    String roleCode = loginUser.getLevel().getComDtId();
+	    String deptCode = loginUser.getDepartment().getComDtId();
 
-		List<AnnualDTO> dtoList = annPage.stream().map(ann -> {
-			Personnel emp = getPersonnel(ann.getEmpId());
-			ann.setAnnRemain(ann.getAnnTotal() - ann.getAnnUse());
-			return new AnnualDTO(ann, emp); // DTO 생성자에서 annPeriod, annExpire 계산됨
-		}).collect(Collectors.toList());
-		
-	
-		// ---------------------------------------------------------------------------
-		// perssonel쪽에 save()추가하면 불필요한 코드
-		List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();
-		
-		// 등록된 사원
-		List<Personnel> updateEmps = empRepository.findAll().stream()
-				.filter(emp -> !existingEmps.contains(emp.getEmpId())).toList();
-		
-		for(Personnel emp : updateEmps) {
-			int totalAnn = getAnnByPosition(emp.getPosition());
-			Annual zeroAnn = new Annual(emp.getEmpId(), annYear, 0.0, totalAnn);
-			annRepository.save(zeroAnn);
-			AnnualDTO dto = new AnnualDTO(zeroAnn, emp);
-			dtoList.add(dto);
-		}
+	    Page<Annual> annPage;
+	    switch (roleCode) {
+	        case "AUT001": // 상위 관리자
+	            annPage = annRepository.findByAnnYear(annYear, pageable);
+	            break;
+	        case "AUT002": // 중간 관리자
+	            annPage = annRepository.findByAnnYearAndDepNm(annYear, deptCode, pageable); 
+	            break;
+	        case "AUT003": // 일반 사원
+	            annPage = annRepository.findByAnnYearAndEmpId(annYear, empId, pageable);
+	            break;
+	        default:
+	        	throw new RuntimeException("알 수 없는 권한 코드: " + roleCode);
+	    }
 
-		//--------------------------------------------------------
-		
-		return new PageImpl<>(dtoList, pageable, dtoList.size());
+	    List<AnnualDTO> dtoList = annPage.stream().map(ann -> {
+	        Personnel emp = getPersonnel(ann.getEmpId());
+	        ann.setAnnRemain(ann.getAnnTotal() - ann.getAnnUse());
+	        return new AnnualDTO(ann, emp);
+	    }).collect(Collectors.toList());
+
+	    // 초기 연차 없는 사원 처리
+	    List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();
+	    List<Personnel> updateEmps = empRepository.findAll().stream()
+	            .filter(emp -> !existingEmps.contains(emp.getEmpId()))
+	            .toList();
+
+	    for(Personnel emp : updateEmps) {
+	        // 중간관리자는 부서 필터링
+	        if ("AUT002".equals(roleCode) && !deptCode.equals(emp.getDepartment().getComDtId())) continue;
+	        // 일반 사원는 자기 자신만
+	        if ("AUT003".equals(roleCode) && !empId.equals(emp.getEmpId())) continue;
+
+	        int totalAnn = getAnnByPosition(emp.getPosition());
+	        Annual zeroAnn = new Annual(emp.getEmpId(), annYear, 0.0, totalAnn);
+	        annRepository.save(zeroAnn);
+	        AnnualDTO dto = new AnnualDTO(zeroAnn, emp);
+	        dtoList.add(dto);
+	    }
+
+	    return new PageImpl<>(dtoList, pageable, dtoList.size());
 	}
+
 
 
 	// 검색창
@@ -248,5 +262,4 @@ public class AnnualService {
 	}
 	
 
-	
 }

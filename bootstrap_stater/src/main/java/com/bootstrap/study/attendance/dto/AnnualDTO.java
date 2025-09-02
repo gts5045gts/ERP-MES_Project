@@ -51,14 +51,14 @@ public class AnnualDTO {
 		
 	}
 
-	public AnnualDTO(Annual annual, Personnel personnel) {
-        this.empId = annual.getEmpId();
-        this.annYear = annual.getAnnYear();
-        this.annUse = annual.getAnnUse();
-        this.annRemain = annual.getAnnTotal() - annual.getAnnUse();
-        this.annTotal = annual.getAnnTotal();
-        this.createdAt = annual.getCreatedAt();
-        this.updatedAt = annual.getUpdatedAt();
+	public AnnualDTO(Annual zeroAnn, Personnel personnel) {
+        this.empId = zeroAnn.getEmpId();
+        this.annYear = zeroAnn.getAnnYear();
+        this.annUse = zeroAnn.getAnnUse();
+        this.annRemain = zeroAnn.getAnnTotal() - zeroAnn.getAnnUse();
+        this.annTotal = zeroAnn.getAnnTotal();
+        this.createdAt = zeroAnn.getCreatedAt();
+        this.updatedAt = zeroAnn.getUpdatedAt();
         this.empName = personnel.getName();
         this.depName = personnel.getDepartment().getComDtNm();
         this.empPos = personnel.getPosition().getComDtNm();
@@ -71,7 +71,7 @@ public class AnnualDTO {
         this.annPeriod = start + " ~ " + end;
         this.annExpire = end.toString(); // 휴가 소멸일
         
-        if (annual.getAnnUse() % 1 == 0) {
+        if (zeroAnn.getAnnUse() % 1 == 0) {
         	this.annType = "연차";       // 연차
         } else {
         	this.annType = "반차";  // 반차
