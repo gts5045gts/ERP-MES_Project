@@ -13,7 +13,7 @@
 	}
 
   #detailModal .modal-body th {
-    text-align: right;
+    text-align: left;
     font-weight: 600;
     color: #495057;
     vertical-align: middle;
@@ -47,20 +47,10 @@
 	        <!-- 근태 리스트 테이블 -->        
 	        <!-- DataTales Example -->
 	        <div class="card shadow mb-4">
-<!-- 	            <div class="card-header py-3"> -->
-<!-- 	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6> -->
-<!-- 		            <div class="mb-3"> -->
-<!-- 		            	<button id="checkInBtn" class="btn btn-primary">출근</button> -->
-<!-- 		            </div> -->
-<!-- 	            	<input type="date"> -->
-<!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
 				    <h6 class="m-0 font-weight-bold text-primary">출근기록 삭제 데이터 로그</h6>
 				    
 				    <div class="d-flex align-items-center gap-2">
-<!-- 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}" style="min-width: 130px;">~ -->
-<!-- 					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}" style="min-width: 130px; margin-right:20px;"> -->
-<!-- 					    <button type="submit" id="searchBtn" class="btn btn-secondary btn-sm" style="min-width: 80px; margin-right:70px;">조회</button> -->
 				    </div>
 				</div>
 	            <div class="card-body">
@@ -106,24 +96,9 @@
 									<td colspan="9" class="text-center text-muted">삭제된 출근기록이 없습니다.</td>
 								</tr>
 	                        </tbody>
-<!-- 	                        <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true"> -->
-<!-- 							  <div class="modal-dialog"> -->
-<!-- 							    <div class="modal-content"> -->
-<!-- 							      <div class="modal-header"> -->
-<!-- 							        <h5 class="modal-title">출근기록 삭제 데이터 로그</h5> -->
-<!-- 							      </div> -->
-<!-- 							      <div class="modal-body"> -->
-<!-- 							        <p id="detailModalMessage"></p> -->
-<!-- 							      </div> -->
-<!-- 							      <div class="modal-footer"> -->
-<!-- 							        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button> -->
-<!-- 							      </div> -->
-<!-- 							    </div> -->
-<!-- 							  </div> -->
-<!-- 							</div> -->
 	                    </table>
 							<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
-							  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+							  <div class="modal-dialog modal-lg" role="document">
 							    <div class="modal-content border-0 shadow-lg">
 							      
 							      <!-- 모달 헤더 -->
@@ -139,15 +114,15 @@
 							        <table class="table table-borderless table-sm table-striped mb-0">
 							          <tbody>
 							            <tr>
-							              <th style="width: 150px;">로그 ID</th>
-							              <td id="logId"></td>
+							              <th>삭제 날짜</th>
+							              <td id="deletedDate"></td>
 							            </tr>
 							            <tr>
-							              <th>삭제 일시</th>
+							              <th>삭제 시각</th>
 							              <td id="deletedAt"></td>
 							            </tr>
 							            <tr>
-							              <th>삭제자</th>
+							              <th>삭제자(관리자)</th>
 							              <td id="deletedBy"></td>
 							            </tr>
 							            <tr>
@@ -159,12 +134,8 @@
 							              <td id="targetInfo"></td>
 							            </tr>
 							            <tr>
-							              <th>출근시간</th>
+							              <th>삭제된 출근시간</th>
 							              <td id="checkIn"></td>
-							            </tr>
-							            <tr>
-							              <th>퇴근시간</th>
-							              <td id="checkOut"></td>
 							            </tr>
 							          </tbody>
 							        </table>
@@ -189,60 +160,7 @@
 	<script>
 		
 // 		console.log("버튼 클릭!");
-		
-		// 부서랑 날짜조회
-// 		document.getElementById("searchBtn").addEventListener("click", function() {
-// 		    const startDate = document.querySelector("input[name='startDate']").value;
-// 		    const endDate = document.querySelector("input[name='endDate']").value;
-// 		    const deptId = document.querySelector("#dept").value || "ALL"; // 선택된 부서 값
-// 		    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
-// 		});
-		
-		// =====================================================================================
-		// 삭제 버튼(모달창)
-// 		document.querySelectorAll(".detailBtn").forEach(button => {
-// 		    button.addEventListener("click", function () {
-// 		        const empId = this.getAttribute("data-emp-id");
-// 		        const adminNm = this.getAttribute("data-admin-nm");
-// 		        const adminDept = this.getAttribute("data-admin-dept");
-// 		        const adminPos = this.getAttribute("data-admin-pos");
-// 		        const targetEmpId = this.getAttribute("data-target-emp-id");
-// 		        const targetEmpNm = this.getAttribute("data-target-emp-nm");
-// 		        const targetEmpDept = this.getAttribute("data-target-emp-dept");
-// 		        const targetEmpPos = this.getAttribute("data-target-emp-pos");
-// 		        const commuteDate = this.getAttribute("data-commute-date");
-// 		        const checkInTime = this.getAttribute("data-check-in-time");
-// 		        const deleteReason = this.getAttribute("data-delete-reason");
-// 		        const deletedAt = this.getAttribute("data-deleted-at");
-
-// 		        // 모달 메시지에 값 넣기
-// 		        const modalMsg = document.getElementById("detailModalMessage");
-// 		        if(modalMsg) {
-// 		            modalMsg.textContent =
-// 		                "- 날짜 : " + commuteDate + "\n" +
-// 		                "- 삭제시각 : " + deletedAt + "\n" +
-// 		                "- <관리자> ============================= " + "\n" +
-// 		                "- 관리자ID : " + empId + "\n" + 
-// 		                "- 관리자 이름 : " + adminNm + "\n" + 
-// 		                "- 관리자 부서 : " + adminDept + "\n" + 
-// 		                "- 관리자 직책 : " + adminPos + "\n" + 
-// 		                "- <삭제된 사원> ========================== "+ "\n" +
-// 		                "- 사원ID : " + targetEmpId + "\n" + 
-// 		                "- 사원 이름 : " + targetEmpNm + "\n" + 
-// 		                "- 사원 부서 : " + targetEmpDept + "\n" + 
-// 		                "- 사원 직책 : " + targetEmpPos + "\n" + 
-// 		                "- 삭제 사유 : " + deleteReason + "\n" + 
-// 		                "- 삭제한 출근기록 : " + checkInTime
-// 		        }
-
-// 		        // 모달 열기
-//  				$('#detailModal').modal('show');
-		        
-// // 		        console.log(empId, commuteDate, checkInTime);
-// 		    });
-// 		});
-		
-		
+		// 상세조회(모달창)
 		document.querySelectorAll(".detailBtn").forEach(button => {
 		    button.addEventListener("click", function () {
 		        const empId = this.getAttribute("data-emp-id");
@@ -259,13 +177,12 @@
 		        const deleteReason = this.getAttribute("data-delete-reason");
 		        const deletedAt = this.getAttribute("data-deleted-at");
 
-		        $("#logId").text(empId + "-" + targetEmpId);
+		        $("#deletedDate").text(commuteDate);
 		        $("#deletedAt").text(deletedAt);
 		        $("#deletedBy").text(`${adminNm} (${empId}, ${adminDept}, ${adminPos})`);
 		        $("#reason").text(deleteReason);
 		        $("#targetInfo").text(`${targetEmpNm} (${targetEmpId}, ${targetEmpDept}, ${targetEmpPos})`);
 		        $("#checkIn").text(checkInTime);
-		        $("#checkOut").text(checkOutTime);
 
 		        $("#detailModal").modal('show');
 		    });
