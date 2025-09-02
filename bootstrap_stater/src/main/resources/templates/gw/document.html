@@ -19,7 +19,7 @@
 			<div class="card shadow mb-4">
 				<div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
 					<h6 class="m-0 font-weight-bold text-primary">사내 공통 문서</h6>
-					<a href="/groupware/docWrite" class="btn btn-primary btn-icon-split" sec:authorize="!hasAuthority('AUT001')">
+					<a href="/groupware/docWrite" class="btn btn-primary btn-icon-split" sec:authorize="!hasAuthority('ROLE_AUT003')">
 						<span class="icon text-white-50">
 							<i class="fas fa-plus"></i>
 						</span>
@@ -44,7 +44,7 @@
 									<td th:text="${doc.ReqType.label}"></td>
 									<td>
 										<a th:href="@{/groupware/docView/{docId}(docId=${doc.docId})}"
-										   th:text="${doc.docTitle}"> 
+										   th:text="${doc.docTitle}">
 									   </a>
 									</td>
 									<td th:text="|${doc.empName} (${doc.deptName}/${doc.positionName})|"></td>

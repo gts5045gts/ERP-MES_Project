@@ -19,6 +19,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import oracle.sql.TIMESTAMPTZ;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -194,9 +195,9 @@ public class ApprService {
 		// DEC_DATE 처리
 		if (result[6] != null) {
 		    Object decDateObj = result[6];  
-		    if (decDateObj instanceof oracle.sql.TIMESTAMPTZ) {
+		    if (decDateObj instanceof TIMESTAMPTZ) {
 		        try {
-		            oracle.sql.TIMESTAMPTZ timestamptz = (oracle.sql.TIMESTAMPTZ) decDateObj;
+		            TIMESTAMPTZ timestamptz = (TIMESTAMPTZ) decDateObj;
 		            dto.setDecDate(timestamptz.timestampValue().toLocalDateTime());
 		        } catch (Exception e) {
 		            log.warn("DEC_DATE TIMESTAMPTZ 변환 실패: {}", e.getMessage());

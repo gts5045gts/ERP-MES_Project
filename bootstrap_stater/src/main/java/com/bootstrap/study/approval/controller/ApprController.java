@@ -97,27 +97,28 @@ public class ApprController {
     
     
 	// 결재 목록 조회 (페이징, 상태별 필터링 지원)
-	@GetMapping("/approval_list")
-	public String approvalList(
-	        @RequestParam(value = "status", required = false, defaultValue = "all") String status,
-	        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
-	        Model model, Authentication authentication) {
-	    
-	    log.info("결재 목록 조회 - 상태: {}, 페이지: {}", status, page);
-	    
-	    Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createAt"));
-	    
-	    // 항상 로그인 사용자 ID 전달 (내 결재만 보기)
-	    String currentUserId = authentication.getName();
-	    log.info("로그인 사용자: {}", currentUserId);
-	    
-	    Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable, status, currentUserId);
-	    
-	    // 모델에 페이징 정보 추가
-	    addPaginationAttributes(model, approvalPage, status);
-	    
-	    return "approval/approval_list";    
-	}
+    @GetMapping("/approval_list")
+    public String approvalList(
+        @RequestParam(value = "status", required = false, defaultValue = "all") String status,
+        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+        Model model, Authentication authentication) {
+        
+        // null 체크 추가
+        if (authentication == null) {
+            log.warn("Authentication is null - redirecting to login");
+            return "redirect:/login";
+        }
+        
+        log.info("결재 목록 조회 - 상태: {}, 페이지: {}", status, page);
+        
+        Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createAt"));
+        String currentUserId = authentication.getName();
+        
+        Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable, status, currentUserId);
+        addPaginationAttributes(model, approvalPage, status);
+        
+        return "approval/approval_list";    
+    }
     
     //결재 상세 정보 조회 API
 	@GetMapping("/api/detail/{reqId}")
@@ -136,13 +137,16 @@ public class ApprController {
 	}
  	
     // 0827 승인 처리 API
-    @PostMapping("/api/approve/{reqId}")
-    @ResponseBody
-    public ResponseEntity<String> approveRequest(@PathVariable("reqId") Long reqId, @RequestBody(required = false) 
-    											 Map<String, String> requestBody,Authentication authentication) { 
-                                                  
-        return processApproval(reqId, requestBody, "APPROVE", authentication);  
-    }
+	@PostMapping("/api/approve/{reqId}")
+	@ResponseBody
+	public ResponseEntity<String> approveRequest(@PathVariable("reqId") Long reqId, 
+	                                            @RequestBody(required = false) Map<String, String> requestBody,
+	                                            Authentication authentication) {
+	    if (authentication == null) {
+	        return ResponseEntity.status(401).body("인증이 필요합니다.");
+	    }
+	    return processApproval(reqId, requestBody, "APPROVE", authentication);  
+	}
 
     
     // 0827 반려 처리 API
@@ -227,16 +231,19 @@ public class ApprController {
 	@GetMapping("/api/counts")
 	@ResponseBody
 	public Map<String, Object> getApprovalCounts(Authentication authentication) {
-	    String loginId = authentication.getName();
 	    Map<String, Object> result = new HashMap<>();
 	    
-	    // 내결재목록 대기 건수
+	    // SecurityConfig에서 permitAll()이니까 authentication이 null일 수 있음
+	    if (authentication == null || !authentication.isAuthenticated()) {
+	        result.put("myPending", 0);
+	        result.put("toApprove", 0);
+	        result.put("myApprovalStatus", "0-0-0-0");
+	        return result;
+	    }
+	    
+	    String loginId = authentication.getName();
 	    result.put("myPending", apprService.getMyPendingCount(loginId));
-	    
-	    // 결재대기 건수
 	    result.put("toApprove", apprService.getToApproveCount(loginId));
-	    
-	    // 내결재목록 전체 상태 정보 (상태 변화 감지용)
 	    result.put("myApprovalStatus", apprService.getMyApprovalStatusSummary(loginId));
 	    
 	    return result;
