@@ -365,7 +365,7 @@ public class PersonnelController {
         // 모델에 직원 목록을 추가하여 초기 화면에 표시
         model.addAttribute("personnels", personnels);
 
-        return "/hrn/orgchart"; 
+        return "/hrn/orgChart"; 
     }
     // AJAX 요청을 처리하여 특정 부서의 직원 정보를 JSON 형태로 반환
     @GetMapping("/employees")
