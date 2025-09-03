@@ -2,7 +2,12 @@
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:fragment="header">
-
+	
+	<th:block sec:authorize="isAuthenticated()">
+    	<input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+    	<input type="hidden" id="currentEmpName" th:value="${#authentication.principal.name}" />
+    </th:block>
+	
 	<!-- Page Wrapper -->
 	<div id="wrapper">
 
@@ -25,8 +30,9 @@
 			<hr class="sidebar-divider my-0">
 
 			<!-- Nav Item - Dashboard -->
-			<li class="nav-item active"><a class="nav-link" th:href="@{/main}">
-					<i class="fas fa-fw fa-tachometer-alt"></i> <span>메인화면</span>
+			<li class="nav-item active"><a class="nav-link"
+				th:href="@{/main}"> <i class="fas fa-fw fa-tachometer-alt"></i>
+					<span>메인화면</span>
 			</a></li>
 
 			<!-- Divider -->
@@ -69,32 +75,33 @@
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">인사관리 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/personnel/current}">인사현황</a>
-						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a>
-						<a class="collapse-item" th:href="@{/personnel/trans}">인사발령</a>
-						<a class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>						
+						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> <a
+							class="collapse-item" th:href="@{/personnel/trans}">인사발령</a> <a
+							class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
 					</div>
 				</div></li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                   aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>근태관리</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">근태관리 메뉴:</h6>
-                        <a class="collapse-item" th:href="@{/attendance/commuteList}">출퇴근확인</a>
-<!--                         <a class="collapse-item" th:href="@{/attendance/attendanceList}">나의 근태 내역</a> -->
-                        <a class="collapse-item" th:href="@{/attendance/annualList}">연차 관리</a>
+			<!-- Nav Item - Pages Collapse Menu -->
+			<li class="nav-item"><a class="nav-link collapsed" href="#"
+				data-toggle="collapse" data-target="#collapsePages"
+				aria-expanded="true" aria-controls="collapsePages"> <i
+					class="fas fa-fw fa-folder"></i> <span>근태관리</span>
+			</a>
+				<div id="collapsePages" class="collapse"
+					aria-labelledby="headingPages" data-parent="#accordionSidebar">
+					<div class="bg-white py-2 collapse-inner rounded">
+						<h6 class="collapse-header">근태관리 메뉴:</h6>
+						<a class="collapse-item" th:href="@{/attendance/commuteList}">출퇴근확인</a>
+						<!--                         <a class="collapse-item" th:href="@{/attendance/attendanceList}">나의 근태 내역</a> -->
+						<a class="collapse-item" th:href="@{/attendance/annualList}">연차
+							관리</a>
 						<h6 class="collapse-header">관리자 근태관리 메뉴:</h6>
-                        <a class="collapse-item" th:href="@{/attendance/adminCommute}">근태관리</a>
-                        <a class="collapse-item" th:href="@{/attendance/adminCommuteLog}">출근기록 삭제 로그</a>
-                        <div class="collapse-divider"></div>
-                    </div>
-                </div>
-            </li>
+						<a class="collapse-item" th:href="@{/attendance/adminCommute}">근태관리</a>
+						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}">출근기록
+							삭제 로그</a>
+						<div class="collapse-divider"></div>
+					</div>
+				</div></li>
 
 			<!-- 메뉴 추가-->
 			<li class="nav-item"><a class="nav-link collapsed" href="#"
@@ -114,9 +121,8 @@
 				</div></li>
 			<li class="nav-item"><a class="nav-link collapsed"
 				data-toggle="collapse" data-target="#collapsePay"
-				aria-expanded="true" aria-controls="collapsePayment">
-				<i class="fas fa-fw fa-folder"></i>
-					<span>그룹웨어</span>
+				aria-expanded="true" aria-controls="collapsePayment"> <i
+					class="fas fa-fw fa-folder"></i> <span>그룹웨어</span>
 			</a>
 				<div id="collapsePay" class="collapse"
 					aria-labelledby="headingPages" data-parent="#accordionSidebar">
@@ -126,14 +132,14 @@
 						<h6 class="collapse-header">회사일정 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/schedule}">일정관리</a>
 						<h6 class="collapse-header">공통문서 메뉴:</h6>
-						<a class="collapse-item" th:href="@{/groupware/document}">사내공통 문서양식관리</a>
+						<a class="collapse-item" th:href="@{/groupware/document}">사내공통
+							문서양식관리</a>
 						<h6 class="collapse-header">사내 메신저:</h6>
-						<a class="collapse-item" th:href="@{/chat}">사내 메신저</a>
-						<a class="collapse-item" th:href="@{/privateChat}">1:1 메신저</a>
-						
+						<a class="collapse-item" th:href="@{/chat}">사내 메신저</a> <a
+							class="collapse-item" th:href="@{/privateChat}">1:1 메신저</a>
+
 					</div>
-				</div>
-			</li>
+				</div></li>
 
 			<!-- Divider -->
 			<hr class="sidebar-divider d-none d-md-block">
@@ -194,113 +200,67 @@
 							</div></li>
 
 						<!-- 결재대기 종 알림 -->
-						<li class="nav-item dropdown no-arrow mx-1">
-						    <a class="nav-link dropdown-toggle position-relative" href="#" id="alertsDropdown"
-						       role="button" data-toggle="dropdown" aria-haspopup="true"
-						       aria-expanded="false"> 
-						        <i class="fas fa-bell fa-fw" style="font-size: 1.5rem;"></i>
-						        <span class="badge badge-danger badge-counter" id="totalAlertCount">0</span>
-						        <span class="position-absolute" id="newAlertDot" 
-						              style="top: 0; right: 0; width: 8px; height: 8px; 
-						                     background-color: #dc3545; border-radius: 50%; 
-						                     display: none;"></span>
-						    </a> 
-						    <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-						        aria-labelledby="alertsDropdown" style="width: 500px;">
-						        <h6 class="dropdown-header text-center" style="font-size: 16px;">전자결재 바로가기</h6>
-						        
-						        <!-- 알림 메시지 추가 -->
-						        <div id="approvalAlert" class="alert alert-warning mx-3 mt-2 mb-0" style="display: none;">
-						            <i class="fas fa-exclamation-triangle"></i> 전자결재 대기문서가 있습니다
-						        </div>
-						        
-						        <div class="p-3 d-flex justify-content-between">
-						            <a class="btn btn-outline-primary flex-fill mr-2 position-relative" 
-						                th:href="@{/approval/approval_list(status='my')}"
-						                style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
-						                <i class="fas fa-folder-open mb-2" style="font-size: 30px;"></i>
-						                <div>내결재목록</div>
-						                <small class="text-muted mt-1"><span id="myPendingCount">0</span>건</small>
-						                <span class="badge badge-danger position-absolute" id="myPendingBadge" 
-						                      style="top: 5px; right: 5px; display: none;">New</span>
-						            </a>
-						            <a class="btn btn-outline-warning flex-fill position-relative" 
-						                th:href="@{/approval/approval_list(status='pending')}"
-						                style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
-						                <i class="fas fa-clock mb-2" style="font-size: 30px;"></i>
-						                <div>결재대기</div>
-						                <small class="text-muted mt-1"><span id="toApproveCount">0</span>건</small>
-						                <span class="badge badge-danger position-absolute" id="toApproveBadge" 
-						                      style="top: 5px; right: 5px; display: none;">New</span>
-						            </a>
-						        </div>
-						    </div>
-						</li>
+						<li class="nav-item dropdown no-arrow mx-1"><a
+							class="nav-link dropdown-toggle position-relative" href="#"
+							id="alertsDropdown" role="button" data-toggle="dropdown"
+							aria-haspopup="true" aria-expanded="false"> <i
+								class="fas fa-bell fa-fw" style="font-size: 1.5rem;"></i> <span
+								class="badge badge-danger badge-counter" id="totalAlertCount">0</span>
+								<span class="position-absolute" id="newAlertDot"
+								style="top: 0; right: 0; width: 8px; height: 8px; background-color: #dc3545; border-radius: 50%; display: none;"></span>
+						</a>
+							<div
+								class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+								aria-labelledby="alertsDropdown" style="width: 500px;">
+								<h6 class="dropdown-header text-center" style="font-size: 16px;">전자결재
+									바로가기</h6>
+
+								<!-- 알림 메시지 추가 -->
+								<div id="approvalAlert"
+									class="alert alert-warning mx-3 mt-2 mb-0"
+									style="display: none;">
+									<i class="fas fa-exclamation-triangle"></i> 전자결재 대기문서가 있습니다
+								</div>
+
+								<div class="p-3 d-flex justify-content-between">
+									<a
+										class="btn btn-outline-primary flex-fill mr-2 position-relative"
+										th:href="@{/approval/approval_list(status='my')}"
+										style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+										<i class="fas fa-folder-open mb-2" style="font-size: 30px;"></i>
+										<div>내결재목록</div> <small class="text-muted mt-1"><span
+											id="myPendingCount">0</span>건</small> <span
+										class="badge badge-danger position-absolute"
+										id="myPendingBadge"
+										style="top: 5px; right: 5px; display: none;">New</span>
+									</a> <a class="btn btn-outline-warning flex-fill position-relative"
+										th:href="@{/approval/approval_list(status='pending')}"
+										style="height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; border-width: 2px;">
+										<i class="fas fa-clock mb-2" style="font-size: 30px;"></i>
+										<div>결재대기</div> <small class="text-muted mt-1"><span
+											id="toApproveCount">0</span>건</small> <span
+										class="badge badge-danger position-absolute"
+										id="toApproveBadge"
+										style="top: 5px; right: 5px; display: none;">New</span>
+									</a>
+								</div>
+							</div></li>
 						<!-- Nav Item - Messages -->
 						<li class="nav-item dropdown no-arrow mx-1"><a
 							class="nav-link dropdown-toggle" href="#" id="messagesDropdown"
 							role="button" data-toggle="dropdown" aria-haspopup="true"
 							aria-expanded="false"> <i class="fas fa-envelope fa-fw"></i>
-								<!-- Counter - Messages --> <span
-								class="badge badge-danger badge-counter">7</span>
-						</a> <!-- Dropdown - Messages -->
+								<span id="messageBadge" class="badge badge-danger badge-counter"
+								style="display: none;">0</span>
+						</a>
 							<div
 								class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
 								aria-labelledby="messagesDropdown">
-								<h6 class="dropdown-header">Message Center</h6>
-								<a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="dropdown-list-image mr-3">
-
-										<!-- <img th:src="@{/images/28e34ff6-a0f2-4304-8afa-d935c8e1ed55_1.jpg}"/> -->
-
-										<img class="rounded-circle"
-											th:src="@{/bootstrap/img/undraw_profile_1.svg}" alt="..." />
-										<div class="status-indicator bg-success"></div>
-									</div>
-									<div class="font-weight-bold">
-										<div class="text-truncate">Hi there! I am wondering if
-											you can help me with a problem I've been having.</div>
-										<div class="small text-gray-500">Emily Fowler · 58m</div>
-									</div>
-								</a> <a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="dropdown-list-image mr-3">
-										<img class="rounded-circle"
-											th:src="@{/bootstrap/img/undraw_profile_2.svg}" alt="...">
-										<div class="status-indicator"></div>
-									</div>
-									<div>
-										<div class="text-truncate">I have the photos that you
-											ordered last month, how would you like them sent to you?</div>
-										<div class="small text-gray-500">Jae Chun · 1d</div>
-									</div>
-								</a> <a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="dropdown-list-image mr-3">
-										<img class="rounded-circle"
-											th:src="@{/bootstrap/img/undraw_profile_3.svg}" alt="...">
-										<div class="status-indicator bg-warning"></div>
-									</div>
-									<div>
-										<div class="text-truncate">Last month's report looks
-											great, I am very happy with the progress so far, keep up the
-											good work!</div>
-										<div class="small text-gray-500">Morgan Alvarez · 2d</div>
-									</div>
-								</a> <a class="dropdown-item d-flex align-items-center" href="#">
-									<div class="dropdown-list-image mr-3">
-										<img class="rounded-circle"
-											src="https://source.unsplash.com/Mv9hjnEUHR4/60x60" alt="...">
-										<div class="status-indicator bg-success"></div>
-									</div>
-									<div>
-										<div class="text-truncate">Am I a good boy? The reason I
-											ask is because someone told me that people say this to all
-											dogs, even if they aren't good...</div>
-										<div class="small text-gray-500">Chicken the Dog · 2w</div>
-									</div>
-								</a> <a class="dropdown-item text-center small text-gray-500"
-									href="#">Read More Messages</a>
+								<h6 class="dropdown-header text-center" style="font-size: 16px;">메신저	바로가기</h6>
+								<div id="messageList"></div>
+								<a class="dropdown-item text-center small text-gray-500"
+									th:href="@{/privateChat}">Read More Messages</a>
 							</div></li>
-
 						<div class="topbar-divider d-none d-sm-block"></div>
 
 						<!-- Nav Item - User Information -->
@@ -343,9 +303,8 @@
 
 					</ul>
 
-                </nav>
-                <!-- End of Topbar -->
-
+				</nav>
+				<!-- End of Topbar -->
 </th:block>
 <script>
 // 0829 결재 알림 업데이트
@@ -382,10 +341,96 @@ function updateApprovalAlerts() {
         });
 }
 
+// ==========================================================================
+// 알림 관련 DOM 요소
+const messageBadge = document.getElementById('messageBadge');
+const messageList = document.getElementById('messageList');
+
+let stompClient = null;
+let userId = null;
+let userName = null;
+
+// 웹소켓 연결 및 구독
+function connectWebsocket() {
+    const empIdInput = document.getElementById('currentEmpId');
+    const empNameInput = document.getElementById('currentEmpName');
+
+    if (empIdInput && empNameInput) {
+        userId = empIdInput.value;
+        userName = empNameInput.value;
+    } else {
+        console.error("사용자 ID를 찾을 수 없습니다. 웹소켓 연결을 시작할 수 없습니다.");
+        return;
+    }
+    const socket = new SockJS('/ws/chat');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, onConnectedWebsocket, onErrorWebsocket);
+}
+
+function onConnectedWebsocket() {
+    console.log("웹소켓 연결 성공. 사용자 ID: " + userId);
+    stompClient.subscribe('/user/queue/private', onMessageReceivedForHeader);
+    fetchUnreadMessages();
+}
+
+function onErrorWebsocket(error) {
+    console.error("웹소켓 연결 실패: " + error);
+}
+
+// 새로운 메시지 수신 시 호출되는 함수 (웹소켓)
+function onMessageReceivedForHeader(payload) {
+    const message = JSON.parse(payload.body);
+    const currentCount = parseInt(messageBadge.textContent) || 0;
+    messageBadge.textContent = currentCount + 1;
+    messageBadge.style.display = 'block';
+    
+    const messageItem = createMessageItem(message);
+    messageList.prepend(messageItem);
+}
+
+// 페이지 로드 시 읽지 않은 메시지를 불러오는 함수 (AJAX)
+function fetchUnreadMessages() {
+    if (!userId) return;
+    fetch('/api/messages/unread')
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                messageBadge.textContent = data.length;
+                messageBadge.style.display = 'block';
+                messageList.innerHTML = '';
+                data.forEach(msg => {
+                    const messageItem = createMessageItem(msg);
+                    messageList.appendChild(messageItem);
+                });
+            }
+        })
+        .catch(error => console.error('읽지 않은 메시지 불러오기 오류:', error));
+}
+
+// 메시지 항목 HTML을 생성하는 헬퍼 함수
+function createMessageItem(message) {
+    const messageItem = document.createElement('a');
+    messageItem.classList.add('dropdown-item', 'd-flex', 'align-items-center');
+    messageItem.href = `/privateChat?recipientId=${message.senderId}`;
+    messageItem.innerHTML = `
+        <div class="dropdown-list-image mr-3">
+            <img class="rounded-circle" src="/bootstrap/img/undraw_profile_1.svg" alt="...">
+        </div>
+        <div class="font-weight-bold">
+            <div class="text-truncate">${message.content}</div>
+            <div class="small text-gray-500">${message.senderName} · ${message.createdAt}</div>
+        </div>
+    `;
+    return messageItem;
+}
+
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
+    // 결재 알림 업데이트
     updateApprovalAlerts();
-    // 30초마다 업데이트
     setInterval(updateApprovalAlerts, 30000);
+    
+    // 메신저 알림 기능 초기화
+    connectWebsocket();
 });
 </script>

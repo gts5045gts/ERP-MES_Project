@@ -1,18 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     const token = $("meta[name='_csrf']").attr("content");
     const header = $("meta[name='_csrf_header']").attr("content");
-    
+
     $(document).ajaxSend(function(e, xhr, options) {
         if (token && header) {
             xhr.setRequestHeader(header, token);
         }
     });
 
-    // body 태그에서 현재 로그인한 사용자 정보를 가져옵니다. 이 값들은 변하지 않으므로 const로 선언합니다.
-    const currentEmpId = $('body').data('current-emp-id');
-    const currentEmpName = $('body').data('current-emp-name');
-    const empDeptId = $('body').data('emp-dept-id');
-    const empDeptName = $('body').data('emp-dept-name');
+    // 숨겨진 input 필드에서 사용자 정보를 가져옵니다.
+    const currentEmpId = document.getElementById('currentEmpId')?.value;
+    const currentEmpName = document.getElementById('currentEmpName')?.value;
+    const empDeptId = document.getElementById('empDeptId')?.value;
+    const empDeptName = document.getElementById('empDeptName')?.value;
     
     // 캘린더 객체는 나중에 할당되므로 let으로 선언하고, 바깥 스코프로 이동시킵니다.
     let calendar1;

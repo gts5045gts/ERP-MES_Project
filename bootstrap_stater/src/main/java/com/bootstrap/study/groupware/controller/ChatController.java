@@ -82,16 +82,18 @@ public class ChatController {
 	// 개인 메시지를 전송하는 메서드 추가
 	@MessageMapping("/chat.privateMessage")
 	public void privateMessage(@Payload ChatMessageDTO chatMessage, Principal principal) {
-		log.info("개인 메시지 전송: {}", chatMessage);
-
-		chatService.saveMessage(chatMessage);
-
-		// 메시지 수신자에게 메시지를 전송
-		// "/queue/private"는 클라이언트가 개인 메시지를 받을 구독 주소
-		messagingTemplate.convertAndSendToUser(chatMessage.getReceiverId(), "/queue/private", chatMessage);
-
-		// 보낸 사람의 화면에도 메시지를 다시 전송 (선택 사항)
-		messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/private", chatMessage);
+	    // 메시지 저장 로직
+	    chatService.saveMessage(chatMessage);
+	    
+	    // 수신자의 개인 채널로 메시지를 전송 (이 메시지를 프론트엔드에서 알림으로 사용)
+	    messagingTemplate.convertAndSendToUser(
+	        chatMessage.getReceiverId(), "/queue/private", chatMessage
+	    );
+	    
+	    // 보낸 사람의 화면에도 메시지 전송
+	    messagingTemplate.convertAndSendToUser(
+	        principal.getName(), "/queue/private", chatMessage
+	    );
 	}
 
 	// 클라이언트의 '읽지 않은 메시지 불러오기' 요청을 처리합니다.
@@ -99,8 +101,6 @@ public class ChatController {
 	@ResponseBody
 	public List<ChatMessageDTO> getUnreadMessages(Principal principal) {
 		log.info("읽지 않은 메시지 불러오기 요청: {}", principal.getName());
-		// Service 계층을 호출하여 데이터베이스에서 읽지 않은 메시지를 가져옵니다.
-		// `principal.getName()`은 현재 로그인한 사용자의 ID(Principal ID)를 반환합니다.
 		return chatService.getUnreadMessages(principal.getName());
 	}
 }

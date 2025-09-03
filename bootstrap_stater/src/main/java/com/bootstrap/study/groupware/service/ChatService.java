@@ -61,7 +61,7 @@ public class ChatService {
 	        log.info("채팅 메시지 저장 완료: {}", chatMessage);
 	    }
 	    
-	    // ⭐️ ChatRoom을 찾거나 생성하는 로직
+	    // ChatRoom을 찾거나 생성하는 로직
 	    private ChatRoom findOrCreateChatRoom(String senderId, String receiverId) {
 	        // 두 ID를 정렬하여 고유한 roomId를 만듭니다.
 	        String[] ids = {senderId, receiverId};
