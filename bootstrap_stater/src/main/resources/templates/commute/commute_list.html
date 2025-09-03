@@ -14,29 +14,10 @@
 	
 	        <!-- Page Heading -->
 	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
-	        
-	        <!-- 출근버튼 -->
-	        
-	        <!-- 근태 리스트 테이블 -->        
-	        <!-- DataTales Example -->
 	        <div class="card shadow mb-4">
-<!-- 	            <div class="card-header py-3"> -->
-<!-- 	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6> -->
-<!-- 		            <div class="mb-3"> -->
-<!-- 		            	<button id="checkInBtn" class="btn btn-primary">출근</button> -->
-<!-- 		            </div> -->
-<!-- 	            	<input type="date"> -->
-<!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
 				    <h6 class="m-0 font-weight-bold text-primary">출근한 나의 부서인원 근태현황</h6>
 				    
-<!-- 				    <div class="d-flex align-items-center gap-2"> -->
-<!-- 					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}">~ -->
-<!-- 					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}"> -->
-<!-- 					    <button type="submit" id="searchBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">조회</button> -->
-<!-- 				        <button id="checkInBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">출근</button> -->
-<!-- 				        <button id="checkOutBtn" class="btn btn-primary btn-sm" style="min-width: 80px;">퇴근</button> -->
-<!-- 				    </div> -->
 					<div class="d-flex align-items-center gap-4">
 					    <input type="date" name="startDate" class="form-control form-control-sm me-3" th:value="${startDate}">
 					    <span class="mx-1">~</span>
@@ -88,6 +69,14 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
+	let csrfToken = $("meta[name='_csrf']").attr("content");
+	let csrfHeader = $("meta[name='_csrf_header']").attr("content");
+	
+// 	$(document).ajaxSend(function(e, xhr, options) {
+// 	    xhr.setRequestHeader(csrfHeader, csrfToken);
+// 	});
+	
+	
 	// 부서랑 날짜조회
 	document.getElementById("searchBtn").addEventListener("click", function() {
 	    const startDate = document.querySelector("input[name='startDate']").value;
@@ -108,6 +97,9 @@
 	            type: "POST",
 	            contentType: "application/json",
 	            data: JSON.stringify({}), // 기존 fetch에서 body 부분
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 	            success: function(data) {
 	                if (data && data.checkInTime) {
 	                    const rawTime = data.checkInTime;
@@ -153,6 +145,9 @@
 	            type: "POST",
 	            contentType: "application/json",
 	            data: JSON.stringify({}), // 기존 fetch에서 body 부분
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 	            success: function(data) {
 	                if (data && data.checkOutTime) {
 	                    const rawTime = data.checkOutTime;

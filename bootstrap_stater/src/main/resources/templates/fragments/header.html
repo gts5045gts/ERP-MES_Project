@@ -425,12 +425,14 @@ function createMessageItem(message) {
 }
 
 // 페이지 로드 시 실행
+// 아이콘 클릭하면 그때 업데이트
 document.addEventListener('DOMContentLoaded', function() {
-    // 결재 알림 업데이트
-    updateApprovalAlerts();
-    setInterval(updateApprovalAlerts, 30000);
+    updateApprovalAlerts();  
     
-    // 메신저 알림 기능 초기화
+    document.getElementById('alertsDropdown').addEventListener('click', function() {
+        updateApprovalAlerts();
+    });
+        // 메신저 알림 기능 초기화
     connectWebsocket();
 });
 </script>

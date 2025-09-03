@@ -25,13 +25,6 @@
 	        <!-- 근태 리스트 테이블 -->        
 	        <!-- DataTales Example -->
 	        <div class="card shadow mb-4">
-<!-- 	            <div class="card-header py-3"> -->
-<!-- 	                <h6 class="m-0 font-weight-bold text-primary">부서 전체 근퇴현황</h6> -->
-<!-- 		            <div class="mb-3"> -->
-<!-- 		            	<button id="checkInBtn" class="btn btn-primary">출근</button> -->
-<!-- 		            </div> -->
-<!-- 	            	<input type="date"> -->
-<!-- 	            </div> -->
 				<div class="card-header py-3 d-flex align-items-center justify-content-between">
 				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
 				    
@@ -127,8 +120,15 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
-		
 // 		console.log("버튼 클릭!");
+		
+		let csrfToken = $("meta[name='_csrf']").attr("content");
+		let csrfHeader = $("meta[name='_csrf_header']").attr("content");
+		
+// 		$(document).ajaxSend(function(e, xhr, options) {
+// 		    xhr.setRequestHeader(csrfHeader, csrfToken);
+// 		});
+	
 		
 		// 부서랑 날짜조회
 		document.getElementById("searchBtn").addEventListener("click", function() {
@@ -173,6 +173,9 @@
 		        type: "POST",
 		        contentType: "application/json",
 		        data: JSON.stringify(updateList),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 		        success: function(response) {
 		            alert("수정 완료");
 		            console.log(response);
@@ -232,6 +235,9 @@
 					checkInTime: checkInTime,
 					deleteReason: deleteReason
 				}),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 				success: function(data) {
 					
 					if(data.success) {
