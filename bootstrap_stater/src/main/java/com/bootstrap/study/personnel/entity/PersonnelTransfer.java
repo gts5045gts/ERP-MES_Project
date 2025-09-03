@@ -67,9 +67,5 @@ public class PersonnelTransfer {
 	@UpdateTimestamp
 	@Column(name = "update_at")
 	private Timestamp updateAt;
-	
-//	@OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "appr_id", nullable = false)
-//    private Appr appr;
     
 }

@@ -4,7 +4,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
+import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelTransfer;
@@ -54,7 +57,7 @@ public class PersonnelTransferService {
 
 			Personnel personnel = personnelRepository.findByEmpId(empId)
 					.orElseThrow(() -> new IllegalArgumentException("사원 정보 없음: " + empId));
-
+			String name = transInfo.get("name");
 			String transType = transInfo.get("transType");
 			String oldDeptId = personnel.getDepartment().getComDtId();
 			String oldPosId = personnel.getPosition().getComDtId();
@@ -62,9 +65,18 @@ public class PersonnelTransferService {
 			String newPosId = transInfo.get("newPosId");
 			String transDateStr = transInfo.get("transDate");
 
-			PersonnelTransfer transfer = PersonnelTransfer.builder().reqId(reqId).empId(empId).transferType(transType)
-					.oldDept(oldDeptId).newDept(newDeptId).oldPosition(oldPosId).newPosition(newPosId)
-					.transDate(LocalDate.parse(transDateStr)).create(Timestamp.from(Instant.now())).build();
+			PersonnelTransfer transfer = PersonnelTransfer.builder()
+					.reqId(reqId)
+					.empId(empId)
+					.name(name)
+					.transferType(transType)
+					.oldDept(oldDeptId)
+					.newDept(newDeptId)
+					.oldPosition(oldPosId)
+					.newPosition(newPosId)
+					.transDate(LocalDate.parse(transDateStr))
+					.create(Timestamp.from(Instant.now())).build();
+			
 			personnelTransferRepository.save(transfer);
 
 			personnel.setDepartment(commonDetailCodeRepository.findByComDtId(newDeptId)
@@ -79,5 +91,16 @@ public class PersonnelTransferService {
 			throw new RuntimeException("인사발령 데이터 파싱 오류", e);
 		}
 	}
+	
+	// 인사발령 목록 조회
+	public List<PersonnelTransferDTO> getTransferPersonnels() {
+ 		
+ 		// PersonnelTransfer 엔티티 목록을 가져와서 DTO로 변환
+ 		List<PersonnelTransfer> personnelList = personnelTransferRepository.findAll();
+ 		return personnelList.stream()
+ 				.map(transfer -> PersonnelTransferDTO.fromEntity(transfer, commonDetailCodeRepository))
+ 				.collect(Collectors.toList());
+ 	}
+	
 	
 }

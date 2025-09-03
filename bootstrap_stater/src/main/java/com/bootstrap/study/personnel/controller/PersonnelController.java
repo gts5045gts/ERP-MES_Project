@@ -2,14 +2,12 @@ package com.bootstrap.study.personnel.controller;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,14 +16,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
+import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
 import com.bootstrap.study.personnel.service.PersonnelService;
+import com.bootstrap.study.personnel.service.PersonnelTransferService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -36,7 +36,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class PersonnelController {
     private final PersonnelService personnelService;
-    private final ApprService apprService;
+    private final PersonnelTransferService personnelTransferService;
     
 	@GetMapping("/current")
 	public String current(Model model) {
@@ -160,10 +160,21 @@ public class PersonnelController {
 
         // 부서 코드가 'DEP001'(인사팀)일 경우, 버튼 표시 여부를 true로 설정
         boolean isHrTeam = "DEP001".equals(userDeptId);
-        
         model.addAttribute("isHRTeam", isHrTeam);
+        
+        // 인사발령 테이블 조회
+        List<PersonnelTransferDTO> personnelTransfer = personnelTransferService.getTransferPersonnels();
+        
+		model.addAttribute("personnelTransfer", personnelTransfer);
 		
 		return "/hrn/personnelTrans";
+	}
+	
+	@GetMapping("/api/transfers")
+	@ResponseBody
+	public List<PersonnelTransferDTO> getTransferList() {
+	    log.info("GET /api/transfers 호출");
+	    return personnelTransferService.getTransferPersonnels();
 	}
 	
 	// 발령 등록 폼

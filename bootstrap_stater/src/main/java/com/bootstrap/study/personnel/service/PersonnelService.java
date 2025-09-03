@@ -264,29 +264,6 @@ public class PersonnelService {
 
         Long apprId = apprService.registAppr(apprDTO, empIds, loginEmpId);
         
-//        // 여기부터 추가!!!!!!!!!!!!!!!!!!!!!!!!
-//        // Appr 엔티티를 조회하여 PersonnelTransfer와 연결
-//        Appr appr = apprRepository.findById(apprId)
-//                .orElseThrow(() -> new IllegalArgumentException("Appr 엔티티를 찾을 수 없습니다: " + apprId));
-//
-//        // Map에서 DTO로 직접 변환
-//        PersonnelTransferDTO personnelTransferDTO = objectMapper.convertValue(transInfo, PersonnelTransferDTO.class);
-//        
-//        // PersonnelTransfer 엔티티를 생성하여 저장
-//        PersonnelTransfer personnelTransfer = PersonnelTransfer.builder()
-//            .appr(appr)
-//            .empId(personnelTransferDTO.getEmpId())
-//            .name(personnelTransferDTO.getName()) 
-//            .transferType(personnelTransferDTO.getTransferType())
-//            .oldDept(personnelTransferDTO.getOldDeptId())
-//            .newDept(personnelTransferDTO.getNewDeptId())
-//            .oldPosition(personnelTransferDTO.getOldPosId())
-//            .newPosition(personnelTransferDTO.getNewPosId())
-//            .transDate(personnelTransferDTO.getTransDate() != null ? personnelTransferDTO.getTransDate().toLocalDate() : null)
-//            .build();
-//
-//        personnelTransferRepository.save(personnelTransfer);
     }
-
     
 }

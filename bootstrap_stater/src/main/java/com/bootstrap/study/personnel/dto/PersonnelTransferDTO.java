@@ -2,9 +2,9 @@ package com.bootstrap.study.personnel.dto;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
+
+import com.bootstrap.study.commonCode.repository.CommonDetailCodeRepository;
+import com.bootstrap.study.personnel.entity.PersonnelTransfer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,11 +25,7 @@ public class PersonnelTransferDTO {
     private String empId; // 발령 대상 사원 ID
     private String name; // 발령 대상 이름
     private String transferType; // 발령 구분
-//    private String oldDept; // 기존 부서 ID
-//    private String newDept; // 신규 부서 ID
-//    private String oldPosition; // 기존 직급 ID
-//    private String newPosition; // 신규 직급 ID
-    private LocalDateTime transDate; // 발령일 
+    private LocalDate transDate; // 발령일 
     private Timestamp create;	// 발령일
     private Timestamp update;	// 수정일
     
@@ -45,22 +41,35 @@ public class PersonnelTransferDTO {
     private String newPosId;
     private String newPosName; // 신규 직급명
     
-    
- // ✅ Map에서 DTO로 변환하는 정적 팩토리 메서드
-    public static PersonnelTransferDTO fromMap(Map<String, String> map) {
-        // 날짜 파싱
-        LocalDate transDate = null;
-        if (map.containsKey("transDate")) {
-            transDate = LocalDate.parse(map.get("transDate"), DateTimeFormatter.ISO_LOCAL_DATE);
-        }
+ // Entity -> DTO 변환을 위한 정적 팩토리 메서드
+    public static PersonnelTransferDTO fromEntity(PersonnelTransfer transfer, CommonDetailCodeRepository comDetailRepo) {
+    	
+    	PersonnelTransferDTO dto = new PersonnelTransferDTO();
+    	
+    	dto.setEmpId(transfer.getEmpId());
+        dto.setName(transfer.getName());
+        dto.setTransferType(transfer.getTransferType());
+        dto.setTransDate(transfer.getTransDate());
         
-        return PersonnelTransferDTO.builder()
-            .empId(map.get("empId"))
-            .oldDeptId(map.get("oldDeptId"))
-            .newDeptId(map.get("newDeptId"))
-            .oldPosId(map.get("oldPosId"))
-            .newPosId(map.get("newPosId"))
-            .transDate(transDate.atStartOfDay()) // LocalDate를 LocalDateTime으로 변환
-            .build();
-    }
+     // 코드-이름 변환 로직
+        comDetailRepo.findByComDtId(transfer.getOldDept()).ifPresent(code -> {
+            dto.setOldDeptId(code.getComDtId());
+            dto.setOldDeptName(code.getComDtNm());
+        });
+        comDetailRepo.findByComDtId(transfer.getNewDept()).ifPresent(code -> {
+            dto.setNewDeptId(code.getComDtId());
+            dto.setNewDeptName(code.getComDtNm());
+        });
+        comDetailRepo.findByComDtId(transfer.getOldPosition()).ifPresent(code -> {
+            dto.setOldPosId(code.getComDtId());
+            dto.setOldPosName(code.getComDtNm());
+        });
+        comDetailRepo.findByComDtId(transfer.getNewPosition()).ifPresent(code -> {
+            dto.setNewPosId(code.getComDtId());
+            dto.setNewPosName(code.getComDtNm());
+        });
+        
+        return dto;
+	}
+    
 }
