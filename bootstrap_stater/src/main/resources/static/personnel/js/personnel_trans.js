@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			let transferType = orderTypeSelect.value;
 			if (transferType === "PROMOTION") transferType = "승진";
 			if (transferType === "TRANSFER") transferType = "전보";
-			if (transferType === "ALL") transferType = null; // 전체 조회일 때 null로 처리
+			if (transferType === "ALL") transferType = null; // 전체 조회일 때 null로 처리해서 다 받아옴
 			
 	        // 검색 조건을 파라미터로 넘겨서 함수 호출
 	        loadPersonnelTransferList(transferType, startDate, endDate);
