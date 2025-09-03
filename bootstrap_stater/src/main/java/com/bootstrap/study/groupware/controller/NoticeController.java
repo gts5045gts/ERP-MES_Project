@@ -188,7 +188,6 @@ public class NoticeController {
 		log.info("NoticeController updateNotice() called with Notice: {}", notice);
 		// noticeService의 updateNotice 메서드를 호출하여 데이터베이스 업데이트를 요청합니다.
 		noticeService.updateNotice(notice);
-		System.out.println("ntcUpdate 완료");
 		return "success"; // 수정 후 공지사항 목록으로 리다이렉트
 	}
 
