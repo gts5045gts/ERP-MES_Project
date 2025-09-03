@@ -88,6 +88,22 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
+	let csrfToken = $("meta[name='_csrf']").attr("content");
+	let csrfHeader = $("meta[name='_csrf_header']").attr("content");
+	
+// 	$(document).ajaxSend(function(e, xhr, options) {
+// 	    xhr.setRequestHeader(csrfHeader, csrfToken);
+// 	});
+	
+	
+	// 부서랑 날짜조회
+	document.getElementById("searchBtn").addEventListener("click", function() {
+	    const startDate = document.querySelector("input[name='startDate']").value;
+	    const endDate = document.querySelector("input[name='endDate']").value;
+	    window.location.href = `/attendance/commuteList?startDate=${startDate}&endDate=${endDate}`;
+	});
+	
+	
 	// 출근 버튼
 	$(document).ready(function() {
 	    const checkInBtn = $("#checkInBtn");
@@ -100,6 +116,9 @@
 	            type: "POST",
 	            contentType: "application/json",
 	            data: JSON.stringify({}), // 기존 fetch에서 body 부분
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 	            success: function(data) {
 	                if (data && data.checkInTime) {
 	                    const rawTime = data.checkInTime;

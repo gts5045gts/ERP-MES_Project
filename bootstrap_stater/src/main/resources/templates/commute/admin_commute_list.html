@@ -127,8 +127,15 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
-		
 // 		console.log("버튼 클릭!");
+		
+		let csrfToken = $("meta[name='_csrf']").attr("content");
+		let csrfHeader = $("meta[name='_csrf_header']").attr("content");
+		
+// 		$(document).ajaxSend(function(e, xhr, options) {
+// 		    xhr.setRequestHeader(csrfHeader, csrfToken);
+// 		});
+	
 		
 		// 부서랑 날짜조회
 		document.getElementById("searchBtn").addEventListener("click", function() {
@@ -173,6 +180,9 @@
 		        type: "POST",
 		        contentType: "application/json",
 		        data: JSON.stringify(updateList),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 		        success: function(response) {
 		            alert("수정 완료");
 		            console.log(response);
@@ -232,6 +242,9 @@
 					checkInTime: checkInTime,
 					deleteReason: deleteReason
 				}),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 				success: function(data) {
 					
 					if(data.success) {

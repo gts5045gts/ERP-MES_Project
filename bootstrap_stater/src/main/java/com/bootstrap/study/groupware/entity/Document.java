@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.bootstrap.study.approval.constant.ApprReqType;
+import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 
 import jakarta.persistence.*;
@@ -59,5 +60,12 @@ public class Document {
     @LastModifiedBy
     @Column(name = "UPDATE_AT")
     private LocalDateTime updateAt;
+
+    public void updateFromDto(DocumentDTO dto) {
+        this.docTitle = dto.getDocTitle();
+        this.docContent = dto.getDocContent();
+        this.docType = dto.getDocType();
+        this.reqType = dto.getReqType();
+    }
 
 }

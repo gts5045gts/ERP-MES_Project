@@ -11,8 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
@@ -181,11 +183,13 @@ public class NoticeController {
 
 	// 공지 수정
 	@PostMapping("/ntcUpdate")
-	public String updateNotice(Notice notice) {
+	@ResponseBody
+	public String updateNotice(@RequestBody Notice notice) {
 		log.info("NoticeController updateNotice() called with Notice: {}", notice);
 		// noticeService의 updateNotice 메서드를 호출하여 데이터베이스 업데이트를 요청합니다.
 		noticeService.updateNotice(notice);
-		return "redirect:/notice"; // 수정 후 공지사항 목록으로 리다이렉트
+		System.out.println("ntcUpdate 완료");
+		return "success"; // 수정 후 공지사항 목록으로 리다이렉트
 	}
 
 	// (GET) 공지사항 삭제 처리
