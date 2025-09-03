@@ -10,26 +10,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// 2. 이벤트 리스너 정의
 	// '발령' 버튼 클릭 시 팝업 윈도우 열기
-	issueBtn.addEventListener('click', () => {
-		// 팝업 윈도우 설정
-		const popupUrl = '/personnel/trans/save'; // 팝업 페이지 URL
-		const windowName = 'personnelTransPopup';
-		const windowFeatures = 'width=950,height=920,scrollbars=yes,resizable=yes';
+	if (issueBtn) {
+		issueBtn.addEventListener('click', () => {
+			// 팝업 윈도우 설정
+			const popupUrl = '/personnel/trans/save'; // 팝업 페이지 URL
+			const windowName = 'personnelTransPopup';
+			const windowFeatures = 'width=950,height=920,scrollbars=yes,resizable=yes';
 
-		window.open(popupUrl, windowName, windowFeatures);
-	});
+			window.open(popupUrl, windowName, windowFeatures);
+		});
+	}
 	
 	// '조회' 버튼 클릭 이벤트
-	    if (searchBtn) {
-	        searchBtn.addEventListener('click', () => {
-	            const transferType = orderTypeSelect.value;
-	            const startDate = orderDateStart.value;
-	            const endDate = orderDateEnd.value;
+	if (searchBtn) {
+	    searchBtn.addEventListener('click', () => {
+	        const transferType = orderTypeSelect.value;
+	        const startDate = orderDateStart.value;
+	        const endDate = orderDateEnd.value;
 	            
-	            // 검색 조건을 파라미터로 넘겨서 함수 호출
-	            loadPersonnelTransferList(transferType, startDate, endDate);
-	        });
-	    }
+	        // 검색 조건을 파라미터로 넘겨서 함수 호출
+	        loadPersonnelTransferList(transferType, startDate, endDate);
+	    });
+	}
 
 	// 3. 페이지 로드 시 초기 데이터 로딩 함수 호출
 	loadPersonnelTransferList();
