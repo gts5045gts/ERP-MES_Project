@@ -145,6 +145,9 @@
 	            type: "POST",
 	            contentType: "application/json",
 	            data: JSON.stringify({}), // 기존 fetch에서 body 부분
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
 	            success: function(data) {
 	                if (data && data.checkOutTime) {
 	                    const rawTime = data.checkOutTime;
