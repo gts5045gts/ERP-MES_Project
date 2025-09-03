@@ -205,7 +205,7 @@ public class PersonnelService {
 
  	    //이미지 파일과 사원 아이디를 이미지 서비스로 보내기
  	    if(empImg != null && !empImg.isEmpty()) {
- 	    	personnelImgService.updateImg(personnel, empImg);
+ 	    	personnelImgService.registImg(personnel, empImg);
  	    }
 
  	}

@@ -43,8 +43,8 @@ public class PersonnelImgService {
 		//파일 이름 중복방지 대책
 		String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
 		
-		//기본 경로 + 상세 경로 서브 디렉토리 결합하여 디렉토리 생성
-		Path uploadDir = Paths.get(uploadBaseLocation, itemImgLocation).toAbsolutePath().normalize();
+		//기본 경로 + 상세 경로 서브 디렉토리 결합하여 디렉토리 생성	파일명을 사원번호로 저장되겠금  ex) personnel/image/2025082601/ham.png
+		Path uploadDir = Paths.get(uploadBaseLocation, itemImgLocation, personnel.getEmpId()).toAbsolutePath().normalize();
 		
 		
 		//생성된 Path 객체에 해당하는 디렉토리가 실제 디렉토리로 존재하지 않을 경우 해당 디렉토리 생성
@@ -63,21 +63,26 @@ public class PersonnelImgService {
 		
 		
 
+		//이미지 존재하지 않을 경우 img_id 값이랑 emp_id 넣어줌
+		PersonnelImg perImg = personnelImgRepository.findById(personnel.getEmpId())
+ 	            .orElseGet(() -> {
+ 	            	List<PersonnelImg> imgId = personnelImgRepository.findAll();
+	 	   			int number = imgId.size() + 1;
+	 	   			String id = String.format("IMG%03d", number);
+ 	            
+	 	   			PersonnelImg newImg = new PersonnelImg();
+	 	   			newImg.setImgId(id);
+	 	   			newImg.setPersonnel(personnel);
+	 	   			return newImg;	
+ 	            });
 		
-		PersonnelImg perImg = new PersonnelImg();
-		List<PersonnelImg> imgId = personnelImgRepository.findAll();
-		int number = imgId.size() + 1;
-		String id = String.format("IMG%03d", number);
-		//img 컬럼명 일치화
-		perImg.setImgId(id);
-		perImg.setPersonnel(personnel);
 		perImg.setImgName(fileName);
 		perImg.setFileName(originalFileName);
-		perImg.setImgLocation(itemImgLocation);
-		
+		perImg.setImgLocation(itemImgLocation + "/" + personnel.getEmpId());
 		personnelImgRepository.save(perImg);
 	}
 //저장된 이미지 정보 가지고 오기
+	/**
 	public Optional<PersonnelImgDTO> findByImg(String empId) {
 		
 		Optional<PersonnelImg> profileImg  = personnelImgRepository.findById(empId); 
@@ -88,6 +93,9 @@ public class PersonnelImgService {
  	        return dto;
  	    });
 	}
+	
+	//이미지 (등록, 업데이트) 하나로 합침
+	
 	public void updateImg(Personnel personnel, MultipartFile empImg) throws IOException {
 		
 		log.info("Service 이미지 저장시작");
@@ -136,6 +144,7 @@ public class PersonnelImgService {
 		
 		
 	}
+	**/
 	public PersonnelImgDTO getMapperImg(String empId) {
 		
 		

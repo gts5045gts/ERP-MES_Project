@@ -194,13 +194,6 @@ public class PersonnelController {
 			
 		}
 		
-//		Optional<PersonnelImgDTO> perImg =  personnelImgService.findByImg(empId);
-//		
-//		if(!perImg.isEmpty()) {
-//			log.info("perImg 가지고온 이미지 정보 : "  + perImg.get());
-//			model.addAttribute("perImg" ,perImg.get());
-//		}
-		
 		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
 		
 		
