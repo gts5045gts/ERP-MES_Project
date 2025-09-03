@@ -12,10 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.entity.PersonnelImg;
+import com.bootstrap.study.personnel.mapper.PersonnelImgMapper;
 import com.bootstrap.study.personnel.repository.PersonnelImgRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ public class PersonnelImgService {
 	private String itemImgLocation;
 	
 	private final PersonnelImgRepository personnelImgRepository;
+	private final PersonnelImgMapper personnelImgMapper;
 
 	public void registImg(Personnel personnel, MultipartFile empImg) throws IOException {
 		
@@ -67,12 +68,12 @@ public class PersonnelImgService {
 		List<PersonnelImg> imgId = personnelImgRepository.findAll();
 		int number = imgId.size() + 1;
 		String id = String.format("IMG%03d", number);
-		
+		//img 컬럼명 일치화
 		perImg.setImgId(id);
 		perImg.setPersonnel(personnel);
-		perImg.setName(fileName);
+		perImg.setImgName(fileName);
 		perImg.setFileName(originalFileName);
-		perImg.setLocation(itemImgLocation);
+		perImg.setImgLocation(itemImgLocation);
 		
 		personnelImgRepository.save(perImg);
 	}
@@ -127,13 +128,20 @@ public class PersonnelImgService {
 			 	   			return newImg;
 		 	            });
 				
-		perImg.setName(fileName);
+		perImg.setImgName(fileName);
 		perImg.setFileName(originalFileName);
-		perImg.setLocation(itemImgLocation);
+		perImg.setImgLocation(itemImgLocation);
 			
 		personnelImgRepository.save(perImg);
 		
 		
+	}
+	public PersonnelImgDTO getMapperImg(String empId) {
+		
+		
+		
+		
+		return personnelImgMapper.findByempId(empId);
 	}
 	
 	

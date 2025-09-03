@@ -162,11 +162,6 @@ public class PersonnelController {
         
         log.info("사원등급 정보 : " + departments.toString());
         
-
-		//추가 된 부분 ----------------------------------------------------
-		
-        
-        //첨부파일 정보 불러오기(삭제) : js로 구현
         
         // 현재 로그인 한 로그인 정보 저장해서 사용
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -198,6 +193,26 @@ public class PersonnelController {
 			
 			
 		}
+		
+//		Optional<PersonnelImgDTO> perImg =  personnelImgService.findByImg(empId);
+//		
+//		if(!perImg.isEmpty()) {
+//			log.info("perImg 가지고온 이미지 정보 : "  + perImg.get());
+//			model.addAttribute("perImg" ,perImg.get());
+//		}
+		
+		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
+		
+		
+		
+		
+		if(perImg != null) {
+			log.info("이미지 매퍼로 가지고온 정보 : " + perImg.toString());
+			model.addAttribute("perImg", perImg);
+			model.addAttribute("location", uploadBaseLocation);
+		}
+		
+		
 		// 인사팀 계정이거나  관리자 계정일경우 와 다른 부서 또는 관리자 이하 계정일경우 분리해서 접속 
 		log.info("empLevelId='{}', empDeptId='{}'", empLevelId, empDeptId);
 		if("AUT001".equals(empLevelId) || "DEP001".equals(empDeptId) ) {
