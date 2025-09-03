@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Service
-@RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 생성
+@RequiredArgsConstructor 
 @Log4j2
 public class PersonnelTransferService {
 	private final PersonnelTransferRepository personnelTransferRepository;

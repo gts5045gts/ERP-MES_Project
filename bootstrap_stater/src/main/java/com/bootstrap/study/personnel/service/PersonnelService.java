@@ -48,10 +48,6 @@ public class PersonnelService {
 	private final PersonnelRepository personnelRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonDetailCodeRepository commonDetailCodeRepository;
-    private final PersonnelTransferRepository personnelTransferRepository;
-    private final ApprRepository apprRepository;
-    private final ApprLineRepository apprLineRepository;
-    private final PersonnelTransferService personnelTransferService;
     @Lazy
     private final ApprService apprService;
     
