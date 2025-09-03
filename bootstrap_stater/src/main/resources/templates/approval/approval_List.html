@@ -296,9 +296,9 @@ tr:has(.approval-checkbox:checked) { background: #fff3cd; }
 							    <thead class="thead-light">
 							        <tr>
 							            <th style="width: 25%;">기안자</th>
-							            <th style="width: 25%;" id="approver-header-1">1차 결재자</th>
-							            <th style="width: 25%;" id="approver-header-2">2차 결재자</th>
-							            <th style="width: 25%;" id="approver-header-3">3차 결재자</th>
+							            <th style="width: 25%;" id="approver-header-1">결재자</th>
+							            <th style="width: 25%;" id="approver-header-2">결재자</th>
+							            <th style="width: 25%;" id="approver-header-3">결재자</th>
 							        </tr>
 							    </thead>
 							    <tbody id="approval-line-tbody">
@@ -525,7 +525,7 @@ function displayApprovalLines(approvalLines) {
         const headerCell = document.getElementById(`approver-header-${i}`);
         if (headerCell) {
             if (i <= approverCount) {
-                headerCell.textContent = `${i}차 결재자`;
+                headerCell.textContent = `결재자`;
                 headerCell.style.display = 'table-cell';
             } else {
                 headerCell.style.display = 'none';
@@ -690,7 +690,7 @@ function displayApprovalComments(approvalLines) {
                     <div class="card-header py-2 bg-light">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>${index + 1}차 결재자: ${line.apprName}</strong>
+                                <strong>결재자: ${line.apprName}</strong>
                                 <span class="badge badge-${statusClass} ml-2">${status}</span>
                             </div>
                             <small class="text-muted">${dateStr}</small>
