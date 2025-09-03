@@ -382,10 +382,12 @@ function updateApprovalAlerts() {
         });
 }
 
-// 페이지 로드 시 실행
+// 아이콘 클릭하면 그때 업데이트
 document.addEventListener('DOMContentLoaded', function() {
-    updateApprovalAlerts();
-    // 30초마다 업데이트
-    setInterval(updateApprovalAlerts, 30000);
+    updateApprovalAlerts();  
+    
+    document.getElementById('alertsDropdown').addEventListener('click', function() {
+        updateApprovalAlerts();
+    });
 });
 </script>
