@@ -58,6 +58,9 @@ public class PersonnelTransfer {
     @Column(name = "new_position", nullable = false, length = 50)
     private String newPosition; // 신규 직급
     
+    @Column(name = "reason", length = 300)
+    private String reason; // 발령 사유
+    
     @Column(name = "transfer_at")
 	private LocalDate transDate;
 
