@@ -27,9 +27,9 @@ import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
-import com.bootstrap.study.personnel.repository.PersonnelRepository;
 import com.bootstrap.study.personnel.service.PersonnelImgService;
 import com.bootstrap.study.personnel.service.PersonnelService;
 import com.bootstrap.study.personnel.service.PersonnelTransferService;
@@ -46,7 +46,7 @@ public class PersonnelController {
     private final PersonnelService personnelService;
     private final PersonnelTransferService personnelTransferService;
 	private final CommonCodeService commonCodeService;
-    
+    private final PersonnelImgService personnelImgService;
     //이미지 경로 
     @Value("${file.uploadBaseLocation}")
 	private String uploadBaseLocation;
@@ -156,11 +156,6 @@ public class PersonnelController {
         
         log.info("사원등급 정보 : " + departments.toString());
         
-
-		//추가 된 부분 ----------------------------------------------------
-		
-        
-        //첨부파일 정보 불러오기(삭제) : js로 구현
         
         // 현재 로그인 한 로그인 정보 저장해서 사용
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -192,6 +187,19 @@ public class PersonnelController {
 			
 			
 		}
+		//이미지 정보 불러옴 : 아직 미구현
+		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
+		
+		
+		
+		
+		if(perImg != null) {
+			log.info("이미지 매퍼로 가지고온 정보 : " + perImg.toString());
+			model.addAttribute("perImg", perImg);
+			model.addAttribute("location", uploadBaseLocation);
+		}
+		
+		
 		// 인사팀 계정이거나  관리자 계정일경우 와 다른 부서 또는 관리자 이하 계정일경우 분리해서 접속 
 		log.info("empLevelId='{}', empDeptId='{}'", empLevelId, empDeptId);
 		if("AUT001".equals(empLevelId) || "DEP001".equals(empDeptId) ) {
