@@ -25,6 +25,7 @@ public class PersonnelTransferDTO {
     private String empId; // 발령 대상 사원 ID
     private String name; // 발령 대상 이름
     private String transferType; // 발령 구분
+    private String reason; // 발령 사유
     private LocalDate transDate; // 발령일 
     private Timestamp create;	// 발령일
     private Timestamp update;	// 수정일
