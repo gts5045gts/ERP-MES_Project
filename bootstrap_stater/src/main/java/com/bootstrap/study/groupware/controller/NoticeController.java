@@ -1,15 +1,15 @@
 package com.bootstrap.study.groupware.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,13 +91,8 @@ public class NoticeController {
 	public String ntcWrite(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 		log.info("NoticeController ntcWrite()");
 
-		boolean isAdmin = false;
-		String empDeptName = null;
-
-		if (personnelLoginDTO != null) {
-			isAdmin = "AUT001".equals(personnelLoginDTO.getEmpLevelId());
-			empDeptName = personnelLoginDTO.getEmpDeptName();
-		}
+		boolean isAdmin = personnelLoginDTO.getEmpLevelId().equals("AUT001");
+		String empDeptName = personnelLoginDTO.getEmpDeptName();
 
 		// 드롭다운에 표시할 공지 유형 목록 생성
 		List<String> noticeTypes = new ArrayList<>();
@@ -149,8 +144,8 @@ public class NoticeController {
 		notice.setNotTitle(noticeDTO.getNotTitle());
 		notice.setNotContent(noticeDTO.getNotContent());
 		notice.setNotType(noticeDTO.getNotType());
-		notice.setCreateAt(new Date());
-		notice.setUpdateAt(new Date());
+		notice.setCreateAt(LocalDate.now());
+		notice.setUpdateAt(LocalDate.now());
 
 		noticeRepository.save(notice);
 
@@ -160,18 +155,37 @@ public class NoticeController {
 	// 공지 수정
 	@PostMapping("/ntcUpdate")
 	@ResponseBody
-	public String updateNotice(@RequestBody Notice notice) {
-		log.info("NoticeController updateNotice() called with Notice: {}", notice);
-		// noticeService의 updateNotice 메서드를 호출하여 데이터베이스 업데이트를 요청합니다.
-		noticeService.updateNotice(notice);
-		return "success"; // 수정 후 공지사항 목록으로 리다이렉트
+	public Map<String, Object> updateNotice(@RequestBody Notice notice) {
+
+		Map<String, Object> response = new HashMap<>();
+		try {
+			noticeService.updateNotice(notice);
+			response.put("success", true);
+			response.put("message", "공지사항이 성공적으로 수정되었습니다.");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "수정 중 오류가 발생했습니다.");
+			log.error("Error updating notice", e);
+		}
+
+		return response;
 	}
 
-	// (GET) 공지사항 삭제 처리
-	@GetMapping("/ntcDelete")
-	public String deleteNotice(@RequestParam("id") long id, RedirectAttributes redirectAttributes) {
-		noticeService.deleteNoticeById(id); // 데이터베이스에서 삭제
-		redirectAttributes.addFlashAttribute("message", "공지사항이 삭제되었습니다.");
-		return "redirect:/notice"; // 목록 페이지로 리다이렉트
+	// 공지사항 삭제 처리
+	@DeleteMapping("/ntcDelete")
+	@ResponseBody
+	public Map<String, Object> deleteNotice(@RequestBody Map<String, Long> payload) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+			Long id = payload.get("notId");
+			noticeService.deleteNoticeById(id);
+			response.put("success", true);
+			response.put("message", "공지사항이 성공적으로 삭제되었습니다.");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "삭제 중 오류가 발생했습니다.");
+			log.error("Error deleting notice", e);
+		}
+		return response;
 	}
 }

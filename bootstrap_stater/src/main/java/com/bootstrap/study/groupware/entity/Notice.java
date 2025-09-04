@@ -1,10 +1,6 @@
 package com.bootstrap.study.groupware.entity;
 
-
-
-
-
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.bootstrap.study.personnel.entity.Personnel;
 
@@ -41,9 +37,9 @@ public class Notice {
     private String notType;
 
     @Column(name = "CREATE_AT")
-    private Date createAt;
+    private LocalDate createAt;
 
     @Column(name = "UPDATE_AT")
-    private Date updateAt;
+    private LocalDate updateAt;
 
 }

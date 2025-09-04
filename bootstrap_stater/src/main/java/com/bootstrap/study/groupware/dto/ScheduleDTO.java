@@ -1,7 +1,7 @@
 package com.bootstrap.study.groupware.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import com.bootstrap.study.groupware.entity.Schedule;
 
@@ -20,10 +20,10 @@ public class ScheduleDTO {
     private String schType;
     private LocalDateTime starttimeAt;
     private LocalDateTime endtimeAt;
-    private Date createAt;
-    private Date updateAt;
+    private LocalDate createAt;
+    private LocalDate updateAt;
 
-    // ⭐ Entity -> DTO 변환 생성자
+    // Entity -> DTO 변환 생성자
     public ScheduleDTO(Schedule schedule) {
         this.schId = schedule.getSchId();
         this.empId = schedule.getEmployee().getEmpId();
