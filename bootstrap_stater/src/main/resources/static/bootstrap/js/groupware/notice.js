@@ -15,7 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			+ "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
 		paging: true,
 		searching: true,
-		info: true
+		info: true,
+		"language": {
+			"search": "검색:",
+			"lengthMenu": "_MENU_개씩 보기",
+			"info": "총 _TOTAL_개 중 _START_에서 _END_까지 표시",
+			"paginate": {
+				"next": "다음",
+				"previous": "이전"
+			}
+		}
 	});
 	$('#dataTable2').DataTable({
 		dom: "<'row mb-3'<'col-sm-6'l><'col-sm-6'f>>"
@@ -23,7 +32,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			+ "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
 		paging: true,
 		searching: true,
-		info: true
+		info: true,
+		"language": {
+			"search": "검색:",
+			"lengthMenu": "_MENU_개씩 보기",
+			"info": "총 _TOTAL_개 중 _START_에서 _END_까지 표시",
+			"paginate": {
+				"next": "다음",
+				"previous": "이전"
+			}
+		}
 	});
 
 	// 숨겨진 input 필드에서 사용자 ID를 가져옵니다.

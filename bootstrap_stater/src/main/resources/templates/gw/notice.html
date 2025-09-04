@@ -10,7 +10,8 @@
 <body>
 	<th:block layout:fragment="content">
 		<th:block sec:authorize="isAuthenticated()">
-			<input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+			<input type="hidden" id="currentEmpId"
+				th:value="${#authentication.principal.empId}" />
 		</th:block>
 		<div class="container-fluid">
 			<div class="row">
@@ -28,7 +29,7 @@
 						<div class="collapse show" id="collapse1">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table id="dataTable1" class="table table-bordered table-striped table-hover">
+									<table class="table table-hover text-center table-compact" id="dataTable1" width="100%" cellspacing="0">
 										<thead>
 											<tr>
 												<th>순 번</th>
