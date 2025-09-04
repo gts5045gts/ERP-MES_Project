@@ -7,8 +7,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,18 +33,9 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat")
-	public String chatPage(Model model) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		// 로그인한 사용자의 정보를 모델에 추가하여 HTML에서 사용하도록 합니다.
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			PersonnelLoginDTO userDetails = (PersonnelLoginDTO) authentication.getPrincipal();
-			model.addAttribute("currentEmpId", userDetails.getEmpId());
-			model.addAttribute("currentEmpName", userDetails.getName());
-		} else {
-			// 로그인하지 않은 경우 처리 (예: 로그인 페이지로 리다이렉트)
-			return "redirect:/login";
-		}
+	public String chatPage(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
+			model.addAttribute("currentEmpId", personnelLoginDTO.getEmpId());
+			model.addAttribute("currentEmpName", personnelLoginDTO.getName());
 
 		return "gw/chat";
 	}
@@ -67,15 +57,10 @@ public class ChatController {
 
 	// 1:1 메신저
 	@GetMapping("/privateChat")
-	public String privateChatPage(Model model) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			PersonnelLoginDTO userDetails = (PersonnelLoginDTO) authentication.getPrincipal();
-			model.addAttribute("currentEmpId", userDetails.getEmpId());
-			model.addAttribute("currentEmpName", userDetails.getName());
-		} else {
-			return "redirect:/login";
-		}
+	public String privateChatPage(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
+			model.addAttribute("currentEmpId", personnelLoginDTO.getEmpId());
+			model.addAttribute("currentEmpName", personnelLoginDTO.getName());
+			
 		return "gw/privateChat";
 	}
 

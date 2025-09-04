@@ -102,6 +102,10 @@
 			<AppenderRef ref="rollingFile2" /> <!-- Root 로거 메세지들을 외부 파일에 출력 -->
 			<AppenderRef ref="rollingErrorFile" />
 		</Logger>
+		
+		<Logger name="org.springframework.security" level="DEBUG" additivity="fasle">
+			<AppenderRef ref="console" />
+		</Logger>
 	</Loggers>
 	
 </Configuration>
