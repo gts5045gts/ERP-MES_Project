@@ -33,7 +33,10 @@ import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.log4j.Log4j2;
 
+
+@Log4j2
 @Controller
 @RequestMapping("/attendance")
 public class CommuteController {
@@ -59,7 +62,7 @@ public class CommuteController {
 	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
 	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-	        System.out.println("로그인 사용자 ID: " + empId);
+	        log.info("로그인 사용자 ID: " + empId);
 	    } else {
 	        // 로그인 안 된 상태라면 로그인 페이지로
 	        return "redirect:/login";
@@ -78,15 +81,15 @@ public class CommuteController {
 	    paramMap.put("startDate", startDate);
 	    paramMap.put("endDate", endDate);
 	    
-//		System.out.println("startDate : " + startDate);		
-//		System.out.println("endDate : " + endDate);		
+//		log.info("startDate : " + startDate);		
+//		log.info("endDate : " + endDate);		
 		
 		List<CommuteDTO> commuteDTOList = commuteService.getDeptCommuteList(paramMap);
 		model.addAttribute("commuteDTOList", commuteDTOList);
 		model.addAttribute("startDate", startDate);
 		model.addAttribute("endDate", endDate);
 
-		System.out.println("commuteDTOList : " + commuteDTOList);		
+		log.info("commuteDTOList : " + commuteDTOList);		
 
 		return "/commute/commute_list";
 	}
@@ -106,12 +109,12 @@ public class CommuteController {
 
 	    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 	    String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-//	    System.out.println("로그인 사용자 ID: " + empId);
+//	    log.info("로그인 사용자 ID: " + empId);
 
 	    // 출근 처리
 	    try {
 	        CommuteDTO commuteCheckIn = commuteService.checkIn(empId);
-//	        System.out.println("commuteCheckIn : " + commuteCheckIn);
+//	        log.info("commuteCheckIn : " + commuteCheckIn);
 	        return ResponseEntity.ok(commuteCheckIn);
 	    } catch (IllegalStateException e) {
 	        // 이미 출근 기록 있을 경우 409 Conflict 반환
@@ -134,12 +137,12 @@ public class CommuteController {
 		
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		String empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-//		System.out.println("로그인 사용자 ID: " + empId);
+//		log.info("로그인 사용자 ID: " + empId);
 		
 		// 퇴근 처리
 		try {
 			CommuteDTO commuteCheckOut = commuteService.checkOut(empId);
-//			System.out.println("commuteCheckOut : " + commuteCheckOut);
+//			log.info("commuteCheckOut : " + commuteCheckOut);
 			return ResponseEntity.ok(commuteCheckOut);
 		} catch (IllegalStateException e) {
 			// 이미 출근 기록 있을 경우 409 Conflict 반환
@@ -151,7 +154,7 @@ public class CommuteController {
 	@GetMapping("/adminCommute")
 	public String getAttendanceList(@RequestParam(name = "startDate", required = false) String startDate,
 									@RequestParam(name = "endDate", required = false) String endDate,
-									@RequestParam(name = "deptId", required = false) String deptId,
+									@RequestParam(name = "deptId", required = false, defaultValue = "ALL") String deptId,
 									Model model) {
 		
 		// 로그인한 사용자 객체 꺼내기
@@ -162,7 +165,7 @@ public class CommuteController {
 	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
 	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-	        System.out.println("로그인 사용자 ID: " + empId);
+	        log.info("로그인 사용자 ID: " + empId);
 	    } else {
 	        // 로그인 안 된 상태라면 로그인 페이지로
 //	        return "redirect:/login";
@@ -172,7 +175,7 @@ public class CommuteController {
 	    
 		// 공통코드로 된 해당 부서인원 값 조회
 		List<CommonDetailCodeDTO> commonDept = commuteService.getCommonDept();
-		System.out.println("commonDept : " + commonDept);
+		log.info("commonDept : " + commonDept);
 		CommonDetailCodeDTO allDept = new CommonDetailCodeDTO();
 		allDept.setComDtId("ALL");
 		allDept.setComDtNm("전체부서");
@@ -188,15 +191,17 @@ public class CommuteController {
 	    
 	    Map<String, Object> paramMap = new HashMap<>();
 	    paramMap.put("empId", empId);
-	    paramMap.put("startDate", Date.valueOf(startDate));
-	    paramMap.put("endDate", Date.valueOf(endDate));
+	    paramMap.put("startDate",startDate);
+	    paramMap.put("endDate", endDate);
+//	    paramMap.put("startDate", LocalDate.parse(startDate));
+//	    paramMap.put("endDate", LocalDate.parse(endDate));
 	    paramMap.put("deptId", deptId);
 		
 		model.addAttribute("startDate", startDate);
 		model.addAttribute("endDate", endDate);
-//		System.out.println("startDate : " + startDate);
-//		System.out.println("endDate : " + endDate);
-//		System.out.println("deptId : " + deptId);
+//		log.info("startDate : " + startDate);
+//		log.info("endDate : " + endDate);
+//		log.info("deptId : " + deptId);
 		
 		// 공통코드로된 근무상태 조회
 		List<CommonDetailCodeDTO> commonStatus = commuteService.getCommonStatus();
@@ -204,13 +209,13 @@ public class CommuteController {
 		
 		// 부서 조회
 	    List<AdminCommuteDTO> adminCommuteList;
-	    if(deptId == null || deptId.isEmpty() || "ALL".equals(deptId)) {
+	    if(deptId.equals("ALL")) {
 	    	adminCommuteList = commuteService.getAllDeptCommuteList(paramMap); // 전체 부서 조회
 	    } else {
 	    	adminCommuteList = commuteService.getSpecificDeptCommuteList(paramMap); // 특정 부서 조회
 	    }
 	    model.addAttribute("adminCommuteList", adminCommuteList);
-	    System.out.println("adminCommuteList :" + adminCommuteList);
+	    log.info("adminCommuteList :" + adminCommuteList);
 		
 	    
 		return "/commute/admin_commute_list";
@@ -255,7 +260,7 @@ public class CommuteController {
 		
 		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 		String adminEmpId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-//		System.out.println("로그인 관리자 ID: " + adminEmpId);
+//		log.info("로그인 관리자 ID: " + adminEmpId);
 		
 		
 		// 삭제처리
@@ -287,7 +292,7 @@ public class CommuteController {
 	    if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
 	        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 	        empId = userDetails.getUsername(); // usernameParameter("empId") 값 그대로 들어옴
-	        System.out.println("로그인 사용자 ID: " + empId);
+	        log.info("로그인 사용자 ID: " + empId);
 	    } else {
 	        // 로그인 안 된 상태라면 로그인 페이지로
 	        return "redirect:/login";
@@ -297,7 +302,7 @@ public class CommuteController {
 	    // 삭제된 출근 로그데이터 가져오기
 	    List<CommuteDeleteLogDTO> CommuteDeleteLogDTOList = commuteService.getLogData();
 	    model.addAttribute("CommuteDeleteLogDTOList", CommuteDeleteLogDTOList);
-	    System.out.println("CommuteDeleteLogDTOList : " + CommuteDeleteLogDTOList);
+	    log.info("CommuteDeleteLogDTOList : " + CommuteDeleteLogDTOList);
 	    
 		
 		return "/commute/commute_data_log_list";

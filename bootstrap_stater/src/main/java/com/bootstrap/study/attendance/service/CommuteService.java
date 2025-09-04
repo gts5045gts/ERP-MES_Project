@@ -19,6 +19,9 @@ import com.bootstrap.study.attendance.mapper.CommuteScheduleMapper;
 import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class CommuteService {
 
@@ -33,7 +36,7 @@ public class CommuteService {
 	// 출근현황 리스트
 //	public List<CommuteDTO> getDeptCommuteList(String empId, LocalDate queryDate) {
 	public List<CommuteDTO> getDeptCommuteList(Map<String, Object> paramMap) {
-		System.out.println("paramMap : " + paramMap);
+		log.info("paramMap : " + paramMap);
 		return commuteMapper.getDeptCommuteList(paramMap);
 	}
 
@@ -43,14 +46,14 @@ public class CommuteService {
 		
 		// 오늘 출근 기록이 있는지 확인
 	    int count = commuteMapper.getTodayCheckInCount(empId);
-//	    System.out.println("count : " + count);
+//	    log.info("count : " + count);
 	    if (count > 0) {
 	        throw new IllegalStateException("이미 오늘 출근 기록이 존재합니다.");
 	    }
 		
 		// 근무 기준시간 조회
 		CommuteScheduleDTO schedule = commuteScheduleMapper.getCurrentSchedule();
-//		System.out.println("schedule : " + schedule);
+//		log.info("schedule : " + schedule);
 		
 		// 지각 여부 판별
 		LocalTime startTime = schedule.getWorkStartTime().toLocalTime(); // db에서 가져온 출근시작시간
@@ -69,7 +72,7 @@ public class CommuteService {
 		commute.setEmpId(empId);
 		commute.setCheckInTime(now);
 		commute.setWorkStatus(workStatus);
-//		System.out.println("commute : " + commute);
+//		log.info("commute : " + commute);
 
 		commuteMapper.insertCommuteCheckIn(commute);
 		
@@ -81,7 +84,7 @@ public class CommuteService {
 		
 		// 오늘 퇴근 기록이 있는지 확인
 		int count = commuteMapper.getTodayCheckOutCount(empId);
-//		System.out.println("count : " + count);
+//		log.info("count : " + count);
 		if (count > 0) {
 			throw new IllegalStateException("이미 오늘 퇴근 기록이 존재합니다.");
 		}
@@ -102,7 +105,7 @@ public class CommuteService {
 	// 부서 공통코드
 	public List<CommonDetailCodeDTO> getCommonDept() {
 		List<CommonDetailCodeDTO> commonDept = commuteMapper.getCommonDept("DEP");
-//		System.out.println("commonDept : " + commonDept);
+//		log.info("commonDept : " + commonDept);
 		return commonDept;
 	}
 
@@ -118,7 +121,7 @@ public class CommuteService {
 	// 근무상태 공통코드
 	public List<CommonDetailCodeDTO> getCommonStatus() {
 		List<CommonDetailCodeDTO> commonStatus = commuteMapper.getCommonStatus("WSTA");
-//		System.out.println("commonStatus : " + commonStatus);
+//		log.info("commonStatus : " + commonStatus);
 		return commonStatus;
 	}
 
@@ -138,18 +141,18 @@ public class CommuteService {
 		
 		// 삭제할 출근기록 조회
 		CommuteDTO checkWork =  commuteMapper.checkTodayWork(deleteLogData);
-		System.out.println("checkWork : " + checkWork);
+		log.info("checkWork : " + checkWork);
 		if (checkWork == null) {
 		    throw new IllegalArgumentException("삭제할 출근 기록이 존재하지 않습니다.");
 		}
 		
 		// 출근기록 삭제
 		int deleteWork = commuteMapper.deleteWorkData(deleteLogData);
-		System.out.println("deleteWork : " + deleteWork);
+		log.info("deleteWork : " + deleteWork);
 		
 		// 출근기록 삭제한 데이터 로그저장
 		int insertLogData = commuteMapper.insertLogData(deleteLogData);
-		System.out.println("insertLogData : " + insertLogData);
+		log.info("insertLogData : " + insertLogData);
 		
 		return "삭제 완료";
 	}
