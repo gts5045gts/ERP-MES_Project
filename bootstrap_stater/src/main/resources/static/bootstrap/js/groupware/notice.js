@@ -19,7 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		"language": {
 			"search": "검색:",
 			"lengthMenu": "_MENU_개씩 보기",
+			"infoEmpty": "데이터가 없습니다.",
 			"info": "총 _TOTAL_개 중 _START_에서 _END_까지 표시",
+			"infoFiltered": "(_MAX_개 전체 항목에서 필터링됨)",
+			"loadingRecords": "로딩 중...",
+			"processing": "처리 중...",
+			"zeroRecords": "일치하는 데이터가 없습니다.",
 			"paginate": {
 				"next": "다음",
 				"previous": "이전"
@@ -36,7 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		"language": {
 			"search": "검색:",
 			"lengthMenu": "_MENU_개씩 보기",
+			"infoEmpty": "데이터가 없습니다.",
 			"info": "총 _TOTAL_개 중 _START_에서 _END_까지 표시",
+			"infoFiltered": "(_MAX_개 전체 항목에서 필터링됨)",
+			"loadingRecords": "로딩 중...",
+			"processing": "처리 중...",
+			"zeroRecords": "일치하는 데이터가 없습니다.",
 			"paginate": {
 				"next": "다음",
 				"previous": "이전"
