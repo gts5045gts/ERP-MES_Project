@@ -9,7 +9,7 @@ apply plugin: 'war'
 group = 'com.bootstrap.study'
 version = '0.0.1-SNAPSHOT'
 
-apply plugin: 'war'		
+apply plugin: 'war'
 
 java {
 	toolchain {

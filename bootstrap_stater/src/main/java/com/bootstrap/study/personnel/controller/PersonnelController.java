@@ -1,19 +1,22 @@
 package com.bootstrap.study.personnel.controller;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,9 +29,10 @@ import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
 import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
-import com.bootstrap.study.personnel.repository.PersonnelRepository;
+import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
 import com.bootstrap.study.personnel.service.PersonnelImgService;
 import com.bootstrap.study.personnel.service.PersonnelService;
+import com.bootstrap.study.personnel.service.PersonnelTransferService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -38,12 +42,11 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class PersonnelController {
+	
     private final PersonnelService personnelService;
+    private final PersonnelTransferService personnelTransferService;
+	private final CommonCodeService commonCodeService;
     private final PersonnelImgService personnelImgService;
-    private final PersonnelRepository personnelRepository;
-    @Autowired
-	private CommonCodeService commonCodeService;
-    
     //이미지 경로 
     @Value("${file.uploadBaseLocation}")
 	private String uploadBaseLocation;
@@ -51,13 +54,9 @@ public class PersonnelController {
 	@Value("${file.itemImgLocation}")
 	private String itemImgLocation;
     
-    
-    
 	@GetMapping("/current")
 	public String current(Model model) {
 		List<PersonnelDTO> personnels = personnelService.getAllPersonnels();
-		
-		
 		
 		//인사현황에서 인사팀 또는 최상위 계정이 아닐경우 개인의 정보만 보여줄 수 있도록 고침
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -110,9 +109,7 @@ public class PersonnelController {
 			model.addAttribute("personnels", loginEmp); 
 			
 		}
-			
 
-		
 		return "/hrn/personnelCurrent";
 	}
 	
@@ -124,15 +121,12 @@ public class PersonnelController {
         return ResponseEntity.ok(personnels);
     }
 	
-	
-	
+
 	@GetMapping("/detailInfo")
     public String detailInfo(@RequestParam("empId") String empId, Model model) {
         // Service를 통해 해당 사원의 상세 정보를 가져와 모델에 추가
         Optional<PersonnelDTO> personnelOpt = personnelService.getPersonnelDetails(empId);
-        
-        
-        
+
         if (personnelOpt.isPresent()) {
             model.addAttribute("personnel", personnelOpt.get());
         } else {
@@ -162,11 +156,6 @@ public class PersonnelController {
         
         log.info("사원등급 정보 : " + departments.toString());
         
-
-		//추가 된 부분 ----------------------------------------------------
-		
-        
-        //첨부파일 정보 불러오기(삭제) : js로 구현
         
         // 현재 로그인 한 로그인 정보 저장해서 사용
     	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -198,6 +187,19 @@ public class PersonnelController {
 			
 			
 		}
+		//이미지 정보 불러옴 : 아직 미구현
+		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
+		
+		
+		
+		
+		if(perImg != null) {
+			log.info("이미지 매퍼로 가지고온 정보 : " + perImg.toString());
+			model.addAttribute("perImg", perImg);
+			model.addAttribute("location", uploadBaseLocation);
+		}
+		
+		
 		// 인사팀 계정이거나  관리자 계정일경우 와 다른 부서 또는 관리자 이하 계정일경우 분리해서 접속 
 		log.info("empLevelId='{}', empDeptId='{}'", empLevelId, empDeptId);
 		if("AUT001".equals(empLevelId) || "DEP001".equals(empDeptId) ) {
@@ -211,15 +213,11 @@ public class PersonnelController {
 			
 			return "/hrn/personnelDetailInfo2";
 		}
+
 		
-		
-        	
-        	
 //        return "/hrn/personnelDetailInfo";
-        	
-        	
-        
        
+		
     }
 
     // 인사현황 -> 상세조회 버튼 -> 정보 수정시 수행 
@@ -318,10 +316,30 @@ public class PersonnelController {
 	
 	// 인사발령
 	@GetMapping("/trans")
-	public String trans(Model model) {
+	public String trans(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
 		log.info("PersonnelController trans()");
 		
+		// 로그인한 사용자의 부서 정보 확인
+		String userDeptId = userDetails.getEmpDeptId(); 
+
+        // 부서 코드가 'DEP001'(인사팀)일 경우, 버튼 표시 여부를 true로 설정
+        boolean isHrTeam = "DEP001".equals(userDeptId);
+        model.addAttribute("isHRTeam", isHrTeam);
+        
+        // 인사발령 테이블 조회
+        List<PersonnelTransferDTO> personnelTransfer = personnelTransferService.getTransferPersonnels();
+        
+		model.addAttribute("personnelTransfer", personnelTransfer);
+		
 		return "/hrn/personnelTrans";
+	}
+	
+	// 인사발령 정보 출력
+	@GetMapping("/api/transfers")
+	@ResponseBody
+	public List<PersonnelTransferDTO> getTransferList() {
+	    log.info("GET /api/transfers 호출");
+	    return personnelTransferService.getTransferPersonnels();
 	}
 	
 	// 발령 등록 폼
@@ -339,12 +357,29 @@ public class PersonnelController {
         // 전체 사원 리스트
         List<PersonnelDTO> allEmployees = personnelService.getAllPersonnels();
         model.addAttribute("allEmployees", allEmployees);
+        
+        // 인사팀 and 중간관리자 or 상위관리자 사원 목록
+        List<PersonnelDTO> approvers = personnelService.getEmployeesByDeptIdLevel("DEP001", "AUT001", "AUT002");
+        model.addAttribute("approvers", approvers);
 
-        return "/hrn/personnelTransSave"; // 
+        return "/hrn/personnelTransSave";  
+    }
+	
+	// 전자결재로 넘김
+	@PostMapping("/trans/submit")
+    public ResponseEntity<String> transPersonnel(@RequestBody Map<String, Object> payload, Principal principal) {
+        log.info("인사 발령 요청 수신: {}", payload);
+        String loginEmpId = principal.getName(); // 로그인한 사용자 ID
+        try {
+            // Service 계층으로 발령 데이터 전달
+        	personnelService.submitTransPersonnel(payload, loginEmpId);
+            return ResponseEntity.ok("인사 발령 신청이 성공적으로 처리되었습니다.");
+        } catch (Exception e) {
+            log.error("인사 발령 처리 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("인사 발령 처리 실패: " + e.getMessage());
+        }
     }
 
-	
-	// 현재에 맞게 다시 수정 
 	@GetMapping("/orgChart")
     public String showOrgChart(Model model) {
         // 모든 부서 목록을 가져와 모델에 추가
@@ -367,6 +402,7 @@ public class PersonnelController {
 
         return "/hrn/orgChart"; 
     }
+	
     // AJAX 요청을 처리하여 특정 부서의 직원 정보를 JSON 형태로 반환
     @GetMapping("/employees")
     public ResponseEntity<List<PersonnelDTO>> getPersonnels(@RequestParam("deptId") String comDtId) {
@@ -381,7 +417,5 @@ public class PersonnelController {
     public List<CommonDetailCodeDTO> getDepartments() {
         return personnelService.getAllDepartments();
     }
-    
-    
 
 }

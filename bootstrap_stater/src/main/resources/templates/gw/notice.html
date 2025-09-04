@@ -7,8 +7,11 @@
 <meta charset="UTF-8">
 <title>그룹웨어 - 공지사항</title>
 </head>
-<body th:data-current-user-id="${currentUsername}">
+<body>
 	<th:block layout:fragment="content">
+		<th:block sec:authorize="isAuthenticated()">
+        	<input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+        </th:block>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-6 mb-4">

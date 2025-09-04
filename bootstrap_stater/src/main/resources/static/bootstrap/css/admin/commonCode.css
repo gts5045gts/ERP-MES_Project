@@ -41,6 +41,12 @@
   	transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+#codeSearch::placeholder, #codeDetailSearch::placeholder {
+    font-size: 12px;   /* 글자 크기 */
+    color: #c7c7c7;       /* 글자 색상 */
+    font-style: italic; /* 필요 시 기울임 */
+}
+
 input[type="search"] {
     font-family: 'Arial', 'Noto Sans KR', sans-serif; /* 원하는 글꼴 */
     font-size: 14px; /* 글자 크기 */

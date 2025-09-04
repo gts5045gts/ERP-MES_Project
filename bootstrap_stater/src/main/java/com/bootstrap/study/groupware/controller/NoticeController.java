@@ -34,14 +34,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class NoticeController {
 
-	@Autowired
-	private NoticeRepository noticeRepository;
-	@Autowired
-	private NoticeService noticeService;
-	@Autowired
-	private PersonnelRepository personnelRepository;
-	@Autowired
-	private CommonCodeService commonCodeService;
+	private final NoticeRepository noticeRepository;
+	private final NoticeService noticeService;
+	private final PersonnelRepository personnelRepository;
+	private final CommonCodeService commonCodeService;
+
+	public NoticeController(NoticeRepository noticeRepository, NoticeService noticeService,
+			PersonnelRepository personnelRepository, CommonCodeService commonCodeService) {
+		super();
+		this.noticeRepository = noticeRepository;
+		this.noticeService = noticeService;
+		this.personnelRepository = personnelRepository;
+		this.commonCodeService = commonCodeService;
+	}
 
 	// 공지사항 목록 페이지를 보여주는 메서드
 	@GetMapping("")
@@ -188,7 +193,6 @@ public class NoticeController {
 		log.info("NoticeController updateNotice() called with Notice: {}", notice);
 		// noticeService의 updateNotice 메서드를 호출하여 데이터베이스 업데이트를 요청합니다.
 		noticeService.updateNotice(notice);
-		System.out.println("ntcUpdate 완료");
 		return "success"; // 수정 후 공지사항 목록으로 리다이렉트
 	}
 

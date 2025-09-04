@@ -15,12 +15,11 @@
 <th:block layout:fragment="content">
     <!-- Begin Page Content -->
     <div class="container-fluid">
-        <!-- DataTales Example (기존 조직도 컨테이너를 인사발령 컨테이너로 대체) -->
         <div class="container-fluid">
             <section class="section">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
-                        <h4 class="m-0 font-weight-bold">인사발령</h4> <!-- 제목 변경 -->
+                        <h4 class="m-0 font-weight-bold">인사발령</h4>
                     </div>
 
                     <!-- Content Area -->
@@ -29,7 +28,7 @@
                         <div class="header-bar">
                             <div class="search-container">
                                 <select id="orderTypeSelect" class="form-select" aria-label="발령구분">
-                                    <option selected>발령구분</option>
+                                    <option value="ALL">발령구분</option>
                                     <option value="PROMOTION">승진</option>
                                     <option value="TRANSFER">전보</option>
                                     <option value="ALL">전체</option>
@@ -40,7 +39,7 @@
                             </div>
                             <div class="search-buttons">
                                 <button id="searchBtn" class="btn btn-light">조회</button>
-                                <button id="issueBtn" class="btn btn-light">발령</button> <!-- 등록 버튼 이름 변경 -->
+                                <button th:if="${isHRTeam}" id="issueBtn" class="btn btn-light">발령</button>
                             </div>
                         </div>
 
@@ -54,21 +53,19 @@
                                         <th scope="col">성명</th>
                                         <th scope="col">발령구분</th>
                                         <th scope="col">발령일자</th>
-                                        <th scope="col">직위/직급</th>
                                         <th scope="col">부서</th>
-                                        <th scope="col">작성일자</th>
+                                        <th scope="col">직급</th>
                                     </tr>
                                 </thead>
-                                <tbody id="personnelOrdersTableBody">
-                                    <!-- 데이터는 JavaScript로 동적으로 채워지며, 단순 텍스트로 표기 -->
+                                <tbody id="transferTableBody">
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">데이터가 없습니다.</td>
+                                        <td colspan="7" class="text-center py-4">데이터가 없습니다.</td>
                                     </tr>
                                 </tbody>
                             </table>
 
                             <div class="d-flex justify-content-between align-items-center mt-4">
-                                <div id="paginationInfo">Showing 0 to 0 of 0 entries</div>
+                                <div id="paginationInfo"></div>
                                 <nav aria-label="Page navigation">
                                     <ul class="pagination pagination-sm mb-0">
                                         <li class="page-item"><a class="page-link" href="#" id="prevPageBtn">이전</a></li>
@@ -77,143 +74,18 @@
                                 </nav>
                             </div>
                         </div>
-                        <!-- /인사발령 페이지 핵심 내용 -->
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
-<!--     2. 등록 모달 창 (사원 검색 및 발령 정보 입력) -->
-<!--     <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true"> -->
-<!--         <div class="modal-dialog modal-lg"> -->
-<!--             <div class="modal-content"> -->
-<!--                 <div class="modal-header"> -->
-<!--                     <h5 class="modal-title" id="registerModalLabel">인사발령</h5> 모달 제목도 '발령'으로 변경 가능 -->
-<!--                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
-<!--                 </div> -->
-<!--                 <div class="modal-body"> -->
-<!--                     2번 이미지: 사원 검색 영역 (미니 조직도처럼) -->
-<!--                     <div id="modalEmployeeSearchArea" class="card shadow mb-4"> -->
-<!--                         <div class="card-header py-3"> -->
-<!--                             <h6 class="m-0 font-weight-bold">사원 검색</h6> -->
-<!--                         </div> -->
-<!--                         <div class="card-body"> -->
-<!--                             <div class="d-flex mb-3 gap-2"> -->
-<!--                                 <select id="modalDeptSelect" class="form-select" aria-label="부서"> -->
-<!--                                     <option value="">부서 선택</option> -->
-<!--                                  	<option th:each="dept : ${departments}"  -->
-<!--                                  			th:value="${dept.comDtId}" -->
-<!-- 											th:text="${dept.comDtlNm}"> -->
-<!-- 									</option> -->
-<!--                                 </select> -->
-<!--                                 <select id="modalPositionSelect" class="form-select" aria-label="직급"> -->
-<!--                                     <option value="">직급 선택</option> -->
-<!--                                     <option th:each="pos : ${position}" -->
-<!--                     						th:value="${pos.comDtId}" -->
-<!--                     						th:text="${pos.comDtlNm}"> -->
-<!--                     				</option> -->
-<!--                                 </select> -->
-<!--                                 <input type="text" id="modalEmployeeSearchInput" class="form-control flex-grow-1" placeholder="이름 또는 사원번호"> -->
-<!--                                 <button id="modalSearchEmployeeBtn" class="btn btn-primary">검색</button> -->
-<!--                             </div> -->
-<!--                             <div class="table-responsive"> -->
-<!--                                 <table class="table table-hover"> -->
-<!--                                     <thead> -->
-<!--                                         <tr> -->
-<!--                                             <th>사원번호</th> -->
-<!--                                             <th>이름</th> -->
-<!--                                             <th>부서</th> -->
-<!--                                             <th>직급</th> -->
-<!--                                             <th>전화번호</th> -->
-<!--                                         </tr> -->
-<!--                                     </thead> -->
-<!--                                     <tbody id="modalEmployeeTableBody"> -->
-<!--                                         <tr><td colspan="5" class="text-center">사원 검색 결과가 없습니다.</td></tr> -->
-<!--                                     </tbody> -->
-<!--                                 </table> -->
-<!--                             </div> -->
-<!--                         </div> -->
-<!--                     </div> -->
-
-<!--                     3번 & 4번 이미지: 선택된 사원 정보 및 발령 정보 입력 -->
-<!--                     <div class="modal-content-area"> -->
-<!--                         3번 이미지: 선택된 사원 정보 -->
-<!--                         <div class="employee-info-section"> -->
-<!--                             <h6>선택된 사원 정보</h6> -->
-<!--                             <div class="mb-2"> -->
-<!--                                 <strong>이름:</strong> <span id="selectedEmployeeName"></span> -->
-<!--                             </div> -->
-<!--                             <div class="mb-2"> -->
-<!--                                 <strong>사원번호:</strong> <span id="selectedEmployeeId"></span> -->
-<!--                             </div> -->
-<!--                             <div class="mb-2"> -->
-<!--                                 <strong>현재 부서:</strong> <span id="selectedEmployeeCurrentDept"></span> -->
-<!--                             </div> -->
-<!--                             <div class="mb-2"> -->
-<!--                                 <strong>현재 직급:</strong> <span id="selectedEmployeeCurrentPosition"></span> -->
-<!--                             </div> -->
-<!--                             hidden input으로 실제 employee id 저장 -->
-<!--                             <input type="hidden" id="hiddenSelectedEmployeeDbId"> -->
-<!--                         </div> -->
-
-<!--                         4번 이미지: 발령 정보 입력 폼 -->
-<!--                         <div class="new-order-form-section"> -->
-<!--                             <h6>발령 정보 입력</h6> -->
-<!--                             <div class="form-group"> -->
-<!--                                 <label for="newOrderType" class="form-label">발령구분:</label> -->
-<!--                                 <select id="newOrderType" class="form-select"> -->
-<!--                                     <option value="">발령구분 선택</option> -->
-<!--                                     <option value="승진">승진</option> -->
-<!--                                     <option value="전보">전보</option> -->
-<!--                                 </select> -->
-<!--                             </div> -->
-<!--                             <div class="form-group"> -->
-<!--                                 <label for="newOrderDate" class="form-label">발령일자:</label> -->
-<!--                                 <input type="date" id="newOrderDate" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"> -->
-<!--                             </div> -->
-<!--                             <div class="form-group"> -->
-<!--                                 <label for="newAssignedDepartment" class="form-label">발령부서:</label> -->
-<!--                                 <select id="newAssignedDepartment" class="form-select"> -->
-<!--                                     <option value="">부서를 선택하세요</option> -->
-<!--                                     <option th:each="dept : ${departments}"  -->
-<!--                                  			th:value="${dept.comDtId}" -->
-<!-- 											th:text="${dept.comDtlNm}"> -->
-<!-- 									</option> -->
-
-<!--                                 </select> -->
-<!--                             </div> -->
-<!--                             <div class="form-group"> -->
-<!--                                 <label for="newAssignedPosition" class="form-label">발령직급:</label> -->
-<!--                                 <select id="newAssignedPosition" class="form-select"> -->
-<!--                                     <option value="">직급을 선택하세요</option> -->
-<!--                                     <option th:each="pos : ${position}" -->
-<!--                     						th:value="${pos.comDtId}" -->
-<!--                     						th:text="${pos.comDtlNm}"> -->
-<!--                     				</option> -->
-
-<!--                                 </select> -->
-<!--                             </div> -->
-<!--                             <div class="form-group"> -->
-<!--                                 <label for="newNote" class="form-label">비고:</label> -->
-<!--                                 <input type="text" id="newNote" class="form-control"> -->
-<!--                             </div> -->
-<!--                         </div> -->
-<!--                     </div> -->
-<!--                 </div> -->
-<!--                 <div class="modal-footer"> -->
-<!--                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button> -->
-<!--                     <button type="button" class="btn btn-primary" id="confirmNewOrderBtn">확인</button> -->
-<!--                 </div> -->
-<!--             </div> -->
-<!--         </div> -->
-<!--     </div> -->
 </th:block>
 
 <th:block layout:fragment="script">
     <!-- Bootstrap JS Bundle (Popper.js 포함) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- 커스텀 JavaScript 파일 링크 -->
+
     <script th:src="@{/personnel/js/personnel_trans.js}"></script>
 </th:block>
 </body>

@@ -1,5 +1,7 @@
 package com.bootstrap.study.groupware.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,15 +9,13 @@ import lombok.Setter;
 @Setter
 public class ChatMessageDTO {
 	
-	public enum MessageType{
-		JOIN, CHAT, LEAVE
-	}
-	
-	private MessageType type;
-	private String chatRoomId;
-	private String senderId;
-	private String senderName;
-	private String receiverId;
-	private String content;
-
+    private Long id; 
+    private Long roomId; 
+    private String senderId;
+    private String senderName; 
+    private String receiverId; 
+    private String content;
+    private String type; 
+    private LocalDateTime createdAt;
+    private boolean readStatus;
 }
