@@ -27,9 +27,9 @@ import com.bootstrap.study.commonCode.dto.CommonDetailCodeDTO;
 import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.commonCode.service.CommonCodeService;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.dto.PersonnelImgDTO;
 import com.bootstrap.study.personnel.dto.PersonnelLoginDTO;
 import com.bootstrap.study.personnel.dto.PersonnelTransferDTO;
-import com.bootstrap.study.personnel.repository.PersonnelRepository;
 import com.bootstrap.study.personnel.service.PersonnelImgService;
 import com.bootstrap.study.personnel.service.PersonnelService;
 import com.bootstrap.study.personnel.service.PersonnelTransferService;
@@ -46,7 +46,7 @@ public class PersonnelController {
     private final PersonnelService personnelService;
     private final PersonnelTransferService personnelTransferService;
 	private final CommonCodeService commonCodeService;
-    
+    private final PersonnelImgService personnelImgService;
     //이미지 경로 
     @Value("${file.uploadBaseLocation}")
 	private String uploadBaseLocation;
@@ -187,7 +187,7 @@ public class PersonnelController {
 			
 			
 		}
-		
+		//이미지 정보 불러옴 : 아직 미구현
 		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
 		
 		
