@@ -90,6 +90,7 @@
 	    const checkInBtn = $("#checkInBtn");
 	
 	    checkInBtn.on("click", function() {
+	    	console.log("출근버튼 확인");
 	        if (!confirm("출근하시겠습니까?")) return;
 	
 	        $.ajax({
@@ -138,6 +139,7 @@
 	    const checkOutBtn = $("#checkOutBtn");
 	
 	    checkOutBtn.on("click", function() {
+	    	console.log("퇴근버튼 확인");
 	        if (!confirm("퇴근하시겠습니까?")) return;
 	
 	        $.ajax({
