@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 헤더 스크립트에서 전역 변수를 가져와 사용합니다.
-    const stompClient = window.stompClient;
-    const userId = window.userId;
-    const userName = window.userName;
+    let stompClient = null;
+    let userId = null;
+    let userName = null;
     
     // 이 스크립트에서만 사용되는 변수들
     const privateMessageForm = document.querySelector('#privateMessageForm');
@@ -11,17 +10,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const deptSelect = document.getElementById('deptSelect');
     const employeeSelect = document.getElementById('employeeSelect');
 
-    // 웹소켓 연결이 완료될 때까지 기다렸다가 실행
-    function onStompConnected() {
-        if (stompClient.connected) {
-            stompClient.subscribe('/user/queue/private', onMessageReceived);
-            console.log("privateChat.js 웹소켓 구독 완료.");
-            fetchDepartments();
-        } else {
-            setTimeout(onStompConnected, 100);
-        }
+    // chat.html과 마찬가지로 privateChat.html의 body 태그에서 사용자 정보를 가져옵니다.
+    userId = document.body.dataset.currentEmpId;
+    userName = document.body.dataset.currentEmpName;
+    
+    // 웹소켓 연결 성공 시 실행되는 함수
+    function onConnected() {
+        console.log("1:1 메신저 웹소켓 연결 성공. 사용자 ID: " + userId);
+        // 개인 메시지 채널만 구독
+        stompClient.subscribe('/user/queue/private', onMessageReceived);
+        // 부서 및 사원 목록 불러오기
+        fetchDepartments();
     }
-
+    
+    // 웹소켓 연결 실패 시 실행되는 함수
+    function onError(error) {
+        console.error("1:1 메신저 웹소켓 연결 실패: " + error);
+    }
+    
     // 메시지 수신 시 실행되는 함수 (채팅창에 메시지 표시)
     function onMessageReceived(payload) {
         const message = JSON.parse(payload.body);
@@ -46,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             stompClient.send("/app/chat.privateMessage", {}, JSON.stringify(chatMessage));
             privateMessageInput.value = '';
-            alert(receiverId + "에게 메시지를 전송했습니다.");
+//            alert(receiverId + "에게 메시지를 전송했습니다.");
         } else {
             if (!messageContent) {
                 alert("메시지를 입력하세요.");
@@ -56,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         event.preventDefault();
     }
-
+    
     // 부서 목록을 불러오는 함수
     function fetchDepartments() {
         fetch('/personnel/departments')
@@ -98,9 +104,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedDeptId = event.target.value;
         fetchEmployeesByDept(selectedDeptId);
     });
-
+    
     privateMessageForm.addEventListener('submit', sendPrivateMessage, true);
     
-    // 헤더 스크립트의 웹소켓 연결이 완료될 때까지 기다렸다가 페이지 전용 로직 실행
-    onStompConnected();
+    // 웹소켓 연결 시작
+    const socket = new SockJS('/ws/chat');
+    stompClient = Stomp.over(socket);
+
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    const headers = {
+        [csrfHeader]: csrfToken
+    };
+    
+    stompClient.connect(headers, onConnected, onError);
 });

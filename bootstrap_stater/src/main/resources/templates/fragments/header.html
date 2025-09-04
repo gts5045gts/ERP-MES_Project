@@ -67,21 +67,22 @@
 				<!-- Nav Item - Utilities Collapse Menu -->
 				Addons
 			</div>
-			<li class="nav-item"><a class="nav-link collapsed" href="#"
-				data-toggle="collapse" data-target="#collapseUtilities"
-				aria-expanded="true" aria-controls="collapseUtilities"> <i
-					class="fas fa-fw fa-wrench"></i> <span>인사관리</span>
-			</a>
-				<div id="collapseUtilities" class="collapse"
-					aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+			<li class="nav-item">
+				<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+					aria-expanded="true" aria-controls="collapseUtilities">
+					<i class="fas fa-fw fa-wrench"></i>
+					<span>인사관리</span>
+				</a>
+				<div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">인사관리 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/personnel/current}">인사현황</a>
-						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> <a
-							class="collapse-item" th:href="@{/personnel/trans}">인사발령</a> <a
-							class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
+						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> 
+						<a class="collapse-item" th:href="@{/personnel/trans}">인사발령</a>
+						<a class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
 					</div>
-				</div></li>
+				</div>
+			</li>
 
 			<!-- Nav Item - Pages Collapse Menu -->
 			<li class="nav-item"><a class="nav-link collapsed" href="#"
@@ -350,7 +351,10 @@ let stompClient = null;
 let userId = null;
 let userName = null;
 
-// 웹소켓 연결 및 구독
+const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+// 웹소켓 연결 및 구독 (오직 알림 채널만!)
 function connectWebsocket() {
     const empIdInput = document.getElementById('currentEmpId');
     const empNameInput = document.getElementById('currentEmpName');
@@ -364,11 +368,17 @@ function connectWebsocket() {
     }
     const socket = new SockJS('/ws/chat');
     stompClient = Stomp.over(socket);
-    stompClient.connect({}, onConnectedWebsocket, onErrorWebsocket);
+    
+    const headers = {
+        [csrfHeader]: csrfToken
+    };
+
+    stompClient.connect(headers, onConnectedWebsocket, onErrorWebsocket);
 }
 
 function onConnectedWebsocket() {
-    console.log("웹소켓 연결 성공. 사용자 ID: " + userId);
+    console.log("웹소켓 연결 성공 (헤더). 사용자 ID: " + userId);
+    // 오직 개인 메시지 채널만 구독합니다.
     stompClient.subscribe('/user/queue/private', onMessageReceivedForHeader);
     fetchUnreadMessages();
 }
@@ -428,11 +438,7 @@ function createMessageItem(message) {
 // 아이콘 클릭하면 그때 업데이트
 document.addEventListener('DOMContentLoaded', function() {
     updateApprovalAlerts();  
-    
-    document.getElementById('alertsDropdown').addEventListener('click', function() {
-        updateApprovalAlerts();
-    });
-        // 메신저 알림 기능 초기화
+    document.getElementById('alertsDropdown').addEventListener('click', updateApprovalAlerts);
     connectWebsocket();
 });
 </script>
