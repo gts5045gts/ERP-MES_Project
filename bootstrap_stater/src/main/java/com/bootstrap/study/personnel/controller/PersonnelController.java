@@ -187,7 +187,8 @@ public class PersonnelController {
 			
 			
 		}
-		//이미지 정보 불러옴 : 아직 미구현
+		//이미지 정보 불러옴 : 아직 미구현 일단 잠금
+		/**
 		PersonnelImgDTO perImg = personnelImgService.getMapperImg(empId);
 		
 		
@@ -198,7 +199,7 @@ public class PersonnelController {
 			model.addAttribute("perImg", perImg);
 			model.addAttribute("location", uploadBaseLocation);
 		}
-		
+		**/
 		
 		// 인사팀 계정이거나  관리자 계정일경우 와 다른 부서 또는 관리자 이하 계정일경우 분리해서 접속 
 		log.info("empLevelId='{}', empDeptId='{}'", empLevelId, empDeptId);

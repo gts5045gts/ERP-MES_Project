@@ -102,6 +102,11 @@
 			<AppenderRef ref="rollingFile2" /> <!-- Root 로거 메세지들을 외부 파일에 출력 -->
 			<AppenderRef ref="rollingErrorFile" />
 		</Logger>
+		<!-- 스프링 시큐리티 관련 오류 정보 표시 -->
+		<Logger name="org.Springframwork.security" level="DEBUG" additivit="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		
 	</Loggers>
 	
 </Configuration>
