@@ -58,6 +58,7 @@ public class PersonnelTransferService {
 			Personnel personnel = personnelRepository.findByEmpId(empId)
 					.orElseThrow(() -> new IllegalArgumentException("사원 정보 없음: " + empId));
 			String name = transInfo.get("name");
+			String reason = transInfo.get("transReason");
 			String transType = transInfo.get("transType");
 			String oldDeptId = personnel.getDepartment().getComDtId();
 			String oldPosId = personnel.getPosition().getComDtId();
@@ -69,6 +70,7 @@ public class PersonnelTransferService {
 					.reqId(reqId)
 					.empId(empId)
 					.name(name)
+					.reason(reason)
 					.transferType(transType)
 					.oldDept(oldDeptId)
 					.newDept(newDeptId)

@@ -74,45 +74,60 @@
 							<strong>현재 부서:</strong> <span id="selectedEmployeeCurrentDept"></span>
 						</div>
 						<div class="mb-2">
-							<strong>현재 직급:</strong> <span
-								id="selectedEmployeeCurrentPosition"></span>
+							<strong>현재 직급:</strong> <span id="selectedEmployeeCurrentPosition"></span>
 						</div>
 						<input type="hidden" id="hiddenSelectedEmployeeDbId">
 					</div>
 
 					<div class="new-order-form-section">
 						<h6>발령 정보 입력</h6>
-						<div class="form-group mb-3">
-							<label for="transTypeSelect" class="form-label">발령구분:</label>
-							<select id="transTypeSelect" class="form-select">
-								<option value="">발령구분 선택</option>
-								<option value="승진">승진</option>
-								<option value="전보">전보</option>
-							</select>
+						<div class="d-flex mb-3">
+							<div class="half-col">
+								<div class="form-group">
+									<label for="transTypeSelect" class="form-label">발령 구분:</label>
+									<select id="transTypeSelect" class="form-select">
+										<option value="">발령구분 선택</option>
+										<option value="승진">승진</option>
+										<option value="전보">전보</option>
+									</select>
+								</div>
+							</div>
+							<div class="half-col">
+        						<div class="form-group">
+									<label for="transDateInput" class="form-label">발령 일자:</label> 
+									<input type="date" id="transDateInput" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+								</div>
+							</div>
+						</div>
+						<div class="d-flex mb-3">
+							<div class="half-col">
+								<div class="form-group">
+									<label for="transDeptSelect" class="form-label">발령 부서:</label>
+									<select id="transDeptSelect" class="form-select">
+										<option value="">부서 선택</option>
+										<option th:each="departments : ${departments}"
+												th:value="${departments.comDtId}"
+												th:text="${departments.comDtNm}">
+										</option>
+									</select>
+								</div>
+							</div>
+							<div class="half-col">
+								<div class="form-group">
+									<label for="transPosSelect" class="form-label">발령 직급:</label>
+									<select id="transPosSelect" class="form-select">
+										<option value="">직급 선택</option>
+										<option th:each="position : ${position}"
+												th:value="${position.comDtId}" 
+												th:text="${position.comDtNm}">
+										</option>
+									</select>
+								</div>
+							</div>
 						</div>
 						<div class="form-group mb-3">
-							<label for="transDateInput" class="form-label">발령일자:</label> 
-							<input type="date" id="transDateInput" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
-						</div>
-						<div class="form-group mb-3">
-							<label for="transDeptSelect" class="form-label">발령부서:</label>
-							<select id="transDeptSelect" class="form-select">
-								<option value="">부서 선택</option>
-								<option th:each="departments : ${departments}"
-										th:value="${departments.comDtId}"
-										th:text="${departments.comDtNm}">
-								</option>
-							</select>
-						</div>
-						<div class="form-group mb-3">
-							<label for="transPosSelect" class="form-label">발령직급:</label>
-							<select id="transPosSelect" class="form-select">
-								<option value="">직급 선택</option>
-								<option th:each="position : ${position}"
-										th:value="${position.comDtId}" 
-										th:text="${position.comDtNm}">
-								</option>
-							</select>
+							<label for="transReasonTextarea" class="form-label">발령 사유:</label>
+							<textarea id="transReasonTextarea" class="form-control" rows="3"></textarea>
 						</div>
 						<div class="form-group mb-3">
     						<label for="approverSelect" class="form-label">결재자:</label> 
