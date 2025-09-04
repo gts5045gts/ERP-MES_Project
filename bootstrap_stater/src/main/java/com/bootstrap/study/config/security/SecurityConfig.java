@@ -32,13 +32,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
 
-                .requestMatchers("/personnel/**").permitAll()
-                .requestMatchers("/groupware/**").permitAll()
-                .requestMatchers("/notice/**").permitAll()
-                .requestMatchers("/schedule/**").permitAll()
-                .requestMatchers("/admin/**").permitAll()
-                .requestMatchers("/attendance/**").permitAll()
-                .requestMatchers("/approval/**").permitAll()
+                .requestMatchers("/personnel/**").authenticated()
+                .requestMatchers("/groupware/**").authenticated()
+                .requestMatchers("/notice/**").authenticated()
+                .requestMatchers("/schedule/**").authenticated()
+                .requestMatchers("/admin/**").authenticated()
+                .requestMatchers("/attendance/**").authenticated()
+                .requestMatchers("/approval/**").authenticated()
+                .requestMatchers("/chat", "/privateChat").authenticated()
                 
                 .anyRequest().authenticated()
             )
