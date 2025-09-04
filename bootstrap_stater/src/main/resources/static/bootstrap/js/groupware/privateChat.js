@@ -10,9 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const deptSelect = document.getElementById('deptSelect');
     const employeeSelect = document.getElementById('employeeSelect');
 
-    // chat.html과 마찬가지로 privateChat.html의 body 태그에서 사용자 정보를 가져옵니다.
-    userId = document.body.dataset.currentEmpId;
-    userName = document.body.dataset.currentEmpName;
+	const currentEmpIdInput = document.getElementById('currentEmpId');
+	const currentEmpNameInput = document.getElementById('currentEmpName');
     
     // 웹소켓 연결 성공 시 실행되는 함수
     function onConnected() {
@@ -108,14 +107,25 @@ document.addEventListener('DOMContentLoaded', function() {
     privateMessageForm.addEventListener('submit', sendPrivateMessage, true);
     
     // 웹소켓 연결 시작
-    const socket = new SockJS('/ws/chat');
-    stompClient = Stomp.over(socket);
+	if (currentEmpIdInput && currentEmpNameInput) {
+	    userId = currentEmpIdInput.value;
+	    userName = currentEmpNameInput.value;
+	    console.log("로그인된 사용자 ID:", userId);
+	    console.log("로그인된 사용자 이름:", userName);
+	    
+	    // 이 위치에서 웹소켓 연결을 시작해야 합니다.
+	    // userId와 userName이 정상적으로 설정된 후에만 연결이 가능하도록 합니다.
+	    const socket = new SockJS('/ws/chat');
+	    stompClient = Stomp.over(socket);
 
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-    const headers = {
-        [csrfHeader]: csrfToken
-    };
-    
-    stompClient.connect(headers, onConnected, onError);
+	    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+	    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+	    const headers = {
+	        [csrfHeader]: csrfToken
+	    };
+	    
+	    stompClient.connect(headers, onConnected, onError);
+	} else {
+	    console.error("사용자 정보를 찾을 수 없습니다. HTML을 확인하세요.");
+	}
 });
