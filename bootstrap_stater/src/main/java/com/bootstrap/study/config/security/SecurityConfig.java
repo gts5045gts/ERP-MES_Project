@@ -31,6 +31,7 @@ public class SecurityConfig {
     	return httpSecurity
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
+
                 .requestMatchers("/personnel/**").permitAll()
                 .requestMatchers("/groupware/**").permitAll()
                 .requestMatchers("/notice/**").permitAll()
@@ -38,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").permitAll()
                 .requestMatchers("/attendance/**").permitAll()
                 .requestMatchers("/approval/**").permitAll()
+                
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
