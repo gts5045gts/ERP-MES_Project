@@ -36,7 +36,7 @@
 										<!--******************* 사진 *******************-->
 										<td rowspan="3" class="text-center">
 											<div class="photo-wrapper1">
-												<img id="pFIle" name="pFIle" alt="" th:src="@{/personnel/showImg/{id}(id=${personnel.empId})}">
+												<img id="pFIle" name="pFIle" alt="" th:src="@{/personnel/showImg/{id}(id=${personnel.empId})}"/>
 											</div>
 										</td>
 										<!-- 이름 -->
@@ -57,7 +57,7 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_bd" class="form-label">주민등록번호</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_bd" name="resident" placeholder="(ex) 990101-1111111" maxlength="14" th:value="${personnel.resident}" disabled="disabled"></td>
+											<input type="text" class="form-control w-75" id="emp_bd" name="resident" placeholder="(ex) 990101-1111111" maxlength="14" th:value="${personnel.resident}" readonly></td>
 									</tr>
 
 									<tr>
@@ -83,6 +83,7 @@
 												</th:block>
 												
 											</select>
+											<input  type=hidden th:value="${personnel.staId}">
 										</td>
 										
 									</tr>
@@ -106,6 +107,7 @@
 													<option th:value="${departments.comDtId}" th:text="${departments.comDtNm}" th:selected="${departments.comDtId == personnel.deptId}" ></option>	<!--  -->
 												</th:block>
 											</select>
+											<input  type=hidden th:value="${personnel.deptId}">
 										</td>
 										<!-- 직책 -->
 										<th scope="row" class="custom-th">
@@ -117,6 +119,7 @@
 													<option th:value="${position.comDtId}" th:text="${position.comDtNm}" th:selected="${position.comDtId == personnel.posId}" ></option> <!--  -->
 												</th:block>
 											</select>
+											<input  type=hidden th:value="${personnel.posId}">
 										</td>
 										
 										<!-- 보안등급 	-->
@@ -131,6 +134,7 @@
 													<option th:value="${level.comDtId}" th:text="${level.comDtNm}"  th:selected="${level.comDtId == personnel.levId}" > 
 												</th:block>
 											</select>
+											<input type=hidden th:value="${personnel.levId}">
 										</td>
 									
 									</tr>
@@ -161,7 +165,7 @@
 											<th scope="row" class="custom-th-r">
 											<label for="emp_hd" class="form-label">입사일</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="date" class="form-control w-75" id="emp_hd" name="joinDate" th:value="${personnel.joinDate}" disabled="disabled"></td>
+											<input type="date" class="form-control w-75" id="emp_hd" name="joinDate" th:value="${personnel.joinDate}" readonly></td>
 									</tr>
                         </tbody>
                     </table>
