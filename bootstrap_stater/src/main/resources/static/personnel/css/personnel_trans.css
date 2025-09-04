@@ -5,7 +5,7 @@ body {
 }
 /* 컨테이너 패딩 */
 .container-fluid {
-    padding: 20px;
+    padding: 5px 15px;
 }
 /* 헤더 바 스타일 */
 .header-bar {
@@ -87,7 +87,6 @@ body {
     padding: 25px; /* 패딩 */
     border-radius: 8px; /* 둥근 모서리 */
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-    overflow-x: auto; /* 가로 스크롤 가능 */
 }
 /* 테이블 헤더 스타일 */
 .table-hover thead th {
@@ -95,7 +94,7 @@ body {
     font-weight: 700; /* 굵은 글씨 */
     color: #495057; /* 어두운 회색 텍스트 */
     border-bottom: 2px solid #dee2e6; /* 하단 테두리 */
-    padding: 12px 15px; /* 패딩 */
+    padding: 8px 15px; /* 패딩 */
 }
 /* 테이블 셀 패딩 */
 .table-hover tbody td {
@@ -149,17 +148,17 @@ body {
 .modal-content-area {
     display: flex;
     gap: 20px;
-    padding: 20px;
+    padding: 10px 20px;
 }
 .employee-info-section {
     flex: 1; /* 왼쪽 영역 */
     background-color: #f8f9fa;
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
 .employee-info-section div {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 .employee-info-section span {
     font-weight: 600;
@@ -167,10 +166,10 @@ body {
 .new-order-form-section {
     flex: 2; /* 오른쪽 영역 */
     background-color: #fff;
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 .new-order-form-section .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }

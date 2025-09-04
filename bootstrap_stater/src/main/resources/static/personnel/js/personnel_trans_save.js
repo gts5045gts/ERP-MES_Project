@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		const transType = document.getElementById('transTypeSelect').value;
 		const transDate = document.getElementById('transDateInput').value;
 		const approverId = document.getElementById('approverSelect').value;
+		const transReason = document.getElementById('transReasonTextarea').value;
 
 		// Service에서 필요로 하는 값들
 		const empName = document.getElementById('selectedEmployeeName').textContent;
@@ -111,9 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		const newPosId = document.getElementById('transPosSelect').value;
 		const newDeptName = document.getElementById('transDeptSelect').options[document.getElementById('transDeptSelect').selectedIndex].text;
 		const newPosName = document.getElementById('transPosSelect').options[document.getElementById('transPosSelect').selectedIndex].text;
-
+		
+		
 		// 유효성 검사 추가
-		if (!selectedEmpId || !transType || !transDate || !newDeptId || !newPosId || !approverId) {
+		if (!selectedEmpId || !transType || !transDate || !newDeptId || !newPosId || !transReason.trim() || !approverId) {
 			alert('모든 발령 정보를 입력해주세요.');
 			return;
 		}
@@ -129,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			newPosId: newPosId,  
 			transType: transType,
 			transDate: transDate,
+			transReason: transReason,
 			approverId: approverId
 		};
 
