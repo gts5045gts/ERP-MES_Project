@@ -3,6 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layouts/layout}">
 <head>
+	
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
 <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
@@ -136,7 +137,7 @@
 						</div>
 						<div class="mb-3">
 							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드</label>
-							<input type="text" th:field="*{comDtId}" class="form-control" id="comDtId" required>
+							<input type="text" th:field="*{comDtId}" class="form-control" id="comDtId">
 						</div>
 						<div class="mb-3">
 							<label for="recipient-name" class="col-form-label" style="font-size: 15px;">코드명</label>
