@@ -124,7 +124,14 @@ public class PersonnelController {
 		return personnelImgService.getImgLocation(empId);
 	}
 	
+	@GetMapping("/loginShowImg/{empId}")
+	public ResponseEntity<Resource> getImg2(@PathVariable("empId") String empId) {
+		log.info("사원 번호 : " + empId);
 	
+		
+		
+		return personnelImgService.getImgLocation(empId);
+	}
 	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
     public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
