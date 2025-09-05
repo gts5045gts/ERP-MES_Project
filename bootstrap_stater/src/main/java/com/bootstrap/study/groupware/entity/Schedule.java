@@ -1,12 +1,8 @@
 package com.bootstrap.study.groupware.entity;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -22,6 +18,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "SCHEDULE")
@@ -56,9 +55,9 @@ public class Schedule {
     
     @CreationTimestamp
     @Column(name = "CREATE_AT")
-    private Date createAt;
+    private LocalDate createAt;
     
     @UpdateTimestamp
     @Column(name = "UPDATE_AT")
-    private Date updateAt;
+    private LocalDate updateAt;
 }

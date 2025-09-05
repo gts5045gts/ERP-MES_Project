@@ -1,9 +1,8 @@
 package com.bootstrap.study.groupware.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.bootstrap.study.groupware.entity.Notice;
-import com.bootstrap.study.personnel.entity.Personnel;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,8 +18,8 @@ public class NoticeDTO {
     private String notTitle;
     private String notContent;
     private String notType;
-    private Date createAt;
-    private Date updateAt;
+    private LocalDate createAt;
+    private LocalDate updateAt;
 
     // Entity -> DTO 변환 생성자
     public NoticeDTO(Notice notice) {

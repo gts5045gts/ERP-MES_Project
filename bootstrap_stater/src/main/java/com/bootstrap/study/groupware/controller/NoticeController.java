@@ -1,14 +1,15 @@
 package com.bootstrap.study.groupware.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,18 +35,23 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class NoticeController {
 
-	@Autowired
-	private NoticeRepository noticeRepository;
-	@Autowired
-	private NoticeService noticeService;
-	@Autowired
-	private PersonnelRepository personnelRepository;
-	@Autowired
-	private CommonCodeService commonCodeService;
+	private final NoticeRepository noticeRepository;
+	private final NoticeService noticeService;
+	private final PersonnelRepository personnelRepository;
+	private final CommonCodeService commonCodeService;
+
+	public NoticeController(NoticeRepository noticeRepository, NoticeService noticeService,
+			PersonnelRepository personnelRepository, CommonCodeService commonCodeService) {
+		super();
+		this.noticeRepository = noticeRepository;
+		this.noticeService = noticeService;
+		this.personnelRepository = personnelRepository;
+		this.commonCodeService = commonCodeService;
+	}
 
 	// 공지사항 목록 페이지를 보여주는 메서드
 	@GetMapping("")
-	public String noticeList(Model model) {
+	public String noticeList(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 		log.info("NoticeController noticeList()");
 
 		// 1. 전체 공지사항을 조회하여 모델에 추가 (기존 코드와 동일)
@@ -53,115 +59,80 @@ public class NoticeController {
 		model.addAttribute("notices", notices);
 
 		// 2. 현재 로그인한 사용자 정보 가져오기
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    String currentUserId = null; // ✅ 현재 로그인 사용자의 ID를 담을 변수
-	    String currentUsername = null; // ⭐현재 로그인 사용자의 username
-
-		// 사용자 정보에서 부서 ID를 담을 변수
-		String empDeptId = null;
 		String empDeptName = null;
 
-		// 사용자가 로그인되어 있고, UserDetails 객체가 PersonnelLoginDTO 타입인지 확인
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			PersonnelLoginDTO personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
-			currentUserId = personnelLoginDTO.getEmpId();
-			currentUsername = personnelLoginDTO.getUsername();
-			empDeptId = personnelLoginDTO.getEmpDeptId();
-			// 부서 ID로 부서명을 조회하는 로직
-			// 이전에 CommonCodeService에 추가한 메서드를 활용해야 합니다.
+		if (personnelLoginDTO != null) {
+			// 부서 ID로 부서명 조회
 			if (commonCodeService != null) {
-				CommonDetailCode deptCode = commonCodeService.getCommonDetailCode(empDeptId);
+				CommonDetailCode deptCode = commonCodeService.getCommonDetailCode(personnelLoginDTO.getEmpDeptId());
 				if (deptCode != null) {
-					empDeptName = deptCode.getComDtNm(); // ✅ 부서명 변수에 값 할당
+					empDeptName = deptCode.getComDtNm();
 				}
 			}
-			log.info("로그인한 사용자의 부서 ID: " + empDeptId);
+			log.info("로그인한 사용자의 부서 ID: " + personnelLoginDTO.getEmpDeptId());
 		}
 
 		// 3. 로그인한 사용자의 부서 ID로 부서별 공지사항을 조회
 		List<Notice> deptNotices = new ArrayList<Notice>();
 		if (empDeptName != null) {
 			// "부서별" 타입의 공지사항 중, 현재 사용자의 부서ID와 일치하는 목록을 조회
-			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(empDeptId,empDeptName);
+			deptNotices = noticeRepository.findByEmpDeptIdAndNotType(personnelLoginDTO.getEmpDeptId(), empDeptName);
 		}
 		model.addAttribute("deptNotices", deptNotices);
 		model.addAttribute("empDeptName", empDeptName);
-		model.addAttribute("currentUserId", currentUserId);
-		model.addAttribute("currentUsername", currentUsername);
+		model.addAttribute("currentUserId", personnelLoginDTO.getEmpId());
+		model.addAttribute("currentUsername", personnelLoginDTO.getName());
 
 		return "gw/notice";
 	}
 
 	// 공지사항 등록 페이지를 보여주는 메서드
 	@GetMapping("/ntcWrite")
-	public String ntcWrite(Model model) {
+	public String ntcWrite(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 		log.info("NoticeController ntcWrite()");
 
-		// 1. 로그인한 사용자 정보 가져오기
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    String empId = null;
-	    String empName = null;
-	    String empDeptName = null;
-	    String empLevelId = null;
-	    boolean isAdmin = false;
+		boolean isAdmin = personnelLoginDTO.getEmpLevelId().equals("AUT001");
+		String empDeptName = personnelLoginDTO.getEmpDeptName();
 
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			PersonnelLoginDTO userDetails = (PersonnelLoginDTO) authentication.getPrincipal();
-			empId = userDetails.getEmpId();
-			empName = userDetails.getName();
-			empLevelId = userDetails.getEmpLevelId();
-			isAdmin = "AUT001".equals(empLevelId);
-			empDeptName = userDetails.getEmpDeptName();
-		}
 		// 드롭다운에 표시할 공지 유형 목록 생성
-	    List<String> noticeTypes = new ArrayList<>();
-	    
-	    if (isAdmin) { 
-	        noticeTypes.add("전체공지");
-	        List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
-	        for (CommonDetailCode dept : allDepartments) {
-	            noticeTypes.add(dept.getComDtNm());
-	        }
-	    } else if (empDeptName != null) {
-	        noticeTypes.add(empDeptName);
-	    }
-	    
-	    // 모델에 데이터 추가 
-	    NoticeDTO noticeDTO = new NoticeDTO();
-	    noticeDTO.setEmpId(empName);
-	    
-	    model.addAttribute("noticeDTO", noticeDTO);
-	    model.addAttribute("empName", empName);
-	    model.addAttribute("departments", commonCodeService.findByComId("DEP"));
-	    model.addAttribute("isAdmin", "AUT001".equals(empLevelId));
+		List<String> noticeTypes = new ArrayList<>();
 
-	    if (!isAdmin) {
-	        model.addAttribute("empDeptName", empDeptName);
-	    } else {
-	        model.addAttribute("noticeTypes", noticeTypes);
-	    }
-	    return "gw/ntcWrite";
+		if (isAdmin) {
+			noticeTypes.add("전체공지");
+			List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
+			for (CommonDetailCode dept : allDepartments) {
+				noticeTypes.add(dept.getComDtNm());
+			}
+		} else if (empDeptName != null) {
+			noticeTypes.add(empDeptName);
+		}
+
+		// 모델에 데이터 추가
+		NoticeDTO noticeDTO = new NoticeDTO();
+		noticeDTO.setEmpId(personnelLoginDTO.getName());
+
+		model.addAttribute("noticeDTO", noticeDTO);
+		model.addAttribute("empName", personnelLoginDTO.getName());
+		model.addAttribute("departments", commonCodeService.findByComId("DEP"));
+		model.addAttribute("isAdmin", isAdmin);
+
+		if (!isAdmin) {
+			model.addAttribute("empDeptName", empDeptName);
+		} else {
+			model.addAttribute("noticeTypes", noticeTypes);
+		}
+		return "gw/ntcWrite";
 	}
 
 	// 공지사항 등록 폼에서 데이터가 제출되면 호출되는 메서드
 	@PostMapping("/save")
-	public String saveNotice(NoticeDTO noticeDTO) {
+	public String saveNotice(NoticeDTO noticeDTO, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 		log.info("NoticeController saveNotice()");
-
-		// 1. 현재 로그인한 사용자 정보 가져오기
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		PersonnelLoginDTO personnelLoginDTO = null;
-		if (authentication != null && authentication.getPrincipal() instanceof PersonnelLoginDTO) {
-			personnelLoginDTO = (PersonnelLoginDTO) authentication.getPrincipal();
-		}
 
 		Notice notice = new Notice();
 
-		// 2. 로그인한 사용자의 ID로 Personnel 엔티티를 조회하여 Notice에 설정
+		// 로그인한 사용자의 ID로 Personnel 엔티티를 조회하여 Notice에 설정
 		if (personnelLoginDTO != null) {
-			// findById를 통해 로그인한 사용자 엔티티를 찾아서 notice에 저장
-			// PersonnelRepository의 findById는 String을 받음
 			Personnel personnel = personnelRepository.findById(personnelLoginDTO.getEmpId()).orElse(null);
 			if (personnel != null) {
 				// Notice 엔티티는 Personnel 객체를 가짐
@@ -173,8 +144,8 @@ public class NoticeController {
 		notice.setNotTitle(noticeDTO.getNotTitle());
 		notice.setNotContent(noticeDTO.getNotContent());
 		notice.setNotType(noticeDTO.getNotType());
-		notice.setCreateAt(new Date());
-		notice.setUpdateAt(new Date());
+		notice.setCreateAt(LocalDate.now());
+		notice.setUpdateAt(LocalDate.now());
 
 		noticeRepository.save(notice);
 
@@ -184,19 +155,37 @@ public class NoticeController {
 	// 공지 수정
 	@PostMapping("/ntcUpdate")
 	@ResponseBody
-	public String updateNotice(@RequestBody Notice notice) {
-		log.info("NoticeController updateNotice() called with Notice: {}", notice);
-		// noticeService의 updateNotice 메서드를 호출하여 데이터베이스 업데이트를 요청합니다.
-		noticeService.updateNotice(notice);
-		System.out.println("ntcUpdate 완료");
-		return "success"; // 수정 후 공지사항 목록으로 리다이렉트
+	public Map<String, Object> updateNotice(@RequestBody Notice notice) {
+
+		Map<String, Object> response = new HashMap<>();
+		try {
+			noticeService.updateNotice(notice);
+			response.put("success", true);
+			response.put("message", "공지사항이 성공적으로 수정되었습니다.");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "수정 중 오류가 발생했습니다.");
+			log.error("Error updating notice", e);
+		}
+
+		return response;
 	}
 
-	// (GET) 공지사항 삭제 처리
-	@GetMapping("/ntcDelete")
-	public String deleteNotice(@RequestParam("id") long id, RedirectAttributes redirectAttributes) {
-		noticeService.deleteNoticeById(id); // 데이터베이스에서 삭제
-		redirectAttributes.addFlashAttribute("message", "공지사항이 삭제되었습니다.");
-		return "redirect:/notice"; // 목록 페이지로 리다이렉트
+	// 공지사항 삭제 처리
+	@DeleteMapping("/ntcDelete")
+	@ResponseBody
+	public Map<String, Object> deleteNotice(@RequestBody Map<String, Long> payload) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+			Long id = payload.get("notId");
+			noticeService.deleteNoticeById(id);
+			response.put("success", true);
+			response.put("message", "공지사항이 성공적으로 삭제되었습니다.");
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "삭제 중 오류가 발생했습니다.");
+			log.error("Error deleting notice", e);
+		}
+		return response;
 	}
 }

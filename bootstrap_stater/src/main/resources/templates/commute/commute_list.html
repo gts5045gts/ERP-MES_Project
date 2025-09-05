@@ -69,13 +69,6 @@
 	</th:block>
 	<th:block layout:fragment="script">
 	<script>
-	let csrfToken = $("meta[name='_csrf']").attr("content");
-	let csrfHeader = $("meta[name='_csrf_header']").attr("content");
-	
-// 	$(document).ajaxSend(function(e, xhr, options) {
-// 	    xhr.setRequestHeader(csrfHeader, csrfToken);
-// 	});
-	
 	
 	// 부서랑 날짜조회
 	document.getElementById("searchBtn").addEventListener("click", function() {
@@ -90,6 +83,7 @@
 	    const checkInBtn = $("#checkInBtn");
 	
 	    checkInBtn.on("click", function() {
+// 	    	console.log("출근버튼 확인");
 	        if (!confirm("출근하시겠습니까?")) return;
 	
 	        $.ajax({
@@ -138,6 +132,7 @@
 	    const checkOutBtn = $("#checkOutBtn");
 	
 	    checkOutBtn.on("click", function() {
+// 	    	console.log("퇴근버튼 확인");
 	        if (!confirm("퇴근하시겠습니까?")) return;
 	
 	        $.ajax({

@@ -100,7 +100,7 @@
 							      </div>
 							      <div class="modal-body">
 							        <p id="deleteModalMessage"></p>
-							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요"></textarea>
+							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요" required="required"></textarea>
 							      </div>
 							      <div class="modal-footer">
 							        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
@@ -121,14 +121,6 @@
 	<th:block layout:fragment="script">
 	<script>
 // 		console.log("버튼 클릭!");
-		
-		let csrfToken = $("meta[name='_csrf']").attr("content");
-		let csrfHeader = $("meta[name='_csrf_header']").attr("content");
-		
-// 		$(document).ajaxSend(function(e, xhr, options) {
-// 		    xhr.setRequestHeader(csrfHeader, csrfToken);
-// 		});
-	
 		
 		// 부서랑 날짜조회
 		document.getElementById("searchBtn").addEventListener("click", function() {

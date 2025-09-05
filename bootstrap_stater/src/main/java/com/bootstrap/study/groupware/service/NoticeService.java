@@ -1,6 +1,6 @@
 package com.bootstrap.study.groupware.service;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class NoticeService {
         this.noticeRepository = noticeRepository;
     }
     
- // ✅ 로그인 사용자가 공지 작성자인지 확인하는 메서드
+ // 로그인 사용자가 공지 작성자인지 확인하는 메서드
     public boolean isAuthor(String currentUserId, Long noticeId) {
         Optional<Notice> noticeOptional = noticeRepository.findById(noticeId);
         if (noticeOptional.isPresent()) {
@@ -37,7 +37,7 @@ public class NoticeService {
             // 2. 폼에서 받은 데이터로 기존 공지사항의 내용을 업데이트합니다.
             existingNotice.setNotTitle(notice.getNotTitle());
             existingNotice.setNotContent(notice.getNotContent());
-            existingNotice.setUpdateAt(new Date()); 
+            existingNotice.setUpdateAt(LocalDate.now()); 
             
             // 3. 업데이트된 객체를 저장합니다.
             // EMP_ID, CREATE_AT 등은 기존 값 그대로 유지됩니다.

@@ -30,6 +30,7 @@ public interface CommonDetailCodeRepository extends JpaRepository<CommonDetailCo
 			")")
 	List<CommonDetailCode> searchByParentAndKeyword(@Param("parentId") String parentId, @Param("keyword") String keyword);
 
+	Optional<CommonDetailCode> findByComDtId(String comDtId);
 
 
 

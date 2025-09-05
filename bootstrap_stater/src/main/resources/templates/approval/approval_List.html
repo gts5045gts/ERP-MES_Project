@@ -487,9 +487,47 @@ function displayModalContent(data) {
         if (isViewMode && data.approvalLines) {
             displayExistingComments(data.approvalLines);
         }
+        
+     	// 인사발령일 경우에만 내용을 다르게 처리
+        displayApprovalContent(data);
+        
         showModalState('modalContent');
     } catch (error) {
         showModalState('modalError');
+    }
+}
+
+// 0903 결재 콘텐츠 표시 함수 추가(지원영)
+function displayApprovalContent(data) {
+    const contentElement = document.getElementById('modal-content-detail');
+    if (!contentElement) return;
+
+    // 결재 타입이 인사발령이면 content에 아래 내용 표시
+    if (data.reqType === 'TRANSFER') {
+        try {
+            const transferData = JSON.parse(data.content);
+            const formattedContent = `
+                <div class="card my-3">
+                    <div class="card-body">
+                        <p><strong>사원번호:</strong> ${transferData.empId || '-'}</p>
+                        <p><strong>이름:</strong> ${transferData.name || '-'}</p>
+                        <p><strong>발령타입:</strong> ${transferData.transType || '-'}</p>
+                        <p><strong>발령일:</strong> ${transferData.transDate || '-'}</p>
+                        <p><strong>부서:</strong> ${transferData.oldDeptName || '-'} -> ${transferData.newDeptName || '-'}</p>
+                        <p><strong>직급:</strong> ${transferData.oldPosName || '-'} -> ${transferData.newPosName || '-'}</p>
+                        <p><strong>발령 사유:</strong> ${transferData.transReason || '-'}</p>
+                        <p><strong>결재자 사원번호:</strong> ${transferData.approverId || '-'}</p>
+                    </div>
+                </div>
+            `;
+            contentElement.innerHTML = formattedContent;
+        } catch (e) {
+            console.error("JSON 파싱 오류:", e);
+            contentElement.textContent = "내용을 불러올 수 없습니다. (JSON 형식 오류)";
+        }
+    } else {
+        // 인사발령이 아닐 경우, 기존처럼 텍스트를 그대로 표시
+        contentElement.innerHTML = data.content || '-';
     }
 }
 

@@ -31,13 +31,16 @@ public class SecurityConfig {
     	return httpSecurity
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
-                .requestMatchers("/personnel/**").permitAll()
-                .requestMatchers("/groupware/**").permitAll()
-                .requestMatchers("/notice/**").permitAll()
-                .requestMatchers("/schedule/**").permitAll()
-                .requestMatchers("/admin/**").permitAll()
-                .requestMatchers("/attendance/**").permitAll()
-                .requestMatchers("/approval/**").permitAll()
+
+                .requestMatchers("/personnel/**").authenticated()
+                .requestMatchers("/groupware/**").authenticated()
+                .requestMatchers("/notice/**").authenticated()
+                .requestMatchers("/schedule/**").authenticated()
+                .requestMatchers("/admin/**").authenticated()
+                .requestMatchers("/attendance/**").authenticated()
+                .requestMatchers("/approval/**").authenticated()
+                .requestMatchers("/chat", "/privateChat").authenticated()
+                
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -51,12 +54,13 @@ public class SecurityConfig {
             )
             // 로그아웃 처리
             .logout(logout -> logout
-                .logoutSuccessUrl("/?logout")
+                .logoutSuccessUrl("/")
+                .deleteCookies("remember-me")
                 .permitAll()
             )
             // 자동 로그인처리
             .rememberMe(rememberMeCustomizer -> rememberMeCustomizer
-					.rememberMeParameter("remember-me") // 자동 로그인 수행하기 위한 체크박스 파라미터명 지정
+					.rememberMeParameter("remember-id") // 자동 로그인 수행하기 위한 체크박스 파라미터명 지정
 					.tokenValiditySeconds(60 * 60 * 24) // 자동 로그인 토큰 유효기간 설정(기본값 14일 -> 1일 변경)
 					)
     		.build();

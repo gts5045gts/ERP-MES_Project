@@ -36,9 +36,9 @@ public class PersonnelImg {
 	private Personnel personnel;
 	
 	@Column(nullable = false, name = "img_name")
-	private String name;
+	private String imgName;
 	@Column(nullable = false, name = "img_location")
-	private String location;
+	private String imgLocation;
 	@Column(nullable = false, name = "file_name")
 	private String fileName;
 	
@@ -49,8 +49,8 @@ public static PersonnelImg fromDTO(PersonnelImgDTO imgDTO , PersonnelRepository 
 		
 	
 		img.setImgId(imgDTO.getImgId());
-		img.setName(imgDTO.getName());
-		img.setLocation(imgDTO.getLocation());
+		img.setImgName(imgDTO.getImgName());
+		img.setImgLocation(imgDTO.getImgLocation());
 		img.setFileName(imgDTO.getFileName());
 		//personnel 타입으로 변환후 넘겨주기 
 		 if(imgDTO.getEmpId() != null) {

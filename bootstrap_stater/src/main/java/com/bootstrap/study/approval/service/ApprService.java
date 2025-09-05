@@ -14,6 +14,7 @@ import com.bootstrap.study.approval.repository.ApprLineRepository;
 import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.personnel.dto.PersonnelDTO;
+import com.bootstrap.study.personnel.service.PersonnelTransferService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -43,6 +44,7 @@ public class ApprService {
 	private final ApprRepository apprRepository;
 	private final ApprLineService apprLineService;
 	private final ApprLineRepository apprLineRepository;
+	private final PersonnelTransferService personnelTransferService;
 	
 	// 상수 정의
 	private static final String DEFAULT_DEPARTMENT = "인사부";
@@ -238,6 +240,7 @@ public class ApprService {
         
         return dto;
     }
+    
     // 올린 결재 취소 처리
 	@Transactional
 	public void cancelApproval(Long reqId, String loginId) {
@@ -271,11 +274,13 @@ public class ApprService {
         // 내가 올린 대기 상태 결재 건수
         return apprRepository.countMyPendingApprovals(loginId);
     }
+    
     // 결재대기 알림
     public int getToApproveCount(String loginId) {
         // 내가 결재해야 할 대기 건수
         return apprLineRepository.countMyPendingApprovals(loginId);
     }
+    
     // 결재대기 알림
     public String getMyApprovalStatusSummary(String loginId) {
         // 내 결재의 각 상태별 건수를 문자열로 반환 (해시값처럼 사용)
@@ -474,13 +479,16 @@ public class ApprService {
 		    appr.addLine(line);  // Appr이 직접 관리
 		}
 		
-		for (ApprDetailDTO dto : apprDTO.getApprDetailDTOList()) {
-		    ApprDetail detail = new ApprDetail();
-		    detail.setVacType(dto.getVacType());
-		    detail.setStartDate(dto.getStartDate());
-		    detail.setEndDate(dto.getEndDate());
-		    detail.setHalfType(dto.getHalfType());
-		    appr.addDetail(detail);  // 연관관계 메서드
+		// 인사발령은 ApprDetail에 관여하지 않기 때문에 null 체크를 통해 이 부분을 건너뛰도록 if문 추가
+		if (apprDTO.getApprDetailDTOList() != null) {
+			for (ApprDetailDTO dto : apprDTO.getApprDetailDTOList()) {
+				ApprDetail detail = new ApprDetail();
+				detail.setVacType(dto.getVacType());
+				detail.setStartDate(dto.getStartDate());
+				detail.setEndDate(dto.getEndDate());
+				detail.setHalfType(dto.getHalfType());
+				appr.addDetail(detail);  // 연관관계 메서드
+			}
 		}
 		
 		apprRepository.save(appr);
@@ -494,6 +502,39 @@ public class ApprService {
 				.orElseThrow(() -> new EntityNotFoundException(empId + " : 연차정보조회실패!"));
 		
 		return annual;
+	}
+	
+	@Transactional
+	public void processApproval(Long reqId, String apprId, ApprDecision decision, String comments) {
+		ApprLine apprLine = apprLineRepository.findByApprReqIdAndApprId(reqId, apprId)
+				.orElseThrow(() -> new IllegalArgumentException("결재 라인 정보를 찾을 수 없습니다."));
+		
+		// 현재 결재 단계 처리
+		apprLine.setDecision(decision);
+		apprLine.setDecDate(LocalDateTime.now());
+		apprLine.setComments(comments);
+		apprLineRepository.save(apprLine);
+
+		Appr appr = apprLine.getAppr();
+		int currentStep = apprLine.getStepNo();
+		int totalStep = appr.getTotStep();
+
+		if (decision == ApprDecision.ACCEPT) {
+			if (currentStep == totalStep) {
+				// 최종 승인
+				appr.setStatus(ApprStatus.FINISHED);
+				apprRepository.save(appr);
+
+				// 인사 발령 문서인 경우
+				if ("TRANSFER".equals(appr.getReqType())) {
+					personnelTransferService.processPersonnelTransfer(reqId);
+				}
+			}
+		} else if (decision == ApprDecision.DENY) {
+			appr.setStatus(ApprStatus.CANCELED);
+			appr.setHasRejection(true);
+			apprRepository.save(appr);
+		}
 	}
 	
 }

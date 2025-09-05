@@ -16,9 +16,11 @@ import com.bootstrap.study.approval.constant.ApprStatus;
 @Entity
 @Table(name = "approval")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Appr {
 
@@ -82,4 +84,7 @@ public class Appr {
         this.apprDetails.add(detail);
         detail.setAppr(this);
     }
+    
+    @Transient // DB에는 저장 안됨
+    private boolean hasRejection;  
 }

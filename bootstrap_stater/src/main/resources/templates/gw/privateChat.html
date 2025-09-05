@@ -6,9 +6,12 @@
 <meta charset="UTF-8">
 <title>1:1 메신저</title>
 </head>
-<body th:data-current-emp-id="${currentEmpId}"
-	th:data-current-emp-name="${currentEmpName}">
+<body>
 	<th:block layout:fragment="content">
+		<th:block sec:authorize="isAuthenticated()">
+		    <input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+		    <input type="hidden" id="currentEmpName" th:value="${#authentication.principal.name}" />
+		</th:block>
 		<div id="chat-page" class="container-fluid">
 			<h1>1:1 메신저</h1>
 			<div id="messageArea" class="card-body bg-light"
