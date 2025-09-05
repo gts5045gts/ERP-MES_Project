@@ -73,7 +73,7 @@ public class PersonnelImgService {
 		
 
 		//이미지 존재하지 않을 경우 img_id 값이랑 emp_id 넣어줌
-		PersonnelImg perImg = personnelImgRepository.findById(personnel.getEmpId())
+		PersonnelImg perImg = personnelImgRepository.findByPersonnel_EmpId(personnel.getEmpId())		//findById 는 조회를 못해서 조회가능하도록 바꿈
  	            .orElseGet(() -> {
  	            	List<PersonnelImg> imgId = personnelImgRepository.findAll();
 	 	   			int number = imgId.size() + 1;
