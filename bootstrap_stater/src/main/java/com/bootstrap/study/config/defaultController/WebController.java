@@ -11,6 +11,7 @@ public class WebController {
 	public String login(@CookieValue(value = "remember-id", required = false) String rememberId, Model model) {
 		// 쿠키값 Model 객체에 추가
 				model.addAttribute("rememberId", rememberId);
+				model.addAttribute("rememberChecked", true);
 		return "login";
 	}
 
