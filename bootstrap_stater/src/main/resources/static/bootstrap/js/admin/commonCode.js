@@ -1,5 +1,5 @@
-var csrfToken = $('meta[name="_csrf"]').attr('content');
-var csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+window._csrfToken = $('meta[name="_csrf"]').attr('content');
+window._csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 	
 let selectedParentId = null;
 let selectedDetailId = null;
@@ -20,6 +20,7 @@ $(document).ready(function() {
 			$('#detailArea').html(fragment);
 			$('#detailArea').show(); // 클릭 시 테이블 보이게
 			$('#codeDetailSearch').closest('.col-6').show();
+			
 		});
 	});
 
