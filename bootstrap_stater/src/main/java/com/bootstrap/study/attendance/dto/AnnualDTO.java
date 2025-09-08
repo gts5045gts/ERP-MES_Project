@@ -2,6 +2,7 @@ package com.bootstrap.study.attendance.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 
 import org.modelmapper.ModelMapper;
 
@@ -66,8 +67,12 @@ public class AnnualDTO {
         
         // 연차 산정기간
         LocalDate join = LocalDate.parse(personnel.getJoinDate()); // 입사일
-        LocalDate start = join; // 시작일 = 입사일
-        LocalDate end = start.plusYears(1).minusDays(1); // 종료일 = 입사일 기준 1년 뒤 - 1일
+        LocalDate today = LocalDate.now();
+        
+        int yearsSinceJoin = join.until(today).getYears(); // 근속연수
+        LocalDate start = join.plusYears(yearsSinceJoin); // 올해 산정기간 시작일
+        LocalDate end = start.plusYears(1).minusDays(1); // 산정기간 종료일 (휴가 소멸일)
+        
         this.annPeriod = start + " ~ " + end;
         this.annExpire = end.toString(); // 휴가 소멸일
         
