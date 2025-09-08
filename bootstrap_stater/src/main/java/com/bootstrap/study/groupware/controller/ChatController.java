@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.bootstrap.study.groupware.dto.ChatMessageDTO;
@@ -87,5 +88,21 @@ public class ChatController {
 	public List<ChatMessageDTO> getUnreadMessages(Principal principal) {
 		log.info("읽지 않은 메시지 불러오기 요청: {}", principal.getName());
 		return chatService.getUnreadMessages(principal.getName());
+	}
+	
+	@GetMapping("/api/chat/messages")
+	@ResponseBody
+	public List<ChatMessageDTO> getChatHistory(@RequestParam(value = "receiverId") String receiverId, Principal principal) {
+	    log.info("대화 기록 불러오기 요청: {} <-> {}", principal.getName(), receiverId);
+	    return chatService.getChatHistory(principal.getName(), receiverId);
+	}
+
+	// getRecentMessages 메서드 수정
+	@GetMapping("/api/chat/recent")
+	@ResponseBody
+	public List<ChatMessageDTO> getRecentMessages(@RequestParam(value = "userId") String userId, Principal principal) {
+	    log.info("최근 메시지 조회 시작: {}", userId);
+	    // Principal.getName()을 사용하도록 수정
+	    return chatService.getRecentMessages(principal.getName());
 	}
 }
