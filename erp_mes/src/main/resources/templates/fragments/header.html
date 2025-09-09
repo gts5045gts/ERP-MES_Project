@@ -98,9 +98,12 @@
 						<!--                         <a class="collapse-item" th:href="@{/attendance/attendanceList}">나의 근태 내역</a> -->
 						<a class="collapse-item" th:href="@{/attendance/annualList}">연차
 							관리</a>
-						<h6 class="collapse-header">관리자 근태관리 메뉴:</h6>
-						<a class="collapse-item" th:href="@{/attendance/adminCommute}">근태관리</a>
-						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}">출근기록
+						<h6 class="collapse-header"
+							sec:authorize="hasAnyRole('AUT001','AUT002')">관리자 근태관리 메뉴:</h6>
+						<a class="collapse-item" th:href="@{/attendance/adminCommute}"
+							sec:authorize="hasAnyRole('AUT001','AUT002')">근태관리</a>
+						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}"
+							sec:authorize="hasAnyRole('AUT001','AUT002')">출근기록
 							삭제 로그</a>
 						<div class="collapse-divider"></div>
 					</div>
