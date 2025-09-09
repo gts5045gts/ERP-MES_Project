@@ -223,6 +223,7 @@ public class PersonnelService {
 
  	    //이미지 파일과 사원 아이디를 이미지 서비스로 보내기
  	    if(empImg != null && !empImg.isEmpty()) {
+ 	    	log.info("저장될 이미지가 발견 되었습니다.");
  	    	personnelImgService.registImg(personnel, empImg);
  	    }
 

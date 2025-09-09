@@ -27,7 +27,6 @@ public class CommonDetailCodeDTO {
 	private String createdAt; // 등록일
 	private LocalDateTime updatedAt; // 수정일 
 	
-	private String systemType; // ERP인지 MES인지
 	
 	
 	public static ModelMapper modelMapper = new ModelMapper();

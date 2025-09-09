@@ -23,7 +23,7 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 	
 
 	// 전체 사원 조회 + 무한스크롤
-	Page<Annual> findByAnnYear(String annYear, Pageable pageable);
+	Page<Annual> findByAnnYearOrderByCreatedAtDesc(String annYear, Pageable pageable);
 
 	// 검색(사원번호, 이름, 부서, 직급)
 	@Query("SELECT a, p FROM Annual a JOIN Personnel p ON a.empId = p.empId " +
@@ -41,7 +41,6 @@ public interface AnnualRepository extends JpaRepository<Annual, Long> {
 	Page<Annual> findByAnnYearAndEmpId(@Param("annYear") String annYear, @Param("loginEmpId") String loginEmpId, Pageable pageable);
 
 
-	boolean existsByEmpIdAndAnnYear(String empId, String annYear);
 
 
 	

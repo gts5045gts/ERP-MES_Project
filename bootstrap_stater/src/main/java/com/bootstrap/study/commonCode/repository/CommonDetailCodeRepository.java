@@ -32,4 +32,7 @@ public interface CommonDetailCodeRepository extends JpaRepository<CommonDetailCo
 
 	Optional<CommonDetailCode> findByComDtId(String comDtId);
 
+
+
+
 }

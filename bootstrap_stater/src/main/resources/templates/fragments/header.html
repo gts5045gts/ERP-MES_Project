@@ -276,7 +276,7 @@
 								class="mr-2 d-none d-lg-inline text-gray-600 small"
 								th:text="${#authentication.principal.name}"></span> <img
 								class="img-profile rounded-circle"
-								th:src="@{/bootstrap/img/undraw_profile.svg}">
+								th:src="@{/personnel/loginShowImg/{id}(id=${#authentication.principal.empId})}">
 						</a>
 							<div
 								class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

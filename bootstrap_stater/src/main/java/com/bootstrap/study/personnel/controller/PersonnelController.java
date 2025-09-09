@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -112,7 +114,24 @@ public class PersonnelController {
 
 		return "/hrn/personnelCurrent";
 	}
+	//이미지 요청 리퀘스트 제어 
+	@GetMapping("/showImg/{empId}")
+	public ResponseEntity<Resource> getImg(@PathVariable("empId") String empId) {
+		log.info("사원 번호 : " + empId);
 	
+		
+		
+		return personnelImgService.getImgLocation(empId);
+	}
+	
+	@GetMapping("/loginShowImg/{empId}")
+	public ResponseEntity<Resource> getImg2(@PathVariable("empId") String empId) {
+		log.info("사원 번호 : " + empId);
+	
+		
+		
+		return personnelImgService.getImgLocation(empId);
+	}
 	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
     public ResponseEntity<List<PersonnelDTO>> getAllPersonnels() {
