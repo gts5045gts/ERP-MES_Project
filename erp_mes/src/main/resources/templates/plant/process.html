@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+		
+    </th:block>
+    
+    
+    
+    
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+		<div id="grid"></div>
+		
+
+
+
+   
+    </div>
+
+</th:block>
+
+<th:block layout:fragment="script">
+	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	const Grid = tui.Grid;
+	const instance = new Grid({
+  	el: document.getElementById('grid'), // Container element
+ 	 columns: [
+   		 {
+  		   	  header: 'Name',
+		      name: 'name'
+		    },
+		    {
+		      header: 'Artist',
+		      name: 'artist'
+		    },
+		    {
+		      header: 'Release',
+		      name: 'release'
+		    },
+		    {
+		      header: 'Genre',
+		      name: 'genre'
+		    }
+		  ],
+		  data: [
+		    {
+		      name: 'Beautiful Lies',
+		      artist: 'Birdy',
+		      release: '2016.03.26',
+		      genre: 'Pop'
+		    }
+		  ]
+		});
+	instance.resetData(newData); // Call API of instance's public method
+
+	Grid.applyTheme('striped'); // Call API of static method
+	
+	
+</th:block>
+</body>
+</html>
