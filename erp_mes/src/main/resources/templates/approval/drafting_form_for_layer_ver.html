@@ -81,7 +81,7 @@
 								<label class="col-sm-2 col-form-label">휴가 종류</label>
 								<div class="col-sm-2">
 									<select class="form-control" th:field="*{reqType}">
-										<option th:each="rtype : ${T(com.bootstrap.study.approval.constant.ApprVacType).values()}"
+										<option th:each="rtype : ${T(com.erp_mes.erpapproval.constant.ApprVacType).values()}"
 												th:value="${rtype}" th:text="${rtype.label}"></option>
 									</select>
 								</div>
@@ -112,7 +112,7 @@
 							<div class="form-group row">
 								<label class="col-sm-2 col-form-label">반차 여부</label>
 								<div class="col-sm-8">
-									<div class="form-check form-check-inline" th:each="halfType : ${T(com.bootstrap.study.approval.constant.ApprHalfType).values()}">
+									<div class="form-check form-check-inline" th:each="halfType : ${T(com.erp_mes.erpapproval.constant.ApprHalfType).values()}">
 										<input class="form-check-input" type="radio" name="halfType" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
 										<label class="form-check-label" th:for="'halfType_' + ${halfType.name()}" th:text="${halfType.label}"></label>
 									</div>

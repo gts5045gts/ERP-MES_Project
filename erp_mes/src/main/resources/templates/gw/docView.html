@@ -33,7 +33,7 @@
 						<label for="templateSelector2">문서 양식 선택</label>
 						<select class="form-control" th:field="*{reqType}" disabled>
 							<option 
-									th:each="reqType : ${T(com.bootstrap.study.approval.constant.ApprReqType).values()}"
+									th:each="reqType : ${T(com.erp_mes.erpapproval.constant.ApprReqType).values()}"
 									th:value="${reqType}"
 									th:text="${reqType.label}"
 									>
