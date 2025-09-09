@@ -1,7 +1,6 @@
 package com.bootstrap.study.groupware.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,6 @@ import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
 import com.bootstrap.study.groupware.mapper.DocumentMapper;
 import com.bootstrap.study.groupware.repository.DocumentRepository;
-import com.bootstrap.study.personnel.dto.PersonnelDTO;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

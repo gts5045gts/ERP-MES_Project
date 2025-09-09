@@ -84,7 +84,6 @@ public class CommonCodeController {
 	        model.addAttribute("dtCodes", comService.findByComId(codeDtDTO.getComId()));
 	        return "admin/commonCodeDetail :: detailTable"; // fragment 반환
 	    }
-
 	    comService.registDtCode(codeDtDTO);
 	    // 등록 후 다시 fragment 반환
 	    model.addAttribute("dtCodes", comService.findByComId(codeDtDTO.getComId()));
@@ -116,7 +115,7 @@ public class CommonCodeController {
 	// 공통코드 수정
 	@PostMapping("/comUpdate/{comId}")
 	@ResponseBody
-	public String comUpdate (@PathVariable("comId") String comId,  @RequestParam("comNm") String comNm, @RequestParam("useYn") String useYn) {
+	public String comUpdate (@PathVariable("comId") String comId, @RequestParam("comNm") String comNm, @RequestParam("useYn") String useYn) {
 		 comService.updateCode(comId, comNm, useYn);
 		 
 		 return "해당 코드가 수정되었습니다";
@@ -129,6 +128,7 @@ public class CommonCodeController {
 	public String comDtUpdate(@PathVariable("comDtId") String comDtId, @RequestParam("comDtNm") String comDtNm,
 	        @RequestParam("comDtOrder") Integer comDtOrder, @RequestParam("useYn") String useYn) {
 
+		
 	    comService.updateDtCode(comDtId, comDtOrder, comDtNm, useYn);
 	    return "해당 코드가 수정되었습니다";
 	}

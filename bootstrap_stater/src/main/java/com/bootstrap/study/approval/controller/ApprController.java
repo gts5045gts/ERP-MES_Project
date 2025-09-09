@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,11 +24,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.bootstrap.study.approval.constant.ApprDecision;
 import com.bootstrap.study.approval.constant.ApprReqType;
-import com.bootstrap.study.approval.constant.ApprStatus;
 import com.bootstrap.study.approval.dto.ApprDTO;
 import com.bootstrap.study.approval.dto.ApprFullDTO;
-import com.bootstrap.study.approval.entity.Appr;
 import com.bootstrap.study.approval.service.ApprService;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.groupware.dto.DocumentDTO;
@@ -117,7 +115,7 @@ public class ApprController {
         Page<ApprDTO> approvalPage = apprService.getApprovalList(pageable, status, currentUserId);
         addPaginationAttributes(model, approvalPage, status);
         
-        return "approval/approval_list";    
+        return "approval/approval_List";    
     }
     
     //결재 상세 정보 조회 API
@@ -172,32 +170,33 @@ public class ApprController {
     }
     
     // ==================== Private Helper Methods ====================
-    
-    // 승인/반려 공통 처리 메서드
-	private ResponseEntity<String> processApproval(Long reqId, Map<String, String> requestBody, String action, Authentication authentication) {  // authentication 추가
-	    log.info("{} 처리 API 호출 - reqId: {}", action, reqId);
-	    
-	    try {
-	        String comments = extractComments(requestBody);
-	        String loginId = authentication.getName();  // 로그인 ID 가져오기
-	        log.info("{} 사유: {}, 로그인ID: {}", action, comments, loginId);
-	        
-	        if ("APPROVE".equals(action)) {
-	            apprService.approveRequestWithComments(reqId, comments, loginId);  // loginId 추가
-	            log.info("승인 처리 완료 - reqId: {}", reqId);
-	            return ResponseEntity.ok("승인 처리가 완료되었습니다.");
-	        } else {
-	            apprService.rejectRequestWithComments(reqId, comments, loginId);  // loginId 추가
-	            log.info("반려 처리 완료 - reqId: {}", reqId);
-	            return ResponseEntity.ok("반려 처리가 완료되었습니다.");
-	        }
-	        
-	    } catch (Exception e) {
-	        log.error("{} 처리 실패 - reqId: {}, 오류: {}", action, reqId, e.getMessage(), e);
-	        return ResponseEntity.status(500)
-	                .body(action.equals("APPROVE") ? "승인 처리 중 오류가 발생했습니다." : "반려 처리 중 오류가 발생했습니다.");
-	    }
-	}
+    // 0827 승인/반려 공통 처리 메서드
+    private ResponseEntity<String> processApproval(Long reqId, Map<String, String> requestBody, String action, Authentication authentication) {  // authentication 추가
+        log.info("{} 처리 API 호출 - reqId: {}", action, reqId);
+        
+        try {
+            String comments = extractComments(requestBody);
+            String loginId = authentication.getName();  // 로그인 ID 가져오기
+            log.info("{} 사유: {}, 로그인ID: {}", action, comments, loginId);
+            
+            if ("APPROVE".equals(action)) {
+            	apprService.processApproval(reqId, loginId, ApprDecision.ACCEPT, comments);
+// 기존에 있던 것                apprService.approveRequestWithComments(reqId, comments, loginId);  // loginId 추가
+                log.info("승인 처리 완료 - reqId: {}", reqId);
+                return ResponseEntity.ok("승인 처리가 완료되었습니다.");
+            } else {
+            	apprService.processApproval(reqId, loginId, ApprDecision.DENY, comments);
+// 기존에 있던 것               apprService.rejectRequestWithComments(reqId, comments, loginId);  // loginId 추가
+                log.info("반려 처리 완료 - reqId: {}", reqId);
+                return ResponseEntity.ok("반려 처리가 완료되었습니다.");
+            }
+            
+        } catch (Exception e) {
+            log.error("{} 처리 실패 - reqId: {}, 오류: {}", action, reqId, e.getMessage(), e);
+            return ResponseEntity.status(500)
+                    .body(action.equals("APPROVE") ? "승인 처리 중 오류가 발생했습니다." : "반려 처리 중 오류가 발생했습니다.");
+        }
+    }
     
     // 결재 취소 처리 API
 	@PostMapping("/api/cancel/{reqId}")

@@ -1,3 +1,6 @@
+window._csrfToken = $('meta[name="_csrf"]').attr('content');
+window._csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+	
 let selectedParentId = null;
 let selectedDetailId = null;
 
@@ -17,6 +20,7 @@ $(document).ready(function() {
 			$('#detailArea').html(fragment);
 			$('#detailArea').show(); // 클릭 시 테이블 보이게
 			$('#codeDetailSearch').closest('.col-6').show();
+			
 		});
 	});
 
@@ -33,18 +37,29 @@ $(document).ready(function() {
 	// 상세코드 등록
 	$('#commonCodeDetailForm').submit(function(e) {
 		e.preventDefault();
-		$.post("/admin/comDtRegist", $(this).serialize(), function() {
-			// 등록 후 상세테이블 갱신
-			$.get("/admin/detail/" + selectedParentId, function(fragment) {
+		$.ajax({
+			url: "/admin/comDtRegist",
+			type: "POST",
+			data: $(this).serialize(),       // form 데이터를 그대로 전송
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader(csrfHeader, csrfToken); // meta에서 가져온 headerName + token
+			},
+			success: function(fragment) {
+				// 등록 후 상세테이블 갱신
 				$('#detailArea').html(fragment);
-			});
-			// 모달 닫기
-			var modalEl = document.getElementById('commonDetailModal');
-			var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-			modal.hide();
-			// 폼 초기화
-			$('#commonCodeDetailForm')[0].reset();
-		});
+
+				// 모달 닫기
+				var modalEl = document.getElementById('commonDetailModal');
+				var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+				modal.hide();
+
+				// 폼 초기화
+				$('#commonCodeDetailForm')[0].reset();
+			},
+			error: function(xhr) {
+				alert("등록 중 오류 발생: " + xhr.status + "\n" + xhr.responseText);
+			}
+		   });
 	});
 });
 
@@ -56,10 +71,13 @@ $('#btnDeleteCode').click(function() {
 	}
 	
 	if (!confirm(selectedParentId + "를 삭제하시겠습니까?")) return;
-
+	
 	$.ajax({
 		url: "/admin/comDelete/" + selectedParentId,
 		type: "DELETE",
+        headers: {
+            'X-CSRF-TOKEN': csrfToken  // CSRF 토큰 헤더
+        },
 		success: function(result) {
 			alert(result);
 			if (result === "삭제가 완료되었습니다.") {
@@ -108,28 +126,46 @@ function openCommonCodeModal(edit = false, data = {}, selectedRow = null) {
 	submitBtn.off('click');
 
 	// submit 이벤트
-	if (edit) {
-		submitBtn.on('click', function(e) {
-			e.preventDefault();
-			const payload = {
-				comNm: $('#comNm').val(),
-				useYn: $('.useCodeAt').val()
-			};
-			$.post('/admin/comUpdate/' + data.comId, payload)
-				.done(function(res) {
-					alert(res);
-					$('#commonCodeModal').modal('hide');
-					// 선택 행 즉시 업데이트
-					if (selectedRow && selectedRow.length) {
-						selectedRow.find('.comNm-cell').text(payload.comNm);
-						selectedRow.find('.useYn-cell').text(payload.useYn);
-					}
-				})
-				.fail(function(err) {
-					alert('수정 실패: ' + err.responseText);
-				});
+	submitBtn.on('click', function(e) {
+		e.preventDefault();
+
+		const payload = {
+			comNm: $('#comNm').val(),
+			useYn: $('.useCodeAt').val()
+		};
+
+		let url = edit ? '/admin/comUpdate/' + data.comId : '/admin/comRegist';
+		let type = 'POST';
+
+		$.ajax({
+			url: url,
+			type: type,
+			data: payload,
+			headers: {
+				'X-CSRF-TOKEN': csrfToken
+			},
+			success: function(res) {
+				alert(res);
+				$('#commonCodeModal').modal('hide');
+
+				// 수정 시 선택 행 업데이트
+				if (edit && selectedRow && selectedRow.length) {
+					selectedRow.find('.comNm-cell').text(payload.comNm);
+					selectedRow.find('.useYn-cell').text(payload.useYn);
+				}
+
+				// 등록 시 테이블 갱신
+				if (!edit) {
+					$.get('/admin/list', function(fragment) {
+						$('#masterTableArea').html(fragment);
+					});
+				}
+			},
+			error: function(err) {
+				alert('처리 실패: ' + err.responseText);
+			}
 		});
-	}
+	});
 }
 
 // ------------------------- 상세코드-----------------------------------
@@ -153,6 +189,9 @@ $(document).ready(function() {
 		$.ajax({
 			url: "/admin/comDtDelete/" + comDtId,
 			type: "DELETE",
+	        headers: {
+	            'X-CSRF-TOKEN': csrfToken  // CSRF 토큰 헤더
+	        },
 			success: function(result) {
 				alert(result); // 컨트롤러에서 return 값
 				$.get("/admin/detail/" + selectedParentId, function(fragment) {
@@ -199,37 +238,56 @@ function openCommonCodeDetailModal(edit = false, data = {}, selectedRow = null) 
 	$('#comDtOrder').val(data.comDtOrder || '');
 	const defaultUseYn = edit ? data.useYn : 'Y';
 	$('.useCodeAt').val(defaultUseYn);
+	
+	if (edit) {
+		$("#comDtId").attr("readonly", true);   // 수정 모드 → ID 수정 불가
+	} else {
+		$("#comDtId").removeAttr("readonly");   // 등록 모드 → ID 입력 가능
+	}
+	
 	$('#commonDetailModal').modal('show');
+	
+	const submitBtn = $('#commonCodeDetailForm button[type="submit"]');
 
 	// submit 이벤트
-	$('#commonCodeForm').off('submit').on('submit', function(e) {
-		if (edit) {
-			e.preventDefault();
-			// 수정은 Ajax 사용
-	
-			// comDtOrder 값 처리
-			const comDtOrderVal = $('#comDtOrder').val();
-			const comDtOrderInt = comDtOrderVal ? parseInt(comDtOrderVal, 10) : null;
+	submitBtn.off('click').on('click', function(e) {
+		e.preventDefault();
 
-			const payload = {
-				comDtNm: $('#comDtNm').val(),
-				comDtOrder: comDtOrderInt,
-				useYn: $('#commonCodeDetailForm .useCodeAt').val()
-			};
-			$.post('/admin/comDtUpdate/' + data.comDtId, payload)
-				.done(function(res) {
-					alert(res);
-					$('#commonDetailModal').modal('hide');
-					// 선택 행 즉시 업데이트
-					if (selectedRow && selectedRow.length) {
-						selectedRow.find('.comDtNm-cell').text(payload.comDtNm);
-						selectedRow.find('.comDtOrder-cell').text(payload.comDtOrder !== null ? payload.comDtOrder : '');
-						selectedRow.find('.useYn-dcell').text(payload.useYn);
-					}
-				})
-				.fail(function(err) {
-					alert('수정 실패: ' + err.responseText);
-				});
-		}
+		const payload = {
+			comDtId: $('#comDtId').val(),
+			comDtNm: $('#comDtNm').val(),
+			comDtOrder: $('#comDtOrder').val() !== '' ? parseInt($('#comDtOrder').val(), 10) : 0,
+			useYn: $('#commonCodeDetailForm .useCodeAt').val()
+		};
+	
+		$.ajax({
+			url: '/admin/comDtUpdate/' + data.comDtId,
+			type: 'POST', // POST 또는 PUT
+			data: payload,
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader(csrfHeader, csrfToken); // CSRF 헤더 추가
+			},
+			success: function(res) {
+				alert(res);
+				$('#commonDetailModal').modal('hide');
+				
+				// 선택 행 즉시 업데이트
+				if (selectedRow && selectedRow.length) {
+					selectedRow.find('.comDtId-cell').text(payload.comDtId);
+					selectedRow.find('.comDtNm-cell').text(payload.comDtNm);
+					selectedRow.find('.comDtOrder-cell').text(payload.comDtOrder !== null ? payload.comDtOrder : '');
+					selectedRow.find('.useYn-dcell').text(payload.useYn);
+				} else {
+                    // 등록 후 상세 테이블 갱신
+                    $.get("/admin/detail/" + selectedParentId, function(fragment) {
+                        $('#detailArea').html(fragment);
+                    });
+                }
+			},
+			error: function(err) {
+				alert('수정 실패: ' + err.responseText);
+			}
+			
+		});
 	});
 }

@@ -2,6 +2,7 @@ package com.bootstrap.study.attendance.service;
 
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +23,6 @@ import com.bootstrap.study.approval.repository.ApprRepository;
 import com.bootstrap.study.attendance.dto.AnnualDTO;
 import com.bootstrap.study.attendance.entity.Annual;
 import com.bootstrap.study.attendance.repository.AnnualRepository;
-import com.bootstrap.study.commonCode.entity.CommonDetailCode;
 import com.bootstrap.study.personnel.entity.Personnel;
 import com.bootstrap.study.personnel.repository.PersonnelRepository;
 
@@ -51,7 +51,7 @@ public class AnnualService {
 		
 		return annRepository.findByEmpIdAndAnnYear(empId, annYear)
 				.orElseGet(() -> {
-					int totalAnnual = getAnnByPosition(emp.getPosition());
+					int totalAnnual = getAnnByHireDate(emp.getJoinDate());
 					Annual newAnn = new Annual(empId, annYear, 0.0, totalAnnual);
 					annRepository.save(newAnn);
 					return newAnn;
@@ -88,7 +88,7 @@ public class AnnualService {
 	    Annual ann = getOrCreateAnnual(empId, annYear);
 
 		// 직급별 연차 자동 적용 (갱신)
-	    ann.setAnnTotal((double)getAnnByPosition(emp.getPosition()));
+	    ann.setAnnTotal((double)getAnnByHireDate(emp.getJoinDate()));
 	    
 	    annRepository.save(ann);
 	   
@@ -96,14 +96,20 @@ public class AnnualService {
 		
 	}
 
-	// 직급별 연차 계산
-	private int getAnnByPosition(CommonDetailCode position) {
-		switch (position.getComDtId()) {
-			case "POS001": return 15;
-			case "POS002" : case "POS003" : case "POS004" : return 20;
-			case "POS005" : case "POS006" : return 25;
-			default: return 15;
-		}
+	// 입사일 기준 연차 계산
+	private int getAnnByHireDate(String joinDate) {
+		if (joinDate == null || joinDate.isEmpty()) {
+	        throw new IllegalArgumentException("입사일이 없습니다.");
+	    }
+
+	    LocalDate join = LocalDate.parse(joinDate); // 기본 ISO 형식 yyyy-MM-dd
+	    LocalDate today = LocalDate.now();
+
+	    int years = Period.between(join, today).getYears();
+		
+		if (years < 1) return 11;
+	    else if (years < 3) return 15;
+	    else return 25;
 		
 	}
 	
@@ -115,11 +121,12 @@ public class AnnualService {
 	    Personnel loginUser = getPersonnel(empId);
 	    String roleCode = loginUser.getLevel().getComDtId();
 	    String deptCode = loginUser.getDepartment().getComDtId();
+	    
 
 	    Page<Annual> annPage;
 	    switch (roleCode) {
 	        case "AUT001": // 상위 관리자
-	            annPage = annRepository.findByAnnYear(annYear, pageable);
+	            annPage = annRepository.findByAnnYearOrderByCreatedAtDesc(annYear, pageable);
 	            break;
 	        case "AUT002": // 중간 관리자
 	            annPage = annRepository.findByAnnYearAndDepNm(annYear, deptCode, pageable); 
@@ -137,27 +144,20 @@ public class AnnualService {
 	        return new AnnualDTO(ann, emp);
 	    }).collect(Collectors.toList());
 
-	    // 초기 연차 없는 사원 처리
-	    List<String> existingEmps = dtoList.stream().map(AnnualDTO::getEmpId).toList();
-	    List<Personnel> updateEmps = empRepository.findAll().stream()
-	            .filter(emp -> !existingEmps.contains(emp.getEmpId()))
-	            .toList();
-
-	    for(Personnel emp : updateEmps) {
-	        // 중간관리자는 부서 필터링
-	    	if(annRepository.existsByEmpIdAndAnnYear(emp.getEmpId(), annYear)) continue;
-
-	        int totalAnn = getAnnByPosition(emp.getPosition());
-	        Annual zeroAnn = new Annual(emp.getEmpId(), annYear, 0.0, totalAnn);
-	        annRepository.save(zeroAnn);
-	        AnnualDTO dto = new AnnualDTO(zeroAnn, emp);
-	        dtoList.add(dto);
-	    }
-
-	    return new PageImpl<>(dtoList, pageable, dtoList.size());
+	    return new PageImpl<>(dtoList, pageable, annPage.getTotalElements());
 	}
 
 
+
+	// 사원등록시 연차 초기 생성
+	@Transactional
+	public void annListUpdate(String empId, String annYear) {
+		Personnel emp = getPersonnel(empId);
+		
+        int totalAnnual = getAnnByHireDate(emp.getJoinDate());
+        Annual ann = new Annual(emp.getEmpId(), annYear, 0.0, totalAnnual);
+        annRepository.saveAndFlush(ann); // 저장 즉시 db 반영
+    }
 
 	// 검색창
 	public List<AnnualDTO> searchAnn(String keyword) {
@@ -170,14 +170,6 @@ public class AnnualService {
 
 
 
-	// 사원등록시 연차 초기 생성
-	public void annListUpdate(String empId) {
-		Personnel emp = getPersonnel(empId);
-		
-        int totalAnnual = getAnnByPosition(emp.getPosition());
-        Annual ann = new Annual(emp.getEmpId(), String.valueOf(java.time.LocalDate.now().getYear()), 0.0, totalAnnual);
-        annRepository.save(ann);
-    }
 	
 	
 	// 기안서 승인 시 연차 변경

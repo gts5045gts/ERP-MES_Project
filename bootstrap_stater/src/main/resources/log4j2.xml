@@ -3,6 +3,7 @@
 	<!-- 각 로그에서 사용할 속성값을 Properties 태그 내의 Property 태그로 정의 -->
 	<Properties>
 		<Property name="LOG_DIR">E:/logs/mylog</Property>
+<!-- 		<Property name="LOG_DIR">C:/logs/mylog</Property> -->
 		<!-- 아이티윌 서버 상에서 로그 경로 설정 예시 -->
 		<!-- <Property name="LOG_DIR">/usr/local/tomcat/logs/mylog</Property> -->
 
@@ -87,7 +88,7 @@
 		
 		<!-- 현재 프로젝트(애플리케이션) 내의 특정 패키지에 대한 로그 설정 -->
 			<!-- INFO 이상의 심각도 레벨의 로그 출력(INFO < WARN < ERROR < FATAL) -->
-		<Logger name="com.bootstrap.study" level="INFO" additivity="false">
+		<Logger name="com.bootstrap.study" level="DEBUG" additivity="false">
 			<!-- WARN 이상의 심각도 레벨의 로그 출력(WARN < ERROR < FATAL) -->
 <!-- 		<Logger name="com.itwillbs.db" level="WARN" additivity="false"> -->
 <!-- 		<Logger name="com.itwillbs.db" level="OFF" additivity="false"> -->
@@ -102,6 +103,11 @@
 			<AppenderRef ref="rollingFile2" /> <!-- Root 로거 메세지들을 외부 파일에 출력 -->
 			<AppenderRef ref="rollingErrorFile" />
 		</Logger>
+		<!-- 스프링 시큐리티 관련 오류 정보 표시 -->
+		<Logger name="org.Springframwork.security" level="DEBUG" additivit="false">
+			<AppenderRef ref="console"/>
+		</Logger>
+		
 	</Loggers>
 	
 </Configuration>

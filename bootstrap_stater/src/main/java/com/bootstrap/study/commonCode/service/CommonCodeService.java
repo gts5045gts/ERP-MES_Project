@@ -128,16 +128,18 @@ public class CommonCodeService {
 	
 	
 	// 상세코드 수정
-	 @Transactional
-	 public void updateDtCode(String comDtId, Integer comDtOrder, String comDtNm, String useYn) {
-        // 상세공통코드 조회
-        CommonDetailCode dtCode = comDetailRepository.findById(comDtId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 상세코드가 존재하지 않습니다: " + comDtId));
-
-        // 값 수정
-        dtCode.setComDtNm(comDtNm);
-        dtCode.setComDtOrder(comDtOrder);
-        dtCode.setUseYn(useYn);
+	@Transactional
+	public void updateDtCode(String comDtId, Integer comDtOrder, String comDtNm, String useYn) {
+	    // 상세공통코드 조회
+		CommonDetailCode dtCode = comDetailRepository.findById(comDtId)
+		        .orElseThrow(() -> new IllegalArgumentException("해당 상세코드가 존재하지 않습니다: " + comDtId));
+		
+		// 값 수정
+		dtCode.setComDtNm(comDtNm);
+		dtCode.setComDtOrder(comDtOrder);
+		dtCode.setUseYn(useYn);
+		
+        
     }
 
 // ================================================ 검색 ===========================================

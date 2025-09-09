@@ -7,8 +7,12 @@
 <meta charset="UTF-8">
 <title>그룹웨어 - 공지사항</title>
 </head>
-<body th:data-current-user-id="${currentUsername}">
+<body>
 	<th:block layout:fragment="content">
+		<th:block sec:authorize="isAuthenticated()">
+			<input type="hidden" id="currentEmpId"
+				th:value="${#authentication.principal.empId}" />
+		</th:block>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-6 mb-4">
@@ -25,8 +29,7 @@
 						<div class="collapse show" id="collapse1">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table id="dataTable1"
-										class="table table-bordered table-striped table-hover">
+									<table class="table table-hover text-center table-compact" id="dataTable1" width="100%" cellspacing="0">
 										<thead>
 											<tr>
 												<th>순 번</th>
@@ -40,17 +43,20 @@
 										<tbody>
 											<tr th:each="notice, stat : ${notices}">
 												<td th:text="${stat.count}">순번</td>
-												<td th:text="${notice.notType}">부서명
-												</th>
+												<td th:text="${notice.notType}">부서명</td>
 												<td><a href="#" data-toggle="modal"
-													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													data-target="#noticeModal" th:data-id="${notice.notId}"
+													th:data-title="${notice.notTitle}"
+													th:data-content="${notice.notContent}"
+													th:data-author="${notice.employee.name}"
+													th:data-author-username="${notice.employee.empId}"
+													th:data-date="${#temporals.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
 												<td th:text="${notice.notContent}">공지 내용</td>
 												<td th:text="${notice.employee.name}">작성자</td>
 												<td
-													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
+													th:text="${#temporals.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
 										</tbody>
 									</table>
@@ -90,17 +96,19 @@
 										<tbody>
 											<tr th:each="notice, stat : ${deptNotices}">
 												<td th:text="${stat.count}">순번</td>
-
 												<td><a href="#" data-toggle="modal"
-													data-target="#noticeModal"
-													th:attr="data-id=${notice.notId}, data-title=${notice.notTitle}, data-content=${notice.notContent}, data-author=${notice.employee.name}, data-author-username=${notice.employee.empId}, data-date=${#dates.format(notice.createAt, 'yyyy-MM-dd')}">
+													data-target="#noticeModal" th:data-id="${notice.notId}"
+													th:data-title="${notice.notTitle}"
+													th:data-content="${notice.notContent}"
+													th:data-author="${notice.employee.name}"
+													th:data-author-username="${notice.employee.empId}"
+													th:data-date="${#temporals.format(notice.createAt, 'yyyy-MM-dd')}">
 														<span th:text="${notice.notTitle}">공지 제목</span>
 												</a></td>
-
 												<td th:text="${notice.notContent}">공지 내용</td>
 												<td th:text="${notice.employee.name}">작성자</td>
 												<td
-													th:text="${#dates.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
+													th:text="${#temporals.format(notice.createAt, 'yyyy-MM-dd')}">등록일</td>
 											</tr>
 										</tbody>
 									</table>
@@ -111,7 +119,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- 모달코드 -->
 		<div class="modal fade" id="noticeModal" tabindex="-1" role="dialog"
 			aria-labelledby="noticeModalLabel" aria-hidden="true">
 			<div class="modal-dialog" role="document">
