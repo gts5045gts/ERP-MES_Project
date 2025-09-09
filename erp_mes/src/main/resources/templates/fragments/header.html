@@ -100,10 +100,9 @@
 						<h6 class="collapse-header"
 							sec:authorize="hasAnyRole('AUT001','AUT002')">관리자 근태관리 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/attendance/adminCommute}"
-							sec:authorize="hasAnyRole('AUT001','AUT002')">근태관리</a>
-						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}"
-							sec:authorize="hasAnyRole('AUT001','AUT002')">출근기록
-							삭제 로그</a>
+							sec:authorize="hasAnyRole('AUT001','AUT002')">근태관리</a> <a
+							class="collapse-item" th:href="@{/attendance/adminCommuteLog}"
+							sec:authorize="hasAnyRole('AUT001','AUT002')">출근기록 삭제 로그</a>
 						<div class="collapse-divider"></div>
 					</div>
 				</div></li>
@@ -125,11 +124,11 @@
 					</div>
 				</div></li>
 			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#collapsePay"
-				aria-expanded="true" aria-controls="collapsePayment"> <i
+				data-toggle="collapse" data-target="#collapseGroupWare"
+				aria-expanded="true" aria-controls="collapseGroupWare"> <i
 					class="fas fa-fw fa-folder"></i> <span>그룹웨어</span>
 			</a>
-				<div id="collapsePay" class="collapse"
+				<div id="collapseGroupWare" class="collapse"
 					aria-labelledby="headingPages" data-parent="#accordionSidebar">
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">공지사항 메뉴:</h6>
@@ -298,7 +297,8 @@
 									바로가기</h6>
 								<div id="messageList"></div>
 								<a class="dropdown-item text-center small text-gray-500"
-									th:href="@{/privateChat}">Read More Messages</a>
+									id="readMoreMessagesLink" th:href="@{/privateChat}">Read
+									More Messages</a>
 							</div></li>
 						<div class="topbar-divider d-none d-sm-block"></div>
 
@@ -449,16 +449,21 @@ function fetchUnreadMessages() {
                     const messageItem = createMessageItem(msg);
                     messageList.appendChild(messageItem);
                 });
+                // 'Read More Messages' 링크에도 마지막 메시지 발신자 ID를 할당
+                const lastMessageSenderId = data[0].senderId;
+                document.getElementById('readMoreMessagesLink').href = `/privateChat?chatPartnerId=${lastMessageSenderId}`;
+            } else {
+                messageBadge.style.display = 'none';
+                messageList.innerHTML = '';
             }
         })
         .catch(error => console.error('읽지 않은 메시지 불러오기 오류:', error));
 }
-
 // 메시지 항목 HTML을 생성하는 헬퍼 함수
 function createMessageItem(message) {
     const messageItem = document.createElement('a');
     messageItem.classList.add('dropdown-item', 'd-flex', 'align-items-center');
-    messageItem.href = `/privateChat?recipientId=${message.senderId}`;
+    messageItem.href = `/privateChat?chatPartnerId=${message.senderId}`; // 알림을 보낸 사람의 ID를 파라미터로 전달
     messageItem.innerHTML = `
         <div class="dropdown-list-image mr-3">
             <img class="rounded-circle" src="/bootstrap/img/undraw_profile_1.svg" alt="...">
