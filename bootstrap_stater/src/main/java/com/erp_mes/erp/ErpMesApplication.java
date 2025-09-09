@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class BootstrapStaterApplication extends SpringBootServletInitializer{
+public class ErpMesApplication extends SpringBootServletInitializer{
 
 	public static void main(String[] args) {
-		SpringApplication.run(BootstrapStaterApplication.class, args);
+		SpringApplication.run(ErpMesApplication.class, args);
 	}
 
 }
