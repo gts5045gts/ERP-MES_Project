@@ -67,21 +67,22 @@
 				<!-- Nav Item - Utilities Collapse Menu -->
 				Addons
 			</div>
-			<li class="nav-item"><a class="nav-link collapsed" href="#"
-				data-toggle="collapse" data-target="#collapseUtilities"
-				aria-expanded="true" aria-controls="collapseUtilities"> <i
-					class="fas fa-fw fa-wrench"></i> <span>인사관리</span>
-			</a>
-				<div id="collapseUtilities" class="collapse"
-					aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+			<li class="nav-item">
+				<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+					aria-expanded="true" aria-controls="collapseUtilities">
+					<i class="fas fa-fw fa-wrench"></i>
+					<span>인사관리</span>
+				</a>
+				<div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">인사관리 메뉴:</h6>
 						<a class="collapse-item" th:href="@{/personnel/current}">인사현황</a>
-						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> <a
-							class="collapse-item" th:href="@{/personnel/trans}">인사발령</a> <a
-							class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
+						<a class="collapse-item" th:href="@{/personnel/regist}">인사등록</a> 
+						<a class="collapse-item" th:href="@{/personnel/trans}">인사발령</a>
+						<a class="collapse-item" th:href="@{/personnel/orgChart}">조직도</a>
 					</div>
-				</div></li>
+				</div>
+			</li>
 
 			<!-- Nav Item - Pages Collapse Menu -->
 			<li class="nav-item"><a class="nav-link collapsed" href="#"
@@ -97,12 +98,9 @@
 						<!--                         <a class="collapse-item" th:href="@{/attendance/attendanceList}">나의 근태 내역</a> -->
 						<a class="collapse-item" th:href="@{/attendance/annualList}">연차
 							관리</a>
-						<h6 class="collapse-header"
-							sec:authorize="hasAnyRole('AUT001','AUT002')">관리자 근태관리 메뉴:</h6>
-						<a class="collapse-item" th:href="@{/attendance/adminCommute}"
-							sec:authorize="hasAnyRole('AUT001','AUT002')">근태관리</a>
-						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}"
-							sec:authorize="hasAnyRole('AUT001','AUT002')">출근기록
+						<h6 class="collapse-header">관리자 근태관리 메뉴:</h6>
+						<a class="collapse-item" th:href="@{/attendance/adminCommute}">근태관리</a>
+						<a class="collapse-item" th:href="@{/attendance/adminCommuteLog}">출근기록
 							삭제 로그</a>
 						<div class="collapse-divider"></div>
 					</div>
@@ -142,39 +140,6 @@
 						<h6 class="collapse-header">사내 메신저:</h6>
 						<a class="collapse-item" th:href="@{/chat}">사내 메신저</a> <a
 							class="collapse-item" th:href="@{/privateChat}">1:1 메신저</a>
-
-					</div>
-				</div></li>
-
-			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#collapseMasterDate"
-				aria-expanded="true" aria-controls="collapseMasterDate"> <i
-					class="fas fa-fw fa-folder"></i> <span>기준정보관리</span>
-			</a>
-				<div id="collapseMasterDate" class="collapse"
-					aria-labelledby="headingPages" data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">기준정보관리:</h6>
-						<a class="collapse-item" th:href="@{/notice}">품질정보</a>
-
-					</div>
-				</div></li>
-
-			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#collapseQuality"
-				aria-expanded="true" aria-controls="collapseQuality"> <i
-					class="fas fa-fw fa-folder"></i> <span>품질관리</span>
-			</a>
-				<div id="collapseQuality" class="collapse"
-					aria-labelledby="headingPages" data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">검사 관리:</h6>
-						<a class="collapse-item" th:href="@{/notice}">수입 검사</a> <a
-							class="collapse-item" th:href="@{/notice}">공정 검사</a> <a
-							class="collapse-item" th:href="@{/notice}">포장 검사</a>
-						<h6 class="collapse-header">불량 관리:</h6>
-						<a class="collapse-item" th:href="@{/schedule}">불량 관리</a> <a
-							class="collapse-item" th:href="@{/schedule}">분석 리포트</a>
 
 					</div>
 				</div></li>
@@ -311,15 +276,13 @@
 								class="mr-2 d-none d-lg-inline text-gray-600 small"
 								th:text="${#authentication.principal.name}"></span> <img
 								class="img-profile rounded-circle"
-								th:src="@{/personnel/loginShowImg/{id}(id=${#authentication.principal.empId})}">
+								th:src="@{/personnel/loginShowImg/{id}(id=${#authentication.principal.empId})}"><!-- th:src="@{/bootstrap/img/undraw_profile.svg}" -->
 						</a>
 							<div
 								class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
 								aria-labelledby="userDropdown">
-								<a class="dropdown-item" href="#"> <i
-									class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> 마이 프로필
-									조회
-								</a>
+								<a class="dropdown-item" href="#"> 
+								<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> 마이 프로필 조회 </a>
 								<div class="dropdown-divider"></div>
 								<form th:action="@{/logout}" method="post"
 									style="display: inline;">
