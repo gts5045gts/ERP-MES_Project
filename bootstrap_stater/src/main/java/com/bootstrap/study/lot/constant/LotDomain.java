@@ -1,0 +1,54 @@
+package com.bootstrap.study.lot.constant;
+
+public enum LotDomain {
+	 // 1️⃣ 자재(Material)
+    MATERIAL("material", "RM"),       // 원자재
+    PROCESS("process", "PR"),         // 반제품
+    FINISHED("finished", "FG"),       // 완제품
+    QUALITY("quality", "QA"),         // 품질검사
+    POP("pop", "POP"),                // POP
+    EQUIPMENT("equipment", "EQ"),     // 설비
+    CONSUMABLE("consumable", "SP"),  // 소모품 → 새로 추가
+
+    // 2️⃣ 공정(Process / 작업 공정)
+    INBOUND("Inbound", "RM"),         // 입고
+    CUTTING("Cutting", "CUT"),        // 절단 → Prefix 수정
+    MACHINING("Machining", "MCH"),    // 성형/가공
+    ASSEMBLY("Assembly", "AS"),       // 조립
+    SHIPPING("Shipping", "FG"),       // 포장/출하
+    ETC("Etc", "XX");                 // 기타 미정의
+
+    // 3️⃣ 설비(Machine / 생산 라인)
+    // 설비 Prefix는 필요 시 LOT_ID 옵션으로 붙임 → 추적용
+    // 예: PR20250908-L1-001
+    public static final String L1 = "L1";       // 라인 1
+    public static final String L2 = "L2";       // 라인 2
+    public static final String MOLD = "MOLD";   // 금형
+    public static final String ROBOT = "ROB";   // 로봇/자동화 설비
+
+    private final String domain;
+    private final String prefix;
+
+    LotDomain(String domain, String prefix) {
+        this.domain = domain;
+        this.prefix = prefix;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    // domain 문자열로 enum 찾기
+    public static LotDomain fromDomain(String domain) {
+        for (LotDomain d : values()) {
+            if (d.getDomain().equalsIgnoreCase(domain)) {
+                return d;
+            }
+        }
+        return ETC; // 매칭 안되면 ETC
+    }
+}

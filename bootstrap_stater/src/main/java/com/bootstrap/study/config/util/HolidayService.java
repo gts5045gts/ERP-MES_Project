@@ -67,7 +67,7 @@ public class HolidayService {
                 holidays.add(objectMapper.convertValue(itemNode, HolidayDTO.class));
             }
 
-            log.info(finalYear + "/" + finalMonth + " 조회 결과 : " + holidays);
+//            log.info(finalYear + "/" + finalMonth + " 조회 결과 : " + holidays);
             
             // isHoliday가 "Y"인 경우만 필터링하여 반환
             return holidays.stream()
