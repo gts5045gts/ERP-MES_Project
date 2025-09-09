@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bootstrap.study.personnel.mapper.PersonnelImgMapper">
+<mapper namespace="com.erp_mes.erp.personnel.mapper.PersonnelImgMapper">
 
-<select id="findByempId" resultType="com.bootstrap.study.personnel.dto.PersonnelImgDTO">
+<select id="findByempId" resultType="com.erp_mes.erp.personnel.dto.PersonnelImgDTO">
 	select *
 	from employee_img
 	where emp_id = #{empId}

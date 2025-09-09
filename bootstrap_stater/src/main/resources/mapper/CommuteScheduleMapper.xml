@@ -2,10 +2,10 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bootstrap.study.attendance.mapper.CommuteScheduleMapper">
+<mapper namespace="com.erp_mes.erp.attendance.mapper.CommuteScheduleMapper">
 
 	<!-- 출퇴근 기준시간 -->
-	<select id="getCurrentSchedule" resultType="com.bootstrap.study.attendance.dto.CommuteScheduleDTO">
+	<select id="getCurrentSchedule" resultType="com.erp_mes.erp.attendance.dto.CommuteScheduleDTO">
 		SELECT 
 		    schedule_id,
 		    work_start_time,

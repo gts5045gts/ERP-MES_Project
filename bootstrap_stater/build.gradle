@@ -6,7 +6,7 @@ plugins {
 
 apply plugin: 'war'
 
-group = 'com.bootstrap.study'
+group = 'com.erp_mes.erp'
 version = '0.0.1-SNAPSHOT'
 
 apply plugin: 'war'

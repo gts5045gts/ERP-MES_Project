@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.bootstrap.study.groupware.mapper.DocumentMapper">
+<mapper namespace="com.erp_mes.erp.groupware.mapper.DocumentMapper">
 	<!-- 상품 전체 목록 조회 - SELECT -->
 	<!-- 
 	주의! 엔티티 클래스의 필드명(Camel-case)과 데이터베이스 컬럼명(Snake-case)이 서로 일치하지 않을 경우
