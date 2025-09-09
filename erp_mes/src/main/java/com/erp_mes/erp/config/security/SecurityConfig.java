@@ -32,6 +32,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**","/login").permitAll()
 
+                // 관리자 근태관리 URL 접근 제한
+                .requestMatchers("/attendance/adminCommute/**", "/attendance/adminCommuteLog/**")
+                .hasAnyRole("AUT001","AUT002")
+                
                 .requestMatchers("/personnel/**").authenticated()
                 .requestMatchers("/groupware/**").authenticated()
                 .requestMatchers("/notice/**").authenticated()
