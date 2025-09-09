@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.erp.attendance.mapper.CommuteMapper">
+
+	<!-- 오늘날짜 기준으로 부서전체인원 셀렉 -->
+	<select id="getDeptCommuteList" resultType="com.erp_mes.erp.attendance.dto.CommuteDTO">
+	    SELECT 
+	        c.commute_id,
+	        c.check_in_time,
+	        c.check_out_time,
+	        e.emp_id,
+	        c.work_status,                  
+	        ws.com_dt_nm AS workStatusNm,  
+	        c.created_at,
+	        c.updated_at,
+	        e.emp_name,
+	        d.COM_DT_NM AS dept_name,
+	        p.COM_DT_NM AS pos_name,
+	        TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commute_date
+	    FROM employee e
+	    INNER JOIN commute_record c
+	        ON e.emp_id = c.emp_id
+	       AND TRUNC(c.check_in_time) BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	                                     AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	    LEFT JOIN common_dt_code d 
+	        ON e.emp_dept_id = d.com_dt_id AND d.com_id = 'DEP'
+	    LEFT JOIN common_dt_code p 
+	        ON e.emp_position = p.com_dt_id AND p.com_id = 'POS'
+	    LEFT JOIN common_dt_code ws
+	        ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
+	    WHERE e.emp_dept_id = (
+	        SELECT emp_dept_id
+	        FROM employee
+	        WHERE emp_id = #{empId}
+	    )
+	    ORDER BY commute_date desc
+
+	</select> 
+
+
+	<!-- 출근 기록이 있는지 확인 -->
+	<select id="getTodayCheckInCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_in_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 출근상태 commute_record에 저장 -->
+	<insert id="insertCommuteCheckIn" parameterType="com.erp_mes.erp.attendance.dto.CommuteDTO">
+	    INSERT INTO commute_record (
+	        check_in_time,
+	        check_out_time,
+	        emp_id,
+	        work_status,
+	        created_at,
+	        updated_at
+	    ) VALUES (        
+	        #{checkInTime},              
+	        NULL,                        
+	        #{empId},                   
+	        #{workStatus},               
+	        SYSDATE,                    
+	        SYSDATE                      
+	    )
+	</insert>
+	
+	
+	<!-- 퇴근 기록이 있는지 확인 -->
+	<select id="getTodayCheckOutCount" resultType="int">
+	    SELECT COUNT(*)
+	    FROM commute_record
+	    WHERE emp_id = #{empId}
+	    AND TRUNC(check_out_time) = TRUNC(SYSDATE)
+	</select>
+	
+	
+	<!-- 퇴근상태 commute_record에 저장 -->
+	<update id="updateCommuteCheckOut" parameterType="com.erp_mes.erp.attendance.dto.CommuteDTO">
+	    UPDATE commute_record
+	    SET check_out_time = #{checkOutTime},
+	        work_status = #{workStatus},
+	        updated_at = SYSDATE
+	    WHERE emp_id = #{empId}
+	      AND TRUNC(check_in_time) = TRUNC(SYSDATE)   
+	      AND check_out_time IS NULL
+	</update>
+
+	<!-- 부서 공통코드 들고오기 -->	
+	<select id="getCommonDept" resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
+		SELECT 
+		    com_dt_id AS comDtId,
+		    com_dt_nm AS comDtNm,
+		    com_id    AS comId
+		FROM common_dt_code
+		WHERE com_id = #{comId}
+	</select>
+	
+	<!-- 관리자 전체 부서인원 조회(오늘날짜) -->
+	<select id="getAllDeptCommuteList" resultType="com.erp_mes.erp.attendance.dto.AdminCommuteDTO">
+	    SELECT e.emp_id, 
+	           e.emp_name, 
+	           d.com_dt_nm AS deptName, 
+	           c.check_in_time,
+	           c.check_out_time, 
+	           TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate,
+	           p.com_dt_nm AS posName, 
+	           s.com_dt_id AS workStatus,
+	           ws.com_dt_nm AS workStatusNm
+	    FROM employee e
+	    JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
+	    JOIN common_dt_code p ON e.emp_position = p.com_dt_id
+	    JOIN commute_record c ON e.emp_id = c.emp_id
+	    JOIN common_dt_code s ON c.work_status = s.com_dt_id
+		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
+	    WHERE TRUNC(c.check_in_time) 
+	          BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+	    ORDER BY commuteDate desc
+	</select>
+	
+	<!-- 관리자 특정 부서인원 조회(오늘날짜) -->
+	<select id="getSpecificDeptCommuteList" resultType="com.erp_mes.erp.attendance.dto.AdminCommuteDTO">	    	
+	    SELECT e.emp_id, e.emp_name, d.com_dt_nm AS deptName, c.check_in_time,
+		        c.check_out_time, p.com_dt_nm AS posName, S.com_dt_id,
+		        TO_CHAR(c.check_in_time, 'YYYY-MM-DD') AS commuteDate,
+		        c.work_status AS workStatus,
+    			ws.com_dt_nm AS workStatusNm
+		FROM employee e
+		JOIN common_dt_code d ON e.emp_dept_id = d.com_dt_id
+		JOIN common_dt_code p ON e.emp_position = p.com_dt_id
+		JOIN commute_record c ON e.emp_id = c.emp_id
+		JOIN common_dt_code s ON c.work_status = s.com_dt_id
+		JOIN common_dt_code ws ON c.work_status = ws.com_dt_id AND ws.com_id = 'WSTA'
+		WHERE e.emp_dept_id = #{deptId} 
+			AND TRUNC(c.check_in_time) BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+		ORDER BY commuteDate desc
+	</select>
+	
+	<!-- 근무상태 공통코드 들고오기 -->	
+	<select id="getCommonStatus" resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
+		SELECT 
+		    com_dt_id AS comDtId,
+		    com_dt_nm AS comDtNm,
+		    com_id    AS comId
+		FROM common_dt_code
+		WHERE com_id = #{comId}
+	</select>
+	
+	<!-- 관리자 수정버튼 -->
+	<update id="updateWorkStatus" parameterType="com.erp_mes.erp.attendance.dto.AdminCommuteDTO">
+	    UPDATE commute_record
+	    SET work_status = #{workStatus}
+	    WHERE emp_id = #{empId}
+	      AND TO_CHAR(check_in_time, 'YYYY-MM-DD') = #{commuteDate}
+	</update>
+	
+	<!-- 삭제할 출근기록 조회 -->
+	<select id="checkTodayWork" resultType="com.erp_mes.erp.attendance.dto.CommuteDTO">
+		SELECT emp_id, check_in_time
+	    FROM commute_record
+	    WHERE emp_id = #{targetEmpId}
+	    AND check_in_time = #{checkInTime}
+	</select>
+	
+	<!-- 출근기록 삭제 -->
+	<delete id="deleteWorkData" parameterType="map">
+		DELETE FROM commute_record 
+	    WHERE emp_id = #{targetEmpId}
+	    AND check_in_time = #{checkInTime}
+	</delete>
+	
+	<!-- 삭제한 출근기록 데이터 로그저장 -->
+	<insert id="insertLogData" parameterType="map">
+		INSERT INTO commute_delete_log (
+			emp_id, target_emp_id, check_in_time, deleted_at, delete_reason)
+		VALUES (
+			#{adminEmpId}, #{targetEmpId}, #{checkInTime}, CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul', #{deleteReason}
+		)
+	</insert>
+
+	<!-- 삭제된 로그 데이터 들고오기 -->	
+	<select id="getLogData" resultType="com.erp_mes.erp.attendance.dto.CommuteDeleteLogDTO">
+		SELECT l.log_id, l.emp_id, e.emp_name AS adminNm,
+				l.target_emp_id, ee.emp_name AS targetEmpNm, l.check_in_time, l.deleted_at, l.delete_reason,
+				cdt.com_dt_nm AS adminDept, ccdt.com_dt_nm AS targetEmpDept,
+		        cps.com_dt_nm AS adminPos, ccps.com_dt_nm AS targetEmpPos, TO_CHAR(l.deleted_at, 'YYYY-MM-DD') AS commuteDate
+		FROM commute_delete_log l
+		JOIN employee e
+		    ON l.emp_id = e.emp_id -- 관리자
+		JOIN employee ee
+		    ON l.target_emp_id = ee.emp_id -- 삭제된 사원
+		JOIN common_dt_code cdt
+		    ON cdt.com_dt_id = e.emp_dept_id -- 관리자 부서
+		JOIN common_dt_code ccdt
+		    ON ccdt.com_dt_id = ee.emp_dept_id -- 사원 부서
+		JOIN common_dt_code cps
+		    ON cps.com_dt_id = e.emp_position -- 관리자 직책
+		JOIN common_dt_code ccps
+		    ON ccps.com_dt_id = ee.emp_position -- 사원 직책
+		ORDER BY log_id desc
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

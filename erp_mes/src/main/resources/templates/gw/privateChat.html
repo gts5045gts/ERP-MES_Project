@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<title>1:1 메신저</title>
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<th:block sec:authorize="isAuthenticated()">
+		    <input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+		    <input type="hidden" id="currentEmpName" th:value="${#authentication.principal.name}" />
+		</th:block>
+		
+		<div id="chat-page" class="container-fluid">
+			<h1>1:1 메신저</h1>
+			<div id="chat-container" class="row">
+				<div class="col-4 border-right">
+					<div class="p-2">
+						<h4>대화 상대</h4>
+						<div class="input-group mb-3">
+							<select id="deptSelect" class="form-control">
+								<option value="">부서 선택</option>
+							</select>
+						</div>
+						<ul id="employeeList" class="list-group" style="height: 300px; overflow-y: auto;">
+							</ul>
+					</div>
+				</div>
+				<div class="col-8">
+					<div id="messageArea" class="card-body bg-light"
+						style="height: 400px; overflow-y: scroll;">
+						</div>
+					<form id="privateMessageForm" name="privateMessageForm"
+						class="input-group mb-3">
+						<input type="text" id="privateMessageInput" class="form-control"
+							placeholder="메시지를 입력하세요..." autocomplete="off">
+						<div class="input-group-append">
+							<button type="submit" class="btn btn-primary">보내기</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</th:block>
+	
+	 <th:block layout:fragment="script">
+        <script th:src="@{/bootstrap/js/groupware/privateChat.js}"></script>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>기안서 작성</title>
+
+	<!-- Font Awesome -->
+	<link href="/bootstrap/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
+
+	<!-- SB Admin 2 (Bootstrap 4 기반) -->
+	<link href="/bootstrap/css/sb-admin-2.min.css" rel="stylesheet">
+
+	<!-- Bootstrap 4.6 -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+	<!-- Datetimepicker (Tempus Dominus BS4) -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-4@5.39.0/build/css/tempusdominus-bootstrap-4.min.css">
+
+	<!-- Summernote (Bootstrap4 버전) -->
+	<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
+</head>
+<body id="page-top">
+<div id="wrapper">
+	<div id="content-wrapper" class="d-flex flex-column">
+		<div id="content">
+			<div class="container-fluid">
+
+				<div class="card shadow mb-4">
+					<div class="card-header bg-primary text-white">
+						<h6 class="m-0 font-weight-bold">기안서작성 | 연차신청서</h6>
+					</div>
+					<div class="card-body">
+
+						<form th:action="@{/appr}" th:object="${apprDTO}" method="post" enctype="multipart/form-data">
+							<input type="hidden" th:field="*{reqType}" />
+
+							<!-- 기안일 -->
+							<div class="form-group row">
+								<label for="createAt" class="col-sm-2 col-form-label">기안일</label>
+								<div class="col-sm-4">
+									<div class="input-group date" id="createAtPicker" data-target-input="nearest">
+										<input type="text" class="form-control datetimepicker-input" id="createAt"
+											   th:field="*{createAt}" data-target="#createAtPicker" readonly required>
+										<div class="input-group-append" data-target="#createAtPicker" data-toggle="datetimepicker">
+											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- 문서제목 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">문서제목</label>
+								<div class="col-sm-8">
+									<input type="text" th:field="*{title}" class="form-control" maxlength="200" required>
+								</div>
+							</div>
+
+							<!-- 결재자 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">결재자</label>
+								<div class="col-sm-8">
+									<a href="#" class="btn btn-primary btn-icon-split btn-sm" data-toggle="modal" data-target="#layerModal">
+										<span class="icon text-white-50"><i class="fas fa-external-link-alt"></i></span>
+										<span class="text">결재자 검색</span>
+									</a>
+									<!-- 선택된 결재자 표시 영역 -->
+									<div id="selectedUsers" class="mt-2"></div>
+									
+									<!-- hidden input 담을 영역 -->
+									<div id="hiddenEmpIds"></div>
+								</div>
+							</div>
+
+							<!-- 휴가 종류 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">휴가 종류</label>
+								<div class="col-sm-2">
+									<select class="form-control" th:field="*{reqType}">
+										<option th:each="rtype : ${T(com.erp_mes.erpapproval.constant.ApprVacType).values()}"
+												th:value="${rtype}" th:text="${rtype.label}"></option>
+									</select>
+								</div>
+							</div>
+
+							<!-- 기간 및 일시 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">기간 및 일시</label>
+								<div class="col-sm-3">
+									<div class="input-group date" id="startDate" data-target-input="nearest">
+										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#startDate" readonly required>
+										<div class="input-group-append" data-target="#startDate" data-toggle="datetimepicker">
+											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="input-group date" id="endDate" data-target-input="nearest">
+										<input type="text" class="form-control datetimepicker-input" th:field="*{createAt}" data-target="#endDate" readonly required>
+										<div class="input-group-append" data-target="#endDate" data-toggle="datetimepicker">
+											<div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- 반차 여부 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">반차 여부</label>
+								<div class="col-sm-8">
+									<div class="form-check form-check-inline" th:each="halfType : ${T(com.erp_mes.erpapproval.constant.ApprHalfType).values()}">
+										<input class="form-check-input" type="radio" name="halfType" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
+										<label class="form-check-label" th:for="'halfType_' + ${halfType.name()}" th:text="${halfType.label}"></label>
+									</div>
+								</div>
+							</div>
+
+							<!-- 연차 일수 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">연차 일수</label>
+								<div class="col-sm-2">
+									<small>잔여연차</small>
+									<input type="text" class="form-control">
+								</div>
+								<div class="col-sm-2">
+									<small>신청연차</small>
+									<input type="text" class="form-control">
+								</div>
+							</div>
+
+							<!-- 첨부 -->
+							<div class="form-group row">
+								<label class="col-sm-2 col-form-label">첨부</label>
+								<div class="col-sm-8">
+									<a href="#" class="btn btn-info">추가</a>
+								</div>
+							</div>
+
+							<!-- 버튼 -->
+							<div class="form-group row">
+								<div class="col-sm-10 offset-sm-2">
+									<button type="submit" class="btn btn-primary">저장/결재(F7)</button>
+									<button type="button" class="btn btn-secondary" onclick="window.close();">닫기</button>
+								</div>
+							</div>
+
+							<!-- 에디터 -->
+							<div class="form-group row">
+								<label for="summernote" class="col-sm-2 col-form-label">에디터 내용</label>
+								<div class="col-sm-8">
+									<textarea id="summernote" class="form-control" th:field="*{content}" required></textarea>
+								</div>
+							</div>
+						</form>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="layerModal" tabindex="-1" role="dialog" aria-labelledby="layerModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header bg-primary py-3">
+				<h5 class="modal-title text-white" id="layerModalLabel"><i class="fas fa-info-circle mr-2"></i>결재자 입력</h5>
+				<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p class="mb-2">결재라인</p>
+				<div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                        <tr>
+                        	<th></th>
+                            <th>결재자</th>
+                            <!-- <th>순서</th> -->
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+				            <td>
+				                <input type="checkbox">
+				            </td>
+				            <td>
+				                <div class="form-group position-relative">
+								  <input type="text" name="lineName[]" class="userSearch form-control" value="기안신청자 (개발팀 / 사원)" placeholder="기안신청자칸" readonly>
+								  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
+								</div>
+				            </td>
+				            <!-- <td><input type="text" value="1" readonly></td> -->
+				        </tr>
+                        <tr th:each="i : ${#numbers.sequence(2,3)}">
+				            <td>
+				                <input type="checkbox" class="modal-user-check mr-2" data-id="" data-name="" data-dept="" data-pos="">
+				            </td>
+				            <td>
+				                <div class="form-group position-relative">
+								  <input type="text" class="userSearch form-control" placeholder="이름 입력">
+								  <div class="searchResult list-group position-absolute w-100" style="z-index:999;"></div>
+								</div>
+				            </td>
+				            <!-- <td><input type="text" th:value="${i}" readonly></td> -->
+				        </tr>
+                        </tbody>
+                    </table>
+                </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+				<button type="button" class="btn btn-primary" id="btnConfirm">확인</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/bootstrap/js/sb-admin-2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tempusdominus-bootstrap-4@5.39.0/build/js/tempusdominus-bootstrap-4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
+
+<script>	
+	$(function () {
+		$('#createAtPicker, #startDate, #endDate').datetimepicker({
+			format: 'YYYY-MM-DD',
+			locale: 'ko'
+		});
+
+		$('#summernote').summernote({
+			tabsize: 2,
+			height: 200,
+			toolbar: [
+				['style', ['style']],
+				['font', ['bold', 'underline', 'clear']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph']],
+				['table', ['table']],
+				['insert', ['link', 'picture']],
+				['view', ['fullscreen', 'codeview', 'help']]
+			]
+		});
+		
+		$(".userSearch").on("keyup", function () {
+			let $input = $(this);
+		    let keyword = $input.val();
+		    let $result = $input.siblings(".searchResult"); // 해당 input의 결과 영역 선택
+
+		    if (keyword.length < 2) {
+	    	  $result.empty();  
+		      return;
+		    }
+
+		    $.ajax({
+		      url: "/approval/empSearch",   // DB 검색 API
+		      method: "GET",
+		      data: { name: keyword },
+		      success: function (data) {
+	    	    $result.empty(); 
+
+		        if (data.length > 0) {
+		          data.forEach(user => {
+		            let item = `
+		              <a href="#" class="list-group-item list-group-item-action"
+		                 data-id="${user.empId}" data-name="${user.name}" data-dept="${user.deptName}" data-pos="${user.posName}">
+		                <div><strong>${user.name}</strong></div>
+		                <small class="text-muted">${user.deptName} / ${user.posName}</small>
+		              </a>`;
+		            $result.append(item);
+		          });
+		        } else {
+		          $result.append('<div class="list-group-item text-muted">검색 결과 없음</div>');
+		        }
+		      }
+		    });
+		  });
+		    
+		 // 리스트 클릭 시 input 채우기
+	    $(document).on("click", ".searchResult a", function (e) {
+	        e.preventDefault();
+	        
+	        let $item = $(this);
+	        let $row  = $item.closest("tr");  // 현재 클릭된 행 찾기
+	        let $result = $item.closest(".searchResult");
+	        let $input = $result.siblings(".userSearch");
+	        
+	        let id = $(this).data("id");
+	        let name = $(this).data("name");
+	        let dept = $(this).data("dept");
+	        let pos  = $(this).data("pos");
+
+	        $input.val(`${name} (${dept} / ${pos})`);
+	     // td 안 체크박스 선택
+	        let $check = $row.find("td:first input[type='checkbox']");
+
+	        // 체크박스에 값 세팅
+	        $check.attr({
+	            "data-id": id,
+	            "data-name": name,
+	            "data-dept": dept,
+	            "data-pos": pos
+	        }).prop("checked", true);
+	        
+	        $result.empty();
+		});
+		 
+	 // 확인 버튼 → 부모창에 추가
+	    $("#btnConfirm").on("click", function () {
+	    	
+   		  let checked = $(".modal-user-check:checked"); // 부모창에서 체크된 row만 반영	
+    	  
+    	  if (checked.length === 0) {
+   		    alert("결재자를 선택하세요.");
+   		    return false;
+   		  }
+    		
+    	  checked.each(function () {
+    		  
+  		    let empId = $(this).data("id");
+  		    let name  = $(this).data("name");
+  		  	let dept  = $(this).data("dept");
+  	    	let pos   = $(this).data("pos");
+  	   
+  		    // 중복 방지
+  		    if ($("#hiddenEmpIds input[value='" + empId + "']").length > 0) {
+ 		      alert("이미 선택된 결재자가 있습니다.");
+  		      return false; 
+  		    }
+
+  		    // 버튼 추가 (Chip)
+  		    let $btn = $(`
+  		      <button type="button" class="btn btn-sm btn-outline-secondary m-1 selected-user" data-id="${empId}">
+  		        ${name} <span aria-hidden="true">&times;</span>
+  		      </button>
+  		    `);
+  		    $("#selectedUsers").append($btn);
+  		    
+  			// hidden input 추가
+  		  	let $hidden = $(`<input type="hidden" name="empIds[]" value="${empId}">`);
+  		  	$("#hiddenEmpIds").append($hidden);
+  		  	
+   		  });
+
+	      // 모달 닫기
+	      $("#layerModal").modal("hide");
+	      $(".userSearch").val("");
+	      $(".searchResult").empty();
+	      selectedEmp = null;
+	    });
+
+	    // 버튼 클릭 시 삭제
+	    $(document).on("click", ".selected-user", function () {
+	      let empId = $(this).data("id");
+	      $(this).remove();
+	      $("#hiddenEmpIds input[value='" + empId + "']").remove();
+	    });
+	   
+	});
+	
+	
+	
+</script>
+
+</body>
+</html>

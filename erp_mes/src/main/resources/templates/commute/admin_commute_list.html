@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    </th:block>
+    <style>
+    #deleteModalMessage {
+    white-space: pre-line; /* \n을 줄바꿈으로 표시 */
+}
+    </style>
+</head>
+<body>
+	<th:block layout:fragment="content">
+	    <div class="container-fluid">
+	
+	        <!-- Page Heading -->
+	        <h1 class="h3 mb-2 text-gray-900">관리자 근태관리 출퇴근현황</h1>
+	        
+	        <!-- 출근버튼 -->
+	        
+	        <!-- 근태 리스트 테이블 -->        
+	        <!-- DataTales Example -->
+	        <div class="card shadow mb-4">
+				<div class="card-header py-3 d-flex align-items-center justify-content-between">
+				    <h6 class="m-0 font-weight-bold text-primary">부서인원 전체 근퇴현황</h6>
+				    
+				    <div class="d-flex align-items-center gap-2">
+						<select id="dept" th:name="dept" class="form-control form-control-sm" style="margin-right:55px;">
+						    <option th:each="dept : ${commonDept}" 
+						            th:value="${dept.comDtId}" 
+						            th:text="${dept.comDtNm}"
+						            th:selected="${dept.comDtId == selectedDept}">
+						    </option>
+						</select>
+					    <input type="date" name="startDate" class="form-control form-control-sm" th:value="${startDate}" style="min-width: 130px;">~
+					    <input type="date" name="endDate" class="form-control form-control-sm" th:value="${endDate}" style="min-width: 130px; margin-right:20px;">
+					    <button type="submit" id="searchBtn" class="btn btn-secondary btn-sm" style="min-width: 80px; margin-right:70px;">조회</button>
+				        <button id="updateStatusBtn" class="btn btn-primary btn-sm" style="min-width: 80px; margin-right:160px;">수정</button>
+				    </div>
+				</div>
+	            <div class="card-body">
+	                <div class="table-responsive">
+	                    <table class="table table-bordered" id="commuteTable" width="100%" cellspacing="0">
+	                        <thead>
+		                        <tr>
+		                            <th>날짜</th>
+		                            <th>사번</th>
+		                            <th>사원 이름</th>
+		                            <th>부서</th>
+		                            <th>직책</th>
+		                            <th>출근시간</th>
+		                            <th>퇴근시간</th>
+		                            <th>근무상태</th>
+		                            <th style="width: 110px;">출근기록</th>
+		                        </tr>
+	                        </thead>
+	                        <tbody>
+		                        <tr th:each="c : ${adminCommuteList}" id="commuteTable" th:data-empid="${c.empId}"
+		                        	th:data-check-in-time="${#temporals.format(c.checkInTime, 'yyyy-MM-dd HH:mm:ss')}">
+		                            <td th:text="${c.commuteDate}"></td>
+		                            <td th:text="${c.empId}"></td>
+		                            <td th:text="${c.empName}"></td>
+		                            <td th:text="${c.deptName}"></td>
+		                            <td th:text="${c.posName}"></td>
+									<td th:text="${#temporals.format(c.checkInTime, 'HH:mm:ss')}"></td>
+									<td th:text="${#temporals.format(c.checkOutTime, 'HH:mm:ss')}"></td>
+		                            <td>
+								        <select th:id="'workStatus-' + ${c.empId}" th:name="'workStatus-' + ${c.empId}" 
+								        		th:data-emp-id="${c.empId}" th:data-commute-date="${c.commuteDate}" 
+								        		class="workStatusSelect form-control form-control-sm">
+								            <option th:each="status : ${commonStatus}" 
+								                    th:value="${status.comDtId}" 
+								                    th:text="${status.comDtNm}"
+								                    th:selected="${status.comDtId == c.workStatus}">
+								            </option>
+								        </select>
+								    </td>
+								    <td>
+								    	<button class="deleteBtn btn btn-danger btn-sm"
+								    			th:data-emp-id="${c.empId}"
+								    			th:data-commute-date="${c.commuteDate}"
+								    			th:data-check-in-time="${#temporals.format(c.checkInTime, 'yyyy-MM-dd HH:mm:ss')}"
+								    	 		style="min-width: 80px;">삭제
+								    	 </button>
+								    </td>
+		                        </tr>
+		                        <tr th:if="${#lists.isEmpty(adminCommuteList)}">
+									<td colspan="9" class="text-center text-muted">출근한 사람이 없습니다.</td>
+								</tr>
+	                        </tbody>
+	                        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+							  <div class="modal-dialog">
+							    <div class="modal-content">
+							      <div class="modal-header">
+							        <h5 class="modal-title">출근기록 삭제</h5>
+							      </div>
+							      <div class="modal-body">
+							        <p id="deleteModalMessage"></p>
+							        <textarea id="deleteReason" class="form-control" placeholder="삭제 사유를 입력하세요" required="required"></textarea>
+							      </div>
+							      <div class="modal-footer">
+							        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+							        <button type="button" class="btn btn-danger" id="confirmDeleteBtn" >삭제</button>
+							      </div>
+							    </div>
+							  </div>
+							</div>
+	                    </table>
+	                </div>
+	            </div>
+	        </div>
+	
+	    </div>
+	    <!-- /.container-fluid -->
+	
+	</th:block>
+	<th:block layout:fragment="script">
+	<script>
+// 		console.log("버튼 클릭!");
+		
+		// 부서랑 날짜조회
+		document.getElementById("searchBtn").addEventListener("click", function() {
+		    const startDate = document.querySelector("input[name='startDate']").value;
+		    const endDate = document.querySelector("input[name='endDate']").value;
+		    const deptId = document.querySelector("#dept").value || "ALL"; // 선택된 부서 값
+		    window.location.href = `/attendance/adminCommute?deptId=${deptId}&startDate=${startDate}&endDate=${endDate}`;
+		});
+		
+	    // =====================================================================================
+	    // 수정버튼
+		let updateList = [];
+	    
+		$(".workStatusSelect").on("change", function() {
+		    let empId = $(this).data("emp-id");
+		    let newStatus = $(this).val();
+		    let commuteDate = $(this).data("commute-date");
+
+		    // 이미 updatedList에 존재하는 empId면 업데이트
+		    let existing = updateList.find(item => item.empId === empId);
+		    if (existing) {
+		        existing.workStatus = newStatus;
+		    } else {
+		        updateList.push({
+		            empId: empId,
+		            workStatus: newStatus,
+		            commuteDate: commuteDate
+		        });
+		    }
+		    console.log(updateList);
+		});
+		
+		
+		$("#updateStatusBtn").on("click", function() {
+		    if (updateList.length === 0) {
+		        alert("변경된 데이터가 없습니다.");
+		        return;
+		    }
+
+		    $.ajax({
+		        url: "/attendance/updateWorkStatus",
+		        type: "POST",
+		        contentType: "application/json",
+		        data: JSON.stringify(updateList),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
+		        success: function(response) {
+		            alert("수정 완료");
+		            console.log(response);
+		        },
+		        error: function(xhr) {
+		            alert("업데이트 실패 : " + xhr.status);
+		        }
+		    });
+		});
+		// =====================================================================================
+		// 삭제 버튼(모달창)
+		document.querySelectorAll(".deleteBtn").forEach(button => {
+		    button.addEventListener("click", function () {
+		        const empId = this.getAttribute("data-emp-id");
+		        const commuteDate = this.getAttribute("data-commute-date");
+		        const checkInTime = this.getAttribute("data-check-in-time");
+
+		        // 모달 메시지에 값 넣기
+		        const modalMsg = document.getElementById("deleteModalMessage");
+		        if(modalMsg) {
+		            modalMsg.textContent =
+		                "- 사원ID : " + empId + "\n" + 
+		                "- 날짜 : " + commuteDate + "\n" +
+		                "- 출근기록 : " + checkInTime + "\n" +
+		                "- 출근기록을 삭제하시겠습니까?";
+		            
+		            modalMsg.setAttribute("data-emp-id", empId);
+		            modalMsg.setAttribute("data-commute-date", commuteDate);
+		            modalMsg.setAttribute("data-check-in-time", checkInTime);
+		            
+		        }
+
+		        // 모달 열기
+ 				$('#deleteModal').modal('show');
+		        
+// 		        console.log(empId, commuteDate, checkInTime);
+		    });
+		});
+		
+		document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
+			const modalData = document.getElementById("deleteModalMessage");
+			
+			// 삭제할 정보 가져오기
+			const empId = modalData.getAttribute("data-emp-id");
+			const commuteDate = modalData.getAttribute("data-commute-date");
+			const checkInTime = modalData.getAttribute("data-check-in-time");
+			const deleteReason = $("#deleteReason").val();
+			
+			$.ajax({
+				url: "/attendance/deleteCommuteRecord",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify({
+					targetEmpId: empId,
+					commuteDate: commuteDate,
+					checkInTime: checkInTime,
+					deleteReason: deleteReason
+				}),
+				beforeSend: function(xhr) { // AJAX 실제 요청 전 먼저 요청할 정보(주로 헤더정보)
+					xhr.setRequestHeader(csrfHeader, csrfToken)
+				},
+				success: function(data) {
+					
+					if(data.success) {
+						alert(data.message);
+
+				        // 모달 닫기
+					    $('#deleteModal').modal('hide');
+				        
+				        // 행 지우기 목적
+					    location.reload();
+					    
+					} else {
+						alert("삭제 실패 : " + data.message);
+					}
+					
+				},
+				error: function(xhr, status, error) {
+					console.log("삭제실패", error);
+				}
+			});
+		});
+	    
+	</script>
+	</th:block>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<!--summernote  css-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
+
+<!--summernote  css-->
+
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h1 class="h3 mb-4 text-gray-800">사내 공통 문서 양식</h1>
+
+			<div class="card shadow mb-4">
+				<div class="card-body">
+					<div class="mt-4" id="formContainer"></div>
+					<form id="documentForm" method="post" th:action="@{/groupware/save}" th:object="${documentDTO}">
+						<div class="form-group">
+							<label for="templateSelector2">업무 구분</label>
+							<select class="form-control" th:field="*{docType}">
+								<option th:if="${dtCodes != null}"
+										th:each="detail : ${dtCodes}"
+										th:value="${detail.comDtId}"
+										th:text="${detail.comDtNm}"
+										>
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="templateSelector2">문서 양식 선택</label>
+							<select class="form-control" th:field="*{reqType}">
+								<option 
+										th:each="reqType : ${T(com.erp_mes.erpapproval.constant.ApprReqType).values()}"
+										th:value="${reqType}"
+										th:text="${reqType.label}"
+										>
+								</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="docTitle">제목</label>
+							<input type="text" th:field="*{docTitle}" id="docTitle" class="form-control" />
+						</div>
+						<div class="form-group">
+							<label for="summernote">내용</label>
+							<textarea th:field="*{docContent}" id="summernote" class="form-control"></textarea>
+						</div>
+						<div class="d-flex justify-content-end w-100">
+						  <a href="/groupware/document" class="btn btn-primary mr-2">목록으로</a>
+						  
+						  <button type="submit" class="btn btn-primary" th:if="${documentDTO.docId == null}">등록</button>
+						  <button type="button" class="btn btn-danger" id="modify-btn" th:if="${documentDTO.docId != null}" th:attr="data-id=${documentDTO.docId}">수정</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+<th:block layout:fragment="script">
+	<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+	<script>
+		$(document).on("click", "#modify-btn", function () {
+	      let docId = $(this).data("id");
+	      
+	      const form = document.getElementById('documentForm');
+	      
+	      const formData = new FormData(form);
+
+	      // FormData -> 객체 변환
+	      const dataObj = {};
+	      formData.forEach((value, key) => {
+	        dataObj[key] = value;
+	      });
+	      
+	      dataObj['docId'] = docId;
+	      
+	      // meta 태그로 삽입되어 있을 때
+		  let token = $('meta[name="_csrf"]').attr('content');       // 토큰 값
+		  let header = $('meta[name="_csrf_header"]').attr('content'); // 헤더 이름
+
+	      fetch(`/groupware/modify/${docId}`, {
+	          method: "PUT",
+	          headers: {
+	              "Content-Type": "application/json",
+	              [header]: token   // 동적으로 헤더 이름에 CSRF 토큰 넣기
+	          },
+	          body: JSON.stringify(dataObj)
+	      })
+	      .then(response => {
+	          if (response.ok) {
+	              location.href="/groupware/docView/"+docId;
+	          } else {
+	              console.log("수정 실패");
+	          }
+	      })
+	      .catch(error => console.error("Error:", error));
+	    });
+	
+		$('#summernote').summernote({
+			tabsize: 2,
+			height: 200,
+			focus: true,
+			toolbar: [
+				['style', ['style']],
+				['font', ['bold', 'underline', 'clear']],
+				['color', ['color']],
+				['para', ['ul', 'ol', 'paragraph']],
+				['table', ['table']],
+				['insert', ['link']],
+				['view', ['fullscreen', 'codeview', 'help']]
+			]
+		});
+
+	</script>
+</th:block>
+</body>
+</html>

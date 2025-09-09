@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+        <!-- Page Heading -->
+        <h1 class="h3 mb-2 text-gray-800">기안서작성</h1>
+        <p class="mb-4">검색창 위치</p>
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">기안서 작성</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+	                        <tr>
+	                            <!-- <th>정렬순서</th> -->
+	                            <th>업무 구분</th>
+								<th>양식 종류</th>
+	                            <th>양식명</th>
+	                        </tr>
+                        </thead>
+                        <tfoot>
+	                        <tr>
+	                            <!-- <th>정렬순서</th> -->
+	                            <th>업무 구분</th>
+								<th>양식 종류</th>
+	                            <th>양식명</th>
+	                        </tr>
+                        </tfoot>
+                        <tbody>
+                        <!-- <tr th:each="reqType : ${T(com.erp_mes.erpapproval.constant.ApprReqType).values()}"> -->
+                        <tr th:each="doc : ${documents}">
+                            <!-- <td>00</td> -->
+                            <td th:text="${doc.doctypename}"></td>
+                            <td th:text="${doc.ReqType.label}"></td>
+                            <td>
+                                <a class="openReqType"
+                                   data-toggle="modal"
+                                   th:text="${doc.docTitle}"
+                                   href="#"
+                               	   th:data-item-id="${doc.docId}">
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--마지막 단계  -->
+                <!-- <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">다음</a>
+                        </li>
+                    </ul>
+                </nav> -->
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+
+</th:block>
+
+<th:block layout:fragment="script">
+	<script>
+		$(function() {
+			// 상품 목록에서 상품 클릭 시 상세정보 조회 요청
+			$(".openReqType").click(function() {
+			    const docId = this.dataset.itemId;
+
+			    window.open(
+			        `/approval/new/${docId}`,      // URL
+			        'drafting_form',                // 창 이름
+			        'width=1138,height=642,location=no,status=no,scrollbars=yes'  // 옵션 문자열
+			    );
+			});
+
+		});
+
+	</script>
+</th:block>
+</body>
+</html>
