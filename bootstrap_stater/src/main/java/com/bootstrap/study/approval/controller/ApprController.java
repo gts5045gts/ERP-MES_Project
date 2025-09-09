@@ -76,7 +76,7 @@ public class ApprController {
     	String docTitle = documentDTO.getDocTitle();
     	String docContent = documentDTO.getDocContent();
     	
-    	log.info(">>>>>>>>>>>>>>>>>>>>>"+ docContent);
+//    	log.info(">>>>>>>>>>>>>>>>>>>>>"+ docContent);
     	    	
     	model.addAttribute("apprDTO", new ApprDTO());
     	model.addAttribute("selectedRole", documentDTO.getReqType()); // 기본 선택값
@@ -298,9 +298,14 @@ public class ApprController {
 
         // 로그인한 사용자 ID 가져와서 Service에 전달
         String loginEmpId = authentication.getName();
+        
+        //잔여 연차 조회해서 신청 가능여부 확인
+    	Annual annual = apprService.getAnnualInfo(loginEmpId);
+    	double remain = annual.getAnnTotal() - annual.getAnnUse();
+    	
+    	
         Long apprId = apprService.registAppr(apprDTO, empIds, loginEmpId);  // 3개 파라미터
 
-        //결재 리스트로 이동되게 변경해야함.
         return "<script>" +
                 "alert('신청 완료되었습니다.');" +
                 "window.close();" +

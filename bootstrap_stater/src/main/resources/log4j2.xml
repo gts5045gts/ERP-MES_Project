@@ -2,9 +2,9 @@
 <Configuration>
 	<!-- 각 로그에서 사용할 속성값을 Properties 태그 내의 Property 태그로 정의 -->
 	<Properties>
-<!-- 		<Property name="LOG_DIR">C:/logs/mylog</Property> -->
+		<Property name="LOG_DIR">E:/logs/mylog</Property>
 		<!-- 아이티윌 서버 상에서 로그 경로 설정 예시 -->
-		<Property name="LOG_DIR">/usr/local/tomcat/logs/mylog</Property>
+		<!-- <Property name="LOG_DIR">/usr/local/tomcat/logs/mylog</Property> -->
 
 		<!-- 로그별 출력할 패턴을 정의 -->
 <!-- 		<Property name="LAYOUT_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %-5p: [%c] %m%n</Property> -->

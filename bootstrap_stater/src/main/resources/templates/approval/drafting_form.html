@@ -188,7 +188,9 @@
 
 <script>	
 	$(function () {
+		
 		let selectedRole = '[[${selectedRole}]]';
+		let remain = '[[${remain}]]';
 		
 		if (selectedRole === 'VACATION')
 		{
@@ -340,6 +342,16 @@
 		});
 		
 		$('#apprForm').on('submit', function(e) {
+			e.preventDefault();
+			
+			let sel_val = $(".selected-req-type option:selected").val();
+
+			if (sel_val === 'VACATION' && remain <= 0)
+			{
+				alert("남은 잔여연차를 확인해주세요.");
+				return false;
+			}
+			
 			
 			if ($('input[name="empIds[]"]').length <= 1) {
 				alert("결재자를 지정해주세요.");
@@ -401,7 +413,7 @@
 	    if (halfType) {
 	        diffDays -= 0.5;   // 반차 선택 시 0.5 차감
 	    }
-
+	    	    
 	    $('#reqAnnual').val(diffDays);
 	}
 </script>
