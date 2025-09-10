@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>인사 발령</title>
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<link rel="stylesheet"
-	th:href="@{/personnel/css/personnel_trans_save.css}">
+	<meta charset="UTF-8">
+	<title>인사 발령</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/personnel/css/personnel_trans_save.css}">
 </head>
 <body>
 
@@ -81,9 +78,9 @@
 
 					<div class="new-order-form-section">
 						<h6>발령 정보 입력</h6>
-						<div class="d-flex mb-3">
-							<div class="half-col">
-								<div class="form-group">
+						<div class="d-flex mb-3 gap-3">
+							<div class="flex-fill">
+								<div class="form-group mb-3">
 									<label for="transTypeSelect" class="form-label">발령 구분:</label>
 									<select id="transTypeSelect" class="form-select">
 										<option value="">발령구분 선택</option>
@@ -91,17 +88,7 @@
 										<option value="전보">전보</option>
 									</select>
 								</div>
-							</div>
-							<div class="half-col">
-        						<div class="form-group">
-									<label for="transDateInput" class="form-label">발령 일자:</label> 
-									<input type="date" id="transDateInput" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
-								</div>
-							</div>
-						</div>
-						<div class="d-flex mb-3">
-							<div class="half-col">
-								<div class="form-group">
+								<div class="form-group mb-0">
 									<label for="transDeptSelect" class="form-label">발령 부서:</label>
 									<select id="transDeptSelect" class="form-select">
 										<option value="">부서 선택</option>
@@ -112,8 +99,12 @@
 									</select>
 								</div>
 							</div>
-							<div class="half-col">
-								<div class="form-group">
+							<div class="flex-fill">
+								<div class="form-group mb-3">
+									<label for="transDateInput" class="form-label">발령 일자:</label> 
+									<input type="date" id="transDateInput" class="form-control" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+								</div>
+								<div class="form-group mb-0">
 									<label for="transPosSelect" class="form-label">발령 직급:</label>
 									<select id="transPosSelect" class="form-select">
 										<option value="">직급 선택</option>
