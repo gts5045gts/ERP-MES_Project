@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+        <h1 class="h3 mb-4 text-gray-800">재고 현황</h1>
+        
+        <!-- 검색 영역 -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="품목명 검색">
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control">
+                                <option>전체 창고</option>
+                                <option>창고A</option>
+                                <option>창고B</option>
+                                <option>창고C</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary">검색</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 재고 테이블 -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">재고 목록</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%">
+                        <thead>
+                            <tr>
+                                <th>재고번호</th>
+                                <th>품목 이름</th>
+                                <th>품목 종류</th>
+                                <th>수량</th>
+                                <th>창고명</th>
+                                <th>재고조정</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>19</td>
+                                <td>스프링 와셔</td>
+                                <td>원자재</td>
+                                <td>412</td>
+                                <td>창고A-1</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">상세</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>고속도강 원통재</td>
+                                <td>원자재</td>
+                                <td>515</td>
+                                <td>창고B-1</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">상세</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>21</td>
+                                <td>FC250 주철</td>
+                                <td>원자재</td>
+                                <td>300</td>
+                                <td>창고A-2</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">상세</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>Cu-Be 동합금</td>
+                                <td>원자재</td>
+                                <td>60</td>
+                                <td>창고C-1</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">상세</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>45</td>
+                                <td>스테인리스 너트</td>
+                                <td>원자재</td>
+                                <td>0</td>
+                                <td>창고A-3</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">상세</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+
+<th:block layout:fragment="script">
+<script>
+// 자바스크립트
+</script>
+</th:block>
+</body>
+</html>
