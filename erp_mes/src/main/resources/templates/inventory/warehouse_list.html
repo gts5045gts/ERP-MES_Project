@@ -6,118 +6,441 @@
 <head>
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<style>
+.warehouse-layout {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.location-cell {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+    min-height: 80px;
+}
+
+.location-cell:hover {
+    background: #e9ecef;
+}
+
+.location-empty {
+    background: #f8f9fa;
+}
+
+.location-full {
+    background: #d1ecf1;
+}
+
+.location-warning {
+    background: #fff3cd;
+}
+
+.location-danger {
+    background: #f8d7da;
+}
+.rack-cell {
+    padding: 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    min-height: 80px;
+}
+
+.rack-cell-full {
+    background: #28a745;
+    color: white;
+}
+
+.rack-cell-partial {
+    background: #ffc107;
+    color: black;
+}
+
+.rack-cell-low {
+    background: #17a2b8;
+    color: white;
+}
+
+.rack-cell-empty {
+    background: #6c757d;
+    color: white;
+}
+
+.rack-cell:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+    transition: all 0.2s;
+}
+
+.quantity-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.2);
+    height: 5px;
+}
+
+.quantity-bar-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.7);
+    transition: width 0.3s;
+}
+</style>
 </head>
 
 <body>
 <th:block layout:fragment="content">
-    <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">재고 현황</h1>
-        
-        <!-- 검색 영역 -->
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <form>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <input type="text" class="form-control" placeholder="품목명 검색">
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-control">
-                                <option>전체 창고</option>
-                                <option>창고A</option>
-                                <option>창고B</option>
-                                <option>창고C</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="button" class="btn btn-primary">검색</button>
-                        </div>
-                    </div>
-                </form>
+	<div class="container-fluid">
+	<h1 class="h3 mb-4 text-gray-800">창고별 재고 위치 현황</h1>
+    
+    	<!-- 창고 선택 및 필터 -->
+      	<div class="card shadow mb-4">
+          	<div class="card-body">
+              	<div class="row">
+                  	<div class="col-md-3">
+                      	<select class="form-control" id="warehouseSelect">
+                          	<option value="WH001">창고A - 원자재</option>
+                          	<option value="WH002">창고B - 반제품</option>
+                          	<option value="WH003">창고C - 완제품</option>
+                      	</select>
+                  	</div>
+                  	<div class="col-md-3">
+                      	<select class="form-control" id="zoneSelect">
+                          	<option value="">전체 구역</option>
+                          	<option value="A">A 구역</option>
+                          	<option value="B">B 구역</option>
+                          	<option value="C">C 구역</option>
+                      	</select>
+                  	</div>
+                  	<div class="col-md-3">
+                      	<input type="text" class="form-control" placeholder="품목명 검색">
+                  	</div>
+                  	<div class="col-md-3">
+                      	<button class="btn btn-primary">조회</button>
+                      	<button class="btn btn-info">새로고침</button>
+                  	</div>
+              	</div>
+          	</div>
+      	</div>
+	<div class="modal fade" id="rackDetailModal" tabindex="-1" role="dialog">
+    	<div class="modal-dialog modal-lg" role="document">
+        	<div class="modal-content">
+            	<div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">랙-01 상세 현황</h5>
+                	<button type="button" class="close" data-dismiss="modal">
+                    	<span>&times;</span>
+                	</button>
+            	</div>
+            	<div class="modal-body">
+                	<!-- 품목 정보 -->
+              		<div class="alert alert-info">
+                  		<strong>품목:</strong> <span id="modal-item-name">스프링 와셔</span> | 
+                  		<strong>품목코드:</strong> <span id="modal-item-code">MAT001</span> | 
+                  		<strong>총 재고:</strong> <span id="modal-total-qty">412개</span>
+              		</div>
+              
+              		<!-- 랙 시각화 -->
+              		<div class="rack-visualization">
+                  		<table class="table table-bordered text-center">
+                      		<thead>
+                          		<tr>
+                              		<th width="100">층</th>
+                              		<th>칸-1</th>
+                              		<th>칸-2</th>
+                              		<th>칸-3</th>
+                              		<th>소계</th>
+                          		</tr>
+                      		</thead>
+							<tbody id="rack-grid">
+		                    <!-- 동적 생성될 부분 -->
+	                      	</tbody>
+                  		</table>
+              			</div>
+              
+              <!-- 범례 -->
+              <div class="mt-3">
+                  <small>
+                      <span class="badge" style="background:#28a745;">만재(100%)</span>
+                      <span class="badge" style="background:#ffc107;">사용중(50-99%)</span>
+                      <span class="badge" style="background:#17a2b8;">여유(1-49%)</span>
+                      <span class="badge" style="background:#6c757d;">비어있음</span>
+                  </small>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="openStockAdjust()">재고조정</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>
         </div>
+    </div>
+</div>
+      <!-- 범례 -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <span class="mr-3"><span style="display:inline-block; width:20px; height:20px; background:#f8f9fa; border:1px solid #dee2e6;"></span> 비어있음</span>
+            <span class="mr-3"><span style="display:inline-block; width:20px; height:20px; background:#d1ecf1; border:1px solid #dee2e6;"></span> 사용중</span>
+            <span class="mr-3"><span style="display:inline-block; width:20px; height:20px; background:#fff3cd; border:1px solid #dee2e6;"></span> 80% 이상</span>
+            <span class="mr-3"><span style="display:inline-block; width:20px; height:20px; background:#f8d7da; border:1px solid #dee2e6;"></span> 만재</span>
+        </div>
+    </div>
 
-        <!-- 재고 테이블 -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">재고 목록</h6>
+    <!-- 창고 레이아웃 뷰 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">창고A - A구역</h6>
+        </div>
+        <div class="card-body">
+            <!-- 랙 번호 표시 -->
+            <div class="row mb-2">
+                <div class="col-12">
+                    <div style="display: grid; grid-template-columns: 50px repeat(10, 1fr); gap: 5px;">
+                        <div></div>
+                        <div class="text-center"><b>랙-01</b></div>
+                        <div class="text-center"><b>랙-02</b></div>
+                        <div class="text-center"><b>랙-03</b></div>
+                        <div class="text-center"><b>랙-04</b></div>
+                        <div class="text-center"><b>랙-05</b></div>
+                        <div class="text-center"><b>랙-06</b></div>
+                        <div class="text-center"><b>랙-07</b></div>
+                        <div class="text-center"><b>랙-08</b></div>
+                        <div class="text-center"><b>랙-09</b></div>
+                        <div class="text-center"><b>랙-10</b></div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" width="100%">
-                        <thead>
-                            <tr>
-                                <th>재고번호</th>
-                                <th>품목 이름</th>
-                                <th>품목 종류</th>
-                                <th>수량</th>
-                                <th>창고명</th>
-                                <th>재고조정</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>19</td>
-                                <td>스프링 와셔</td>
-                                <td>원자재</td>
-                                <td>412</td>
-                                <td>창고A-1</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info">상세</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>20</td>
-                                <td>고속도강 원통재</td>
-                                <td>원자재</td>
-                                <td>515</td>
-                                <td>창고B-1</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info">상세</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>21</td>
-                                <td>FC250 주철</td>
-                                <td>원자재</td>
-                                <td>300</td>
-                                <td>창고A-2</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info">상세</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>22</td>
-                                <td>Cu-Be 동합금</td>
-                                <td>원자재</td>
-                                <td>60</td>
-                                <td>창고C-1</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info">상세</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>45</td>
-                                <td>스테인리스 너트</td>
-                                <td>원자재</td>
-                                <td>0</td>
-                                <td>창고A-3</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info">상세</button>
-                                </td>
-                            </tr>
-                        </tbody>
+            
+            <!-- 창고 그리드 -->
+            <div style="display: grid; grid-template-columns: 50px repeat(10, 1fr); gap: 5px;">
+                <!-- 1층 -->
+                <div><b>1층</b></div>
+                <div class="location-cell location-full" onclick="showDetail('A-01-01-01')">
+                    <small>A-01-01-01</small><br>
+                    <b>스프링와셔</b><br>
+                    <small>412/500</small>
+                </div>
+                <div class="location-cell location-empty" onclick="showDetail('A-02-01-01')">
+                    <small>A-02-01-01</small><br>
+                    <b>비어있음</b>
+                </div>
+                <div class="location-cell location-warning" onclick="showDetail('A-03-01-01')">
+                    <small>A-03-01-01</small><br>
+                    <b>FC250 주철</b><br>
+                    <small>280/300</small>
+                </div>
+                <!-- ... 더 많은 셀들 ... -->
+                
+                <!-- 2층 -->
+                <div><b>2층</b></div>
+                <div class="location-cell location-full" onclick="showDetail('A-01-02-01')">
+                    <small>A-01-02-01</small><br>
+                    <b>고속도강</b><br>
+                    <small>515/600</small>
+                </div>
+                <!-- ... 더 많은 셀들 ... -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 선택된 위치 상세 정보 -->
+    <div class="card shadow mb-4" id="detailCard" style="display:none;">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">위치 상세 정보</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="30%">위치코드</th>
+                            <td id="detail-location">A-01-01-01</td>
+                        </tr>
+                        <tr>
+                            <th>품목명</th>
+                            <td id="detail-item">스프링 와셔</td>
+                        </tr>
+                        <tr>
+                            <th>품목코드</th>
+                            <td id="detail-code">MAT001</td>
+                        </tr>
+                        <tr>
+                            <th>현재수량</th>
+                            <td id="detail-qty">412</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="30%">최대수량</th>
+                            <td id="detail-max">500</td>
+                        </tr>
+                        <tr>
+                            <th>담당자</th>
+                            <td id="detail-manager">김철수</td>
+                        </tr>
+                        <tr>
+                            <th>최종수정일</th>
+                            <td id="detail-date">2025-09-10</td>
+                        </tr>
+                        <tr>
+                            <th>관리</th>
+                            <td>
+                                <button class="btn btn-sm btn-warning">재고조정</button>
+                                <button class="btn btn-sm btn-info">이력조회</button>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </th:block>
-
 
 <th:block layout:fragment="script">
 <script>
-// 자바스크립트
+// 위치 상세 정보 표시
+function showDetail(locationId) {
+    document.getElementById('detailCard').style.display = 'block';
+    document.getElementById('detail-location').textContent = locationId;
+    
+    console.log('위치 상세 조회:', locationId);
+}
+
+// 창고 변경 시
+document.getElementById('warehouseSelect')?.addEventListener('change', function() {
+    console.log('창고 변경:', this.value);
+});
+
+// 구역 변경 시  
+document.getElementById('zoneSelect')?.addEventListener('change', function() {
+    console.log('구역 변경:', this.value);
+});
+
+
+//랙 상세 모달 열기
+function showRackDetail(rackId, itemName, itemCode) {
+    // 모달 제목 설정
+    document.getElementById('modalTitle').textContent = rackId + ' 상세 현황';
+    document.getElementById('modal-item-name').textContent = itemName;
+    document.getElementById('modal-item-code').textContent = itemCode;
+    
+    // 랙 데이터 (실제로는 AJAX로 가져와야 함)
+    const rackData = {
+        floors: [
+            { floor: 4, cells: [
+                { position: '4-1', qty: 50, max: 50, percent: 100 },
+                { position: '4-2', qty: 45, max: 50, percent: 90 },
+                { position: '4-3', qty: 30, max: 50, percent: 60 }
+            ]},
+            { floor: 3, cells: [
+                { position: '3-1', qty: 50, max: 50, percent: 100 },
+                { position: '3-2', qty: 50, max: 50, percent: 100 },
+                { position: '3-3', qty: 25, max: 50, percent: 50 }
+            ]},
+            { floor: 2, cells: [
+                { position: '2-1', qty: 40, max: 50, percent: 80 },
+                { position: '2-2', qty: 0, max: 50, percent: 0 },
+                { position: '2-3', qty: 22, max: 50, percent: 44 }
+            ]},
+            { floor: 1, cells: [
+                { position: '1-1', qty: 50, max: 50, percent: 100 },
+                { position: '1-2', qty: 50, max: 50, percent: 100 },
+                { position: '1-3', qty: 0, max: 50, percent: 0 }
+            ]}
+        ]
+    };
+    
+    // 총 재고 계산
+    let totalQty = 0;
+    rackData.floors.forEach(floor => {
+        floor.cells.forEach(cell => {
+            totalQty += cell.qty;
+        });
+    });
+    document.getElementById('modal-total-qty').textContent = totalQty + '개';
+    
+    // 랙 그리드 생성
+    const tbody = document.getElementById('rack-grid');
+    tbody.innerHTML = '';
+    
+    rackData.floors.forEach(floor => {
+        const row = document.createElement('tr');
+        
+        // 층 번호
+        row.innerHTML = `<td><strong>${floor.floor}층</strong></td>`;
+        
+        // 각 칸
+        let floorTotal = 0;
+        floor.cells.forEach(cell => {
+            floorTotal += cell.qty;
+            const cellClass = getCellClass(cell.percent);
+            const cellHtml = `
+                <td>
+                    <div class="rack-cell ${cellClass}" onclick="showCellDetail('${cell.position}')">
+                        <strong>${cell.qty}개</strong><br>
+                        <small>${cell.percent}%</small>
+                        <div class="quantity-bar">
+                            <div class="quantity-bar-fill" style="width: ${cell.percent}%"></div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            row.innerHTML += cellHtml;
+        });
+        
+        // 층별 소계
+        row.innerHTML += `<td><strong>${floorTotal}개</strong></td>`;
+        
+        tbody.appendChild(row);
+    });
+    
+    // 모달 열기
+    $('#rackDetailModal').modal('show');
+}
+
+// 셀 상태에 따른 클래스 결정
+function getCellClass(percent) {
+    if (percent === 100) return 'rack-cell-full';
+    if (percent >= 50) return 'rack-cell-partial';
+    if (percent > 0) return 'rack-cell-low';
+    return 'rack-cell-empty';
+}
+
+// 셀 상세 정보 표시
+function showCellDetail(position) {
+    alert(`위치: ${position}\n상세 정보를 표시합니다.`);
+    // 실제로는 더 상세한 정보 표시
+}
+
+// 재고 조정 창 열기
+function openStockAdjust() {
+    $('#rackDetailModal').modal('hide');
+    // 재고 조정 모달 열기
+    alert('재고 조정 기능 실행');
+}
+
+// 기존 location-cell 클릭 이벤트 수정
+document.querySelectorAll('.location-cell').forEach(cell => {
+    cell.addEventListener('click', function(e) {
+        e.preventDefault();
+        const locationId = this.querySelector('small').textContent;
+        const itemName = this.querySelector('b').textContent;
+        
+        if (itemName !== '비어있음') {
+            // 랙 ID 추출 (예: A-01-01-01에서 01이 랙 번호)
+            const rackId = '랙-' + locationId.split('-')[1];
+            showRackDetail(rackId, itemName, 'MAT001');
+        }
+    });
+});
 </script>
 </th:block>
 </body>
