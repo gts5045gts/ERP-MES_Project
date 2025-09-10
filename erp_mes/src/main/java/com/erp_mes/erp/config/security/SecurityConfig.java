@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").authenticated()
                 .requestMatchers("/attendance/**").authenticated()
                 .requestMatchers("/approval/**").authenticated()
+                .requestMatchers("/quality/**").permitAll()
                 .requestMatchers("/chat", "/privateChat").authenticated()
                 
                 .anyRequest().authenticated()

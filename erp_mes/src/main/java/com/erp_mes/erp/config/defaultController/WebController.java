@@ -10,26 +10,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
-import com.erp_mes.erp.config.util.HolidayService;
-import com.erp_mes.erp.groupware.service.ScheduleService;
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
-import com.erp_mes.erp.personnel.repository.PersonnelRepository;
 
 @Controller
 public class WebController {
-	
-	private final ScheduleService scheduleService;
-	private final HolidayService holidayService;
-	private final CommonCodeService commonCodeService;
-	private final PersonnelRepository personnelRepository;
 
-	public WebController(ScheduleService scheduleService, HolidayService holidayService,
-			CommonCodeService commonCodeService, PersonnelRepository personnelRepository) {
-		this.scheduleService = scheduleService;
-		this.holidayService = holidayService;
+	private final CommonCodeService commonCodeService;
+
+	public WebController(CommonCodeService commonCodeService) {
 		this.commonCodeService = commonCodeService;
-		this.personnelRepository = personnelRepository;
 	}
+
 	@RequestMapping("/")
 	public String login(@CookieValue(value = "remember-id", required = false) String rememberId, Model model) {
 		// 쿠키값 Model 객체에 추가
@@ -52,7 +43,7 @@ public class WebController {
 			}
 		}
 
-		if ("AUT001".equals(personnelLoginDTO.getEmpLevelId())) {
+		if (personnelLoginDTO.getEmpLevelId().equals("AUT001")) {
 			isAdmin = true;
 			List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
 			model.addAttribute("allDepartments", allDepartments);
