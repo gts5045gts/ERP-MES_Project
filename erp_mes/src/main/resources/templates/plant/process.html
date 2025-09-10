@@ -6,19 +6,28 @@
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
-		
     </th:block>
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-    
-    
+    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     
     
 </head>
 <body>
 <th:block layout:fragment="content">
     <div class="container-fluid">
+    	
+    	<button id="prs-add" class="btn btn-primary btn-sm">추가</button>
 		<div id="grid"></div>
-		
+	
+
+
+
+
+
+
+
+
+
 
 
 
@@ -28,42 +37,43 @@
 </th:block>
 
 <th:block layout:fragment="script">
-	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-	const Grid = tui.Grid;
-	const instance = new Grid({
-  	el: document.getElementById('grid'), // Container element
- 	 columns: [
-   		 {
-  		   	  header: 'Name',
-		      name: 'name'
-		    },
-		    {
-		      header: 'Artist',
-		      name: 'artist'
-		    },
-		    {
-		      header: 'Release',
-		      name: 'release'
-		    },
-		    {
-		      header: 'Genre',
-		      name: 'genre'
-		    }
-		  ],
-		  data: [
-		    {
-		      name: 'Beautiful Lies',
-		      artist: 'Birdy',
-		      release: '2016.03.26',
-		      genre: 'Pop'
-		    }
-		  ]
-		});
-	instance.resetData(newData); // Call API of instance's public method
-
-	Grid.applyTheme('striped'); // Call API of static method
-	
-	
+ <script>
+ const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+ const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+ 
+	 
+	 document.addEventListener('DOMContentLoaded', function() {
+        // 그리드 초기화
+        console.log(' 실행하자');
+        alert('실행');
+        const grid = new tui.Grid({
+          el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
+          scrollX: false,
+          scrollY: false,
+          columns: [
+            { header: '코드', name: 'comDtId' },	
+            { header: '코드명', name: 'comDtNm' },
+          ],
+        });
+        
+        fetch('/plant/processGrid', {
+            method: 'GET',
+            headers: {
+              [header]: token  // 동적으로 headerName을 키로 넣음
+            }
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('서버 응답 에러: ' + res.status);
+            return res.json();
+          })
+          .then(data => {
+            grid.resetData(data);
+          })
+          .catch(err => console.error('fetch error:', err));
+        });
+        
+        
+    </script>
 </th:block>
 </body>
 </html>
