@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+        <h1 class="h3 mb-4 text-gray-800">자재 관리</h1>
+        
+        <!-- 검색 영역 -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <select class="form-control">
+                                <option value="">자재구분 전체</option>
+                                <option value="강재">강재</option>
+                                <option value="알루미늄">알루미늄</option>
+                                <option value="주철">주철</option>
+                                <option value="동합금">동합금</option>
+                                <option value="티타늄">티타늄</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="자재코드 또는 자재명">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary">검색</button>
+                            <button type="button" class="btn btn-secondary">초기화</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 자재 테이블 -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">자재(목록) 목록</h6>
+                <div>
+                    <button class="btn btn-success btn-sm" onclick="addMaterial()">
+                        <i class="fas fa-plus"></i> 추가
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="5%">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th width="12%">자재코드</th>
+                                <th width="20%">자재명</th>
+                                <th width="12%">자재구분</th>
+                                <th width="8%">단위</th>
+                                <th width="18%">자재 사양</th>
+                                <th width="12%">등록자id</th>
+                                <th width="13%">등록일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000030</td>
+                                <td>P20 강재</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>1000×2000×50mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000029</td>
+                                <td>H13 열간작업강</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>800×1500×40mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000028</td>
+                                <td>S45C 탄소강</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>1200×2500×60mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000027</td>
+                                <td>SKD11 공구강</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>600×1200×30mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000026</td>
+                                <td>SUS304 스테인리스강</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>900×1800×25mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000025</td>
+                                <td>SKH51 고속도강</td>
+                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
+                                <td>kg</td>
+                                <td>500×1000×20mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000024</td>
+                                <td>ADC12 알루미늄합금</td>
+                                <td><span class="badge badge-light text-warning" style="font-size: 14px;">알루미늄</span></td>
+                                <td>kg</td>
+                                <td>1500×3000×80mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000023</td>
+                                <td>FC250 주철</td>
+                                <td><span class="badge badge-light text-dark" style="font-size: 14px;">주철</span></td>
+                                <td>kg</td>
+                                <td>2000×4000×100mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000022</td>
+                                <td>Cu-Be 동합금</td>
+                                <td><span class="badge badge-light text-danger" style="font-size: 14px;">동합금</span></td>
+                                <td>kg</td>
+                                <td>400×800×15mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check"></td>
+                                <td>M0000021</td>
+                                <td>Ti-6Al-4V 티타늄합금</td>
+                                <td><span class="badge badge-light text-info" style="font-size: 14px;">티타늄</span></td>
+                                <td>kg</td>
+                                <td>300×600×10mm</td>
+                                <td>25070001</td>
+                                <td>2025-07-08</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="script">
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.item-check');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+function addMaterial() {
+    console.log('자재 추가');
+    // 추가 모달 또는 페이지 이동
+}
+
+function deleteSelected() {
+    const checked = document.querySelectorAll('.item-check:checked');
+    if (checked.length === 0) {
+        alert('삭제할 항목을 선택해주세요.');
+        return;
+    }
+    if (confirm(checked.length + '개 항목을 삭제하시겠습니까?')) {
+        console.log('삭제 처리');
+    }
+}
+</script>
+</th:block>
+</body>
+</html>

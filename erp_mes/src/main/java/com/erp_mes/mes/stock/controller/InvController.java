@@ -30,4 +30,18 @@ public class InvController {
 	    log.info("출고 관리 페이지 접속");
 	    return "inventory/outbound_list";
 	}
+	
+	// 기준정보관리 - 자재정보(소재)
+	@GetMapping("/material")
+	public String materialList(Model model) {
+	    log.info("출고 관리 페이지 접속");
+	    return "inventory/material_list";
+	}
+	
+	// 기준정보관리 - 제품정보(완제품/반제품)
+		@GetMapping("/item")
+		public String itemList(Model model) {
+		    log.info("출고 관리 페이지 접속");
+		    return "inventory/item_list";
+		}
 }
