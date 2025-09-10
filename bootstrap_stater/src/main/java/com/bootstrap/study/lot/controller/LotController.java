@@ -26,7 +26,7 @@ public class LotController {
 	public ResponseEntity<String> postMethodName(@RequestParam(name = "domain") String domain, @RequestParam(name = "qty", required = false) Integer qty, @RequestParam(name = "machineId", required = false) String machineId) {
 		ResponseEntity<String> LotId = ResponseEntity.ok(lotService.generateLotId(domain, qty, machineId)); 
 		
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+LotId);
+//		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+LotId);
 		
 		return LotId;
 	}
