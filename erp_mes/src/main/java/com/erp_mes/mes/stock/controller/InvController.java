@@ -24,8 +24,6 @@ public class InvController {
 	    return "inventory/stock_list";
 	}
 	
-	
-	
 	// 출고 관리
 	@GetMapping("/outbound")
 	public String outboundList(Model model) {
