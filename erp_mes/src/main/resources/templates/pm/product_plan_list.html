@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    </th:block>
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+</head>
+<body>
+	<th:block layout:fragment="content">
+	    <div class="container-fluid">
+	
+	        <!-- Page Heading -->
+	        <h1 class="h3 mb-2 text-gray-900">근태관리 출퇴근현황</h1>
+					    <button type="submit" id="searchBtn" class="btn btn-secondary btn-sm me-3" style="min-width:80px; margin-right:80px;">조회</button>
+					    <button id="checkInBtn" class="btn btn-success btn-sm me-3" style="min-width: 80px; margin-right:100px;">출근</button>
+					    <button id="checkOutBtn" class="btn btn-success btn-sm" style="min-width: 80px; margin-right:190px;">퇴근</button>
+	        <div class="card shadow mb-4">
+		        <h4>제품</h4>
+		   		<div id="grid"></div>
+	        </div>
+	
+	    </div>
+	    <!-- /.container-fluid -->
+	
+	</th:block>
+	<th:block layout:fragment="script">
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="/bootstrap/js/pm/pm.js"></script>
+	</th:block>
+</body>
+</html>
