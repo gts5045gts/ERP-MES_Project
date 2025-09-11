@@ -8,6 +8,7 @@ import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
 import com.bootstrap.study.groupware.mapper.DocumentMapper;
 import com.bootstrap.study.groupware.repository.DocumentRepository;
+import com.bootstrap.study.lot.dto.LotDTO;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -61,6 +62,10 @@ public class DocumentService {
 	            .orElseThrow(() -> new IllegalArgumentException("Document not found: " + id));
 		
 		documentRepository.delete(document);
+		
+	}
+
+	public void registLot(LotDTO lotDTO) {
 		
 	}
 }

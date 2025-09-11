@@ -26,6 +26,14 @@ public class LotMaster {
  	@Id
  	@Column(updatable = false, length = 50)
     private String lotId;
+ 	
+// 	각테이블 고유 pk id
+ 	@Column(nullable = false, updatable = false)
+ 	private Long targetId;
+ 	
+// 	조회 대상 테이블
+ 	@Column(length = 40, nullable = false, updatable = false)
+ 	private String tableName;
 
 //RM, PR, FG, QA 등
  	@Column(length = 20, nullable = false)
@@ -43,7 +51,5 @@ public class LotMaster {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
-    
-    
     
 }

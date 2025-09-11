@@ -22,6 +22,7 @@ import com.bootstrap.study.groupware.dto.DocumentDTO;
 import com.bootstrap.study.groupware.entity.Document;
 import com.bootstrap.study.groupware.repository.DocumentRepository;
 import com.bootstrap.study.groupware.service.DocumentService;
+import com.bootstrap.study.lot.dto.LotDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -43,6 +44,11 @@ public class GroupwareController {
 	//공통문서목록
 	@GetMapping("/document")
 	public String document(Model model) {
+		
+		LotDTO lotDTO = new LotDTO();
+		lotDTO.setTargetId("RM20250909-006");
+		lotDTO.setTableName("meterial");
+		documentService.registLot(lotDTO);
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
