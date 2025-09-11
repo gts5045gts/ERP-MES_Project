@@ -12,12 +12,6 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class ProductPlanDTO {
-	private String product_id;
-	private String product_name;
-	private String product_type;
-	private String unit;
-	private LocalDateTime created_at;
-	private LocalDateTime updated_at;
-	private String spec;
+
 	
 }
