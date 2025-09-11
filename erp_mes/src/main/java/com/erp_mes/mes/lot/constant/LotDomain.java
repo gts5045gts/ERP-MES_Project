@@ -2,34 +2,32 @@ package com.erp_mes.mes.lot.constant;
 
 public enum LotDomain {
 	 
-	/*// 1️⃣ 자재(Material)
-	 * MATERIAL("material", "RM"), // 원자재 PROCESS("process", "PR"), // 반제품
-	 * FINISHED("finished", "FG"), // 완제품 QUALITY("quality", "QA"), // 품질검사
-	 * POP("pop", "POP"), // POP EQUIPMENT("equipment", "EQ"), // 설비
-	 * CONSUMABLE("consumable", "SP"), // 소모품 → 새로 추가
-	 * 
-	 * // 2️⃣ 공정(Process / 작업 공정) INBOUND("Inbound", "RM"), // 입고 CUTTING("Cutting",
-	 * "CUT"), // 절단 → Prefix 수정 MACHINING("Machining", "MCH"), // 성형/가공
-	 * ASSEMBLY("Assembly", "AS"), // 조립 SHIPPING("Shipping", "FG"), // 포장/출하
-	 * ETC("Etc", "XX"); // 기타 미정의
-	 */	
+	// 1️⃣ 자재(Material)
+	  MATERIAL("material", "RM"), // 원자재
+	  PROCESS("process", "PR"), // 반제품
+	  FINISHED("finished", "FG"), // 완제품
+	  QUALITY("quality", "QA"), // 품질검사
+	  POP("pop", "POP"), // POP 
+	  EQUIPMENT("equipment", "EQ"), // 설비
+	  CONSUMABLE("consumable", "SP"), // 소모품 → 새로 추가
+	  
+	  // 2️⃣ 공정(Process / 작업 공정)
+	  INBOUND("Inbound", "RM"), // 입고
+	  CUTTING("Cutting", "CUT"), // 절단 
+	  MACHINING("Machining", "MCH"), // 성형/가공
+	  ASSEMBLY("Assembly", "AS"), // 조립 
+	  SHIPPING("Shipping", "FG"), // 포장/출하
+	  ETC("Etc", "XX"); // 기타 미정의
 	
-	 // 1️⃣ 자재(Material)
-    MATERIAL("RM", "원자재"),
-    PROCESS("PR", "반제품"),
-    FINISHED("FG", "완제품"),
-    QUALITY("QA", "품질검사"),
-    POP("POP", "POP"),
-    EQUIPMENT("EQ", "설비"),
-    CONSUMABLE("SP", "소모품"),
-
-    // 2️⃣ 공정(Process / 작업 공정)
-    INBOUND("RM", "입고"),
-    CUTTING("CUT", "절단"),
-    MACHINING("MCH", "성형/가공"),
-    ASSEMBLY("AS", "조립"),
-    SHIPPING("FG", "포장/출하"),
-    ETC("XX", "기타 미정의");
+	/*
+	 * // 1️⃣ 자재(Material) MATERIAL("RM", "원자재"), PROCESS("PR", "반제품"),
+	 * FINISHED("FG", "완제품"), QUALITY("QA", "품질검사"), POP("POP", "POP"),
+	 * EQUIPMENT("EQ", "설비"), CONSUMABLE("SP", "소모품"),
+	 * 
+	 * // 2️⃣ 공정(Process / 작업 공정) INBOUND("RM", "입고"), CUTTING("CUT", "절단"),
+	 * MACHINING("MCH", "성형/가공"), ASSEMBLY("AS", "조립"), SHIPPING("FG", "포장/출하"),
+	 * ETC("XX", "기타 미정의");
+	 */
 
     // 3️⃣ 설비(Machine / 생산 라인)
     // 설비 Prefix는 필요 시 LOT_ID 옵션으로 붙임 → 추적용

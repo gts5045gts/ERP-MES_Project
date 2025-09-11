@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Service;
 
 import com.erp_mes.mes.lot.constant.LotDomain;
+import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.repository.LotRepository;
 
@@ -60,6 +61,10 @@ public class LotService {
         
         return lotId;
 
+	}
+
+	public void registLot(LotDTO lotDTO) {
+		
 	}
 
 }
