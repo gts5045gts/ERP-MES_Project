@@ -28,8 +28,8 @@ public class LotMaster {
     private String lotId;
  	
 // 	각테이블 고유 pk id
- 	@Column(name = "TARGET_ID", nullable = false, updatable = false)
- 	private Long targetId;
+ 	@Column(name = "TARGET_ID", length = 50, nullable = false, updatable = false)
+ 	private String targetId;
  	
 // 	조회 대상 테이블
  	@Column(length = 40, nullable = false, updatable = false)

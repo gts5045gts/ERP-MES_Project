@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
@@ -29,16 +30,20 @@ public class LotAOP {
 private final LotRepository lotRepository;
 
 //	@Before("execution(* com.erp_mes.mes..controller.*Controller.*(com.erp_mes.mes.lot.dto.LotDTO))")
-	@Before("execution(* *(com.erp_mes.mes.lot.dto.LotDTO))")
-	public void aopTest(JoinPoint joinPoint) {
-//		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
-//		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
-
-		for (Object obj : joinPoint.getArgs()) {
-			if (obj instanceof LotDTO lotDTO) {
-				generateLotId(lotDTO);
-			}
-		}
+//	@Before("execution(* *(com.erp_mes.mes.lot.dto.LotDTO))")
+	@AfterReturning(pointcut = "execution(* com.erp_mes.mes.lot.service.LotService.registWareHouse(..))", returning = "targetId")
+	public void aopTest(JoinPoint joinPoint, Object targetId) {
+		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
+		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
+		
+		for (Object arg : joinPoint.getArgs()) {
+	        if (arg instanceof LotDTO lotDTO) {
+	            if (targetId instanceof String) {
+	                lotDTO.setTargetId((String) targetId);  // targetId 세팅
+	                generateLotId(lotDTO);       // LOT ID 생성 및 저장
+	            }
+	        }
+	    }
 	}
 
 	
@@ -73,7 +78,7 @@ private final LotRepository lotRepository;
        
        LotMaster lot = new LotMaster();
        lot.setLotId(lotId);
-       lot.setTargetId(Long.parseLong(lotDTO.getTargetId()));
+       lot.setTargetId(lotDTO.getTargetId());
        lot.setTableName(lotDTO.getTableName());
        lot.setLotId(lotId);
        lot.setType(prefix);

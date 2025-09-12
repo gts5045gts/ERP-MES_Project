@@ -1,10 +1,14 @@
 package com.erp_mes.mes.lot.dto;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class LotDTO {
 	private String lotId;
 	private String targetId; // 각 테이블의 ID(PK)
@@ -13,6 +17,20 @@ public class LotDTO {
 	private String materialCode;
 	private int qty;
 	private String machineId;
+	
+	@Builder
+	public LotDTO(String lotId, String targetId, String tableName, String type, String materialCode, int qty,
+			String machineId) {
+		this.lotId = lotId;
+		this.targetId = targetId;
+		this.tableName = tableName;
+		this.type = type;
+		this.materialCode = materialCode;
+		this.qty = qty;
+		this.machineId = machineId;
+	}
+	
+	
 	
 }
 

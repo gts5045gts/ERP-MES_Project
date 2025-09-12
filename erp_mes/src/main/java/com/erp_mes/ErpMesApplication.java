@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @EnableJpaAuditing
 @ComponentScan(basePackages = {"com.erp_mes.erp", "com.erp_mes.mes"})
-//@EnableJpaRepositories(basePackages = {"com.erp_mes"}) // com.erp_mes 하위 모든 Repository 스캔
 public class ErpMesApplication extends SpringBootServletInitializer{
 
 	public static void main(String[] args) {

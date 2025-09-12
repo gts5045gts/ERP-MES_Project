@@ -34,15 +34,18 @@ public class LotController {
 	@GetMapping("/testAOP")
 	@ResponseBody
 	public String testAOP() {
-		//lotDTO에 저장하고 아무 service 실행하면서 lotDTO만 가져가준다.
-		//targetId를 넣으려면 입고 시키고 id받아서 진행해야함 해결해야됨
-		LotDTO lotDTO = new LotDTO();
-		lotDTO.setTargetId("122");
-		lotDTO.setTableName("WAREHOUSE_ITEM");
-		lotDTO.setType("process");
-		lotDTO.setMaterialCode("CUT-STEEL-123");
-		lotDTO.setQty(100);
-		lotService.registLot(lotDTO);
+		//lotDTO를 먼저 호출하면서 필수정보 입력
+		LotDTO lotDTO = LotDTO.builder()
+				.tableName("WAREHOUSE_ITEM")
+				.type("process")
+				.materialCode("test-STEEL-555")
+				.qty(200)
+				.build();
+				
+		String targetId = lotService.registWareHouse(lotDTO);
+		//입고등을 insert한후에 pk id값을 받아서 setTargetId하면
+		//lotId가 생성됨.
+		lotDTO.setTargetId(targetId);
 		
 		return "ok";
 	}
