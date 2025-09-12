@@ -31,44 +31,42 @@ import lombok.ToString;
 @ToString
 @Builder
 public class LotMaster {
- 	@Id
- 	@Column(updatable = false, length = 50)
-    private String lotId;
- 	
+	@Id
+	@Column(updatable = false, length = 50)
+	private String lotId;
+
 // 	각테이블 고유 pk id
- 	@Column(name = "TARGET_ID", length = 50, nullable = false, updatable = false)
- 	private String targetId;
- 	
+	@Column(name = "TARGET_ID", length = 50, nullable = false, updatable = false)
+	private String targetId;
+
 // 	조회 대상 테이블
- 	@Column(length = 40, nullable = false, updatable = false)
- 	private String tableName;
+	@Column(length = 40, nullable = false, updatable = false)
+	private String tableName;
 
 //RM, PR, FG, QA 등
- 	@Column(length = 20, nullable = false)
-    private String type; 
- 	
-    @Column(length = 50)
-    private String materialCode;
-    
+	@Column(length = 20, nullable = false)
+	private String type;
+
+	@Column(length = 50)
+	private String materialCode;
+
 //수량
-    private int qty;
-    
-    @Column(length = 50)
-    private String machineId;
-    
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-    
-    @OneToMany(mappedBy = "parentLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LotMaterialUsage> materialUsagesAsParent = new ArrayList<LotMaterialUsage>();
+	private int qty;
 
-    @OneToMany(mappedBy = "childLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LotMaterialUsage> materialUsagesAsChild = new ArrayList<LotMaterialUsage>();
+	@Column(length = 50)
+	private String machineId;
 
-    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LotProcessHistory> processHistories = new ArrayList<LotProcessHistory>();
-    
-    
-    
+	@CreatedDate
+	@Column(updatable = false)
+	private LocalDateTime createdAt;
+
+	@OneToMany(mappedBy = "parentLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<LotMaterialUsage> materialUsagesAsParent = new ArrayList<LotMaterialUsage>();
+
+	@OneToMany(mappedBy = "childLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<LotMaterialUsage> materialUsagesAsChild = new ArrayList<LotMaterialUsage>();
+
+	@OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<LotProcessHistory> processHistories = new ArrayList<LotProcessHistory>();
+
 }

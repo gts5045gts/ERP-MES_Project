@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.erp_mes.mes.lot.entity.LotProcessHistory;
 
 @Repository
-public interface LotProcessHistoryRepository extends JpaRepository<LotProcessHistory, Object>{
+public interface LotProcessHistoryRepository extends JpaRepository<LotProcessHistory, Object> {
 
 }

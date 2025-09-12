@@ -18,21 +18,21 @@ import lombok.Setter;
 public class ProcessHistoryDTO {
 
 	@NotBlank
-	private String processCode;         // 예: Cutting, Assembly 등
-	
-	private String machineId;           // 선택 입력(설비 단위 추적)
-	
-	private String operator;            // 작업자 ID 또는 이름
-	
+	private String processCode; // 예: Cutting, Assembly 등
+
+	private String machineId; // 선택 입력(설비 단위 추적)
+
+	private String operator; // 작업자 ID 또는 이름
+
 	private LocalDateTime processStart; // 공정 시작 시간
-	private LocalDateTime processEnd;   // 공정 종료 시간
-	
+	private LocalDateTime processEnd; // 공정 종료 시간
+
 	@PositiveOrZero
-	private Integer inputQty;           // 투입 수량
-	
+	private Integer inputQty; // 투입 수량
+
 	@PositiveOrZero
-	private Integer resultQty;          // 산출 수량(불량 제외)
-	
+	private Integer resultQty; // 산출 수량(불량 제외)
+
 	@PositiveOrZero
-	private Integer scrapQty;           // 불량 수량(옵션)
+	private Integer scrapQty; // 불량 수량(옵션)
 }

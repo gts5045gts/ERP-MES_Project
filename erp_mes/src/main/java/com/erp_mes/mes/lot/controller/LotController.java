@@ -18,10 +18,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class LotController {
-	
+
 	private final LotService lotService;
-	
-	//aop로 변경 추후 삭제
+
+	// aop로 변경 추후 삭제
 	/*
 	 * @GetMapping("/generate")
 	 * 
@@ -35,27 +35,23 @@ public class LotController {
 	 * 
 	 * return LotId; }
 	 */
-	
+
 	@GetMapping("/testAOP")
 	@ResponseBody
 	public String testCallAOP() {
-		//lotDTO를 먼저 호출하면서 필수정보 입력
-		LotDTO lotDTO = LotDTO.builder()
-				.tableName("WAREHOUSE_ITEM2")
-				.type("process")
-				.materialCode("test-STEEL-444")
-				.qty(200)
-				.build();
-				
+		// lotDTO를 먼저 호출하면서 필수정보 입력
+		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM2").type("process").materialCode("test-STEEL-444")
+				.qty(200).build();
+
 		String targetId = lotService.registWareHouse(lotDTO);
-		//입고등을 insert한후에 pk id값을 받아서 setTargetId하면
-		//lotId가 생성됨.
+		// 입고등을 insert한후에 pk id값을 받아서 setTargetId하면
+		// lotId가 생성됨.
 		lotDTO.setTargetId(targetId);
-		//생성된 lotId를 자신의 table에 저장해도 되고
-		//lot_master테이블에 table_name, target_id(고유값)을 join해서
-		//lot_material_usage 테이블 저장할때 다시 사용해도 됨.
-		log.info(">>>>>>>>>>>>>>>>>>>>>새로 생성된 lotId === "+ lotDTO.getLotId());
-		
+		// 생성된 lotId를 자신의 table에 저장해도 되고
+		// lot_master테이블에 table_name, target_id(고유값)을 join해서
+		// lot_material_usage 테이블 저장할때 다시 사용해도 됨.
+		log.info(">>>>>>>>>>>>>>>>>>>>>새로 생성된 lotId === " + lotDTO.getLotId());
+
 		return "ok";
 	}
 }
