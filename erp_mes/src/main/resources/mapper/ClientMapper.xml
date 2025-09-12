@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.business.mapper.ClientMapper">
+	<select id="getAllClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
+		SELECT client_id,
+			   client_name,
+			   CASE client_type
+                   WHEN 'PURCHASE' THEN '매입사'
+                   WHEN 'ORDER'    THEN '매출사'
+                   WHEN 'INSPECT'  THEN '검사 업체'
+			   END AS client_type,
+			   business_number,
+			   ceo_name,
+			   client_address,
+			   client_phone,
+			   CASE client_status
+                   WHEN 'ACTIVE'   THEN '거래중'
+                   WHEN 'INACTIVE' THEN '거래중지'
+           	   END AS client_status
+		 FROM client
+	</select>
+	
+<!-- 	<select id="getClients" resultType="com.erp_mes.mes.business.dto.ClientDTO"> -->
+<!-- 		SELECT client_id, -->
+<!-- 			   client_name, -->
+<!-- 			   client_type, -->
+<!-- 			   business_number, -->
+<!-- 			   ceo_name, -->
+<!-- 			   client_address, -->
+<!-- 			   client_phone, -->
+<!-- 			   client_status -->
+<!-- 		FROM client -->
+<!-- 		WHERE (#{clientName,jdbcType=VARCHAR} IS NULL OR client_name LIKE '%' || #{clientName} || '%') -->
+<!--       	AND (#{clientType,jdbcType=VARCHAR} IS NULL OR #{clientType} = 'ALL' OR client_type = #{clientType}) -->
+<!-- 		ORDER BY client_id -->
+<!-- 	</select> -->
+	
+	
+	<insert id="insertClient" parameterType="com.erp_mes.mes.business.dto.ClientDTO">
+	<selectKey keyProperty="clientId" resultType="string" order="BEFORE">
+        SELECT 'CLI' || LPAD(client_id_seq.NEXTVAL, 3, '0') FROM DUAL
+    </selectKey>
+	    INSERT INTO client (
+	        client_id,
+			client_name,
+			client_type,
+			business_number,
+			ceo_name,
+			client_address,
+			client_phone,
+			client_status,
+	        create_at,
+	        update_at
+	    ) VALUES (        
+	        #{clientId},
+	        #{clientName},
+	        #{clientType},
+	        #{businessNumber},
+	        #{ceoName},
+	        #{clientAddress},
+	        #{clientPhone},
+	        #{clientStatus},      
+	        SYSDATE,                    
+	        SYSDATE                      
+	    )
+	</insert>
+	
+</mapper>
