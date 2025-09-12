@@ -6,7 +6,8 @@
 	<select id="getAllClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
 		SELECT client_id,
 			   client_name,
-			   CASE client_type
+               client_type AS client_type_code, 	-- 원래 코드 값 (select box value 용)
+			   CASE client_type						-- 화면 표시용 한글
                    WHEN 'PURCHASE' THEN '매입사'
                    WHEN 'ORDER'    THEN '매출사'
                    WHEN 'INSPECT'  THEN '검사 업체'
@@ -15,27 +16,28 @@
 			   ceo_name,
 			   client_address,
 			   client_phone,
-			   CASE client_status
+			   client_status AS client_status_code, -- 원래 코드 값 (select box value 용)
+			   CASE client_status					-- 화면 표시용 한글
                    WHEN 'ACTIVE'   THEN '거래중'
                    WHEN 'INACTIVE' THEN '거래중지'
            	   END AS client_status
 		 FROM client
 	</select>
 	
-<!-- 	<select id="getClients" resultType="com.erp_mes.mes.business.dto.ClientDTO"> -->
-<!-- 		SELECT client_id, -->
-<!-- 			   client_name, -->
-<!-- 			   client_type, -->
-<!-- 			   business_number, -->
-<!-- 			   ceo_name, -->
-<!-- 			   client_address, -->
-<!-- 			   client_phone, -->
-<!-- 			   client_status -->
-<!-- 		FROM client -->
-<!-- 		WHERE (#{clientName,jdbcType=VARCHAR} IS NULL OR client_name LIKE '%' || #{clientName} || '%') -->
-<!--       	AND (#{clientType,jdbcType=VARCHAR} IS NULL OR #{clientType} = 'ALL' OR client_type = #{clientType}) -->
-<!-- 		ORDER BY client_id -->
-<!-- 	</select> -->
+	<select id="getClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
+		SELECT client_id,
+			   client_name,
+			   client_type,
+			   business_number,
+			   ceo_name,
+			   client_address,
+			   client_phone,
+			   client_status
+		FROM client
+		WHERE (#{clientName,jdbcType=VARCHAR} IS NULL OR client_name LIKE '%' || #{clientName} || '%')
+      	AND (#{clientType,jdbcType=VARCHAR} IS NULL OR #{clientType} = 'ALL' OR client_type = #{clientType})
+		ORDER BY client_id
+	</select>
 	
 	
 	<insert id="insertClient" parameterType="com.erp_mes.mes.business.dto.ClientDTO">
@@ -66,5 +68,18 @@
 	        SYSDATE                      
 	    )
 	</insert>
+	
+	<update id="updateClient" parameterType="com.erp_mes.mes.business.dto.ClientDTO">
+    	UPDATE client
+    	SET client_name = #{clientName},
+        	client_type = #{clientType},
+        	business_number = #{businessNumber},
+        	ceo_name = #{ceoName},
+        	client_address = #{clientAddress},
+        	client_phone = #{clientPhone},
+        	client_status = #{clientStatus},
+        	update_at = SYSDATE
+    	WHERE client_id = #{clientId}
+	</update>
 	
 </mapper>

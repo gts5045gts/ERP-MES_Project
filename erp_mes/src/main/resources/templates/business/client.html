@@ -70,6 +70,7 @@
             	</div>
             	<div class="modal-body">
                 	<form id="clientAddForm">
+                	    <input type="hidden" id="clientId" name="clientId" />	
                     	<div class="mb-3">
                         	<label for="clientName" class="form-label">거래처명 *</label>
                         	<input type="text" class="form-control" id="clientName" required>
@@ -98,11 +99,11 @@
                        		<select id="clientStatus" class="form-select" required>
                             	<option value="">선택</option>
                             	<option value="ACTIVE">거래중</option>
-                            	<option value="INACTIVE">거래중지</option>
+                            	<option value="INACTIVE">거래 중지</option>
                         	</select>
                     	</div>
                     	<div class="mb-3">
-                        	<label for="clientPhone" class="form-label">거래처 연락처 *</label>
+                        	<label for="clientPhone" class="form-label">거래처 전화번호 *</label>
                         	<input type="text" class="form-control" id="clientPhone" required>
                     	</div>
 

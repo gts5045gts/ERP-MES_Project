@@ -22,4 +22,6 @@ public class ClientDTO {
     private String clientStatus;
     private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private String clientTypeCode;   // select box value값
+	private String clientStatusCode; // select box value값
 }

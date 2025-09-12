@@ -13,7 +13,9 @@ public interface ClientMapper {
 	
     List<ClientDTO> getAllClients();
 	
-//	List<ClientDTO> getClients(@Param("clientName") String clientName, @Param("clientType") String clientType);
+	List<ClientDTO> getClients(@Param("clientName") String clientName, @Param("clientType") String clientType);
     
 	void insertClient(ClientDTO client);
+	
+	void updateClient(ClientDTO client);
 }

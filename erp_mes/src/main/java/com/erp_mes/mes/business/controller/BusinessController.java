@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,14 +45,14 @@ public class BusinessController {
         return clientService.getAllClients();
     }
 
-//	// 거래처 검색 필터링
-//	@GetMapping("/api/clients/search")
-//    @ResponseBody
-//    public List<ClientDTO> getClients( @RequestParam(required = false) String clientName, @RequestParam(required = false, defaultValue = "ALL") String clientType) {
-//        log.info("거래처 검색 요청 - clientName: {}, clientType: {}", clientName, clientType);
-//        
-//        return clientService.getClients(clientName, clientType);
-//    }
+	// 거래처 검색 필터링
+	@GetMapping("/api/clients/search")
+    @ResponseBody
+    public List<ClientDTO> getClients( @RequestParam(required = false) String clientName, @RequestParam(required = false, defaultValue = "ALL") String clientType) {
+        log.info("거래처 검색 요청 - clientName: {}, clientType: {}", clientName, clientType);
+        
+        return clientService.getClients(clientName, clientType);
+    }
 	
     // 거래처 등록
 	@PostMapping("/api/clients/submit")
@@ -66,4 +67,15 @@ public class BusinessController {
             return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
         }
     }
+	
+	// 거래처 수정
+	@PutMapping("/api/clients/update/{clientId}")
+	public ResponseEntity<?> updateClient(@RequestBody ClientDTO clientDto) {
+	    try {
+	        clientService.updateClient(clientDto);
+	        return ResponseEntity.ok(Map.of("status", "success", "message", "Client updated successfully"));
+	    } catch (Exception e) {
+	        return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
+	    }
+	}
 }
