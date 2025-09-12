@@ -1,12 +1,19 @@
 package com.erp_mes.mes.lot.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 
+import com.erp_mes.mes.lot.entitiy.LotMaterialUsage;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +29,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
+@Builder
 public class LotMaster {
  	@Id
  	@Column(updatable = false, length = 50)
@@ -51,6 +59,15 @@ public class LotMaster {
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
+    
+    @OneToMany(mappedBy = "parentLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LotMaterialUsage> materialUsagesAsParent = new ArrayList<LotMaterialUsage>();
+
+    @OneToMany(mappedBy = "childLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LotMaterialUsage> materialUsagesAsChild = new ArrayList<LotMaterialUsage>();
+
+    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LotProcessHistory> processHistories = new ArrayList<LotProcessHistory>();
     
     
     

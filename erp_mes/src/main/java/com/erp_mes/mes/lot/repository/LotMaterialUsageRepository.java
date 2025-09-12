@@ -1,0 +1,11 @@
+package com.erp_mes.mes.lot.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.erp_mes.mes.lot.entitiy.LotMaterialUsage;
+
+@Repository
+public interface LotMaterialUsageRepository extends JpaRepository<LotMaterialUsage, Object> {
+
+}

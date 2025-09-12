@@ -21,24 +21,29 @@ public class LotController {
 	
 	private final LotService lotService;
 	
-	@GetMapping("/generate")
-	@ResponseBody
-	public ResponseEntity<String> postMethodName(@RequestParam(name = "domain") String domain, @RequestParam(name = "qty", required = false) Integer qty, @RequestParam(name = "machineId", required = false) String machineId) {
-		ResponseEntity<String> LotId = ResponseEntity.ok(lotService.generateLotId(domain, qty, machineId)); 
-		
-//		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+LotId);
-		
-		return LotId;
-	}
+	//aop로 변경 추후 삭제
+	/*
+	 * @GetMapping("/generate")
+	 * 
+	 * @ResponseBody public ResponseEntity<String> postMethodName(@RequestParam(name
+	 * = "domain") String domain, @RequestParam(name = "qty", required = false)
+	 * Integer qty, @RequestParam(name = "machineId", required = false) String
+	 * machineId) { ResponseEntity<String> LotId =
+	 * ResponseEntity.ok(lotService.generateLotId(domain, qty, machineId));
+	 * 
+	 * // log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+LotId);
+	 * 
+	 * return LotId; }
+	 */
 	
 	@GetMapping("/testAOP")
 	@ResponseBody
-	public String testAOP() {
+	public String testCallAOP() {
 		//lotDTO를 먼저 호출하면서 필수정보 입력
 		LotDTO lotDTO = LotDTO.builder()
-				.tableName("WAREHOUSE_ITEM")
+				.tableName("WAREHOUSE_ITEM2")
 				.type("process")
-				.materialCode("test-STEEL-555")
+				.materialCode("test-STEEL-444")
 				.qty(200)
 				.build();
 				
@@ -46,6 +51,10 @@ public class LotController {
 		//입고등을 insert한후에 pk id값을 받아서 setTargetId하면
 		//lotId가 생성됨.
 		lotDTO.setTargetId(targetId);
+		//생성된 lotId를 자신의 table에 저장해도 되고
+		//lot_master테이블에 table_name, target_id(고유값)을 join해서
+		//lot_material_usage 테이블 저장할때 다시 사용해도 됨.
+		log.info(">>>>>>>>>>>>>>>>>>>>>새로 생성된 lotId === "+ lotDTO.getLotId());
 		
 		return "ok";
 	}
