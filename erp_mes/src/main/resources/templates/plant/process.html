@@ -6,6 +6,13 @@
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+        
+        
+        <style>
+        	
+        	
+        
+        </style>
     </th:block>
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -16,8 +23,8 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
-    	<button id="prs-add" class="btn btn-primary btn-sm">추가</button>
 		<div id="grid"></div>
+    	<button id="prs-add" class="btn btn-primary btn-sm">추가</button>
 	
 
 
@@ -44,15 +51,16 @@
 	 
 	 document.addEventListener('DOMContentLoaded', function() {
         // 그리드 초기화
-        console.log(' 실행하자');
-        alert('실행');
+      
         const grid = new tui.Grid({
           el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
           scrollX: false,
           scrollY: false,
           columns: [
-            { header: '코드', name: 'comDtId' },	
-            { header: '코드명', name: 'comDtNm' },
+            { header: '공정코드', name: 'proId' },	
+            { header: '공정명', name: 'proNm' },	
+            { header: '공정 타입', name: 'typeNm' },
+            { header: '공정 설명', name: 'note' },
           ],
         });
         

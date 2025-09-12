@@ -20,8 +20,8 @@ import lombok.ToString;
 public class ProcessDTO {
 	private String proId; 
 	private String proNm; 
-	private String useYn;
-	private String insYn;
+	private String typeId;
+	private String typeNm;
 	private String note;
 	
 	

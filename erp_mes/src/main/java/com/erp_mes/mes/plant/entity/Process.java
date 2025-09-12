@@ -19,16 +19,18 @@ import lombok.ToString;
 public class Process {
 	
 	@Id
-	@JoinColumn(nullable = false, name = "process_id", referencedColumnName = "com_dt_id")
+	private String proId;
+	
+	@Column(nullable = false, name = "PRO_NM")
+	private String proNm;
+	
+
+	@JoinColumn(nullable = false, name = "PRO_TYPE", referencedColumnName = "COM_DT_ID")
 	private CommonDetailCode common;
 	
-	@Column(nullable = false, name = "user_yn")
-	private String useYn;
-	
-	@Column(nullable = false, name = "inspection_yn")
-	private String insYn;
-	
-	@Column(nullable = false, name = "note")
+	@Column(nullable = false, name = "PRO_NM")
 	private String note;
+	
+	
 
 }
