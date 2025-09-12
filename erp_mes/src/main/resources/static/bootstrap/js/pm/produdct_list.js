@@ -8,7 +8,6 @@ const prodGrid = new tui.Grid({
     { header: '단위', name: 'unit', sortable: true, align: 'center' },
     { header: '등록일', name: 'createdAt', sortable: true, align: 'center' },
   ],
-//  rowHeaders: ['rowNum'],
   bodyHeight: 'fitToParent'
 });
 
@@ -21,10 +20,25 @@ async function loadProducts() {
 	
 }
 
-loadProducts();
+
+// 제품 클릭 시 BOM 로드
+prodGrid.on('click', async ev => {
+    const rowData = prodGrid.getRow(ev.rowKey);
+    if (!rowData) return;
+
+    const productId = rowData.productId;
+
+    // BOM 리스트 JS에 있는 함수를 호출
+    if (typeof loadBomByProduct === "function") {
+        loadBomByProduct(productId);
+    } else {
+        console.warn("loadBomByProduct 함수가 정의되어 있지 않습니다.");
+    }
+});
+
 
 // ==================================
-// 제품 등록 ajax
+// 모달 버튼
 	document.addEventListener('DOMContentLoaded', () => {
 	    const btn = document.getElementById('openProductModalBtn');
 	    const modalEl = document.getElementById('productRegisterModal');
@@ -35,14 +49,8 @@ loadProducts();
 	    });
 	});
 
-
-//	const productRegisterModalEl = document.getElementById('productRegisterModal');
-//	productRegisterModalEl.addEventListener('show.bs.modal', () => {
-//		const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-//		document.getElementById('created_at').value = today;
-//	});
 	
-	
+loadProducts();
 	
 
 
