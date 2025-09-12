@@ -5,6 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.erp_mes.mes.stock.service.InvService;
 import com.erp_mes.mes.stock.service.WareService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import lombok.extern.log4j.Log4j2;
 @RequestMapping("/inventory")
 @RequiredArgsConstructor
 public class WareController {
+	
+	private final InvService invService;
 	private final WareService wareService;
 	
 	//창고내 재고 현황
