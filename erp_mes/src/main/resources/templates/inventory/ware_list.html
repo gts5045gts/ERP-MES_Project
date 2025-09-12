@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+        <h1 class="h3 mb-4 text-gray-800">창고 정보 관리</h1>
+        
+        <!-- 검색 영역 -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <select class="form-control" id="warehouseType">
+                                <option value="">창고유형 전체</option>
+                                <option value="원자재">원자재</option>
+                                <option value="반제품">반제품</option>
+                                <option value="완제품">완제품</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-control" id="warehouseStatus">
+                                <option value="">운영상태 전체</option>
+                                <option value="Y">운영중</option>
+                                <option value="N">운영중지</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchKeyword" placeholder="창고ID 또는 창고명">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary" onclick="searchWarehouse()">검색</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetSearch()">초기화</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 창고 테이블 -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">창고 목록</h6>
+                <div>
+                    <button class="btn btn-success btn-sm" onclick="addWarehouse()">
+                        <i class="fas fa-plus"></i> 추가
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="editSelected()">
+                        <i class="fas fa-edit"></i> 수정
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i> 삭제
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                        <thead class="thead-light">
+                            <tr>
+                                <th width="5%">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th width="10%">창고 ID</th>
+                                <th width="15%">창고명</th>
+                                <th width="10%">창고 유형</th>
+                                <th width="8%">운영상태</th>
+                                <th width="15%">창고 위치</th>
+                                <th width="10%">담당자</th>
+                                <th width="17%">비고</th>
+                                <th width="10%">생성일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="WH001"></td>
+                                <td>WH001</td>
+                                <td>원자재창고 A</td>
+                                <td><span class="badge badge-primary" style="font-size: 14px;">원자재</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 A동 1층</td>
+                                <td>2025082805</td>
+                                <td>엔진부품 원자재 보관</td>
+                                <td>2025-09-01</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="WH002"></td>
+                                <td>WH002</td>
+                                <td>원자재창고 B</td>
+                                <td><span class="badge badge-primary" style="font-size: 14px;">원자재</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 A동 2층</td>
+                                <td>2025082806</td>
+                                <td>전자부품 원자재 보관</td>
+                                <td>2025-09-01</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="BH001"></td>
+                                <td>BH001</td>
+                                <td>반제품창고 1</td>
+                                <td><span class="badge badge-warning" style="font-size: 14px;">반제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 B동 1층</td>
+                                <td>2025082807</td>
+                                <td>조립 중간 부품 보관</td>
+                                <td>2025-09-02</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="BH002"></td>
+                                <td>BH002</td>
+                                <td>반제품창고 2</td>
+                                <td><span class="badge badge-warning" style="font-size: 14px;">반제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 B동 2층</td>
+                                <td>2025082808</td>
+                                <td>가공 완료 부품 임시보관</td>
+                                <td>2025-09-02</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="FH001"></td>
+                                <td>FH001</td>
+                                <td>완제품창고 1</td>
+                                <td><span class="badge badge-info" style="font-size: 14px;">완제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 C동 1층</td>
+                                <td>2025082809</td>
+                                <td>G4KD 엔진 보관</td>
+                                <td>2025-09-03</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="FH002"></td>
+                                <td>FH002</td>
+                                <td>완제품창고 2</td>
+                                <td><span class="badge badge-info" style="font-size: 14px;">완제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 C동 2층</td>
+                                <td>2025082810</td>
+                                <td>D4CB 디젤엔진 보관</td>
+                                <td>2025-09-03</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="WH003"></td>
+                                <td>WH003</td>
+                                <td>냉동창고</td>
+                                <td><span class="badge badge-primary" style="font-size: 14px;">원자재</span></td>
+                                <td><span class="badge badge-danger">운영중지</span></td>
+                                <td>공장 D동 지하1층</td>
+                                <td>2025082811</td>
+                                <td>특수 원자재 냉동보관 (점검중)</td>
+                                <td>2025-09-04</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="FH003"></td>
+                                <td>FH003</td>
+                                <td>수출용창고</td>
+                                <td><span class="badge badge-info" style="font-size: 14px;">완제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>물류센터 1층</td>
+                                <td>2025082812</td>
+                                <td>수출 대기 엔진 보관</td>
+                                <td>2025-09-05</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="BH003"></td>
+                                <td>BH003</td>
+                                <td>임시보관창고</td>
+                                <td><span class="badge badge-warning" style="font-size: 14px;">반제품</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>공장 E동 1층</td>
+                                <td>2025082813</td>
+                                <td>긴급 생산품 임시보관</td>
+                                <td>2025-09-06</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="item-check" value="WH004"></td>
+                                <td>WH004</td>
+                                <td>위험물창고</td>
+                                <td><span class="badge badge-primary" style="font-size: 14px;">원자재</span></td>
+                                <td><span class="badge badge-success">운영중</span></td>
+                                <td>별관 특수보관동</td>
+                                <td>2025082814</td>
+                                <td>화학물질 및 위험물 보관</td>
+                                <td>2025-09-07</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 페이지네이션 -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">이전</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">다음</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="script">
+<script>
+// 전체 선택
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.item-check');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// 검색
+function searchWarehouse() {
+    const type = document.getElementById('warehouseType').value;
+    const status = document.getElementById('warehouseStatus').value;
+    const keyword = document.getElementById('searchKeyword').value;
+    
+    console.log('검색 조건:', {type, status, keyword});
+    // Ajax 요청으로 검색 처리
+}
+
+// 초기화
+function resetSearch() {
+    document.getElementById('warehouseType').value = '';
+    document.getElementById('warehouseStatus').value = '';
+    document.getElementById('searchKeyword').value = '';
+}
+
+// 창고 추가
+function addWarehouse() {
+    console.log('창고 추가');
+    // 모달 또는 페이지 이동
+}
+
+// 선택 수정
+function editSelected() {
+    const checked = document.querySelectorAll('.item-check:checked');
+    if (checked.length === 0) {
+        alert('수정할 창고를 선택해주세요.');
+        return;
+    }
+    if (checked.length > 1) {
+        alert('한 개의 창고만 선택해주세요.');
+        return;
+    }
+    const warehouseId = checked[0].value;
+    console.log('수정할 창고:', warehouseId);
+    // 수정 페이지로 이동
+}
+
+// 선택 삭제
+function deleteSelected() {
+    const checked = document.querySelectorAll('.item-check:checked');
+    if (checked.length === 0) {
+        alert('삭제할 창고를 선택해주세요.');
+        return;
+    }
+    if (confirm(checked.length + '개 창고를 삭제하시겠습니까?')) {
+        const warehouseIds = Array.from(checked).map(cb => cb.value);
+        console.log('삭제할 창고들:', warehouseIds);
+        // Ajax로 삭제 처리
+    }
+}
+</script>
+</th:block>
+</body>
+</html>

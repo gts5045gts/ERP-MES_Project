@@ -162,8 +162,9 @@
 						<a class="collapse-item" th:href="@{/notice}">품질정보</a>
 						<a class="collapse-item" th:href="@{/plant/equipment}">설비관리</a>
 						<a class="collapse-item" th:href="@{/plant/process}">공정관리</a>
-						<a class="collapse-item" th:href="@{/inventory/material}">자재정보</a>
-						<a class="collapse-item" th:href="@{/inventory/item}">제품정보</a>
+						<a class="collapse-item" th:href="@{/inventory/ware}">창고 정보</a>
+						<a class="collapse-item" th:href="@{/inventory/material}">자재(부품) 정보</a>
+						<a class="collapse-item" th:href="@{/inventory/item}">제품(완/반) 정보</a>
 
 					</div>
 				</div></li>
@@ -278,7 +279,7 @@
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">재고 관리:</h6>
 						<a class="collapse-item" th:href="@{/inventory/stock}">재고 현황</a> 
-						<a class="collapse-item" th:href="@{/inventory/warehouse}">창고 현황</a>
+						<a class="collapse-item" th:href="@{/inventory/warehouse}">창고내 재고 현황</a>
 						<a class="collapse-item" th:href="@{/inventory/outbound}">출고 관리</a>
 							
 
@@ -579,7 +580,6 @@ function createMessageItem(message) {
 }
 
 // 페이지 로드 시 실행
-// 아이콘 클릭하면 그때 업데이트
 document.addEventListener('DOMContentLoaded', function() {
     updateApprovalAlerts();  
     document.getElementById('alertsDropdown').addEventListener('click', updateApprovalAlerts);
