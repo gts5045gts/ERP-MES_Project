@@ -111,7 +111,7 @@
 			<AppenderRef ref="rollingErrorFile" />
 		</Logger>
 		<!-- 스프링 시큐리티 관련 오류 정보 표시 -->
-		<Logger name="org.Springframwork.security" level="DEBUG" additivit="false">
+		<Logger name="org.Springframwork.security" level="DEBUG" additivity="false">
 			<AppenderRef ref="console"/>
 		</Logger>
 		
