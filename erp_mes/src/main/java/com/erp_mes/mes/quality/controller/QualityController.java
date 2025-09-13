@@ -20,4 +20,8 @@ public class QualityController {
 		return "qc/qcinfo";
 	}
 	
+	@GetMapping("iqc")
+	public String iqc() {
+		return "qc/iqc";
+	}
 }

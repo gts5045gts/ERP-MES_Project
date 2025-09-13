@@ -1,122 +1,165 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-	layout:decorate="~{layouts/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
 <head>
-<meta charset="UTF-8">
-<title>품질정보등록</title>
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/tui-date-picker/latest/tui-date-picker.css" />
+    <meta charset="UTF-8">
+    <title>품질 관리</title>
 </head>
+
 <body>
-	<th:block layout:fragment="content">
-		<th:block sec:authorize="isAuthenticated()">
-			<input type="hidden" id="currentEmpId"
-				th:value="${#authentication.principal.empId}" />
-		</th:block>
+<th:block layout:fragment="content">
+    <div class="container-fluid p-4">
+        <h1 class="h3 mb-2 text-gray-800">품질 관리 대시보드</h1>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">품질 검사 관리</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="input-group" style="width: 30%;">
+                                <input type="text" class="form-control" placeholder="품질 검사" aria-label="Search">
+                                <button class="btn btn-primary" type="button">검색</button>
+                            </div>
+                            <div>
+                                <button class="btn btn-success" type="button">추가</button>
+                                <button class="btn btn-info" type="button">저장</button>
+                                <button class="btn btn-danger" type="button">삭제</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable1" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>품질검사번호</th>
+                                        <th>품질검사명</th>
+                                        <th>검사타입</th>
+                                        <th>검사방법</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>치수 정밀도 검사</td>
+                                        <td>치수검사</td>
+                                        <td>3D 측정기</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>평면도 검사</td>
+                                        <td>평면도검사</td>
+                                        <td>평면도 측정기</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>표면 거칠기 검사</td>
+                                        <td>표면 거칠기 검사</td>
+                                        <td>표면 거칠기 측정기</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>경도 검사</td>
+                                        <td>경도 검사</td>
+                                        <td>토크릴 경도계</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>내마모성 검사</td>
+                                        <td>내마모성 검사</td>
+                                        <td>마모 시험기</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-		<div class="container-fluid p-4">
-			<div class="row">
-				<div class="col-md-6 mb-4">
-					<h3>품질 검사 관리</h3>
-					<div id="grid1"></div>
-				</div>
-				<div class="col-md-6 mb-4">
-					<h3>제품 관리</h3>
-					<div id="grid2"></div>
-				</div>
-			</div>
-		</div>
-	</th:block>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">제품 관리</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="input-group" style="width: 30%;">
+                                <input type="text" class="form-control" placeholder="제품" aria-label="Search">
+                                <button class="btn btn-primary" type="button">검색</button>
+                            </div>
+                            <div>
+                                <button class="btn btn-success" type="button">추가</button>
+                                <button class="btn btn-info" type="button">저장</button>
+                                <button class="btn btn-danger" type="button">삭제</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable2" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>검사기준번호</th>
+                                        <th>제품번호</th>
+                                        <th>목표값</th>
+                                        <th>상한허용값</th>
+                                        <th>하한허용값</th>
+                                        <th>단위</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>70</td>
+                                        <td>P0000022</td>
+                                        <td>2</td>
+                                        <td>3</td>
+                                        <td>1</td>
+                                        <td>mm</td>
+                                    </tr>
+                                    <tr>
+                                        <td>69</td>
+                                        <td>P0000021</td>
+                                        <td>4</td>
+                                        <td>5</td>
+                                        <td>3</td>
+                                        <td>kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>68</td>
+                                        <td>P0000011</td>
+                                        <td>5</td>
+                                        <td>5.5</td>
+                                        <td>4.5</td>
+                                        <td>kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>67</td>
+                                        <td>P0000011</td>
+                                        <td>250</td>
+                                        <td>270</td>
+                                        <td>230</td>
+                                        <td>HB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>66</td>
+                                        <td>P0000011</td>
+                                        <td>3.2</td>
+                                        <td>6.3</td>
+                                        <td>1.6</td>
+                                        <td>Ra</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
 
-	<th:block layout:fragment="script">
-		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-		<script
-			src="https://uicdn.toast.com/tui-date-picker/latest/tui-date-picker.js"></script>
-
-		<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// 첫 번째 그리드 설정
-			const grid1 = new tui.Grid({
-				el: document.getElementById('grid1'),
-				data: {
-					api: {
-						readData: () => {
-							// 여기서는 임시 데이터를 사용합니다.
-							// 실제로는 서버 API를 호출해야 합니다.
-							return Promise.resolve({
-								result: true,
-								data: [
-									{ id: 1, name: '치수 검사', type: '치수검사', method: '3D 측정기' },
-									{ id: 2, name: '평면도 검사', type: '평면도검사', method: '평면도 측정기' },
-									{ id: 3, name: '표면 거칠기 검사', type: '표면 거칠기 검사', method: '표면 거칠기 측정기' },
-									{ id: 4, name: '경도 검사', type: '경도 검사', method: '토크릴 경도계' },
-									{ id: 5, name: '내마모성 검사', type: '내마모성 검사', method: '마모 시험기' },
-									{ id: 6, name: '멀티리 경도 검사', type: '경도 검사', method: '토크릴 경도계' },
-									{ id: 7, name: '코멘 품질 검사', type: '육안 검사', method: '육안 검사' },
-									{ id: 8, name: '조립 정밀도 검사', type: '조립 검사', method: '3D 측정기' },
-									{ id: 9, name: '베어링 회전 검사', type: '기능 검사', method: '베어링 회전 테스트' },
-									{ id: 10, name: '가이드 핀 검사', type: '정밀 검사', method: '레이저 측정기' }
-								],
-								pagination: {
-									totalCount: 10
-								}
-							});
-						}
-					}
-				},
-				rowHeaders: ['checkbox', 'rowNum'],
-				columns: [
-					{ header: '품질검사번호', name: 'id' },
-					{ header: '품질검사명', name: 'name' },
-					{ header: '검사타입', name: 'type' },
-					{ header: '검사방법', name: 'method' }
-				]
-			});
-
-			// 두 번째 그리드 설정
-			const grid2 = new tui.Grid({
-				el: document.getElementById('grid2'),
-				data: {
-					api: {
-						readData: () => {
-							// 여기서는 임시 데이터를 사용합니다.
-							return Promise.resolve({
-								result: true,
-								data: [
-									{ standardNum: 70, productNum: 'P0000022', target: 2, upper: 3, lower: 1, unit: 'mm' },
-									{ standardNum: 69, productNum: 'P0000021', target: 4, upper: 5, lower: 3, unit: 'kg' },
-									{ standardNum: 68, productNum: 'P0000011', target: 5, upper: 5.5, lower: 4.5, unit: 'kg' },
-									{ standardNum: 67, productNum: 'P0000011', target: 250, upper: 270, lower: 230, unit: 'HB' },
-									{ standardNum: 66, productNum: 'P0000011', target: 3.2, upper: 6.3, lower: 1.6, unit: 'Ra' },
-									{ standardNum: 65, productNum: 'P0000011', target: 0.02, upper: 0.04, lower: 0.01, unit: 'mm' },
-									{ standardNum: 64, productNum: 'P0000011', target: 100, upper: 100.1, lower: 99.9, unit: 'mm' },
-									{ standardNum: 63, productNum: 'P0000012', target: 0.01, upper: 0.02, lower: 0.005, unit: 'mm' },
-									{ standardNum: 62, productNum: 'P0000012', target: 38, upper: 42, lower: 34, unit: 'HRC' },
-									{ standardNum: 61, productNum: 'P0000012', target: 0.2, upper: 0.4, lower: 0.1, unit: 'Ra' }
-								],
-								pagination: {
-									totalCount: 10
-								}
-							});
-						}
-					}
-				},
-				rowHeaders: ['checkbox', 'rowNum'],
-				columns: [
-					{ header: '검사기준번호', name: 'standardNum' },
-					{ header: '제품번호', name: 'productNum' },
-					{ header: '목표값', name: 'target' },
-					{ header: '상한허용값', name: 'upper' },
-					{ header: '하한허용값', name: 'lower' },
-					{ header: '단위', name: 'unit' }
-				]
-			});
-		});
-		</script>
-	</th:block>
+<th:block layout:fragment="script">
+    </th:block>
 </body>
 </html>
