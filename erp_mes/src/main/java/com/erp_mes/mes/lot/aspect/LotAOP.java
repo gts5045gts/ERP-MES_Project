@@ -1,11 +1,15 @@
 package com.erp_mes.mes.lot.aspect;
 
+import java.util.Map;
+
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.erp_mes.mes.lot.dto.LotDTO;
+import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.service.LotService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,9 +23,7 @@ public class LotAOP {
 
 	private final LotService lotService;
 
-//	@Before("execution(* com.erp_mes.mes..controller.*Controller.*(com.erp_mes.mes.lot.dto.LotDTO))")
-//	@Before("execution(* *(com.erp_mes.mes.lot.dto.LotDTO))")
-	@AfterReturning(pointcut = "execution(* com.erp_mes.mes.lot.service.LotService.registWareHouse(..))", returning = "targetId")
+//	@AfterReturning(pointcut = "execution(* com.erp_mes.mes.lot.service.LotService.registWareHouse(..))", returning = "targetId")
 	public void LotTraceAspect(JoinPoint joinPoint, Object targetId) throws Throwable {
 //		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
 //		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
@@ -38,6 +40,30 @@ public class LotAOP {
 			lotDTO.setLotId(lotId);// LOT ID 생성 및 저장
 		}
 	}
+	
+	public Object traceLot(ProceedingJoinPoint pjp, TraceLot traceLot) throws Throwable{
+		// 컨트롤러 실제 실행
+        Object result = pjp.proceed();
+
+        // Controller의 Request DTO 추출 (예: 첫 번째 파라미터)
+        Object[] args = pjp.getArgs();
+        if (args.length == 0) return result;
+
+        // 예시: 모든 Request DTO는 parentLotId, qty 포함한다고 가정
+        Map<String, Object> request = (Map<String, Object>) args[0];
+
+//        String parentLotId = (String) request.get("parentLotId");
+        String materialCode = (String) request.get("materialCode");
+        Integer qty = (Integer) request.get("qty");
+		
+		
+		LotMaster newLot = null;
+		
+		return newLot != null ? newLot : result;
+		
+	}
+	
+	
 
 	// 서비스로 옮김 추후 삭제
 	/*

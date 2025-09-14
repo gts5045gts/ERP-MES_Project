@@ -32,7 +32,7 @@ import lombok.ToString;
 @Builder
 public class LotMaster {
 	@Id
-	@Column(updatable = false, length = 50)
+	@Column(name = "lot_id", updatable = false, length = 50)
 	private String lotId;
 
 // 	각테이블 고유 pk id
