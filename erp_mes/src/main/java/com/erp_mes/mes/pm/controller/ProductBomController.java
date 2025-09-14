@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
+import com.erp_mes.mes.pm.dto.BomDTO;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,7 +49,7 @@ public class ProductBomController {
 		log.info(" >>>>>>>>>>>>>>>>>>>>>>>>>>> commonUnit : " + commonUnit);
 		model.addAttribute("commonUnit", commonUnit);
 		
-		return "pm/product_plan_list";
+		return "pm/product_bom_list";
 	}
 	
 	@ResponseBody
@@ -65,7 +66,12 @@ public class ProductBomController {
 	    return ResponseEntity.ok("success");
 	}
 	
-	
+	// bom 리스트
+	@ResponseBody
+	@GetMapping("/bomList")
+	public List<BomDTO> getBomList(@RequestParam(name = "product_id") String productId) {
+		return productBomService.getBomList(productId); // json으로 변환 => 그리드에 값 넣어야해서
+	}
 	
 }
 

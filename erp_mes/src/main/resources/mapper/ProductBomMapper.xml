@@ -46,6 +46,15 @@
 		      SYSDATE
 		)
 	</insert>
+	
+	<!-- bom 리스트 -->
+	<select id="getBomList" resultType="com.erp_mes.mes.pm.dto.BomDTO">
+		SELECT b.material_id, b.quantity, c.com_dt_nm AS unit, b.revision_no, b.created_at
+		FROM bom b
+		JOIN common_dt_code c
+		ON b.unit = c.com_dt_id
+		WHERE b.product_id = #{productId}
+	</select>
 </mapper>
 
 

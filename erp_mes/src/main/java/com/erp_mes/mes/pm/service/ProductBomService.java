@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
+import com.erp_mes.mes.pm.dto.BomDTO;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.mapper.ProductBomMapper;
 
@@ -40,6 +41,11 @@ public class ProductBomService {
 	// 제품 등록
 	public void productRegist(ProductDTO productDTO) {
 		productBomMapper.ProductRegist(productDTO);
+	}
+
+	// bom 리스트
+	public List<BomDTO> getBomList(String productId) {
+		return productBomMapper.getBomList(productId);
 	}
 
 }

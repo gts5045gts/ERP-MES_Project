@@ -28,7 +28,10 @@
 		        <!-- 오른쪽: BOM Grid -->
 		        <div class="col-md-6">
 		            <div class="card shadow mb-4">
-		                <h3>BOM</h3>
+		            	<div class="d-flex align-items-center justify-content-between mb-2">
+			                <h3 class="mb-0">BOM</h3>
+			                <button class="btn btn-success btn-sm me-3" id="openBomModalBtn">등록</button>
+		                </div>
 		                <div id="bom-grid"></div>
 		            </div>
 		        </div>
@@ -94,6 +97,7 @@
 	</th:block>
 	<th:block layout:fragment="script">
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="/bootstrap/js/pm/bom_list.js"></script>
 		<script src="/bootstrap/js/pm/produdct_list.js"></script>
 		<script src="/bootstrap/js/pm/product_modal.js"></script>
 	</th:block>
