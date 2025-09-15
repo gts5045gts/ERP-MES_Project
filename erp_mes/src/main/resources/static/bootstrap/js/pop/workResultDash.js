@@ -1,3 +1,4 @@
+//=============== 도넛차트(불량률, 생산률) ======================================= 
 // 차트 크기 설정
 var width = 200,
 	height = 250,
@@ -22,7 +23,7 @@ var pie = d3.layout.pie()
 // arc 생성기
 var arc = d3.svg.arc()
 	.outerRadius(radius - 10)
-	.innerRadius(0);  // 도넛 차트 원하면 여기에 값 넣기
+	.innerRadius(radius / 2);  // 도넛 차트 원하면 여기에 값 넣기
 
 // svg 추가
 var svg = d3.select("#quantityChart")
@@ -31,20 +32,12 @@ var svg = d3.select("#quantityChart")
 	.append("g")
 	.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-// SVG 생성
-var svg = d3.select("#quantityChart")
-	.attr("width", width)
-	.attr("height", height);
-
-// 메인 그룹: 파이 차트용
-var pieGroup = svg.append("g")
-	.attr("transform", "translate(" + width / 2 + "," + (height / 2 - 10) + ")"); // 조금 위로 올려서 밑 제목 공간 확보
-
 // 파이 조각 그룹
-var g = pieGroup.selectAll(".arc")
-	.data(pie(data))
-	.enter().append("g")
-	.attr("class", "arc");
+var g = svg.selectAll(".arc")
+    .data(pie(data))
+  	.enter().append("g")
+    .attr("class", "arc");
+
 
 // path
 g.append("path")
@@ -64,26 +57,53 @@ g.append("text")
 	.style("text-anchor", "middle")
 	.text(function(d) { return d.data.label; });
 
-// hover 효과
-g.on("mouseover", function(d) {
-	d3.select(this).select("path")
-		.transition().duration(200)
-		.attr("d", d3.svg.arc()
-			.outerRadius(radius + 10)
-			.innerRadius(0)(d))
-		.style("fill", color(d.data.label));
-}).on("mouseout", function(d) {
-	d3.select(this).select("path")
-		.transition().duration(200)
-		.attr("d", arc)
-		.style("fill", color(d.data.label));
-	});
 
-// 파이 밑 제목
+	
+// 도넛 중앙에 총 생산량/불량률 표시
+var totalValue = d3.sum(data, function(d) { return d.value; });
 svg.append("text")
-	.attr("x", width / 2)
-	.attr("y", height - 5) // SVG 맨 아래
-	.attr("text-anchor", "middle")
-	.style("font-size", "16px")
-	.style("font-weight", "bold")
-	.text("생산상태");
+    .attr("text-anchor", "middle")
+    .attr("dy", "0.35em")
+    .style("font-size", "16px")
+    .style("font-weight", "bold")
+    .text("생산상태");
+
+	
+//=============== 도넛차트(전체진행률) ======================================= 
+var data2 = [
+    { label: "완료", value: 70 },
+    { label: "미완료", value: 30 }
+];
+
+var color2 = d3.scale.ordinal()
+    .domain(["완료","미완료"])
+    .range(["#4caf50","#e0e0e0"]);
+
+var svg2 = d3.select("#progressChart")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+
+var g2 = svg2.selectAll(".arc")
+    .data(pie(data2))
+  .enter().append("g")
+    .attr("class", "arc");
+
+g2.append("path")
+    .attr("d", arc)
+    .style("fill", d => color2(d.data.label));
+
+g2.append("text")
+    .attr("transform", d => "translate(" + arc.centroid(d) + ")")
+    .attr("dy", "0.35em")
+    .style("text-anchor", "middle")
+    .text(d => d.data.label);
+
+// 중앙 퍼센트 표시
+svg2.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dy", "0.35em")
+    .style("font-size", "18px")
+    .style("font-weight", "bold")
+    .text("진행률");	

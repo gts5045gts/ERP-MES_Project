@@ -1,11 +1,38 @@
+$('#workOrderCheck').on('click', function() {
+	const checked = $('#Workgrid1 .work-start:checked');
+	
+	// 체크된 항목들의 workOrderId만 추출
+   	const workOrderIds = checked.map(function() {
+		return $(this).data('id');
+    }).get();
+	
+	$.ajax({
+		url: `/pop/workList/${workOrderIds}`,
+		type: 'POST',
+		contentType: 'application/json',
+		data: JSON.stringify(workOrderIds),
+		success: function(res) {
+			// 무한스크롤 그리드에 새 row 추가
+			res.forEach(item => grid.appendRow(item));
+
+			// 모달 닫기 & 체크박스 초기화
+			$('#popModal').modal('hide');
+			$('#Workgrid1 .work-start').prop('checked', false);
+		},
+		error: function(err) {
+			console.error('작업 시작 실패:', err);
+		}
+	});
+});
+
 /* 무한스크롤 */
 document.addEventListener('DOMContentLoaded', function() {
 	let currentPage = 0;
    	let totalPages = 1; // 초기값
 	
     const columns = [
-        { header: '공정명', name: 'processNm', filter: 'select'},
-        { header: '설비명', name: 'equipmentNm', filter: 'select'},
+        { header: '공정아이디(변경)', name: 'processId', filter: 'select'},
+        { header: '설비아이디(변경)', name: 'equipmentId', filter: 'select'},
         { header: '생산수량', name: 'goodQty'},
         { header: '불량수량', name: 'defectQty'},
         { header: '기입시간', name: 'updatedAt', sortable: true},
@@ -23,16 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollX: false,
         emptyMessage: '조회결과가 없습니다.'
     });
-	
-	// ✅ 강제 데이터
-	const testData = [
-	  { processNm: '조립', equipmentNm: '설비 A', goodQty: 120, defectQty: 2, updatedAt: '2025-09-12 10:23', workOrderStatus: '진행중'
-		, workUpdate: `<button class="btn btn-dark btn-sm">수정</button>`, workFinish: `<button class="btn btn-danger btn-sm">작업완료</button>` },
-	  { processNm: '검수', equipmentNm: '설비 B', goodQty: 98, defectQty: 1, updatedAt: '2025-09-12 11:15', workOrderStatus: '진행중'
-		, workUpdate: `<button class="btn btn-dark btn-sm">수정</button>`, workFinish: `<button class="btn btn-danger btn-sm">작업완료</button>` },
-	  { processNm: '포장', equipmentNm: '설비 C', goodQty: 50, defectQty: 0, updatedAt: '2025-09-12 12:05', workOrderStatus: '진행중'
-		, workUpdate: `<button class="btn btn-dark btn-sm">수정</button>`, workFinish: `<button class="btn btn-danger btn-sm">작업완료</button>` }
-	];
+
 
 	// 초기 데이터 세팅
 	grid.resetData(testData);
@@ -61,4 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		    loadPage(currentPage + 1);
 		}
 	});
+});
+
+// 수정 버튼 클릭시 수량 입력
+document.getElementById('grid').addEventListener('click', function(e) {
+	if (e.target && e.target.classList.contains('edit-btn')) {
+    	const modal = new bootstrap.Modal(document.getElementById('workUpdateModal'));
+    	modal.show();
+  	}
 });

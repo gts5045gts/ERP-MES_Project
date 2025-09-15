@@ -13,8 +13,8 @@
 
 <div class="container-fluid p-4">
 	<div class="header d-flex justify-content-between align-items-center">
-	    <div>
-	        작업자 : <span>홍길동</span>
+	    <div id="workerNm">
+	        작업자 : <span></span>
 	    </div>
 	    <div class="d-inline-flex align-items-center">
 			<button type="button" class="btn btn-warning d-flex align-items-center">
@@ -26,13 +26,13 @@
     <div class="row top-row g-3">
 		<div class="col-md-5">
             <div class="box">
-                <h5>작업지시 구역</h5>
+                <h5>작업지시</h5>
                 <div id="work-orders">
                 	<table class="table table-bordered text-center" style="font-size: 14px;">
                 		<thead>
                 			<tr>
 								<th>작업지시ID</th>
-							    <th>공정명</th>
+							    <th>공정명</th> <!-- 나중에 공정명으로 바꾸기 -->
 							    <th>작업시작일</th>
 							    <th>작업종료일</th>
                 			</tr>
@@ -44,10 +44,10 @@
         </div>
         <div class="col-md-7">
             <div class="box dashboard">
-                <h5>대시보드 구역</h5>
                 <svg id="quantityChart"></svg>
-            </div>
-        </div>
+	    		<svg id="progressChart"></svg>
+			</div>
+		</div>
     </div>
 
     <!-- 하단: 작업현황 영역 -->
@@ -64,65 +64,81 @@
 
 <!-- 작업지시 모달 -->
 <div class="modal fade" id="popModal" tabindex="-1" aria-labelledby="popModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="popCodeModalLabel">작업지시 상세정보</h5>
 			</div>
 			<div class="modal-body">
-				<div id="bomInfo" style="width:100%; height:200px; margin-bottom: 5%;">
+				<div id="bomInfo" style="width:100%; height:200px; margin-bottom: 3%;">
 					<h5>BOM</h5>
 					<div id="Workgrid1"></div>
 				</div>
-				
-				<div class="shortageTitle">
-					<h5>재고부족 리스트</h5>
-				</div>
-				<div id="shortageList">
-					<div id="Workgrid2" style="width:400px; height:100%;"></div>
-					<div id="numPad" style="background:#eee; border:1px solid #ccc; padding:10px;">
+
+				<div id="shortageList" style="font-size: 14px">
+					<table class="table table-bordered text-center" id="shortageTable" style="width: 50%; table-layout: fixed;">
+			            <thead>
+			                <tr>
+			                    <th>자재명</th>
+			                    <th>부족수량</th>
+			                </tr>
+			            </thead>
+			            <tbody id="shortageBody"></tbody>
+			        </table>
+					<div id="shortnumPad">
 						<div style="display:grid; grid-template-columns: repeat(3, 50px); gap:5px;">
-					        <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
-					        <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
-					        <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-					        <button class="num-btn">Del</button><button class="num-btn">0</button><button class="num-btn">OK</button>
+					        <button class="Snum-btn">1</button><button class="Snum-btn">2</button><button class="Snum-btn">3</button>
+					        <button class="Snum-btn">4</button><button class="Snum-btn">5</button><button class="Snum-btn">6</button>
+					        <button class="Snum-btn">7</button><button class="Snum-btn">8</button><button class="Snum-btn">9</button>
+					        <button id="deleteBtn" type="button">Del</button>
+					        <button class="Snum-btn">0</button>
+					        <button id="okBtn" type="button">OK</button>
 					    </div>
 					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-dark btn-sm" data-bs-dismiss="modal">닫기</button>
-					<button type="submit" class="btn btn-success btn-sm">확인</button>
+					<button id="workOrderCheck" type="submit" class="btn btn-success btn-sm">확인</button>
 				</div>	
 			</div>
 		</div>
 	</div>
 </div>
 
-<!-- 작업완료 모달 -->
-<div class="modal fade" id="popModal" tabindex="-1" aria-labelledby="popModalLabel" aria-hidden="true">
+<!-- 수정 모달 -->
+<div class="modal fade" id="workUpdateModal" tabindex="-1" aria-labelledby="workUpdateModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="popCodeModalLabel">작업지시 상세정보</h5>
+				<h5 class="modal-title" id="workUpdateModalLabel">수량 등록</h5>
 			</div>
 			<div class="modal-body">
-				<div id="bomInfo" style="width:100%; height:200px; margin-bottom: 5%;">
-					<h5>BOM</h5>
-					<div id="Workgrid1"></div>
-				</div>
-				
-				<div class="shortageTitle">
-					<h5>재고부족 리스트</h5>
-				</div>
-				<div id="shortageList">
-					<div id="Workgrid2" style="width:400px; height:100%;"></div>
-					<div id="numPad" style="background:#eee; border:1px solid #ccc; padding:10px;">
-						<div style="display:grid; grid-template-columns: repeat(3, 50px); gap:5px;">
-					        <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
-					        <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
-					        <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
-					        <button class="num-btn">Del</button><button class="num-btn">0</button><button class="num-btn">OK</button>
-					    </div>
+				<div style="display: flex; justify-content: space-between;">
+					<div id="goodQtyTable">
+		                <div class="qty-inputs">
+		                    <div>
+		                        <label for="goodQty1">생산수량</label>
+		                        <input type="text" id="goodQty1">
+		                    </div>
+		                    <div style="margin-top: 20px;">
+		                        <label for="defectQty1">불량수량</label>
+		                        <input type="text" id="defectQty1">
+		                    </div>
+		                    <div style="margin-top: 20px;">
+		                        <label for="defectQty1">불량사유</label>
+		                        <input type="text" id="defectQty1">
+		                    </div>
+		                </div>
+					</div>
+					<div id="defectList">
+						<div id="numPad">
+							<div style="display:grid; grid-template-columns: repeat(3, 50px); gap:30px;">
+						        <button class="num-btn">1</button><button class="num-btn">2</button><button class="num-btn">3</button>
+						        <button class="num-btn">4</button><button class="num-btn">5</button><button class="num-btn">6</button>
+						        <button class="num-btn">7</button><button class="num-btn">8</button><button class="num-btn">9</button>
+						        <button class="num-btn">Del</button><button class="num-btn">0</button><button class="num-btn">OK</button>
+						    </div>
+						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -136,11 +152,12 @@
 
 	
 <th:block layout:fragment="script">
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.min.js"></script>
 	<script src="https://kit.fontawesome.com/60c9dd1eea.js" crossorigin="anonymous"></script>
 	<script src="https://d3js.org/d3.v3.min.js"></script>
-	<script src="/bootstrap/js/pop/workResultCheck.js"></script>
+	<script src="/bootstrap/js/pop/workOrderCheck.js"></script>
 	<script src="/bootstrap/js/pop/workResultList.js"></script>
 	<script src="/bootstrap/js/pop/workResultDash.js"></script>
 </th:block>
