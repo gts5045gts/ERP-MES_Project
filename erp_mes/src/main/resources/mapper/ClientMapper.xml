@@ -3,11 +3,12 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.business.mapper.ClientMapper">
+<!-- 	거래처 전체 목록 -->
 	<select id="getAllClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
 		SELECT client_id,
 			   client_name,
                client_type AS client_type_code, 	-- 원래 코드 값 (select box value 용)
-			   CASE client_type						-- 화면 표시용 한글
+			   CASE client_type						-- 화면 표시용
                    WHEN 'PURCHASE' THEN '매입사'
                    WHEN 'ORDER'    THEN '매출사'
                    WHEN 'INSPECT'  THEN '검사 업체'
@@ -17,29 +18,30 @@
 			   client_address,
 			   client_phone,
 			   client_status AS client_status_code, -- 원래 코드 값 (select box value 용)
-			   CASE client_status					-- 화면 표시용 한글
+			   CASE client_status					-- 화면 표시용 
                    WHEN 'ACTIVE'   THEN '거래중'
                    WHEN 'INACTIVE' THEN '거래중지'
            	   END AS client_status
 		 FROM client
 	</select>
 	
-	<select id="getClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
-		SELECT client_id,
-			   client_name,
-			   client_type,
-			   business_number,
-			   ceo_name,
-			   client_address,
-			   client_phone,
-			   client_status
-		FROM client
-		WHERE (#{clientName,jdbcType=VARCHAR} IS NULL OR client_name LIKE '%' || #{clientName} || '%')
-      	AND (#{clientType,jdbcType=VARCHAR} IS NULL OR #{clientType} = 'ALL' OR client_type = #{clientType})
-		ORDER BY client_id
-	</select>
+<!-- 	거래처 필터링 -> 일부 거래처만 조회 -->
+<!-- 	<select id="getClients" resultType="com.erp_mes.mes.business.dto.ClientDTO"> -->
+<!-- 		SELECT client_id, -->
+<!-- 			   client_name, -->
+<!-- 			   client_type, -->
+<!-- 			   business_number, -->
+<!-- 			   ceo_name, -->
+<!-- 			   client_address, -->
+<!-- 			   client_phone, -->
+<!-- 			   client_status -->
+<!-- 		FROM client -->
+<!-- 		WHERE (#{clientName,jdbcType=VARCHAR} IS NULL OR client_name LIKE '%' || #{clientName} || '%') -->
+<!--       	AND (#{clientType,jdbcType=VARCHAR} IS NULL OR #{clientType} = 'ALL' OR client_type = #{clientType}) -->
+<!-- 		ORDER BY client_id -->
+<!-- 	</select> -->
 	
-	
+<!-- 	거래처 등록 -->
 	<insert id="insertClient" parameterType="com.erp_mes.mes.business.dto.ClientDTO">
 	<selectKey keyProperty="clientId" resultType="string" order="BEFORE">
         SELECT 'CLI' || LPAD(client_id_seq.NEXTVAL, 3, '0') FROM DUAL
@@ -69,6 +71,7 @@
 	    )
 	</insert>
 	
+<!-- 	거래처 수정 -->
 	<update id="updateClient" parameterType="com.erp_mes.mes.business.dto.ClientDTO">
     	UPDATE client
     	SET client_name = #{clientName},
@@ -81,5 +84,12 @@
         	update_at = SYSDATE
     	WHERE client_id = #{clientId}
 	</update>
+	
+<!-- 	매출사 거래처 목록 -->
+	<select id="getOrderClients" resultType="com.erp_mes.mes.business.dto.ClientDTO">
+		SELECT client_name
+		FROM client
+		WHERE client_type = 'ORDER'
+	</select>
 	
 </mapper>

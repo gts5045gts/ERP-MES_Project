@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 		data: []
 	});
+	
 
 	// 공용 모달 객체
 	const clientAddModal = new bootstrap.Modal(document.getElementById('clientAddModal'));
@@ -92,27 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		document.getElementById("clientName").value = rowData.clientName;
 		document.getElementById("ceoName").value = rowData.ceoName;
 		document.getElementById("businessNumber").value = rowData.businessNumber;
-//		document.getElementById("clientType").value = rowData.clientTypeCode;
-//		document.getElementById("clientStatus").value = rowData.clientStatusCode;
-// select 값 세팅
-        const typeSelect = document.getElementById("clientType");
-        const statusSelect = document.getElementById("clientStatus");
-
-        for (let i = 0; i < typeSelect.options.length; i++) {
-            if (typeSelect.options[i].value === rowData.clientType) {
-                typeSelect.selectedIndex = i;
-                break;
-            }
-        }
-
-        for (let i = 0; i < statusSelect.options.length; i++) {
-            if (statusSelect.options[i].value === rowData.clientStatus) {
-                statusSelect.selectedIndex = i;
-                break;
-            }
-        }
 		document.getElementById("clientPhone").value = rowData.clientPhone;
 		document.getElementById("clientAddress").value = rowData.clientAddress;
+		document.getElementById("clientType").value = rowData.clientTypeCode;
+		document.getElementById("clientStatus").value = rowData.clientStatusCode;
 
 		clientAddModal.show();
 	});
@@ -120,6 +104,26 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 모달 폼 제출 이벤트 (등록, 수정 같이 사용)
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
+
+		// 필수 입력 필드 확인
+		const requiredFields = [
+			{ id: "clientName", name: "거래처명" },
+			{ id: "ceoName", name: "대표자명" },
+			{ id: "businessNumber", name: "사업자 등록번호" },
+			{ id: "clientType", name: "거래처 유형" },
+			{ id: "clientStatus", name: "거래 여부" },
+			{ id: "clientPhone", name: "거래처 연락처" },
+			{ id: "clientAddress", name: "주소" }
+		];
+
+		for (const field of requiredFields) {
+			const value = document.getElementById(field.id).value.trim();
+			if (!value) {
+				alert(`${field.name}을(를) 입력해주세요.`);
+				document.getElementById(field.id).focus();
+				return; // 함수 실행 중단
+			}
+		}
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;

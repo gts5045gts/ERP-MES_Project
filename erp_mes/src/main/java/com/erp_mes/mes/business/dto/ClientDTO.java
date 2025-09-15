@@ -1,5 +1,6 @@
 package com.erp_mes.mes.business.dto;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import lombok.Getter;
@@ -20,8 +21,8 @@ public class ClientDTO {
     private String clientAddress;
     private String clientPhone;
     private String clientStatus;
-    private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
+    private Timestamp createdAt;
+	private Timestamp updatedAt;
 	private String clientTypeCode;   // select box value값
 	private String clientStatusCode; // select box value값
 }
