@@ -1,11 +1,11 @@
 package com.erp_mes.mes.stock.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.ProductDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
@@ -27,21 +27,22 @@ public interface StockMapper {
                          @Param("warehouseId") String warehouseId,
                          @Param("itemAmount") Integer itemAmount);
     
-    List<MaterialDTO> selectMaterialList(@Param("productType") String productType,
+    List<ProductDTO> selectMaterialList(@Param("productType") String productType,
             @Param("searchKeyword") String searchKeyword);
     
     boolean existsMaterialById(@Param("productId") String productId);
 
-    int insertMaterial(MaterialDTO dto);
+    int insertMaterial(ProductDTO dto);
 
-    int updateMaterial(MaterialDTO dto);
+    int updateMaterial(ProductDTO dto);
 
     int deleteMaterials(@Param("list") List<String> productIds);
     
     String selectEmployeeName(@Param("empId") String empId);
     
     int checkRecentTransaction(@Param("productId") String productId);
-
+    
+    // 완/반제품 목록 관리
     List<ProductDTO> selectProductList(@Param("productType") String productType,
             @Param("searchKeyword") String searchKeyword);
 
@@ -50,4 +51,7 @@ public interface StockMapper {
 	int updateProduct(ProductDTO dto);
 	
 	int deleteProducts(@Param("list") List<String> productIds);
+
+	List<Map<String, String>> selectEmployeeList();
+	
 }

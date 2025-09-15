@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.erp_mes.mes.stock.dto.InvDTO;
-import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.ProductDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
@@ -119,7 +117,7 @@ public class InvController {
 	// 기준정보관리 - 자재(부품) 목록 조회 API
 	@GetMapping("/api/inventory/materials")
 	@ResponseBody
-	public List<MaterialDTO> getMaterialList(
+	public List<ProductDTO> getMaterialList(
 	        @RequestParam(name = "productType", required = false) String productType,  
 	        @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {  
 	    log.info("자재 목록 조회 - 구분: {}, 검색어: {}", productType, searchKeyword);
@@ -129,7 +127,7 @@ public class InvController {
 	// 기준정보관리 - 자재(부품) 등록
 	@PostMapping("/api/inventory/materials")
 	@ResponseBody
-	public Map<String, Object> addMaterial(@RequestBody MaterialDTO dto) {
+	public Map<String, Object> addMaterial(@RequestBody ProductDTO dto) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
 	        stockService.addMaterial(dto);
@@ -147,7 +145,7 @@ public class InvController {
 	@ResponseBody
 	public Map<String, Object> updateMaterial(
 	        @PathVariable("productId") String productId, 
-	        @RequestBody MaterialDTO dto,
+	        @RequestBody ProductDTO dto,
 	        Principal principal) {  // 현재 로그인 사용자 정보
 	    
 	    Map<String, Object> result = new HashMap<>();
@@ -254,5 +252,12 @@ public class InvController {
 	    }
 	    
 	    return result;
+	}
+	
+	// 직원 목록 조회 API
+	@GetMapping("/api/employees")
+	@ResponseBody
+	public List<Map<String, String>> getEmployeeList() {
+	    return stockService.getEmployeeList();
 	}
 }

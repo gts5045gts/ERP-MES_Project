@@ -1,6 +1,6 @@
 package com.erp_mes.mes.stock.service;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +8,6 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.ProductDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
@@ -56,14 +55,14 @@ public class StockService {
     
  // 자재 목록 조회
     @Transactional(readOnly = true)
-    public List<MaterialDTO> getMaterialList(String productType, String searchKeyword) {
+    public List<ProductDTO> getMaterialList(String productType, String searchKeyword) {
         log.info("자재 목록 조회 서비스");
         return stockMapper.selectMaterialList(productType, searchKeyword);
     }
 
     // 자재 등록
     @Transactional
-    public void addMaterial(MaterialDTO dto) {
+    public void addMaterial(ProductDTO dto) {
         log.info("자재 등록: {}", dto.getProductId());
         // 중복 체크
         if(stockMapper.existsMaterialById(dto.getProductId())) {
@@ -74,7 +73,7 @@ public class StockService {
 
     // 자재 수정(바꾼 사람id로 변경)
     @Transactional
-    public boolean updateMaterial(MaterialDTO dto, String modifierId) {
+    public boolean updateMaterial(ProductDTO dto, String modifierId) {
         log.info("자재 수정: {} by {}", dto.getProductId(), modifierId);
         dto.setEmpId(modifierId);  
         return stockMapper.updateMaterial(dto) > 0;
@@ -174,5 +173,10 @@ public class StockService {
         
         result.put("success", cannotDelete.isEmpty());
         return result;
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Map<String, String>> getEmployeeList() {
+        return stockMapper.selectEmployeeList();
     }
 }

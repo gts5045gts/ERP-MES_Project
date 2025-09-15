@@ -16,6 +16,7 @@ public class ProductDTO {
     private String productName;
     private String productType;
     private String unit;
+    private String spec;
     private Integer price;        
     private String empId;       
     private String empName;      

@@ -296,7 +296,7 @@ function showAddRow() {
                 </select>
             </td>
             <td><input type="text" class="form-control form-control-sm" id="new_unit" placeholder="단위"></td>
-            <td><input type="text" class="form-control form-control-sm" id="new_spec" placeholder="가격"></td>
+           	<td><input type="number" class="form-control form-control-sm text-right" id="new_price" placeholder="가격"></td>
             <td>${currentUserId || '로딩중...'}</td>
             <td>
                 <button class="btn btn-sm btn-success" onclick="saveProduct()">저장</button>
@@ -314,9 +314,11 @@ function saveProduct() {
         productName: $('#new_productName').val(),
         productType: $('#new_productType').val(),
         unit: $('#new_unit').val(),
-        price: $('#new_price').val() || 0,  
+        price: $('#new_price').val() ? parseInt($('#new_price').val()) : 0,  
         empId: currentUserId
     };
+    
+    console.log('전송 데이터:', newProduct);  
     
     ajaxCall('POST', '/api/inventory/products', newProduct,
         (result) => {
@@ -324,8 +326,6 @@ function saveProduct() {
                 alert('등록 완료');
                 $('#newRow').remove();
                 loadProducts();
-            } else {
-                alert(result.message);
             }
         }
     );
