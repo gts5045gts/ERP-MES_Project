@@ -1,10 +1,8 @@
-package com.erp_mes.mes.lot.entitiy;
+package com.erp_mes.mes.lot.entity;
 
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
-
-import com.erp_mes.mes.lot.entity.LotMaster;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,16 +1,14 @@
 package com.erp_mes.mes.lot.aspect;
 
-import java.util.Map;
-
+import com.erp_mes.mes.lot.entity.LotMaster;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.erp_mes.mes.lot.dto.LotDTO;
-import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.service.LotService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,21 +42,46 @@ public class LotAOP {
 	
 	@Around("@annotation(trackLot)")
 	public Object traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable{
-		log.info("AOP 진입, TrackLot: " + trackLot);
+        log.info("AOP 진입, TrackLot: " + trackLot);
 
-	    // 메서드 실행
-	    Object result = pjp.proceed();
+        Object result = null;
+        LotDTO lotDTO = null;
+        String newLot = null;
 
-	    // 반환값이 LotDTO이면 로그 찍기
-	    if (result instanceof LotDTO) {
-	        LotDTO dto = (LotDTO) result;
-	        log.info("AOP에서 DTO 확인: " + dto);
-	        log.info("tablename+++++++++++++"+dto.getTableName());
-	        log.info("targetId+++++++++++++"+dto.getTargetId());
-	        dto.setLotId("asdfasdfasdf!!!!213123");
-	    }
+        try {
+            // 핵심 메서드 실행
+            result = pjp.proceed();
 
-	    return result; // 반드시 반환
+            // 반환값이 LotDTO인지 판단
+            if (result instanceof LotDTO dto) {
+                lotDTO = dto;
+
+                // LOT 생성 필요 여부 판단
+                if (trackLot.createLot()) {
+                    // LOT 생성 및 관계 설정
+                    newLot = lotService.createLotWithRelations(lotDTO);
+                }
+
+                // 2) 부모-자식 LOT 연결
+        //            if (trackLot.linkParent() && parentLotId != null && lotId != null) {
+        //                lotService.linkLots(parentLotId, newLot.getLotId(), qty);
+        //            }
+            }
+
+            return result; // 반드시 반환
+
+        }catch (Exception e) {
+            log.error("traceLot 처리 중 예외 발생", e);
+            // 필요시 예외 재던지기 가능
+            throw e;
+
+        } finally {
+            // finally에서는 null 체크 후 안전하게 처리
+            if (lotDTO != null && newLot != null) {
+                // LOT ID 설정
+                lotDTO.setLotId(newLot);
+            }
+        }
     }
 	
 

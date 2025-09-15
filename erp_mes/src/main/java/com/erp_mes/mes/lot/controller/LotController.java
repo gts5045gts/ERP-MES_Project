@@ -1,14 +1,11 @@
 package com.erp_mes.mes.lot.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.erp_mes.mes.lot.aspect.TrackLot;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.service.LotService;
 
@@ -41,41 +38,40 @@ public class LotController {
 	@GetMapping("/testAOP")
 	@ResponseBody
 	public String testCallAOP() {
-		// lotDTO를 먼저 호출하면서 필수정보 입력
-		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM2").type("process").materialCode("test-STEEL-444")
-				.qty(200).build();
+        // lotDTO를 먼저 호출하면서 필수정보 입력
+        LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM2").type("process").materialCode("test-STEEL-444")
+                .qty(200).build();
 
-		String targetId = lotService.registWareHouse(lotDTO);
-		// 입고등을 insert한후에 pk id값을 받아서 setTargetId하면
-		// lotId가 생성됨.
-		lotDTO.setTargetId(targetId);
-		// 생성된 lotId를 자신의 table에 저장해도 되고
-		// lot_master테이블에 table_name, target_id(고유값)을 join해서
-		// lot_material_usage 테이블 저장할때 다시 사용해도 됨.
-		log.info(">>>>>>>>>>>>>>>>>>>>>새로 생성된 lotId === " + lotDTO.getLotId());
+        String targetId = lotService.registWareHouse(lotDTO);
+        // 입고등을 insert한후에 pk id값을 받아서 setTargetId하면
+        // lotId가 생성됨.
+        lotDTO.setTargetId(targetId);
+        // 생성된 lotId를 자신의 table에 저장해도 되고
+        // lot_master테이블에 table_name, target_id(고유값)을 join해서
+        // lot_material_usage 테이블 저장할때 다시 사용해도 됨.
+        log.info(">>>>>>>>>>>>>>>>>>>>>새로 생성된 lotId === " + lotDTO.getLotId());
 
-		return "ok";
+        return "ok";
 	}
 	
 	@GetMapping("/test")
 	@ResponseBody
-	@TrackLot(type = "CUTTING", createLot = true, linkParent = true)
+	@TrackLot(type = "CUTTING", createLot = true, linkParent = false)
     public LotDTO test() {
-		log.info("444444444");
-		 LotDTO lotDTO = LotDTO.builder()
-		            .tableName("WAREHOUSE_ITEM2")
-		            .type("process")
-		            .materialCode("test-STEEL-444")
-		            .qty(200)
-		            .build();
-		
-		String targetId = lotService.registWareHouse(lotDTO);
-		//table 고유 pk값 저장
-		lotDTO.setTargetId(targetId);
-		
-		//새로 발급된 lotId 를 해당 db table에 저장
-		log.info(lotDTO.getLotId());
-		//return 변경 가능
+        LotDTO lotDTO = LotDTO.builder()
+                        .tableName("WAREHOUSE_ITEM3")
+                        .type("process")
+                        .materialCode("test-STEEL-11")
+                        .qty(50)
+                        .build();
+
+        String targetId = lotService.registWareHouse(lotDTO);
+        //table 고유 pk값 저장
+        lotDTO.setTargetId(targetId);
+
+        //새로 발급된 lotId 를 해당 db table에 저장
+        log.info(lotDTO.getLotId());
+        //return 변경 가능
         return lotDTO;
     }
 }

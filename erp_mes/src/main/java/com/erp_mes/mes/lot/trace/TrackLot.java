@@ -1,11 +1,9 @@
-package com.erp_mes.mes.lot.aspect;
+package com.erp_mes.mes.lot.trace;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.erp_mes.mes.lot.dto.LotDTO;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

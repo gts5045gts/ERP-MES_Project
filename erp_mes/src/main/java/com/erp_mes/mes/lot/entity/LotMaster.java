@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 
-import com.erp_mes.mes.lot.entitiy.LotMaterialUsage;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
