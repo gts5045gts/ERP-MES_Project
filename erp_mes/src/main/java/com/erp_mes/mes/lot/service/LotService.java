@@ -99,7 +99,7 @@ public class LotService {
 	public String registWareHouse(LotDTO lotDTO) {
 
 //		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
-		return "PUR-YYYYMMDD-123";
+		return "PUR-YYYYMMDD-123444";
 	}
 
 }

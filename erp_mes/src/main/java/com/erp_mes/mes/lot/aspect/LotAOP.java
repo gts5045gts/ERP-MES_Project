@@ -44,27 +44,22 @@ public class LotAOP {
 	
 	@Around("@annotation(trackLot)")
 	public Object traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable{
-		// 컨트롤러 실제 실행
-        Object result = pjp.proceed();
+		log.info("AOP 진입, TrackLot: " + trackLot);
 
-        // Controller의 Request DTO 추출 (예: 첫 번째 파라미터)
-        Object[] args = pjp.getArgs();
-        if (args.length == 0) return result;
+	    // 메서드 실행
+	    Object result = pjp.proceed();
 
-        // 예시: 모든 Request DTO는 parentLotId, qty 포함한다고 가정
-        Map<String, Object> request = (Map<String, Object>) args[0];
+	    // 반환값이 LotDTO이면 로그 찍기
+	    if (result instanceof LotDTO) {
+	        LotDTO dto = (LotDTO) result;
+	        log.info("AOP에서 DTO 확인: " + dto);
+	        log.info("tablename+++++++++++++"+dto.getTableName());
+	        log.info("targetId+++++++++++++"+dto.getTargetId());
+	        dto.setLotId("asdfasdfasdf!!!!213123");
+	    }
 
-//        String parentLotId = (String) request.get("parentLotId");
-        String materialCode = (String) request.get("materialCode");
-        Integer qty = (Integer) request.get("qty");
-		
-		
-		LotMaster newLot = null;
-		
-		return newLot != null ? newLot : result;
-		
-	}
-	
+	    return result; // 반드시 반환
+    }
 	
 
 	// 서비스로 옮김 추후 삭제
