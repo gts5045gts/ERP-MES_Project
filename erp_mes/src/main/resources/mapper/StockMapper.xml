@@ -74,4 +74,145 @@
         AND warehouse_id = #{warehouseId}
     </update>
     
+    <!-- 0915 기준정보관리 - 자재 관리 -->
+
+	<!-- 자재 목록 조회 -->
+	<select id="selectMaterialList" resultType="com.erp_mes.mes.stock.dto.MaterialDTO">
+	    SELECT 
+	        p.product_id as productId,
+	        p.product_name as productName,
+	        p.product_type as productType,
+	        p.unit,
+	        p.spec,
+	        p.emp_id as empId,
+	        e.emp_name as empName,  
+	        p.created_at as createdAt
+	    FROM product p
+	    LEFT JOIN employee e ON p.emp_id = e.emp_id
+	    WHERE product_type = '부품' 
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (product_id LIKE '%' || #{searchKeyword} || '%'
+	            OR product_name LIKE '%' || #{searchKeyword} || '%')
+	    </if>
+	    ORDER BY created_at DESC
+	</select>
+	
+	<!-- 자재 중복 체크 -->
+	<select id="existsMaterialById" resultType="boolean">
+	    SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+	    FROM product
+	    WHERE product_id = #{productId}
+	</select>
+	
+	<!-- 자재 등록 -->
+	<insert id="insertMaterial">
+	    INSERT INTO product (
+	        product_id, product_name, product_type, unit, spec, emp_id, created_at
+	    ) VALUES (
+	       #{productId}, #{productName}, '부품', #{unit}, #{spec}, #{empId}, SYSDATE
+	    )
+	</insert>
+	
+	<!-- 자재 수정 -->
+	<update id="updateMaterial">
+	    UPDATE product
+	    SET product_name = #{productName},
+	        product_type = #{productType},
+	        unit = #{unit},
+	        spec = #{spec},
+	        emp_id = #{empId},      		<!-- 수정자 ID로 업데이트 -->
+	        updated_at = SYSDATE
+	    WHERE product_id = #{productId}
+	</update>
+	
+	<!-- 자재 삭제 -->
+	<delete id="deleteMaterials">
+	    DELETE FROM product
+	    WHERE product_id IN
+	    <foreach collection="list" item="id" open="(" close=")" separator=",">
+	        #{id}
+	    </foreach>
+	</delete>
+	
+	<!-- 직원 이름 조회 -->
+	<select id="selectEmployeeName" resultType="string">
+	    SELECT emp_name 
+	    FROM employee 
+	    WHERE emp_id = #{empId}
+	</select>
+	
+	<select id="checkRecentTransaction" resultType="int">
+	    SELECT COUNT(*) FROM (
+	        SELECT 1 FROM input 
+	        WHERE product_id = #{productId} 
+	        AND in_complete > ADD_MONTHS(SYSDATE, -1)
+	        UNION ALL
+	        SELECT 1 FROM output 
+	        WHERE product_id = #{productId} 
+	        AND out_complete > ADD_MONTHS(SYSDATE, -1)  
+	    )
+	</select>
+	
+	
+	<!-- 제품 목록 조회 (반제품/완제품) -->
+	<select id="selectProductList" resultType="com.erp_mes.mes.stock.dto.ProductDTO">
+	    SELECT 
+	        p.product_id as productId,
+	        p.product_name as productName,
+	        p.product_type as productType,
+	        p.unit,
+	        p.price,            <!-- 제품은 price -->
+	        p.emp_id as empId,
+	        e.emp_name as empName,  
+	        p.created_at as createdAt,
+	        p.updated_at as updatedAt
+	    FROM product p
+	    LEFT JOIN employee e ON p.emp_id = e.emp_id
+	    WHERE product_type IN ('반제품', '완제품')
+	    <if test="productType != null and productType != ''">
+	        AND product_type = #{productType}
+	    </if>
+	    <if test="searchKeyword != null and searchKeyword != ''">
+	        AND (product_id LIKE '%' || #{searchKeyword} || '%'
+	            OR product_name LIKE '%' || #{searchKeyword} || '%')
+	    </if>
+	    ORDER BY created_at DESC
+	</select>
+	
+	<!-- 제품 등록 -->
+	<insert id="insertProduct">
+	    INSERT INTO product (
+	        product_id, product_name, product_type, unit, price, emp_id, created_at
+	    ) VALUES (
+	        #{productId}, 
+	        #{productName}, 
+	        #{productType}, 
+	        #{unit}, 
+	        #{price, jdbcType=NUMERIC},    <!-- jdbcType 명시 -->
+	        #{empId}, 
+	        SYSDATE
+	    )
+	</insert>
+	
+	<!-- 제품 수정 -->
+	<update id="updateProduct">
+	    UPDATE product
+	    SET product_name = #{productName},
+	        product_type = #{productType},
+	        unit = #{unit},
+	        price = #{price, jdbcType=NUMERIC},    <!-- jdbcType 명시 -->
+	        emp_id = #{empId},
+	        updated_at = SYSDATE
+	    WHERE product_id = #{productId}
+	</update>
+	
+	<!-- 제품 삭제 -->
+	<delete id="deleteProducts">
+	    DELETE FROM product
+	    WHERE product_id IN
+	    <foreach collection="list" item="id" open="(" close=")" separator=",">
+	        #{id}
+	    </foreach>
+	</delete>
+    
 </mapper>

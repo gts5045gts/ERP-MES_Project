@@ -1,18 +1,24 @@
 package com.erp_mes.mes.stock.controller;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.mes.stock.dto.InvDTO;
+import com.erp_mes.mes.stock.dto.MaterialDTO;
+import com.erp_mes.mes.stock.dto.ProductDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.service.InvService;
@@ -86,7 +92,8 @@ public class InvController {
         
         return result;
     }
-	
+    
+    
 	
 	// 입고 관리
 	@GetMapping("/purchase/goods")
@@ -102,17 +109,150 @@ public class InvController {
 	    return "inventory/outbound_list";
 	}
 	
-	// 기준정보관리 - 자재정보(소재)
+	// 0915 기준정보관리 - 자재 목록 페이지
 	@GetMapping("/inventory/material")
 	public String materialList(Model model) {
-	    log.info("출고 관리 페이지 접속");
+	    log.info("자재 관리 페이지 접속");
 	    return "inventory/material_list";
 	}
+	
+	// 기준정보관리 - 자재(부품) 목록 조회 API
+	@GetMapping("/api/inventory/materials")
+	@ResponseBody
+	public List<MaterialDTO> getMaterialList(
+	        @RequestParam(name = "productType", required = false) String productType,  
+	        @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {  
+	    log.info("자재 목록 조회 - 구분: {}, 검색어: {}", productType, searchKeyword);
+	    return stockService.getMaterialList(productType, searchKeyword);
+	}
+
+	// 기준정보관리 - 자재(부품) 등록
+	@PostMapping("/api/inventory/materials")
+	@ResponseBody
+	public Map<String, Object> addMaterial(@RequestBody MaterialDTO dto) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        stockService.addMaterial(dto);
+	        result.put("success", true);
+	        result.put("message", "자재가 등록되었습니다.");
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 기준정보관리 - 자재(부품) 수정
+	@PutMapping("/api/inventory/materials/{productId}")
+	@ResponseBody
+	public Map<String, Object> updateMaterial(
+	        @PathVariable("productId") String productId, 
+	        @RequestBody MaterialDTO dto,
+	        Principal principal) {  // 현재 로그인 사용자 정보
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    dto.setProductId(productId);
+	    
+	    String modifierId = principal.getName();  // 수정자 ID
+	    boolean success = stockService.updateMaterial(dto, modifierId);
+	    
+	    result.put("success", success);
+	    return result;
+	}
+
+	// 기준정보관리 - 자재(부품) 삭제
+	@DeleteMapping("/api/inventory/materials")
+	@ResponseBody
+	public Map<String, Object> deleteMaterials(@RequestBody List<String> ids) {
+	    Map<String, Object> result = stockService.deleteMaterials(ids);
+	    
+	    if(result.containsKey("failed")) {
+	        List<String> failed = (List<String>) result.get("failed");
+	        result.put("message", 
+	            failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.\n" +
+	            "자재코드: " + String.join(", ", failed));
+	    } else {
+	        result.put("message", "삭제 완료");
+	    }
+	    
+	    return result;
+	}
+	
+	@GetMapping("/api/current-user")
+    @ResponseBody
+    public Map<String, String> getCurrentUser(Principal principal) {
+        Map<String, String> result = new HashMap<>();
+        String empId = principal.getName();  // 로그인한 사용자 ID
+        
+        // 사용자 정보 조회 (PersonnelService 사용)
+        // 또는 간단하게 empId만 반환해도 됨
+        result.put("empId", empId);
+        result.put("empName", stockService.getEmployeeName(empId));
+        
+        return result;
+    }
 	
 	// 기준정보관리 - 제품정보(완제품/반제품)
 	@GetMapping("/inventory/item")
 	public String itemList(Model model) {
 	    log.info("출고 관리 페이지 접속");
 	    return "inventory/item_list";
+	}
+	
+	@GetMapping("/api/inventory/products") 
+	@ResponseBody
+	public List<ProductDTO> getProductList(
+	        @RequestParam(name = "productType", required = false) String productType,
+	        @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {
+	    return stockService.getProductList(productType, searchKeyword);
+	}
+
+	// 제품 등록
+	@PostMapping("/api/inventory/products")
+	@ResponseBody
+	public Map<String, Object> addProduct(@RequestBody ProductDTO dto, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        dto.setEmpId(principal.getName());
+	        stockService.addProduct(dto);
+	        result.put("success", true);
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 제품 수정
+	@PutMapping("/api/inventory/products/{productId}")
+	@ResponseBody
+	public Map<String, Object> updateProduct(
+	        @PathVariable("productId") String productId,  // 이름 명시
+	        @RequestBody ProductDTO dto,
+	        Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    dto.setProductId(productId);
+	    dto.setEmpId(principal.getName());
+	    
+	    boolean success = stockService.updateProduct(dto);
+	    result.put("success", success);
+	    return result;
+	}
+
+	// 제품 삭제
+	@DeleteMapping("/api/inventory/products")
+	@ResponseBody
+	public Map<String, Object> deleteProducts(@RequestBody List<String> ids) {
+	    Map<String, Object> result = stockService.deleteProducts(ids);
+	    
+	    if(result.containsKey("failed")) {
+	        List<String> failed = (List<String>) result.get("failed");
+	        result.put("message", 
+	            failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.");
+	    } else {
+	        result.put("message", "삭제 완료");
+	    }
+	    
+	    return result;
 	}
 }
