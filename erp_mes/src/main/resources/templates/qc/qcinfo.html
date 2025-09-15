@@ -1,165 +1,234 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>품질 관리</title>
+<meta charset="UTF-8">
+<title>품질 관리</title>
 </head>
 
 <body>
-<th:block layout:fragment="content">
-    <div class="container-fluid p-4">
-        <h1 class="h3 mb-2 text-gray-800">품질 관리 대시보드</h1>
-        
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card shadow">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">품질 검사 관리</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="input-group" style="width: 30%;">
-                                <input type="text" class="form-control" placeholder="품질 검사" aria-label="Search">
-                                <button class="btn btn-primary" type="button">검색</button>
-                            </div>
-                            <div>
-                                <button class="btn btn-success" type="button">추가</button>
-                                <button class="btn btn-info" type="button">저장</button>
-                                <button class="btn btn-danger" type="button">삭제</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable1" width="100%" cellspacing="0">
-                                <thead>
-                                    <tr>
-                                        <th>품질검사번호</th>
-                                        <th>품질검사명</th>
-                                        <th>검사타입</th>
-                                        <th>검사방법</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>치수 정밀도 검사</td>
-                                        <td>치수검사</td>
-                                        <td>3D 측정기</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>평면도 검사</td>
-                                        <td>평면도검사</td>
-                                        <td>평면도 측정기</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>표면 거칠기 검사</td>
-                                        <td>표면 거칠기 검사</td>
-                                        <td>표면 거칠기 측정기</td>
-                                    </tr>
-                                    <tr>
-                                        <td>4</td>
-                                        <td>경도 검사</td>
-                                        <td>경도 검사</td>
-                                        <td>토크릴 경도계</td>
-                                    </tr>
-                                    <tr>
-                                        <td>5</td>
-                                        <td>내마모성 검사</td>
-                                        <td>내마모성 검사</td>
-                                        <td>마모 시험기</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+	<th:block layout:fragment="content">
+		<div class="container-fluid p-4">
+			<h1 class="h3 mb-2 text-gray-800">품질 관리 대시보드</h1>
 
-            <div class="col-md-6 mb-4">
-                <div class="card shadow">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">제품 관리</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="input-group" style="width: 30%;">
-                                <input type="text" class="form-control" placeholder="제품" aria-label="Search">
-                                <button class="btn btn-primary" type="button">검색</button>
-                            </div>
-                            <div>
-                                <button class="btn btn-success" type="button">추가</button>
-                                <button class="btn btn-info" type="button">저장</button>
-                                <button class="btn btn-danger" type="button">삭제</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable2" width="100%" cellspacing="0">
-                                <thead>
-                                    <tr>
-                                        <th>검사기준번호</th>
-                                        <th>제품번호</th>
-                                        <th>목표값</th>
-                                        <th>상한허용값</th>
-                                        <th>하한허용값</th>
-                                        <th>단위</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>70</td>
-                                        <td>P0000022</td>
-                                        <td>2</td>
-                                        <td>3</td>
-                                        <td>1</td>
-                                        <td>mm</td>
-                                    </tr>
-                                    <tr>
-                                        <td>69</td>
-                                        <td>P0000021</td>
-                                        <td>4</td>
-                                        <td>5</td>
-                                        <td>3</td>
-                                        <td>kg</td>
-                                    </tr>
-                                    <tr>
-                                        <td>68</td>
-                                        <td>P0000011</td>
-                                        <td>5</td>
-                                        <td>5.5</td>
-                                        <td>4.5</td>
-                                        <td>kg</td>
-                                    </tr>
-                                    <tr>
-                                        <td>67</td>
-                                        <td>P0000011</td>
-                                        <td>250</td>
-                                        <td>270</td>
-                                        <td>230</td>
-                                        <td>HB</td>
-                                    </tr>
-                                    <tr>
-                                        <td>66</td>
-                                        <td>P0000011</td>
-                                        <td>3.2</td>
-                                        <td>6.3</td>
-                                        <td>1.6</td>
-                                        <td>Ra</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</th:block>
+			<div class="row">
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">품질 검사 관리</h6>
+						</div>
+						<div class="card-body">
+							<div class="d-flex justify-content-between mb-3">
+								<div class="input-group" style="width: 30%;">
+									<input type="text" class="form-control" placeholder="품질 검사"
+										aria-label="Search">
+									<button class="btn btn-primary" type="button">검색</button>
+								</div>
+								<div>
+									<button class="btn btn-success" type="button"
+										data-toggle="modal" data-target="#inspectionModal">등록</button>
+									<button class="btn btn-danger" type="button">삭제</button>
+								</div>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-bordered" id="dataTable1" width="100%"
+									cellspacing="0">
+									<thead>
+										<tr>
+											<th>유형번호</th>
+											<th>검사유형</th>
+											<th>세부항목</th>
+											<th>검사방법</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="item : ${inspectionItems}">
+											<td th:text="${item.itemId}"></td>
+											<td th:text="${item.itemName}"></td>
+											<td th:text="${item.inspectionType}"></td>
+											<td th:text="${item.inspectionMethod}"></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 
-<th:block layout:fragment="script">
-    </th:block>
+				<div class="col-md-6 mb-4">
+					<div class="card shadow">
+						<div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">검사 항목별 허용 공차
+								관리</h6>
+						</div>
+						<div class="card-body">
+							<div class="d-flex justify-content-between mb-3">
+								<div class="input-group" style="width: 30%;">
+									<input type="text" class="form-control" placeholder="검사 항목"
+										aria-label="Search">
+									<button class="btn btn-primary" type="button">검색</button>
+								</div>
+								<div>
+									<button class="btn btn-success" type="button"
+										data-toggle="modal" data-target="#standardModal">등록</button>
+									<button class="btn btn-danger" type="button">삭제</button>
+								</div>
+							</div>
+							<div class="table-responsive">
+								<table class="table table-bordered" id="dataTable2" width="100%"
+									cellspacing="0">
+									<thead>
+										<tr>
+											<th>항목번호</th>
+											<th>세부항목</th>
+											<th>허용 공차</th>
+											<th>단위</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="item : ${inspectionItems}">
+											<td th:text="${item.itemId}"></td>
+											<td th:text="${item.inspectionType}"></td>
+											<td th:text="${item.itemName}"></td>
+											<td th:text="${item.toleranceValue}"></td>
+											<td th:text="${item.unit}"></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="inspectionModal" tabindex="-1"
+			aria-labelledby="inspectionModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="inspectionModalLabel">품질 검사 항목 등록</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="inspection-form">
+							<div class="mb-3">
+								<label for="inspectionName" class="form-label">품질 검사명</label> <input
+									type="text" class="form-control" id="inspectionName"
+									name="itemName">
+							</div>
+							<div class="mb-3">
+								<label for="inspectionType" class="form-label">검사타입</label> <input
+									type="text" class="form-control" id="inspectionType"
+									name="inspectionType">
+							</div>
+							<div class="mb-3">
+								<label for="inspectionMethod" class="form-label">검사방법</label> <input
+									type="text" class="form-control" id="inspectionMethod"
+									name="inspectionMethod">
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-primary"
+							id="saveInspectionBtn">저장</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="standardModal" tabindex="-1"
+			aria-labelledby="standardModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="standardModalLabel">허용 공차 등록</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="standard-form">
+							<div class="mb-3">
+								<label for="itemId" class="form-label">검사 항목 선택</label> <select
+									class="form-control" id="itemId" name="itemId">
+								</select>
+							</div>
+							<div class="mb-3">
+								<label for="toleranceValue" class="form-label">허용 공차</label> <input
+									type="number" class="form-control" id="toleranceValue"
+									name="toleranceValue">
+							</div>
+							<div class="mb-3">
+								<label for="unit" class="form-label">단위</label> <input
+									type="text" class="form-control" id="unit" name="unit">
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary"
+							data-bs-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-primary" id="saveStandardBtn">저장</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+	<th:block layout:fragment="script">
+		<script th:inline="javascript">
+        // 품질 검사 등록 모달의 '저장' 버튼 클릭 이벤트
+        document.getElementById('saveInspectionBtn').addEventListener('click', function() {
+            const formData = {
+                itemName: document.getElementById('inspectionName').value,
+                inspectionType: document.getElementById('inspectionType').value,
+                inspectionMethod: document.getElementById('inspectionMethod').value
+            };
+
+            fetch('/api/quality/inspection-item/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('품질 검사 항목이 성공적으로 등록되었습니다.');
+                    window.location.reload();
+                } else {
+                    alert('등록 실패: ' + data.message);
+                }
+            });
+        });
+
+        // 허용 공차 등록 모달의 '저장' 버튼 클릭 이벤트
+        document.getElementById('saveStandardBtn').addEventListener('click', function() {
+            const formData = {
+                itemId: document.getElementById('itemId').value,
+                toleranceValue: document.getElementById('toleranceValue').value,
+                unit: document.getElementById('unit').value
+            };
+
+            fetch('/api/quality/standard/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('허용 공차가 성공적으로 등록되었습니다.');
+                    window.location.reload();
+                } else {
+                    alert('등록 실패: ' + data.message);
+                }
+            });
+        });
+    </script>
+	</th:block>
 </body>
 </html>
