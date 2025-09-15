@@ -3,11 +3,17 @@ package com.erp_mes.erp.config.security;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -54,7 +60,7 @@ public class SecurityConfig {
                 .usernameParameter("empId")
                 .passwordParameter("empPasswd")
                 .defaultSuccessUrl("/main", true)
-                .successHandler(new EmpAuthenticationSuccessHandler())
+//                .successHandler(new EmpAuthenticationSuccessHandler())
                 .permitAll()
             )
             // 로그아웃 처리
@@ -65,6 +71,7 @@ public class SecurityConfig {
             )
             // 자동 로그인처리
             .rememberMe(rememberMeCustomizer -> rememberMeCustomizer
+//            		.userDetailsService(userDetailsService())
 					.rememberMeParameter("remember-id") // 자동 로그인 수행하기 위한 체크박스 파라미터명 지정
 					.tokenValiditySeconds(60 * 60 * 24) // 자동 로그인 토큰 유효기간 설정(기본값 14일 -> 1일 변경)
 					)
