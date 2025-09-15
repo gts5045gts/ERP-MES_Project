@@ -1,5 +1,5 @@
-package com.erp_mes.mes.stock.entity;
-
-public class Ware {
-
-}
+//package com.erp_mes.mes.stock.entity;
+//
+//public class Ware {
+//
+//}

@@ -18,7 +18,7 @@ import lombok.ToString;
 public class Equip {
 
 	@Id
-	@Column(nullable = false, name = "equip_id")
+	@Column(name = "equip_id")
 	private String equipId;
 	
 	@Column(nullable = false, name = "equip_nm")

@@ -9,7 +9,9 @@
         
         
         <style>
+        	.prs-add{
         	
+        	}
         	
         
         </style>
@@ -23,8 +25,8 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
+    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
 		<div id="grid"></div>
-    	<button id="prs-add" class="btn btn-primary btn-sm">추가</button>
 	
 
 
@@ -80,6 +82,17 @@
           .catch(err => console.error('fetch error:', err));
         });
         
+	 
+	 
+	 
+	 function addProcess(){
+		 alert('작동');
+		 var url = '/plant/process-newForm';
+		 window.open(url, "popup", "width=730,height=940");
+		 
+		 
+		 
+	 }
         
     </script>
 </th:block>

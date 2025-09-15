@@ -5,29 +5,26 @@
 <mapper namespace="com.erp_mes.mes.plant.mapper.ProcessMapper">
 
 
-	<resultMap type="com.erp_mes.mes.plant.dto.ProcessDTO" id="processMap">
-		<id property="proId" column="pro_id" />
-		<result property="proNm" column="pro_nm" />
-		<result property="note" column="note" />
-		
-	<!-- 	조인 필드 -->
-		<result property="typeId" column="com_dt_id" />
-		<result property="typeNm" column="com_dt_nm" />	
-	</resultMap>
+<resultMap id="ProcessMap" type="com.erp_mes.mes.plant.dto.ProcessDTO">
+    <result property="proId" column="pro_Id"/>
+    <result property="proNm" column="pro_Nm"/>
+    <result property="note" column="note"/>
+    <result property="typeId" column="pro_type"/>
+    <result property="typeNm" column="com_dt_Nm"/>
+</resultMap>
 
-<!-- 	<select id="findAll" resultType="processMap"> -->
-<!-- 		select  -->
-<!-- 			p.proId,  -->
-<!-- 			p.proNm,  -->
-<!-- 			p.note, -->
+	<select id="findAll" resultMap="ProcessMap">
+		select 
+			p.pro_Id, 
+			p.pro_Nm, 
+			p.note,
 			
-<!-- 			c.com_dt_id, -->
-<!-- 			c.com_dt_Nm -->
-<!-- 		from  -->
-<!-- 			process c  -->
-<!-- 			inner join  -->
-<!-- 			common_dt_code c -->
-<!-- 		on -->
-<!-- 			proces -->
-<!-- 	</select> -->
+			c.com_dt_Nm
+		from 
+			process p 
+		inner join 
+			common_dt_code c
+		on
+			p.pro_type = c.com_dt_id AND C.COM_ID = 'PRO'
+	</select>
 </mapper>

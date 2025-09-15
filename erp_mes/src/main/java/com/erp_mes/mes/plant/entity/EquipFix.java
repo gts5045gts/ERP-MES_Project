@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,12 +16,16 @@ import lombok.ToString;
 @Getter
 @Setter
 @Entity
-@Table(name = "equipment")
+@Table(name = "equipment_fix")
 public class EquipFix {
 
 	@Id
-	@JoinColumn(name = "equip_id", referencedColumnName = "equip_ID")
+	@Column(name = "equip_id")
 	private String equipId;
+	
+	@ManyToOne
+	@JoinColumn(name = "equip_id", referencedColumnName = "equip_id", insertable = false, updatable = false)
+	private Equip equip;
 	
 	@Column(nullable = false, name = "note")
 	private String note;
