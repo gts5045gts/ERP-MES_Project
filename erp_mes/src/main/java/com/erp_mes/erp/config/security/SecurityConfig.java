@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers("/attendance/**").authenticated()
                 .requestMatchers("/approval/**").authenticated()
                 .requestMatchers("/chat", "/privateChat").authenticated()
+                .requestMatchers("/plant/**t").authenticated()
                 
                 .anyRequest().authenticated()
             )
