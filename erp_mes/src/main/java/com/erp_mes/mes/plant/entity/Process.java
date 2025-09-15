@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,13 +15,16 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@Entity
 @Table(name = "process")
 public class Process {
 	
 	@Id
-	@JoinColumn(nullable = false, name = "process_id", referencedColumnName = "com_dt_id")
-	private CommonDetailCode common;
+    @Column(name = "process_id")
+    private String processId; // 단순 PK
+
+    @ManyToOne
+    @JoinColumn(name = "common_dt_id", referencedColumnName = "com_dt_id") // FK
+    private CommonDetailCode common;
 	
 	@Column(nullable = false, name = "user_yn")
 	private String useYn;

@@ -5,6 +5,7 @@ import java.util.Map;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +42,8 @@ public class LotAOP {
 		}
 	}
 	
-	public Object traceLot(ProceedingJoinPoint pjp, TraceLot traceLot) throws Throwable{
+	@Around("@annotation(trackLot)")
+	public Object traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable{
 		// 컨트롤러 실제 실행
         Object result = pjp.proceed();
 
