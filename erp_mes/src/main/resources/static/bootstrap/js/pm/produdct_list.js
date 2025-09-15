@@ -25,7 +25,7 @@ loadProducts();
 // ==================================
 // 제품 등록 모달 버튼
 	document.addEventListener('DOMContentLoaded', () => {
-	    const btn = document.getElementById('openProductModalBtn');
+	    const btn = document.getElementById('productModalBtn');
 	    const modalEl = document.getElementById('productRegisterModal');
 	    const modal = new bootstrap.Modal(modalEl);
 	
@@ -38,13 +38,9 @@ loadProducts();
 	// 제품 클릭 시 BOM 로드
 	prodGrid.on('click', ev => {
 	    const rowData = prodGrid.getRow(ev.rowKey);
-	    if (rowData) {
-	        const productId = rowData.productId;
-	        // 전역에 등록한 함수만 호출
-	        loadBomByProduct(productId); 
+	    if (rowData && typeof window.loadBomByProduct === "function") {
+	        window.loadBomByProduct(rowData.productId);
 	    }
 	});
-
-	
 
 	

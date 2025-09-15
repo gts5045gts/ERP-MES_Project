@@ -16,8 +16,16 @@ window.loadBomByProduct = async function(productId) {
     if (!productId) return;
 
     try {
-        const res = await fetch(`/bomList?product_id=${productId}`);
+        const res = await fetch(`/masterData/bomList?product_id=${productId}`);
+        if (!res.ok) throw new Error("HTTP 오류 " + res.status);
+
         const bomList = await res.json();
+
+        // 반드시 배열로 넘어와야 함
+        if (!Array.isArray(bomList)) {
+            console.error("BOM 데이터가 배열이 아닙니다:", bomList);
+            return;
+        }
 
         window.bomGrid.resetData(bomList);
         console.log(`BOM for product ${productId}:`, bomList);
@@ -26,3 +34,14 @@ window.loadBomByProduct = async function(productId) {
         console.error("BOM 로드 실패:", err);
     }
 }
+
+// bom 등록 모달 버튼
+	document.addEventListener('DOMContentLoaded', () => {
+	    const btn = document.getElementById('bomModalBtn');
+	    const modalEl = document.getElementById('bomRegisterModal');
+	    const modal = new bootstrap.Modal(modalEl);
+	
+	    btn.addEventListener('click', () => {
+	        modal.show();
+	    });
+	});
