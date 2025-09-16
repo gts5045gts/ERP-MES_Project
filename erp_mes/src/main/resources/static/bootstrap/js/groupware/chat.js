@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const socket = new SockJS('/ws/chat');
     stompClient = Stomp.over(socket);
     
-    // CSRF 토큰을 헤더에 포함시켜 연결합니다.
+    // CSRF 토큰을 헤더에 포함
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
     const headers = {

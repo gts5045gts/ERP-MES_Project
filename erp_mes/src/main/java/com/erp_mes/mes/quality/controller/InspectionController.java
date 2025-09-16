@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
-import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.service.InspectionService;
@@ -30,40 +29,47 @@ public class InspectionController {
 
 	private final InspectionService inspectionService;
 	private final CommonCodeService commonCodeService;
+	private final ProductService productService; // ProductService 주입
 
-	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService) {
+	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductService productService) {
 		this.inspectionService = inspectionService;
 		this.commonCodeService = commonCodeService;
+		this.productService = productService;
 	}
 
 	@GetMapping("/qcinfo")
 	public String qualityDashboard(Model model) {
-		// 1. 검사 유형 공통코드 가져오기
-		List<CommonDetailCode> qcTypes = commonCodeService.findByComId("QC");
+	    // 검사 유형 공통코드
+	    List<CommonDetailCode> qcTypes = commonCodeService.findByComId("QC");
+	    Map<String, String> qcTypeMap = qcTypes.stream()
+	        .collect(Collectors.toMap(CommonDetailCode::getComDtId, CommonDetailCode::getComDtNm));
+	    
+	    // 왼쪽 테이블 데이터 (검사 유형별 기준)
+	    List<InspectionFMDTO> inspectionFMs = inspectionService.findAllInspectionFMs();
+	    inspectionFMs.forEach(fm -> {
+	        String typeName = qcTypeMap.get(fm.getInspectionType());
+	        if (typeName != null) {
+	            fm.setInspectionType(typeName);
+	        }
+	    });
+	    
+	    // 오른쪽 테이블 데이터 (검사 항목별 허용 공차)
+	    List<InspectionItemDTO> inspectionItems = inspectionService.getInspectionItems();
 
-		// 2. 공통 코드를 맵(Map)으로 변환하여 조회 효율 높이기
-		Map<String, String> qcTypeMap = qcTypes.stream()
-				.collect(Collectors.toMap(CommonDetailCode::getComDtId, CommonDetailCode::getComDtNm));
+	    // UNIT 공통 코드 데이터
+	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
+	    
+	    // 제품 목록 데이터
+	    List<ProductDTO> products = productService.findAllProducts();
 
-		// 3. 왼쪽 테이블용 데이터: 검사 유형별 기준
-		List<InspectionFMDTO> inspectionFMs = inspectionService.findAllInspectionFMs();
+	    model.addAttribute("inspectionFMs", inspectionFMs);
+	    model.addAttribute("inspectionItems", inspectionItems);
+	    model.addAttribute("qcTypes", qcTypes);
+	    model.addAttribute("units", units);
+	    model.addAttribute("products", products); // 제품 목록 추가
 
-		// 4. inspectionFMs 리스트를 순회하며 inspectionType 코드를 이름으로 변환
-		inspectionFMs.forEach(fm -> {
-			String typeName = qcTypeMap.get(fm.getInspectionType());
-			if (typeName != null) {
-				fm.setInspectionType(typeName);
-			}
-		});
-
-		// 5. 변경된 리스트와 다른 데이터를 모델에 추가
-		model.addAttribute("inspectionFMs", inspectionFMs);
-		model.addAttribute("inspectionItems", inspectionService.getInspectionItems());
-		model.addAttribute("qcTypes", qcTypes);
-
-		return "qc/qcinfo";
+	    return "qc/qcinfo";
 	}
-
 	@GetMapping("iqc")
 	public String iqc() {
 		return "qc/iqc";
@@ -84,9 +90,10 @@ public class InspectionController {
 	}
 
 	// 오른쪽 테이블 (검사 항목별 허용 공차 관리)에 대한 등록 API
-	@PostMapping("/items")
+	@PostMapping("/item")
 	public ResponseEntity<String> registerInspectionItem(@RequestBody InspectionItemDTO inspectionItemDTO) {
 		try {
+			// InspectionItemDTO를 받아서 서비스로 전달
 			inspectionService.registerInspectionItem(inspectionItemDTO);
 			String successJson = "{\"success\": true, \"message\": \"검사 항목별 허용 공차가 성공적으로 등록되었습니다.\"}";
 			return new ResponseEntity<>(successJson, HttpStatus.OK);

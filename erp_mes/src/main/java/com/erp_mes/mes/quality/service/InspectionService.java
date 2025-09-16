@@ -9,9 +9,12 @@ import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.entity.InspectionFM;
+import com.erp_mes.mes.quality.entity.InspectionItem;
 import com.erp_mes.mes.quality.mapper.QualityMapper;
 import com.erp_mes.mes.quality.repository.InspectionFMRepository;
+import com.erp_mes.mes.quality.repository.InspectionItemRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -21,43 +24,69 @@ public class InspectionService {
 
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
+	private final InspectionItemRepository inspectionItemRepository;
 	
-	public InspectionService(QualityMapper qualityMapper, InspectionFMRepository inspectionFMRepository) {
+	public InspectionService(QualityMapper qualityMapper, InspectionFMRepository inspectionFMRepository,InspectionItemRepository inspectionItemRepository) {
 		super();
 		this.qualityMapper = qualityMapper;
 		this.inspectionFMRepository = inspectionFMRepository;
+		this.inspectionItemRepository = inspectionItemRepository;
 	}
 
-	public List<InspectionFMDTO> findAllInspectionFMs() {
-	    return inspectionFMRepository.findAll().stream()
-	            .map(entity -> {
-	                InspectionFMDTO insepctionFMDTO = new InspectionFMDTO();
-	                insepctionFMDTO.setInspectionFMId(entity.getInspectionFMId());
-	                insepctionFMDTO.setInspectionType(entity.getInspectionType());
-	                insepctionFMDTO.setItemName(entity.getItemName());
-	                insepctionFMDTO.setMethodName(entity.getMethodName());
-	                return insepctionFMDTO;
-	            })
-	            .collect(Collectors.toList());
-	}
-	
+    @Transactional(readOnly = true)
+    public List<InspectionFMDTO> findAllInspectionFMs() {
+        return inspectionFMRepository.findAll().stream()
+                .map(entity -> {
+                    InspectionFMDTO dto = new InspectionFMDTO();
+                    dto.setInspectionFMId(entity.getInspectionFMId());
+                    dto.setInspectionType(entity.getInspectionType());
+                    dto.setItemName(entity.getItemName());
+                    dto.setMethodName(entity.getMethodName());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<InspectionItemDTO> getInspectionItems() {
-        return qualityMapper.findAllItems();
-    }
-    
-    // 왼쪽 테이블 (검사 유형별 기준) 등록
-    public void registerInspectionRecord(InspectionFMDTO insepctionFMDTO) {
-    	InspectionFM insepctionFM = insepctionFMDTO.toEntity();
-    	
-    	inspectionFMRepository.save(insepctionFM);
+        return inspectionItemRepository.findAll().stream()
+                .map(entity -> {
+                    InspectionItemDTO dto = new InspectionItemDTO();
+                    dto.setItemId(entity.getItemId());
+                    dto.setProductCode(entity.getProductCode());
+                    dto.setInspectionFMId(entity.getInspectionFMId());
+                    dto.setToleranceValue(entity.getToleranceValue());
+                    dto.setUnit(entity.getUnit());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
-    // 오른쪽 테이블 (검사 항목별 허용 공차) 등록
-    public void registerInspectionItem(InspectionItemDTO inspectionItemDTO) {
-    	qualityMapper.insertItem(inspectionItemDTO);
+    @Transactional
+    public void registerInspectionRecord(InspectionFMDTO inspectionFMDTO) {
+        InspectionFM inspectionFM = InspectionFM.builder()
+                .inspectionType(inspectionFMDTO.getInspectionType())
+                .itemName(inspectionFMDTO.getItemName())
+                .methodName(inspectionFMDTO.getMethodName())
+                .build();
+        inspectionFMRepository.save(inspectionFM);
     }
     
-    // 삭제
+    @Transactional
+    public void registerInspectionItem(InspectionItemDTO inspectionItemDTO) {
+        // DTO를 JPA 엔티티로 변환
+        InspectionItem inspectionItem = InspectionItem.builder()
+                .productCode(inspectionItemDTO.getProductCode())
+                .inspectionFMId(inspectionItemDTO.getInspectionFMId())
+                .toleranceValue(inspectionItemDTO.getToleranceValue())
+                .unit(inspectionItemDTO.getUnit())
+                .build();
+        
+        // JPA Repository를 사용하여 데이터베이스에 저장
+        inspectionItemRepository.save(inspectionItem);
+    }
+    
+    @Transactional
     public void deleteInspectionRecords(List<Long> inspectionFMIds) {
         inspectionFMRepository.deleteAllByIdInBatch(inspectionFMIds);
     }
