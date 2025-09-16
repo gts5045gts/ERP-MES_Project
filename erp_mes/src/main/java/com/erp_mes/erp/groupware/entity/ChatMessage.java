@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 
 import com.erp_mes.erp.personnel.entity.Personnel;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -37,6 +39,8 @@ public class ChatMessage {
     @JoinColumn(name = "receiver_id", referencedColumnName = "emp_id")
     private Personnel receiver;
     
+    @Lob
+    @Column(columnDefinition = "CLOB")
     private String content;
     private String type;
     private LocalDateTime createdAt;
