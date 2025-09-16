@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
+import com.erp_mes.mes.quality.entity.InspectionFM;
 import com.erp_mes.mes.quality.mapper.QualityMapper;
 import com.erp_mes.mes.quality.repository.InspectionFMRepository;
 
@@ -16,21 +17,26 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class InspectionService {
 
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
 	
+	public InspectionService(QualityMapper qualityMapper, InspectionFMRepository inspectionFMRepository) {
+		super();
+		this.qualityMapper = qualityMapper;
+		this.inspectionFMRepository = inspectionFMRepository;
+	}
+
 	public List<InspectionFMDTO> findAllInspectionFMs() {
 	    return inspectionFMRepository.findAll().stream()
 	            .map(entity -> {
-	                InspectionFMDTO insepctionDTO = new InspectionFMDTO();
-	                insepctionDTO.setInspectionFMId(entity.getInspectionFMId());
-	                insepctionDTO.setInspectionType(entity.getInspectionType());
-	                insepctionDTO.setItemName(entity.getItemName());
-	                insepctionDTO.setMethodName(entity.getMethodName());
-	                return insepctionDTO;
+	                InspectionFMDTO insepctionFMDTO = new InspectionFMDTO();
+	                insepctionFMDTO.setInspectionFMId(entity.getInspectionFMId());
+	                insepctionFMDTO.setInspectionType(entity.getInspectionType());
+	                insepctionFMDTO.setItemName(entity.getItemName());
+	                insepctionFMDTO.setMethodName(entity.getMethodName());
+	                return insepctionFMDTO;
 	            })
 	            .collect(Collectors.toList());
 	}
@@ -39,13 +45,20 @@ public class InspectionService {
         return qualityMapper.findAllItems();
     }
     
-    // 왼쪽 테이블 (검사 유형별 기준) 등록 로직
-    public void registerInspectionRecord(InspectionDTO inspectionDTO) {
-    	qualityMapper.insertRecord(inspectionDTO);
+    // 왼쪽 테이블 (검사 유형별 기준) 등록
+    public void registerInspectionRecord(InspectionFMDTO insepctionFMDTO) {
+    	InspectionFM insepctionFM = insepctionFMDTO.toEntity();
+    	
+    	inspectionFMRepository.save(insepctionFM);
     }
 
-    // 오른쪽 테이블 (검사 항목별 허용 공차) 등록 로직
+    // 오른쪽 테이블 (검사 항목별 허용 공차) 등록
     public void registerInspectionItem(InspectionItemDTO inspectionItemDTO) {
     	qualityMapper.insertItem(inspectionItemDTO);
+    }
+    
+    // 삭제
+    public void deleteInspectionRecords(List<Long> inspectionFMIds) {
+        inspectionFMRepository.deleteAllByIdInBatch(inspectionFMIds);
     }
 }

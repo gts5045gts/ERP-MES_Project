@@ -1,11 +1,14 @@
 package com.erp_mes.mes.quality.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,19 +38,30 @@ public class InspectionController {
 
 	@GetMapping("/qcinfo")
 	public String qualityDashboard(Model model) {
-	    // 왼쪽 테이블용 데이터: 검사 유형별 기준
-	    List<InspectionFMDTO> inspectionFMs = inspectionService.findAllInspectionFMs();
-	    model.addAttribute("inspectionFMs", inspectionFMs);
+		// 1. 검사 유형 공통코드 가져오기
+		List<CommonDetailCode> qcTypes = commonCodeService.findByComId("QC");
 
-	    // 오른쪽 테이블용 데이터: 검사 항목별 허용 공차
-	    List<InspectionItemDTO> inspectionItems = inspectionService.getInspectionItems();
-	    model.addAttribute("inspectionItems", inspectionItems);
+		// 2. 공통 코드를 맵(Map)으로 변환하여 조회 효율 높이기
+		Map<String, String> qcTypeMap = qcTypes.stream()
+				.collect(Collectors.toMap(CommonDetailCode::getComDtId, CommonDetailCode::getComDtNm));
 
-	    // 검사 유형 공통코드 가져오기 (모달 드롭다운용)
-	    List<CommonDetailCode> qcTypes = commonCodeService.findByComId("QC");
-	    model.addAttribute("qcTypes", qcTypes);
-	    
-	    return "qc/qcinfo";
+		// 3. 왼쪽 테이블용 데이터: 검사 유형별 기준
+		List<InspectionFMDTO> inspectionFMs = inspectionService.findAllInspectionFMs();
+
+		// 4. inspectionFMs 리스트를 순회하며 inspectionType 코드를 이름으로 변환
+		inspectionFMs.forEach(fm -> {
+			String typeName = qcTypeMap.get(fm.getInspectionType());
+			if (typeName != null) {
+				fm.setInspectionType(typeName);
+			}
+		});
+
+		// 5. 변경된 리스트와 다른 데이터를 모델에 추가
+		model.addAttribute("inspectionFMs", inspectionFMs);
+		model.addAttribute("inspectionItems", inspectionService.getInspectionItems());
+		model.addAttribute("qcTypes", qcTypes);
+
+		return "qc/qcinfo";
 	}
 
 	@GetMapping("iqc")
@@ -56,10 +70,10 @@ public class InspectionController {
 	}
 
 	// 왼쪽 테이블 (검사 유형별 기준 관리)에 대한 등록 API
-	@PostMapping("/records")
-	public ResponseEntity<String> registerInspectionRecord(@RequestBody InspectionDTO inspectionDTO) {
+	@PostMapping("/fm")
+	public ResponseEntity<String> registerInspectionRecord(@RequestBody InspectionFMDTO inspectionFMDTO) {
 		try {
-			inspectionService.registerInspectionRecord(inspectionDTO);
+			inspectionService.registerInspectionRecord(inspectionFMDTO);
 			String successJson = "{\"success\": true, \"message\": \"검사 유형별 기준이 성공적으로 등록되었습니다.\"}";
 			return new ResponseEntity<>(successJson, HttpStatus.OK);
 		} catch (Exception e) {
@@ -81,5 +95,18 @@ public class InspectionController {
 			String errorJson = "{\"success\": false, \"message\": \"등록 실패: " + e.getMessage() + "\"}";
 			return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@DeleteMapping("/fm") // DELETE 요청 처리
+	public ResponseEntity<String> deleteInspectionRecords(@RequestBody List<Long> inspectionFMIds) {
+	    try {
+	        inspectionService.deleteInspectionRecords(inspectionFMIds);
+	        String successJson = "{\"success\": true, \"message\": \"선택된 항목이 성공적으로 삭제되었습니다.\"}";
+	        return new ResponseEntity<>(successJson, HttpStatus.OK);
+	    } catch (Exception e) {
+	        log.error("Failed to delete inspection records: {}", e.getMessage());
+	        String errorJson = "{\"success\": false, \"message\": \"삭제 실패: " + e.getMessage() + "\"}";
+	        return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 }
