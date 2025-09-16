@@ -10,23 +10,26 @@
 </th:block>
 </head>
 <body>
-	<th:block layout:fragment="content">
+	<th:block layout:fragment="content" style="overflow: hidden">
+		<th:block sec:authorize="isAuthenticated()">
+			<input type="hidden" id="currentEmpId"
+				th:value="${#authentication.principal.empId}" />
+			<input type="hidden" id="currentEmpName"
+				th:value="${#authentication.principal.name}" />
+			<input type="hidden" id="empDeptId"
+				th:value="${#authentication.principal.empDeptId}" />
+			<input type="hidden" id="empDeptName"
+				th:value="${#authentication.principal.empDeptName}" />
+		</th:block>
 		<div class="container-fluid">
-			<div
-				class="d-sm-flex align-items-center justify-content-between mb-4">
-				<h1 class="h3 mb-0 text-gray-800">대시보드</h1>
-			</div>
-
 			<div class="row">
 
 				<div class="col-lg-8">
 					<div class="card shadow mb-4">
-						<div
-							class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-							<h6 class="m-0 font-weight-bold text-primary">근무 일정</h6>
-						</div>
 						<div class="card-body">
-							<div id="calendar2" style="max-width: 100%; margin: auto;"></div>
+							<div class="table-responsive">
+								<div id="calendar2" style="max-width: 100%; margin: auto;"></div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -116,6 +119,28 @@
 					<form th:action="@{/schedule/save}" method="post">
 						<div class="modal-body">
 							<div class="form-group">
+								<label for="modalAuthor">작성자</label> <input type="text"
+									class="form-control" id="modalAuthor" name="authorName"
+									readonly> <input type="hidden" id="modalEmpId"
+									name="empId">
+							</div>
+
+							<div class="form-group">
+								<label for="schType">일정 타입</label> <select class="form-control"
+									id="schType" name="schType">
+									<th:block th:if="${isAdmin}">
+										<option value="전체">전체 일정</option>
+										<option th:each="dept : ${allDepartments}"
+											th:value="${dept.comDtNm}" th:text="${dept.comDtNm + ' 일정'}"></option>
+									</th:block>
+									<th:block th:unless="${isAdmin}">
+										<option th:value="${empDeptName}"
+											th:text="${empDeptName + ' 일정'}"></option>
+									</th:block>
+								</select>
+							</div>
+
+							<div class="form-group">
 								<label for="modalTitle">일정 제목</label> <input type="text"
 									class="form-control" id="modalTitle" name="schTitle" required>
 							</div>
@@ -129,17 +154,12 @@
 							<div class="form-group">
 								<label for="modalStartDate">시작일</label> <input type="date"
 									class="form-control" id="modalStartDate" name="startDate"
-									required> <label for="modalStartTime">시작시간</label> <input
-									type="time" class="form-control" id="modalStartTime"
-									name="starttimeAt" required>
+									required>
 							</div>
 
 							<div class="form-group">
 								<label for="modalEndDate">종료일</label> <input type="date"
 									class="form-control" id="modalEndDate" name="endDate" required>
-								<label for="modalEndTime">종료시간</label> <input type="time"
-									class="form-control" id="modalEndTime" name="endtimeAt"
-									required>
 							</div>
 						</div>
 						<div class="modal-footer">
@@ -151,36 +171,65 @@
 				</div>
 			</div>
 		</div>
-		<!-- 모달 상세조회 -->
 		<div class="modal fade" id="scheduleDetailModal" tabindex="-1"
 			role="dialog" aria-labelledby="scheduleDetailModalLabel"
 			aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="scheduleDetailModalLabel">일정 상세</h5>
+						<h5 class="modal-title" id="scheduleDetailModalLabel">일정 보기</h5>
 						<button class="close" type="button" data-dismiss="modal"
 							aria-label="Close">
 							<span aria-hidden="true">×</span>
 						</button>
 					</div>
 					<div class="modal-body">
-						<div class="form-group">
-							<label>제목</label>
-							<p id="detailTitle" class="form-control-static"></p>
+						<div id="readModeContent">
+							<div class="form-group">
+								<label>제목</label>
+								<p id="detailTitle" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>작성자</label>
+								<p id="detailEmpName" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>내용</label>
+								<p id="detailContent" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>시작일</label>
+								<p id="detailStartDate" class="form-control-static"></p>
+							</div>
+							<div class="form-group">
+								<label>종료일</label>
+								<p id="detailEndDate" class="form-control-static"></p>
+							</div>
 						</div>
-						<div class="form-group">
-							<label>내용</label>
-							<p id="detailContent" class="form-control-static"></p>
-						</div>
-						<div class="form-group">
-							<label>시작일</label>
-							<p id="detailStartDate" class="form-control-static"></p>
-						</div>
-						<div class="form-group">
-							<label>종료일</label>
-							<p id="detailEndDate" class="form-control-static"></p>
-						</div>
+
+						<form id="editScheduleForm" style="display: none;">
+							<input type="hidden" id="editScheduleId" name="schId"> <input
+								type="hidden" id="editSchEmpId" name="empId">
+							<div class="form-group">
+								<label for="editTitle">제목</label> <input type="text"
+									class="form-control" id="editTitle" name="schTitle" required>
+							</div>
+							<div class="form-group">
+								<label for="editContent">내용</label>
+								<textarea class="form-control" id="editContent"
+									name="schContent" rows="4"></textarea>
+							</div>
+							<div class="form-group">
+								<label for="editStartDate">시작일</label> <input
+									type="datetime-local" class="form-control" id="editStartDate"
+									name="starttimeAt" required>
+							</div>
+							<div class="form-group">
+								<label for="editEndDate">종료일</label> <input
+									type="datetime-local" class="form-control" id="editEndDate"
+									name="endtimeAt" required>
+							</div>
+						</form>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-warning" id="editScheduleBtn">수정</button>
