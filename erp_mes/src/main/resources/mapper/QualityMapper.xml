@@ -2,71 +2,44 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.quality.mapper.QualityMapper">
 
-    <insert id="insertRecord" parameterType="com.erp_mes.mes.quality.dto.InspectionDTO">
-		INSERT INTO INSPECTION (
-			INSPECTION_ID,
-			PRODUCT_ID,
-			PROCESS_ID,
-			INSPECTION_DATE,
-			INSPECTOR_ID,
-			LOT_ID,
-			INSPECTION_TYPE
-			) 
-		VALUES (
-			INSPECTION_SEQ.NEXTVAL,
-			#{productId, jdbcType=NUMERIC},
-			#{processId, jdbcType=NUMERIC},
-			SYSTIMESTAMP,
-			#{inspectorId, jdbcType=NUMERIC},
-			#{lotId, jdbcType=VARCHAR},
-			#{inspectionType, jdbcType=VARCHAR}
-		)
-    </insert>
-
-    <select id="findAllRecords" resultType="com.erp_mes.mes.quality.dto.InspectionDTO">
-        SELECT
-       		INSPECTION_ID AS inspectionId,
-        	PRODUCT_ID AS productId,
-        	PROCESS_ID AS processId,
-        	INSPECTION_DATE AS inspectionDate,
-        	INSPECTOR_ID AS inspectorId,
-        	LOT_ID AS lotId,
-        	INSPECTION_TYPE AS inspectionType
-    	FROM INSPECTION
-    </select>
-    
     <insert id="insertItem" parameterType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
-		INSERT INTO INSPECTION_ITEM (
-			ITEM_ID,
-			INSPECTION_TYPE,
-			ITEM_NAME,
-			TOLERANCE_VALUE,
-			UNIT
-		)
-		VALUES (
-			INSPECTION_ITEM_SEQ.NEXTVAL,
-			#{inspectionType},
-			#{itemName},
-			#{toleranceValue},
-			#{unit}
-		)
+        INSERT INTO INSPECTION_ITEM (
+            ITEM_ID,
+            PRODUCT_ID,
+            INSPECTION_FM_ID,
+            TOLERANCE_VALUE,
+            UNIT
+        )
+        VALUES (
+            INSPECTION_ITEM_SEQ.NEXTVAL,
+            #{productId},
+            #{inspectionFMId},
+            #{toleranceValue},
+            #{unit}
+        )
     </insert>
 
     <select id="findAllItems" resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
-		SELECT
-			ITEM_ID AS itemId,
-			INSPECTION_TYPE AS inspectionType,
-			ITEM_NAME AS itemName,
-			TOLERANCE_VALUE AS toleranceValue,
-			UNIT AS unit
-		FROM INSPECTION_ITEM
-    </select>
-    
-    <select id="findInspectionTypes" resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
         SELECT
-        	COM_DT_ID AS comDtId,
-        	COM_DT_NM AS comDtNm
-    	FROM COMMON_DT_CODE
-	    WHERE COM_ID = 'QC'
+            T1.ITEM_ID,
+            T1.PRODUCT_ID AS productId,
+            T1.INSPECTION_FM_ID,
+            T1.TOLERANCE_VALUE,
+            T1.UNIT,
+            T2.INSPECTION_TYPE AS inspectionType,
+            T2.ITEM_NAME AS itemName,
+            T2.METHOD_NAME AS methodName
+        FROM INSPECTION_ITEM T1
+        JOIN INSPECTION_FM T2
+        ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
     </select>
+
+    <select id="findUnits" resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
+        SELECT
+            COM_DT_ID AS comDtId,
+            COM_DT_NM AS comDtNm
+        FROM COMMON_DT_CODE
+        WHERE COM_ID = 'UNIT'
+    </select>
+
 </mapper>

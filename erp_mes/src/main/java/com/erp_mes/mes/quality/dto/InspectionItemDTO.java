@@ -13,4 +13,9 @@ public class InspectionItemDTO {
     private Long inspectionFMId; // INSPECTION_FM_ID 검사기준값
     private BigDecimal toleranceValue; // 허용 공차
     private String unit;
+    
+    // FM테이블에서 참조
+    private String inspectionType;
+    private String itemName;
+    private String methodName;
 }

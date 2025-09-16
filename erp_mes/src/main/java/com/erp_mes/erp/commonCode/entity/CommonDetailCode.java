@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -28,7 +30,8 @@ import lombok.ToString;
 public class CommonDetailCode {
 
 	@ManyToOne
-	@JoinColumn(name = "com_id")
+	@JoinColumn(name = "com_id", referencedColumnName = "COM_ID")
+	@JsonBackReference
 	private CommonCode comId; // 코드(fk)
 	
 	@Id
