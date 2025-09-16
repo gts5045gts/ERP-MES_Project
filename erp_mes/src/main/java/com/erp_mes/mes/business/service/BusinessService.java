@@ -5,14 +5,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
+import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.mapper.BusinessMapper;
+import com.erp_mes.mes.pm.dto.ProductDTO;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -33,8 +33,8 @@ public class BusinessService {
 	@Transactional
 	public void saveOrder(OrderDTO orderDto) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentEmpId = authentication.getName(); // 혹은 사용자 정보를 담은 객체에서 가져오기
-        
+		String currentEmpId = authentication.getName(); // 혹은 사용자 정보를 담은 객체에서 가져오기
+
 		// 새로운 수주 번호 생성
 		String newOrderId = generateOrderId();
 
@@ -68,5 +68,16 @@ public class BusinessService {
 
 		// 최종 수주 번호 완성
 		return "ORD-" + today + "-" + formattedSequence;
+	}
+
+	// 수주 등록 모달에 보여줄 품목 리스트
+	public List<ProductDTO> getAllProduct() {
+		
+		return businessMapper.getAllProduct();
+	}
+
+	public List<OrderDetailDTO> getOrderDetailsByOrderId(String orderId) {
+		
+		return businessMapper.getOrderDetailsByOrderId(orderId);
 	}
 }

@@ -1,0 +1,24 @@
+package com.erp_mes.mes.business.dto;
+
+import java.time.LocalDateTime;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public class OrderDetailDTO {
+	private Long id;
+	private String orderId;
+	private String unit;
+	private String productId;
+	private String productName;
+	private Integer orderQty;
+	private Integer orderPrice;
+	private LocalDateTime createAt;
+	private LocalDateTime updateAt;
+}

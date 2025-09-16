@@ -15,7 +15,8 @@
 			   delivery_date,
 			   emp_id,
 			   emp_name
-		 FROM orders
+		 FROM 
+		 	   orders
 	</select>
 	
 	<select id="selectMaxOrderIdForToday" resultType="String">
@@ -33,5 +34,30 @@
         	SELECT 'CLI' || LPAD(client_id_seq.NEXTVAL, 3, '0') FROM DUAL
         	SELECT 'ORD' || LPAD(order_id_seq.NEXTVAL, 4, '0') FROM DUAL
     	</selectKey>
-	</insert>	
+	</insert>
+	
+<!-- 	수주 등록 모달창에 필요한 품목 리스트 -->
+	<select id="getAllProduct" resultType="com.erp_mes.mes.pm.dto.ProductDTO">
+		SELECT product_id,
+			   product_name,
+			   unit,
+			   price
+		 FROM product
+	</select>
+	
+	<select id="getOrderDetailsByOrderId" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+	    SELECT	od.order_id,
+              	od.product_id,
+           		p.product_name,
+            	p.PRICE,
+            	p.UNIT,
+            	od.QUANTITY,
+            	(od.QUANTITY * p.PRICE) AS TOTAL_PRICE
+        FROM
+            ORDERs_DETAIL od
+        JOIN
+            PRODUCT p ON od.PRODUCT_ID = p.PRODUCT_ID
+        WHERE
+            od.ORDER_ID = #{orderId}
+	</select>	
 </mapper>

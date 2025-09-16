@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.erp_mes.mes.business.dto.OrderDTO;
+import com.erp_mes.mes.business.dto.OrderDetailDTO;
+import com.erp_mes.mes.pm.dto.ProductDTO;
 
 @Mapper
 public interface BusinessMapper {
@@ -15,4 +17,10 @@ public interface BusinessMapper {
     String selectMaxOrderIdForToday(@Param("datePrefix") String datePrefix);
 	
 	void insertOrder(OrderDTO orderDto);
+	
+	// 품목 리스트
+	List<ProductDTO> getAllProduct();
+	
+	// 수주 상세 목록
+	List<OrderDetailDTO> getOrderDetailsByOrderId(@Param("orderId")String orderId);
 }
