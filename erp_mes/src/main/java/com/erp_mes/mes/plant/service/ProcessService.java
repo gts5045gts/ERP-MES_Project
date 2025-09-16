@@ -1,5 +1,6 @@
 package com.erp_mes.mes.plant.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,17 +28,19 @@ public class ProcessService {
 	final private ProcessRepository proRepository;
 	
 	
-	public List<Map<String, String>> findAll() {
+	public List<Map<String, Object>> findAll() {
 		List<ProcessDTO> proList = proMapper.findAll();
 		
-		List<Map<String, String>> position = proList.stream()
-			.map(dto -> Map.of("proId", dto.getProId(),
-								"proNm", dto.getProNm(),
-								"typeNm",dto.getTypeNm(),
-								"note",dto.getNote()
-					))
-			.toList();
-			
+		List<Map<String, Object>> position = proList.stream()
+			.map(dto -> {
+					Map<String, Object> map = new HashMap<>();
+					map.put("proId", dto.getProId());
+					map.put("proNm", dto.getProNm());
+					map.put("typeNm",dto.getTypeNm());
+					map.put("note",dto.getNote());
+					return map;
+				})
+		    .collect(Collectors.toList());
 		
 		
 		
@@ -60,13 +63,11 @@ public class ProcessService {
 	public void savePro(ProcessDTO proDTO) {
 		log.info("proService에 진입 savePro------------------------------");
 		
-		proDTO.setProId("test8");
 		Process pro = new Process();
 		pro = pro.fromDTO(proDTO, codeRepository);
 
-		proRepository.save(pro);
-		
-		
+			proRepository.save(pro);
+			log.info("저장완료!!");
 		
 	}
 	

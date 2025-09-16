@@ -6,9 +6,12 @@ import com.erp_mes.mes.plant.dto.ProcessDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +26,13 @@ public class Process {
 	
 	@Id
 	@Column( name = "PRO_ID")
-	private String proId;
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "process_seq")
+	@SequenceGenerator(
+		    name = "process_seq",
+		    sequenceName = "process_seq",
+		    allocationSize = 1 // DB 시퀀스랑 동일하게!
+		)
+	private Long proId;
 	
 	@Column(nullable = false, name = "PRO_NM")
 	private String proNm;
