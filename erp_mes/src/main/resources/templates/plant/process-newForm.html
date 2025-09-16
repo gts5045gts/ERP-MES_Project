@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout}">
+      >
 <head>
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
-        
-        
-        <style>
-        	
-        	
-        
-        </style>
     </th:block>
+        <link th:href="@{/bootstrap/css/sb-admin-2.min.css}" rel="stylesheet" />
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     
-    
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	    
 </head>
 <body>
 <th:block layout:fragment="content">
@@ -92,6 +88,7 @@
 </th:block>
 
 <th:block layout:fragment="script">
+<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
 <script>
 	document.addEventListener('DOMContentLoaded', function() {
 		const token = $("meta[name='_csrf']").attr("content");
@@ -107,7 +104,6 @@
  
  		
  	function addProcess(){
- 		alert('작동완료');
  		const processName = document.getElementById('proNm').value;
  		const processType = document.getElementById('proType').value;
  		const processNote = document.getElementById('note').value;
@@ -126,9 +122,8 @@
  		
  		const formData = $('#processForm').serialize();
  		$.post('/plant/processAdd', formData, function(response){
- 			window.opener.location.reload();
+ 			
  			alert('공정 정보를 추가합니다');
- 			window.close();
  			
  		}).fail(function(){
  			alert('전송 오류가 발생 했습니다.');
@@ -161,31 +156,6 @@
 
 	        window.close();
 	    });
- 		async function saveData() {
-		    const processName = document.querySelector("input[name='proNm']").value;
-		    const description = document.querySelector("textarea[name='note']").value;
-		    const processTypeCode = document.querySelector("select[name='proType']").value;
-	
-		    const data = {
-		        processName: processName,
-		        description: description,
-		        processTypeCode: processTypeCode,
-		    };
-
-		    try {
-		        const res = await fetch('/plant/processRegist', {
-		            method: "POST",
-		            headers: {
-		                "Content-Type": "application/json"
-		            },
-		            body: JSON.stringify(data),
-		        });
-		        return res.json();
-		    } catch (e) {
-		        console.error(e);
-		        throw e;
-		    }
-		}
         
     </script>
 </th:block>

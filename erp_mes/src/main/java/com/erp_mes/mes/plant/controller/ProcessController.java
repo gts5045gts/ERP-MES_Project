@@ -61,11 +61,8 @@ public class ProcessController {
 	@PostMapping("/processAdd")
 	public ResponseEntity<String> processAdd(ProcessDTO proDTO){
 		log.info("공정 데이터를 전송합니다." + proDTO);
+		
 		proService.savePro(proDTO);
-		
-		
-		
-		
 		
 		return ResponseEntity.ok("success");
 	}

@@ -64,9 +64,13 @@ public class ProcessService {
 		Process pro = new Process();
 		pro = pro.fromDTO(proDTO, codeRepository);
 
-		proRepository.save(pro);
-		
-		
+		try {
+			proRepository.save(pro);
+			log.info("저장완료!!");
+		}catch(Exception e) {
+			log.info("공정 정보 저장 실패");
+			log.info(e.getMessage());
+		}
 		
 	}
 	
