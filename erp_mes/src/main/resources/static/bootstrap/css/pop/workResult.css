@@ -1,0 +1,226 @@
+@charset "UTF-8";
+
+ body { 
+ 	background-color: #f0f2f5; 
+ 	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+ }
+
+/* 상단 헤더 */
+.header {
+    background-color: #cccdcf47;
+    color: #616b75;
+    padding: 15px 30px;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* 작업 구역 박스 */
+.box {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* 상단 2열 영역 높이 */
+.top-row .box {
+    height: 350px;
+}
+
+/* 작업지시 테이블 */
+#work-orders table {
+  	border-collapse: separate;
+  	border-spacing: 0 10px; /* 위아래 8px 간격 */
+}
+
+#work-orders thead th {
+	padding: 10px;
+	background: #a6c1db;
+	color: #fff;
+}
+
+#work-orders tbody tr {
+	border: 1px solid #dee2e6;   /* 테두리 선 추가 */
+	box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+	border-radius: 8px;
+  	transition: all 0.2s ease; /* 부드러운 이동/색 변화 */
+}
+
+#work-orders tbody tr:hover {
+	background-color: #f1f3f5;     /* 살짝 밝은 회색 */
+  	transform: translateY(-2px);    /* 살짝 위로 이동 */
+  	box-shadow: 0 4px 8px rgba(0,0,0,0.12); /* 그림자 강조 */
+}
+
+/* 작업현황 영역 높이 */
+.work-status {
+    height: 400px;
+}
+
+/* 대시보드 영역 높이 */
+.dashboard {
+    height: 300px;
+}
+
+.box.dashboard {
+	display: flex;
+    align-items: center;
+    gap: 35px;
+}
+
+
+/* bom 모달 */
+#popModal .modal-dialog {
+    max-width: 1000px;   /* 원하는 최대 너비 */
+    width: 95%;           /* 화면 대비 비율 */
+}
+
+/* 재고요청 */
+#shortageList thead th {
+	background: #ffc107ba;
+    color: #343a40;
+}
+
+#shortageList tbody tr {
+	border: 1px solid #dee2e6;   /* 테두리 선 추가 */
+	box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+	border-radius: 8px;
+  	transition: all 0.2s ease; /* 부드러운 이동/색 변화 */
+}
+
+
+/* TUI Grid 안 체크박스 키우기 */
+.tui-grid-cell input[type="checkbox"] {
+    display: block;       /* 기본은 inline-block이므로 block으로 바꿔주면 flex 적용 가능 */
+    margin: auto;         /* 상하좌우 가운데 정렬 */
+    width: 24px;          /* 체크박스 크기 */
+    height: 24px;
+    cursor: pointer;
+}
+
+.tui-grid-cell-editable {
+    background-color: #f4f4f4 !important; /* 원하는 색상 */
+}
+
+/* 그리드 글씨체 */
+.tui-grid-row-odd, .tui-grid-row-even {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+    font-size: 12px !important;
+/*     font-weight: 500 !important; */
+}
+
+.tui-grid-header-area {
+	font-family: 'Arial', 'Noto Sans KR', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+
+
+#shortageList {
+	display: none; /* 처음에는 숨김 */
+    height: 200px;
+    align-items: baseline;
+    gap: 30px;
+    justify-content: space-between;
+}
+
+#shortnumPad {
+	border-radius: 10px;
+    padding: 10px;
+    background: #e3e1e1;
+    width: 175px;
+    height: 180px;
+    margin-bottom: 20px
+}
+
+.Snum-btn, #deleteBtn, #okBtn {
+	background: #fff;
+  	border-radius: 8px;
+  	font-size: 20px;
+  	cursor: pointer;
+  	transition: all 0.2s;
+  	width: 45px;
+  	height: 35px;
+  	border: none;
+}
+
+.Snum-btn:hover, #deleteBtn:hover, #okBtn:hover {
+	background: #007bff;
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.Snum-btn:active, #deleteBtn:active, #okBtn:active {
+	transform: translateY(1px);
+	box-shadow: none;
+}
+
+.shortQty-input {
+    border: 1px solid #ccc;
+    outline: none;
+    transition: all 0.2s;
+}
+
+/* 저장됨 느낌 클래스 */
+.shortQty-input.saved {
+    border-color: transparent;      /* 테두리 사라짐 */
+    color: #333;
+}
+
+/* 수정 모달 */
+#numPad {
+    border-radius: 10px;
+    padding: 10px;
+    background: #e3e1e1;
+    width: 250px;
+    height: 400px;
+    margin-bottom: 20px; 
+}
+
+.num-btn {
+	background: #fff;
+  	border-radius: 8px;
+  	font-size: 20px;
+  	cursor: pointer;
+  	transition: all 0.2s;
+  	width: 70px;
+  	height: 70px;
+  	border: none;
+}
+
+.num-btn:hover {
+	background: #007bff;
+	color: #fff;
+	transform: translateY(-2px);
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.num-btn:active {
+	transform: translateY(1px);
+	box-shadow: none;
+}
+
+.qty-inputs .input-group {
+    margin-bottom: 10px;
+}
+
+.qty-inputs label {
+    font-weight: bold;
+}
+
+.qty-inputs input {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 20px;
+}
+
+
+/*  */
+

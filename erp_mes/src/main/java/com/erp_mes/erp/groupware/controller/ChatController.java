@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -90,6 +91,18 @@ public class ChatController {
 		return chatService.getUnreadMessages(principal.getName());
 	}
 	
+	// 모든 읽지 않은 메시지를 '읽음' 상태로 업데이트하는 API
+	@PostMapping("/api/messages/read")
+	@ResponseBody
+	public String markMessagesAsRead(Principal principal) {
+	    if (principal == null) {
+	        return "Not authenticated";
+	    }
+	    log.info("읽음 상태 업데이트 요청: {}", principal.getName());
+	    chatService.markMessagesAsRead(principal.getName());
+	    return "OK";
+	}
+	
 	@GetMapping("/api/chat/messages")
 	@ResponseBody
 	public List<ChatMessageDTO> getChatHistory(@RequestParam(value = "receiverId") String receiverId, Principal principal) {
@@ -100,8 +113,8 @@ public class ChatController {
 	// getRecentMessages 메서드 수정
 	@GetMapping("/api/chat/recent")
 	@ResponseBody
-	public List<ChatMessageDTO> getRecentMessages(@RequestParam(value = "userId") String userId, Principal principal) {
-	    log.info("최근 메시지 조회 시작: {}", userId);
+	public List<ChatMessageDTO> getRecentMessages(Principal principal) {
+	    log.info("최근 메시지 조회 시작: {}", principal.getName());
 	    // Principal.getName()을 사용하도록 수정
 	    return chatService.getRecentMessages(principal.getName());
 	}

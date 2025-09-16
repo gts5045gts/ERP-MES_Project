@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp_mes.mes.stock.mapper.WareMapper">
+    
+    <!-- 창고 목록 조회 -->
+    <select id="selectWarehouseList" resultType="com.erp_mes.mes.stock.dto.WarehouseDTO">
+        SELECT 
+            w.warehouse_id as warehouseId,
+            w.warehouse_name as warehouseName,
+            w.warehouse_type as warehouseType,
+            w.warehouse_status as warehouseStatus,
+            w.warehouse_location as warehouseLocation,
+            w.emp_id as empId,
+            e.emp_name as empName,
+            w.description,
+            w.create_date as createDate,
+            w.update_date as updateDate
+        FROM warehouse w
+        LEFT JOIN employee e ON w.emp_id = e.emp_id
+        WHERE 1=1
+        <if test="warehouseType != null and warehouseType != ''">
+            AND w.warehouse_type = #{warehouseType}
+        </if>
+        <if test="warehouseStatus != null and warehouseStatus != ''">
+            AND w.warehouse_status = #{warehouseStatus}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (w.warehouse_id LIKE '%' || #{searchKeyword} || '%'
+                OR w.warehouse_name LIKE '%' || #{searchKeyword} || '%')
+        </if>
+        ORDER BY w.create_date DESC
+    </select>
+    
+    <!-- 창고 중복 체크 -->
+    <select id="existsWarehouseById" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM warehouse
+        WHERE warehouse_id = #{warehouseId}
+    </select>
+    
+    <!-- 창고 등록 -->
+    <insert id="insertWarehouse">
+        INSERT INTO warehouse (
+            warehouse_id, 
+            warehouse_name, 
+            warehouse_type, 
+            warehouse_status,
+            warehouse_location, 
+            emp_id, 
+            description, 
+            create_date
+        ) VALUES (
+            #{warehouseId}, 
+            #{warehouseName}, 
+            #{warehouseType}, 
+            #{warehouseStatus},
+            #{warehouseLocation}, 
+            #{empId}, 
+            #{description}, 
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 창고 수정 -->
+    <update id="updateWarehouse">
+	    UPDATE warehouse
+	    SET warehouse_name = #{warehouseName},
+	        warehouse_type = #{warehouseType},
+	        warehouse_status = #{warehouseStatus},
+	        warehouse_location = #{warehouseLocation},
+	        emp_id = #{empId}, 
+	        description = #{description},
+	        update_date = SYSDATE
+	    WHERE warehouse_id = #{warehouseId}
+	</update>
+    
+    <!-- 창고 삭제 -->
+    <delete id="deleteWarehouses">
+        DELETE FROM warehouse
+        WHERE warehouse_id IN
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <!-- 창고 사용중 체크 (창고에 재고가 있는지) -->
+    <select id="checkWarehouseInUse" resultType="int">
+        SELECT COUNT(*) 
+        FROM warehouse_item
+        WHERE warehouse_id = #{warehouseId}
+        AND item_amount > 0
+    </select>
+    
+</mapper>
