@@ -4,7 +4,6 @@
 
 <mapper namespace="com.erp_mes.mes.stock.mapper.StockMapper">
     
-    <!-- 결과 매핑 -->
     <resultMap id="stockResultMap" type="com.erp_mes.mes.stock.dto.StockDTO">
         <result property="productId" column="product_id"/>
         <result property="productName" column="product_name"/>
@@ -13,6 +12,7 @@
         <result property="warehouseName" column="warehouse_name"/>
         <result property="warehouseId" column="warehouse_id"/>
         <result property="locationId" column="location_id"/>
+        <result property="quantity" column="quantity"/>
     </resultMap>
     
     <resultMap id="warehouseResultMap" type="com.erp_mes.mes.stock.dto.WarehouseDTO">
@@ -26,15 +26,12 @@
 	        p.product_id,
 	        p.product_name,
 	        p.product_type,
-	        wi.item_amount,
-	        w.warehouse_name,
-	        w.warehouse_location,  <!-- 추가 -->
-	        w.warehouse_id,
-	        wi.location_id
-	    FROM warehouse_item wi
-	    INNER JOIN product p ON wi.product_id = p.product_id
-	    INNER JOIN warehouse w ON wi.warehouse_id = w.warehouse_id
-	    WHERE wi.use_yn = 'Y'
+	        p.quantity
+	    FROM product p
+	    WHERE p.product_type IN ('부품', '반제품', '완제품')
+	    <if test="productName != null and productName != ''">
+	        AND p.product_name LIKE '%' || #{productName} || '%'
+	    </if>
 	    ORDER BY p.product_id
 	</select>
     
@@ -223,5 +220,186 @@
 	    FROM employee
 	    ORDER BY emp_name
 	</select>
+	
+	<!-- 0916 특정 제품의 창고별 재고 현황 -->
+	<select id="getWarehouseStockByProduct" resultType="map">
+	    SELECT 
+	        w.warehouse_id as "warehouseId",
+	        w.warehouse_name as "warehouseName",
+	        w.warehouse_type as "warehouseType",
+	        NVL(SUM(wi.item_amount), 0) as "itemAmount",
+	        COUNT(wi.location_id) as "locationCount"
+	    FROM warehouse w
+	    LEFT JOIN warehouse_item wi 
+	        ON w.warehouse_id = wi.warehouse_id 
+	        AND wi.product_id = #{productId}
+	        AND wi.use_yn = 'Y'
+	    WHERE w.warehouse_status = 'Y'
+	    GROUP BY w.warehouse_id, w.warehouse_name, w.warehouse_type
+	    HAVING w.warehouse_type = (
+	        SELECT CASE 
+	            WHEN product_type = '부품' THEN '원자재'
+	            WHEN product_type = '반제품' THEN '반제품' 
+	            WHEN product_type = '완제품' THEN '완제품'
+	        END
+	        FROM product 
+	        WHERE product_id = #{productId}
+	    )
+	    ORDER BY w.warehouse_name
+	</select>
+	
+	<!-- 0916 창고 재고 조회 -->
+	<select id="getWarehouseItemQty" resultType="Integer">
+	    SELECT NVL(SUM(item_amount), 0)  
+	    FROM warehouse_item 
+	    WHERE product_id = #{productId} 
+	    AND warehouse_id = #{warehouseId}
+	    AND use_yn = 'Y'
+	</select>
+
+	<!-- 0916 창고 재고 업데이트 -->
+	<update id="updateWarehouseItem">
+	    UPDATE warehouse_item 
+	    SET item_amount = CASE 
+	        WHEN (#{newQty} / (SELECT COUNT(*) FROM warehouse_item 
+	                          WHERE product_id = #{productId} 
+	                          AND warehouse_id = #{warehouseId})) > 0
+	        THEN #{newQty} / (SELECT COUNT(*) FROM warehouse_item 
+	                         WHERE product_id = #{productId} 
+	                         AND warehouse_id = #{warehouseId})
+	        ELSE item_amount
+	    END
+	    WHERE product_id = #{productId} 
+	    AND warehouse_id = #{warehouseId}
+	    AND use_yn = 'Y'
+	</update>
+	
+	<!-- 0916 제품 전체 재고 계산 -->
+	<select id="getTotalStockByProduct" resultType="int">
+	    SELECT NVL(SUM(item_amount), 0)
+	    FROM warehouse_item
+	    WHERE product_id = #{productId}
+	    AND use_yn = 'Y'
+	</select>
+	
+	<!-- 0916 product 테이블 재고 업데이트 -->
+	<update id="updateProductQuantity">
+	    UPDATE product 
+	    SET quantity = #{totalQty}
+	    WHERE product_id = #{productId}
+	</update>
+	
+	<!-- 운영중인 특정 타입 창고 조회 -->
+	<select id="getActiveWarehousesByType" resultType="string">
+	    SELECT warehouse_id
+	    FROM warehouse
+	    WHERE warehouse_type = #{warehouseType}
+	    AND warehouse_status = 'Y'
+	    ORDER BY warehouse_id
+	</select>
+	
+	<!-- 500개 미만인 위치 조회 -->
+	<select id="getProductLocationsWithSpace" resultType="map">
+	    SELECT 
+	        location_id as "locationId",
+	        item_amount as "itemAmount"
+	    FROM warehouse_item
+	    WHERE product_id = #{productId}
+	    AND warehouse_id = #{warehouseId}
+	    AND item_amount &lt; 50
+	    AND use_yn = 'Y'
+	    ORDER BY item_amount DESC
+	</select>
+	
+	<!-- 특정 위치 재고 업데이트 -->
+	<update id="updateLocationStock">
+	    UPDATE warehouse_item
+	    SET item_amount = #{newQty}
+	    WHERE product_id = #{productId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</update>
+	
+	<!-- 제품 위치를 수량 오름차순으로 조회 (적은 것부터) -->
+	<select id="getProductLocationsByQty" resultType="map">
+	    SELECT 
+	        location_id as "locationId",
+	        item_amount as "itemAmount"
+	    FROM warehouse_item
+	    WHERE product_id = #{productId}
+	    AND warehouse_id = #{warehouseId}
+	    AND item_amount > 0
+	    AND use_yn = 'Y'
+	    ORDER BY item_amount ASC
+	</select>
+	
+	<!-- 제품별 warehouse_item 삭제 -->
+	<delete id="deleteWarehouseItemsByProduct">
+	    DELETE FROM warehouse_item
+	    WHERE product_id = #{productId}
+	</delete>
+	
+	<!-- 빈 위치 삭제 -->
+	<delete id="deleteEmptyLocation">
+	    DELETE FROM warehouse_item
+	    WHERE product_id = #{productId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</delete>
+	
+	<!-- warehouse_item 등록 -->
+	<insert id="insertWarehouseItem">
+	    INSERT INTO warehouse_item (
+	        manage_id,
+	        warehouse_id,
+	        product_id,
+	        item_amount,
+	        use_yn,
+	        create_date,
+	        location_id,
+	        emp_id  
+	    ) VALUES (
+	        #{warehouseId} || '_' || #{productId},
+	        #{warehouseId},
+	        #{productId},
+	        #{initialQty},
+	        'Y',
+	        SYSDATE,
+	        #{warehouseId} || '-01-01',
+	        #{empId}  
+	    )
+	</insert>
+	
+	<!-- 빈 위치 조회 -->
+	<select id="getEmptyLocations" resultType="string">
+	    SELECT il.location_id
+	    FROM item_location il
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    AND NOT EXISTS (
+	        SELECT 1 FROM warehouse_item wi
+	        WHERE wi.location_id = il.location_id
+	        AND wi.item_amount > 0
+	    )
+	    ORDER BY il.loc_zone, il.loc_rack, il.loc_level, il.loc_cell
+	</select>
+	
+	<!-- 위치 지정해서 warehouse_item 등록 -->
+	<insert id="insertWarehouseItemWithLocation">
+	    INSERT INTO warehouse_item (
+	        manage_id, warehouse_id, product_id, 
+	        item_amount, location_id, use_yn, 
+	        create_date, emp_id
+	    ) VALUES (
+	        #{productId} || '_' || #{locationId},
+	        #{warehouseId},
+	        #{productId},
+	        #{qty},
+	        #{locationId},
+	        'Y',
+	        SYSDATE,
+	        #{empId}
+	    )
+	</insert>
     
 </mapper>

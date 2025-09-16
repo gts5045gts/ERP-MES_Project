@@ -9,20 +9,21 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InspectionItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ITEM_ID")
-    private Long itemId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inspection_item_seq")
+	@SequenceGenerator(name = "inspection_item_seq", sequenceName = "INSPECTION_ITEM_SEQ", allocationSize = 1)
+	@Column(name = "ITEM_ID")
+	private Long itemId;
 
-    @Column(name = "INSPECTION_TYPE")
-    private String inspectionType;
+//    @Column(name = "INSPECTION_TYPE")
+//    private String inspectionType;
 
-    @Column(name = "ITEM_NAME")
-    private String itemName;
+//    @Column(name = "ITEM_NAME")
+//    private String itemName;
 
-    @Column(name = "TOLERANCE_VALUE")
-    private Double toleranceValue;
-
-    @Column(name = "UNIT")
-    private String unit;
+//    @Column(name = "TOLERANCE_VALUE")
+//    private Double toleranceValue;
+//
+//    @Column(name = "UNIT")
+//    private String unit;
 }
