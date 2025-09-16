@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>수입 검사</title>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+	<div class="container mt-5">
+	    <h2 class="mb-4">검사 데이터 목록</h2>
+	    <div class="table-responsive">
+	        <table class="table table-bordered table-hover">
+	            <thead class="table-primary">
+	                <tr>
+	                    <th>검사유형</th>
+	                    <th>제품명</th>
+	                    <th>공정명</th>
+	                    <th>검사일자</th>
+	                    <th>검사자명</th>
+						<th>검사여부</th>
+	                    <th>비고</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr>
+	                    <td>test1</td>
+	                    <td>테스트 제품1</td>
+	                    <td>공정A</td>
+	                    <td>2025-09-13</td>
+	                    <td>홍길동</td>
+						<td>합격</td>
+	                    <td>비고1</td>
+	                </tr>
+	                <tr>
+	                    <td>test2</td>
+	                    <td>테스트 제품2</td>
+	                    <td>공정B</td>
+	                    <td>2025-09-14</td>
+	                    <td>김철수</td>
+						<td>합격</td>
+	                    <td>비고2</td>
+	                </tr>
+	                <tr>
+	                    <td>test3</td>
+	                    <td>테스트 제품3</td>
+	                    <td>공정C</td>
+	                    <td>2025-09-15</td>
+	                    <td>이영희</td>
+						<td>불합격</td>
+	                    <td>비고3</td>
+	                </tr>
+	            </tbody>
+	        </table>
+	    </div>
+	</div>
+</th:block>
+
+<th:block layout:fragment="script">
+    </th:block>
+</body>
+</html>

@@ -96,7 +96,7 @@ public class ScheduleController {
 			}
 		}
 
-		if ("AUT001".equals(personnelLoginDTO.getEmpLevelId())) {
+		if (personnelLoginDTO.getEmpLevelId().equals("AUT001")) {
 			isAdmin = true;
 			List<CommonDetailCode> allDepartments = commonCodeService.findByComId("DEP");
 			model.addAttribute("allDepartments", allDepartments);
@@ -117,7 +117,7 @@ public class ScheduleController {
 	public String writeForm(Model model, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 
 		String empDeptName = null;
-		boolean isAdmin = "AUT001".equals(personnelLoginDTO.getEmpLevelId());
+		boolean isAdmin = personnelLoginDTO.getEmpLevelId().equals("AUT001");
 
 		String empDeptId = personnelLoginDTO.getEmpDeptId();
 		if (commonCodeService != null) {

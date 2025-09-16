@@ -16,25 +16,24 @@
         <!-- 검색 영역 -->
         <div class="card shadow mb-4">
             <div class="card-body">
-                <form>
+                <form id="searchForm">
                     <div class="row">
                         <div class="col-md-2">
-                            <select class="form-control">
-                                <option value="">자재구분 전체</option>
-                                <option value="강재">강재</option>
-                                <option value="알루미늄">알루미늄</option>
-                                <option value="주철">주철</option>
-                                <option value="동합금">동합금</option>
-                                <option value="티타늄">티타늄</option>
-                            </select>
-                        </div>
+						    <select class="form-control" id="productType">
+						        <option value="">자재구분 전체</option>
+						        <option value="부품">부품</option>
+						        <option value="반제품">반제품</option>
+						        <option value="완제품">완제품</option>
+						    </select>
+						</div>
                         <div class="col-md-3">
-                            <input type="text" class="form-control" placeholder="자재코드 또는 자재명">
-                        </div>
+		                    <input type="text" class="form-control" id="searchKeyword" 
+		                           placeholder="자재코드 또는 자재명">
+		                </div>
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-primary">검색</button>
-                            <button type="button" class="btn btn-secondary">초기화</button>
-                        </div>
+		                    <button type="button" class="btn btn-primary" onclick="searchMaterial()">검색</button>
+		                    <button type="button" class="btn btn-secondary" onclick="resetSearch()">초기화</button>
+		                </div>
                     </div>
                 </form>
             </div>
@@ -43,137 +42,44 @@
         <!-- 자재 테이블 -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">자재(목록) 목록</h6>
-                <div>
-                    <button class="btn btn-success btn-sm" onclick="addMaterial()">
-                        <i class="fas fa-plus"></i> 추가
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
-                </div>
+                <h6 class="m-0 font-weight-bold text-primary">자재 목록</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered text-center">
                         <thead class="thead-light">
-                            <tr>
-                                <th width="5%">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th width="12%">자재코드</th>
-                                <th width="20%">자재명</th>
-                                <th width="12%">자재구분</th>
-                                <th width="8%">단위</th>
-                                <th width="18%">자재 사양</th>
-                                <th width="12%">등록자id</th>
-                                <th width="13%">등록일</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000030</td>
-                                <td>P20 강재</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>1000×2000×50mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000029</td>
-                                <td>H13 열간작업강</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>800×1500×40mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000028</td>
-                                <td>S45C 탄소강</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>1200×2500×60mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000027</td>
-                                <td>SKD11 공구강</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>600×1200×30mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000026</td>
-                                <td>SUS304 스테인리스강</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>900×1800×25mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000025</td>
-                                <td>SKH51 고속도강</td>
-                                <td><span class="badge badge-light text-secondary" style="font-size: 14px;">강재</span></td>
-                                <td>kg</td>
-                                <td>500×1000×20mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000024</td>
-                                <td>ADC12 알루미늄합금</td>
-                                <td><span class="badge badge-light text-warning" style="font-size: 14px;">알루미늄</span></td>
-                                <td>kg</td>
-                                <td>1500×3000×80mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000023</td>
-                                <td>FC250 주철</td>
-                                <td><span class="badge badge-light text-dark" style="font-size: 14px;">주철</span></td>
-                                <td>kg</td>
-                                <td>2000×4000×100mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000022</td>
-                                <td>Cu-Be 동합금</td>
-                                <td><span class="badge badge-light text-danger" style="font-size: 14px;">동합금</span></td>
-                                <td>kg</td>
-                                <td>400×800×15mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check"></td>
-                                <td>M0000021</td>
-                                <td>Ti-6Al-4V 티타늄합금</td>
-                                <td><span class="badge badge-light text-info" style="font-size: 14px;">티타늄</span></td>
-                                <td>kg</td>
-                                <td>300×600×10mm</td>
-                                <td>25070001</td>
-                                <td>2025-07-08</td>
-                            </tr>
+						    <tr>
+						        <th width="3%">
+						            <input type="checkbox" id="selectAll">
+						        </th>
+						        <th width="10%">자재코드</th>
+						        <th width="15%">자재명</th>
+						        <th width="12%">자재유형(부품 고정)</th> 
+						        <th width="6%">단위</th>
+						        <th width="20%">자재 사양</th>
+						        <th width="10%">등록자(수정)</th>
+						        <th width="10%">등록일</th>
+						    </tr>
+						</thead>
+                        <tbody id="materialTableBody">
                         </tbody>
                     </table>
+                    <div>
+	                    <button class="btn btn-success btn-sm" onclick="showAddRow()">
+	                        <i class="fas fa-plus"></i> 추가
+	                    </button>
+	                    <button class="btn btn-warning btn-sm" onclick="toggleEditMode()">
+	                        <i class="fas fa-edit"></i> 수정
+	                    </button>
+	                    <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
+	                        <i class="fas fa-trash"></i> 삭제
+	                    </button>
+                	</div>
                 </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center" id="pagination">
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
@@ -181,25 +87,322 @@
 
 <th:block layout:fragment="script">
 <script>
-document.getElementById('selectAll').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.item-check');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+// 전역 변수
+let materialData = [];
+let currentUserId = '';
+let currentEditRow = null;
+
+// 페이지 로드시 실행
+$(document).ready(function() {
+    loadMaterials();
+    getCurrentUser();
+    
+    $('#selectAll').on('change', function() {
+        $('.item-check').prop('checked', $(this).is(':checked'));
+    });
 });
 
-function addMaterial() {
-    console.log('자재 추가');
-    // 추가 모달 또는 페이지 이동
+//현재 로그인 사용자 정보 조회
+function getCurrentUser() {
+    $.ajax({
+        url: '/api/current-user',
+        type: 'GET',
+        success: function(data) {
+            currentUserId = data.empId;  // ID만 저장
+        }
+    });
+}
+
+// ========== 데이터 조회 관련 ==========
+function loadMaterials() {
+    const params = {
+        searchKeyword: $('#searchKeyword').val()
+    };
+    
+    $.ajax({
+        url: '/api/inventory/materials',
+        type: 'GET',
+        data: params,
+        success: function(data) {
+            materialData = data;
+            displayMaterials(data);
+        },
+        error: function() {
+            alert('데이터 조회 실패');
+        }
+    });
+}
+
+function displayMaterials(data) {
+    const tbody = $('#materialTableBody');
+    tbody.empty();
+    
+    if(data.length === 0) {
+        tbody.append('<tr><td colspan="8">데이터가 없습니다.</td></tr>');
+        return;
+    }
+    
+    data.forEach(item => {
+        tbody.append(createTableRow(item));
+    });
+}
+
+function createTableRow(item) {
+    return `
+        <tr data-id="${item.productId}">
+            <td><input type="checkbox" class="item-check" value="${item.productId}"></td>
+            <td class="editable" data-field="productId">${item.productId}</td>
+            <td class="editable" data-field="productName">${item.productName}</td>
+            <td>
+                <span class="badge badge-light text-info" style="font-size: 14px;">부품</span>
+            </td>
+            <td class="editable" data-field="unit">${item.unit}</td>
+            <td class="editable" data-field="spec">${item.spec || '-'}</td>
+            <td>${item.empId || '-'}</td>  
+            <td>${formatDate(item.createdAt)}</td>
+        </tr>
+    `;
+}
+
+// ========== 검색 관련 ==========
+function searchMaterial() {
+    loadMaterials();
+}
+
+function resetSearch() {
+    $('#productType').val('');
+    $('#searchKeyword').val('');
+    loadMaterials();
+}
+
+// ========== 수정 관련 ==========
+function editRow(productId) {
+    // 이미 수정 중인 행이 있는지 확인
+    if(currentEditRow) {
+        alert('현재 수정 중인 항목을 먼저 저장하거나 취소해주세요.');
+        return;
+    }
+    
+    const row = $(`tr[data-id="${productId}"]`);
+    currentEditRow = productId;
+    enableEditMode(row);
+}	
+
+function toggleEditMode() {
+    const checked = $('.item-check:checked');
+    
+    if(checked.length === 0) {
+        alert('수정할 항목을 선택해주세요.');
+        return;
+    }
+    
+    if(checked.length > 1) {
+        alert('한 번에 하나의 항목만 수정할 수 있습니다.');
+        return;
+    }
+    
+    if(currentEditRow) {
+        alert('현재 수정 중인 항목을 먼저 저장하거나 취소해주세요.');
+        return;
+    }
+    
+    const row = checked.closest('tr');
+    currentEditRow = row.data('id');
+    enableEditMode(row);
+}
+
+function enableEditMode(row) {
+    row.addClass('edit-mode bg-warning');
+    
+    // 각 필드를 input으로 변경 (인덱스 수정)
+    const productName = row.find('td:eq(2)').text();
+    const unit = row.find('td:eq(4)').text();
+    const spec = row.find('td:eq(5)').text();
+    
+    row.find('td:eq(2)').html(`<input type="text" class="form-control form-control-sm" value="${productName}">`);
+    row.find('td:eq(4)').html(`<input type="text" class="form-control form-control-sm" value="${unit}">`);
+    row.find('td:eq(5)').html(`<input type="text" class="form-control form-control-sm" value="${spec === '-' ? '' : spec}">`);
+    
+    // 마지막 열(등록일)에 버튼 추가
+    const originalDate = row.find('td:eq(7)').text();
+    row.find('td:eq(7)').html(`
+        <button class="btn btn-sm btn-success" onclick="saveRow('${row.data('id')}')">저장</button>
+        <button class="btn btn-sm btn-danger" onclick="cancelEdit()">취소</button>
+    `);
+    row.find('td:eq(7)').data('original-date', originalDate); // 원래 날짜 저장
+}
+
+function createSelectBox(selectedValue) {
+    const options = ['부품', '반제품', '완제품'];
+    const optionHtml = options.map(opt => 
+        `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`
+    ).join('');
+    
+    return `<select class="form-control form-control-sm">${optionHtml}</select>`;
+}
+
+function saveRow(productId) {
+    const row = $(`tr[data-id="${productId}"]`);
+    const updateData = {
+        productId: productId,
+        productName: row.find('td:eq(2) input').val(),
+        productType: '부품',
+        unit: row.find('td:eq(4) input').val(),
+        spec: row.find('td:eq(5) input').val(),
+        empId: currentUserId  // 현재 로그인한 사용자 ID 추가
+    };
+    
+    // 유효성 검사
+    if(!updateData.productName || !updateData.unit) {
+        alert('자재명과 단위는 필수 입력 항목입니다.');
+        return;
+    }
+    
+    ajaxCall('PUT', `/api/inventory/materials/${productId}`, updateData, 
+        () => {
+            alert('수정 완료');
+            currentEditRow = null;
+            loadMaterials();  // 리로드하면 새로운 수정자 ID가 표시됨
+        },
+        () => alert('수정 실패')
+    );
+}
+
+function cancelEdit() {
+    currentEditRow = null;
+    loadMaterials();
+}
+
+// ========== 추가 관련 ==========
+function showAddRow() {
+    if($('#newRow').length > 0) {
+        alert('이미 추가 중입니다.');
+        return;
+    }
+    
+    if(currentEditRow) {
+        alert('현재 수정 중인 항목을 먼저 저장하거나 취소해주세요.');
+        return;
+    }
+    
+    const newRow = `
+        <tr id="newRow" class="table-warning">
+            <td><input type="checkbox" disabled></td>
+            <td><input type="text" class="form-control form-control-sm" id="new_productId" placeholder="자재코드"></td>
+            <td><input type="text" class="form-control form-control-sm" id="new_productName" placeholder="자재명"></td>
+            <td>
+                <span class="badge badge-light text-info" style="font-size: 14px;">부품</span>
+            </td>
+            <td><input type="text" class="form-control form-control-sm" id="new_unit" placeholder="단위"></td>
+            <td><input type="text" class="form-control form-control-sm" id="new_spec" placeholder="사양"></td>
+            <td>${currentUserId || '로딩중...'}</td>  
+            <td>
+                <button class="btn btn-sm btn-success" onclick="saveMaterial()">저장</button>
+                <button class="btn btn-sm btn-danger" onclick="cancelAdd()">취소</button>
+            </td>
+        </tr>
+    `;
+    
+    $('#materialTableBody').prepend(newRow);
+}
+
+function saveMaterial() {
+    const newMaterial = {
+        productId: $('#new_productId').val(),
+        productName: $('#new_productName').val(),
+        productType: '부품',  
+        unit: $('#new_unit').val(),
+        spec: $('#new_spec').val(),
+        empId: currentUserId  
+    };
+    
+    ajaxCall('POST', '/api/inventory/materials', newMaterial,
+        (result) => {
+            if(result.success) {
+                alert('등록 완료');
+                $('#newRow').remove();
+                loadMaterials();
+            } else {
+                alert(result.message);
+            }
+        }
+    );
+}
+
+function cancelAdd() {
+    $('#newRow').remove();
+}
+
+// ========== 삭제 관련 ==========
+function deleteRow(productId) {
+    if(confirm('이 항목을 삭제하시겠습니까?')) {
+        ajaxCall('DELETE', '/api/inventory/materials', [productId],
+            (result) => {
+                if(result.success) {
+                    alert('삭제 완료');
+                    loadMaterials();
+                } else {
+                    alert(result.message || '삭제 실패');
+                }
+            }
+        );
+    }
 }
 
 function deleteSelected() {
-    const checked = document.querySelectorAll('.item-check:checked');
-    if (checked.length === 0) {
+    const checked = $('.item-check:checked');
+    if(checked.length === 0) {
         alert('삭제할 항목을 선택해주세요.');
         return;
     }
-    if (confirm(checked.length + '개 항목을 삭제하시겠습니까?')) {
-        console.log('삭제 처리');
+    
+    if(confirm(checked.length + '개 항목을 삭제하시겠습니까?')) {
+        const ids = checked.map(function() { return $(this).val(); }).get();
+        
+        ajaxCall('DELETE', '/api/inventory/materials', ids,
+            (result) => {
+                if(result.success) {
+                    alert('삭제 완료');
+                    loadMaterials();
+                } else {
+                    alert(result.message || '삭제 실패');
+                }
+            }
+        );
     }
+}
+
+// ========== 유틸리티 함수 ==========
+function ajaxCall(method, url, data, successCallback, errorCallback) {
+    $.ajax({
+        url: url,
+        type: method,
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+        },
+        success: successCallback,
+        error: errorCallback || function() { alert('처리 실패'); }
+    });
+}
+
+function getBadgeColor(type) {
+    const colors = {
+        '부품': 'text-info',
+        '반제품': 'text-warning',
+        '완제품': 'text-success'
+    };
+    return colors[type] || 'text-secondary';
+}
+
+function formatDate(dateStr) {
+    if(!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('ko-KR');
+}
+
+function viewDetail(productId) {
+    console.log('상세보기:', productId);
 }
 </script>
 </th:block>
