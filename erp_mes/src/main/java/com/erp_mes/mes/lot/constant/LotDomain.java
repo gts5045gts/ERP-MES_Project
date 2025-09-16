@@ -29,14 +29,6 @@ public enum LotDomain {
 	 * ETC("XX", "기타 미정의");
 	 */
 
-    // 3️⃣ 설비(Machine / 생산 라인)
-    // 설비 Prefix는 필요 시 LOT_ID 옵션으로 붙임 → 추적용
-    // 예: PR20250908-L1-001
-    public static final String L1 = "L1";       // 라인 1
-    public static final String L2 = "L2";       // 라인 2
-    public static final String MOLD = "MOLD";   // 금형
-    public static final String ROBOT = "ROB";   // 로봇/자동화 설비
-
     private final String domain;
     private final String prefix;
 
