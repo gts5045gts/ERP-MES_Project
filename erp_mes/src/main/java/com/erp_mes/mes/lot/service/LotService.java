@@ -11,8 +11,8 @@ import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.dto.ProcessHistoryDTO;
-import com.erp_mes.mes.lot.entity.LotMaterialUsage;
 import com.erp_mes.mes.lot.entity.LotMaster;
+import com.erp_mes.mes.lot.entity.LotMaterialUsage;
 import com.erp_mes.mes.lot.entity.LotProcessHistory;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
@@ -28,78 +28,108 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class LotService {
 
-    private final LotRepository lotRepository;
-    private final LotMaterialUsageRepository usageRepository;
-    private final LotProcessHistoryRepository historyRepository;
+	private final LotRepository lotRepository;
+	private final LotMaterialUsageRepository usageRepository;
+	private final LotProcessHistoryRepository historyRepository;
 
-    public String createLotWithRelations(LotDTO lotDTO) {
-        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String domain = lotDTO.getType();
-        LotDomain lotDomain = LotDomain.fromDomain(domain);
-        String prefix = lotDomain.getPrefix();
-        Integer qty = lotDTO.getQty();
-        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
+	@Transactional
+	public String createLotWithRelations(LotDTO lotDTO, String domain, boolean createLot, boolean linkParent) {
+	    String lotId = null;
+	    LotMaster lot = null;
 
-        int lotQty = (qty != null) ? qty : 0; // 기본값 0
+	    // 1. LOT 생성 및 lot_master 저장
+	    if (createLot) {
+	        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+	        LotDomain lotDomain = LotDomain.fromDomain(domain);
+	        String prefix = lotDomain.getPrefix();
+	        Integer qty = lotDTO.getQty();
+	        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
+	        int lotQty = (qty != null) ? qty : 0;
 
-        // 마지막 LOT 조회
-        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, machineId);
-        int nextSeq = 1;
+	        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, machineId);
+	        lotId = generateLotId(prefix, datePart, machineId, lastLotId);
 
-        if (lastLotId != null) {
-            String[] parts = lastLotId.split("-");
-            nextSeq = Integer.parseInt(parts[parts.length - 1]) + 1;
-        }
+	        lot = LotMaster.builder()
+	            .lotId(lotId)
+	            .targetId(lotDTO.getTargetId())
+	            .tableName(lotDTO.getTableName())
+	            .type(prefix)
+	            .materialCode(lotDTO.getMaterialCode())
+	            .qty(lotQty)
+	            .machineId(machineId)
+	            .createdAt(LocalDateTime.now())
+	            .build();
 
-        // machineId가 있을때만 포함
-        // 1) LOT ID 생성
-        String lotId;
-        if (machineId != null && !machineId.isEmpty()) {
-            lotId = String.format("%s%s-%s-%03d", prefix, datePart, machineId, nextSeq);
-        } else {
-            lotId = String.format("%s%s-%03d", prefix, datePart, nextSeq);
-        }
+	        lotRepository.save(lot);
+	        lotDTO.setLotId(lotId); // 생성된 LOT ID 설정
+	    } else {
+			// createLot==false : 기존 LOT 정보를 사용
+	        lotId = lotDTO.getLotId();
+	        if (lotId != null) {
+	            lot = lotRepository.getReferenceById(lotId);
+	        }
+	    }
 
-        // 2) lot_master 저장
-        LotMaster lot = LotMaster.builder().lotId(lotId).targetId(lotDTO.getTargetId()).tableName(lotDTO.getTableName())
-                .type(prefix).materialCode(lotDTO.getMaterialCode()).qty(lotQty).machineId(machineId)
-                .createdAt(LocalDateTime.now()).build();
+	    // 2. 자재 사용 기록 (부모-자식 LOT 연결)
+	    if (linkParent && lotDTO.getUsages() != null && !lotDTO.getUsages().isEmpty()) {
+	        for (MaterialUsageDTO usageDTO : lotDTO.getUsages()) {
+	            LotMaster parentLot = lotRepository.getReferenceById(usageDTO.getParentLotId());
+	            String childLotId = Optional.ofNullable(usageDTO.getChildLotId()).orElse(lotId);
+	            LotMaster childLot = lotRepository.getReferenceById(childLotId);
 
-        lotRepository.save(lot);
+	            LotMaterialUsage usage = LotMaterialUsage.builder()
+	                .parentLot(parentLot)
+	                .childLot(childLot)
+	                .qtyUsed(usageDTO.getQtyUsed())
+	                .createdAt(LocalDateTime.now())
+	                .build();
+	            usageRepository.save(usage);
+	        }
+	    }
 
-        // 3) 선택: 자재 사용 기록 저장
-        if (lotDTO.getUsages() != null && !lotDTO.getUsages().isEmpty()) {
-            for (MaterialUsageDTO usageDTO : lotDTO.getUsages()) {
-                LotMaster parentLot = lotRepository.getReferenceById(usageDTO.getParentLotId());
-                String childLotId = Optional.ofNullable(usageDTO.getChildLotId()).orElse(lotId);
-                LotMaster childLot = lotRepository.getReferenceById(childLotId);
+	    // 3. 공정 이력 기록 (processes는 리스트 유무로 분기)
+	    if (lotDTO.getProcesses() != null && !lotDTO.getProcesses().isEmpty() && lot != null) {
+	        for (ProcessHistoryDTO processDTO : lotDTO.getProcesses()) {
+	            LotProcessHistory history = LotProcessHistory.builder()
+	                .lot(lot)
+	                .processCode(processDTO.getProcessCode())
+	                .machineId(processDTO.getMachineId())
+	                .operator(processDTO.getOperator())
+	                .processStart(processDTO.getProcessStart())
+	                .processEnd(processDTO.getProcessEnd())
+	                .inputQty(processDTO.getInputQty())
+	                .resultQty(processDTO.getResultQty())
+	                .scrapQty(processDTO.getScrapQty())
+	                .createdAt(LocalDateTime.now())
+	                .build();
+	            historyRepository.save(history);
+	        }
+	    }
 
-                LotMaterialUsage usage = LotMaterialUsage.builder().parentLot(parentLot).childLot(childLot)
-                        .qtyUsed(usageDTO.getQtyUsed()).createdAt(LocalDateTime.now()).build();
-                usageRepository.save(usage);
-            }
-        }
+	    return lotId;
+	}
+	
+	public String generateLotId(String prefix, String datePart, String machineId, String lastLotId) {
+	    int nextSeq = 1;
+	    if (lastLotId != null) {
+	        String[] parts = lastLotId.split("-");
+	        try {
+	            nextSeq = Integer.parseInt(parts[parts.length - 1]) + 1;
+	        } catch (NumberFormatException e) {
+	            nextSeq = 1; // 안전하게 기본값 1 할당
+	        }
+	    }
+	    if (machineId != null && !machineId.isEmpty()) {
+	        return String.format("%s%s-%s-%03d", prefix, datePart, machineId, nextSeq);
+	    } else {
+	        return String.format("%s%s-%03d", prefix, datePart, nextSeq);
+	    }
+	}
 
-        // 4) 선택: 공정 이력 기록
-        if (lotDTO.getProcesses() != null && !lotDTO.getProcesses().isEmpty()) {
-            for (ProcessHistoryDTO processDTO : lotDTO.getProcesses()) {
-                LotProcessHistory history = LotProcessHistory.builder().lot(lot)
-                        .processCode(processDTO.getProcessCode()).machineId(machineId)
-                        .operator(processDTO.getOperator()).processStart(processDTO.getProcessStart())
-                        .processEnd(processDTO.getProcessEnd()).inputQty(processDTO.getInputQty())
-                        .resultQty(processDTO.getResultQty()).scrapQty(processDTO.getScrapQty())
-                        .createdAt(LocalDateTime.now()).build();
-                historyRepository.save(history);
-            }
-        }
-
-        return lotId;
-    }
-
-    public String registWareHouse(LotDTO lotDTO) {
+	public String registWareHouse(LotDTO lotDTO) {
 
 //		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
-        return "PUR-YYYYMMDD-123444";
-    }
+		return "PUR-YYYYMMDD-123444";
+	}
 
 }
