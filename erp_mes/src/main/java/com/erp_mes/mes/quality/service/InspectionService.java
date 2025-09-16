@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
@@ -14,7 +15,6 @@ import com.erp_mes.mes.quality.mapper.QualityMapper;
 import com.erp_mes.mes.quality.repository.InspectionFMRepository;
 import com.erp_mes.mes.quality.repository.InspectionItemRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -53,7 +53,7 @@ public class InspectionService {
                 .map(entity -> {
                     InspectionItemDTO dto = new InspectionItemDTO();
                     dto.setItemId(entity.getItemId());
-                    dto.setProductCode(entity.getProductCode());
+                    dto.setProductId(entity.getProductId());
                     dto.setInspectionFMId(entity.getInspectionFMId());
                     dto.setToleranceValue(entity.getToleranceValue());
                     dto.setUnit(entity.getUnit());
@@ -76,7 +76,7 @@ public class InspectionService {
     public void registerInspectionItem(InspectionItemDTO inspectionItemDTO) {
         // DTO를 JPA 엔티티로 변환
         InspectionItem inspectionItem = InspectionItem.builder()
-                .productCode(inspectionItemDTO.getProductCode())
+                .productId(inspectionItemDTO.getProductId())
                 .inspectionFMId(inspectionItemDTO.getInspectionFMId())
                 .toleranceValue(inspectionItemDTO.getToleranceValue())
                 .unit(inspectionItemDTO.getUnit())

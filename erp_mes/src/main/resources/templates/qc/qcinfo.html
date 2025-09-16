@@ -179,7 +179,7 @@
 									class="form-control" id="productCode" name="productCode">
 									<option value="">선택</option>
 									<option th:each="product : ${products}"
-										th:value="${product.prodId}" th:text="${product.prodName}"></option>
+										th:value="${product.productId}" th:text="${product.productName}"></option>
 								</select>
 							</div>
 							<div class="mb-3">
@@ -193,7 +193,7 @@
 							</div>
 							<div class="mb-3">
 								<label for="toleranceValue" class="form-label">허용 공차</label> <input
-									type="number" class="form-control" id="toleranceValue"
+									type="text" class="form-control" id="toleranceValue"
 									name="toleranceValue">
 							</div>
 							<div class="mb-3">
@@ -281,7 +281,7 @@
         		methodName: document.getElementById('methodName').value
     		};
             
-    		fetch('/quality/fm', { // API 경로를 'fm'으로 변경
+    		fetch('/quality/fm', { 
         		method: 'POST',
         		headers: {
             		'Content-Type': 'application/json',
@@ -310,7 +310,7 @@
 		// 오른쪽 모달 ('검사 항목 등록 및 공차 설정')의 '저장' 버튼 클릭 이벤트
 		document.getElementById('saveItemBtn').addEventListener('click', function() {
 		    const formData = {
-		        productCode: document.getElementById('productCode').value,
+		        productId: document.getElementById('productCode').value,
 		        inspectionFMId: document.getElementById('inspectionFMId').value,
 		        toleranceValue: document.getElementById('toleranceValue').value,
 		        unit: document.getElementById('unit').value

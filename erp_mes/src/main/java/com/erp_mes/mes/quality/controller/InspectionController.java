@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.service.InspectionService;
@@ -29,12 +31,12 @@ public class InspectionController {
 
 	private final InspectionService inspectionService;
 	private final CommonCodeService commonCodeService;
-	private final ProductService productService; // ProductService 주입
+	private final ProductBomService productBomService; 
 
-	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductService productService) {
+	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductBomService productBomService) {
 		this.inspectionService = inspectionService;
 		this.commonCodeService = commonCodeService;
-		this.productService = productService;
+		this.productBomService = productBomService;
 	}
 
 	@GetMapping("/qcinfo")
@@ -60,7 +62,7 @@ public class InspectionController {
 	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
 	    
 	    // 제품 목록 데이터
-	    List<ProductDTO> products = productService.findAllProducts();
+	    List<ProductDTO> products = productBomService.getProductList();
 
 	    model.addAttribute("inspectionFMs", inspectionFMs);
 	    model.addAttribute("inspectionItems", inspectionItems);
@@ -70,6 +72,7 @@ public class InspectionController {
 
 	    return "qc/qcinfo";
 	}
+	
 	@GetMapping("iqc")
 	public String iqc() {
 		return "qc/iqc";
