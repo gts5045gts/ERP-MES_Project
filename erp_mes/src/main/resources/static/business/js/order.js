@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		el: document.getElementById('orderGrid'),
 		scrollX: false,
 		scrollY: true,
-		bodyHeight: 350,
+		bodyHeight: 220,
 		rowHeight: 'auto',
 		minBodyHeight: 200,
 		emptyMessage: '조회결과가 없습니다.',
@@ -18,7 +18,49 @@ document.addEventListener("DOMContentLoaded", () => {
 			{ header: '납기예정일', name: 'deliveryDate', align: 'center' },
 			{ header: '수주수량', name: 'orderQty', align: 'center' },
 			{ header: '수주금액', name: 'orderPrice', align: 'center' },
-			{ header: '수주상태', name: 'orderStatus', align: 'center' }
+			{
+				header: '수주상태',
+				name: 'orderStatus',
+				align: 'center',
+				formatter: function(value) {
+					let color = '';
+					switch (value.value) {
+						case 'RECEIVED': // 등록
+							color = 'blue';
+							break;
+						case 'CANCELED': // 취소
+							color = 'red';
+							break;
+						case 'PREPARING': // 납품 대기
+							color = 'green';
+							break;
+						default: // 납품 완료 (DELIVERED)는 원래 색상
+							color = 'black';
+							break;
+					}
+					return '<span style="color: ' + color + '; font-weight: bold;">' + value.value + '</span>';
+				}
+			}
+		],
+		data: []
+	});
+
+	// 수주 상세 목록을 위한 그리드 인스턴스
+	const orderDetailGrid = new tui.Grid({
+		el: document.getElementById('orderDetailGrid'),
+		scrollX: false,
+		scrollY: true,
+		bodyHeight: 220,
+		minBodyHeight: 200,
+		emptyMessage: '수주 목록의 행을 클릭하여 상세 정보를 확인하세요.',
+		columns: [
+			{ header: '수주 ID', name: 'orderDetailId', align: 'center' },
+			{ header: '품목번호', name: 'productId', align: 'center' },
+			{ header: '품목명', name: 'productName', align: 'center' },
+			{ header: '단가', name: 'price', align: 'right' },
+			{ header: '단위', name: 'unit', align: 'right' },
+			{ header: '수량', name: 'quantity', align: 'center' },
+			{ header: '총금액', name: 'totalPrice', align: 'right' }
 		],
 		data: []
 	});
@@ -60,6 +102,32 @@ document.addEventListener("DOMContentLoaded", () => {
 			.catch(error => console.error("수주 목록 불러오기 오류:", error));
 	};
 	loadOrders();
+
+	// 수주 목록 그리드 행 클릭 시 수주 상세 목록 불러오기
+	orderGrid.on('click', (ev) => {
+		// 클릭된 행의 데이터 가져오기
+		const rowData = orderGrid.getRow(ev.rowKey);
+
+		if (rowData) {
+			const orderId = rowData.orderId;
+			loadOrderDetails(orderId);
+		}
+	});
+
+	// 수주 상세 목록을 불러오는 함수
+	const loadOrderDetails = (orderId) => {
+		fetch(`/business/api/orders/${orderId}/details`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('네트워크 응답이 올바르지 않습니다.');
+				}
+				return response.json();
+			})
+			.then(data => {
+				orderDetailGrid.resetData(data);
+			})
+			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
+	};
 
 	// 등록 버튼 클릭 시 모달창 열기
 	document.getElementById("addBtn").addEventListener("click", () => {
