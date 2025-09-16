@@ -1,10 +1,13 @@
 package com.erp_mes.mes.lot.controller;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -13,6 +16,7 @@ import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -77,7 +81,7 @@ public class LotController {
 		// LotDTO 생성
 		LotDTO lotDTO = LotDTO.builder().tableName("PRODUCT_PLAN")
 				.qty(150) // 총 생산 수량
-				.machineId("101") // 생산 설비 ID
+				.machineId("L1") // 생산 설비 ID
 				.usages(usages) // 자재 사용 내역 등록
 				.build();
 
@@ -89,5 +93,11 @@ public class LotController {
 		log.info(lotDTO.getLotId());
 		// return 변경 가능
 		return lotDTO;
+	}
+	
+	
+	@GetMapping("/list")
+	public String lotList() {
+		return "/lot/lot_list";
 	}
 }
