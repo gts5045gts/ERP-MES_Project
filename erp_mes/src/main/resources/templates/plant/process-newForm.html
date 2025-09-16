@@ -122,8 +122,9 @@
  		
  		const formData = $('#processForm').serialize();
  		$.post('/plant/processAdd', formData, function(response){
- 			
+ 			window.opener.location.reload();
  			alert('공정 정보를 추가합니다');
+ 			window.close();
  			
  		}).fail(function(){
  			alert('전송 오류가 발생 했습니다.');

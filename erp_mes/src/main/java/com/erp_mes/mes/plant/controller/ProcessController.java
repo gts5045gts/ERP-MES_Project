@@ -49,8 +49,8 @@ public class ProcessController {
 	
 	@ResponseBody
 	@GetMapping("/processGrid")
-	public List<Map<String, String>> processGrid(){
-		List<Map<String, String>> proList = proService.findAll();
+	public List<Map<String, Object>> processGrid(){
+		List<Map<String, Object>> proList = proService.findAll();
 		log.info("proList" + proList.toString()); 
 		
 		

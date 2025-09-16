@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.erp_mes.mes.plant.entity.Process;
 
 @Repository
-public interface ProcessRepository extends JpaRepository<Process, String>{
+public interface ProcessRepository extends JpaRepository<Process, Long>{
 
 }
