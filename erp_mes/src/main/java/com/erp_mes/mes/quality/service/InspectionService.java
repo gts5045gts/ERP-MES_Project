@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
+import com.erp_mes.mes.pop.mapper.WorkResultMapper;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
@@ -27,6 +29,7 @@ public class InspectionService {
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
 	private final ProductBomService productBomService;
+	private final WorkResultMapper workResultMapper;
 	
     @Transactional(readOnly = true)
     public List<InspectionFMDTO> findAllInspectionFMs() {
@@ -93,5 +96,32 @@ public class InspectionService {
     
     public List<InspectionResultDTO> getInspectionResultList() {
         return qualityMapper.getInspectionResultList();
+    }
+    
+    // 1. 검사 대기 목록 조회
+    @Transactional(readOnly = true)
+    public List<WorkOrderDTO> getInspectionTargets() {
+        return workResultMapper.getInspectionTargets();
+    }
+
+    // 2. 특정 제품의 검사 항목 및 허용 공차 조회
+    @Transactional(readOnly = true)
+    public List<InspectionItemDTO> getInspectionItemByProductId(String productId) {
+        return qualityMapper.findInspectionItemsByProductId(productId);
+    }
+    
+    // 3. 검사 결과 등록
+    @Transactional
+    public void registerInspectionResult(InspectionResultDTO resultDTO) {
+        // 실제 구현 로직
+        // 1. DTO에서 필요한 정보를 추출
+        // 2. inspection 테이블에 INSERT
+        // 3. inspection_result 테이블에 INSERT
+        // 4. 관련 작업지시 상태를 '검사 완료'로 업데이트
+        
+        // 예시: 매퍼 호출
+        // qualityMapper.insertInspection(resultDTO);
+        // qualityMapper.insertInspectionResult(resultDTO);
+        // qualityMapper.updateWorkOrderStatus(resultDTO.getWorkOrderId(), "검사 완료");
     }
 }

@@ -4,22 +4,27 @@
 	layout:decorate="~{layouts/layout}">
 <head>
 <meta charset="UTF-8">
-<title>품질검사 이력관리</title>
-<link rel="stylesheet"
-	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<title>품질검사 관리</title>
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<style>
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+</style>
 </head>
 
 <body>
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
-			<h2 class="mb-4">품질검사 이력 관리</h2>
-
+			<h2 class="mb-4">품질검사 이력</h2>
+			<div class="card shadow mb-4">
 				<div class="card-body py-2">
-					<div
-						class="d-flex justify-content-end align-items-center flex-wrap">
+					<div class="d-flex justify-content-end align-items-center flex-wrap">
 						<div class="form-group d-flex align-items-center mb-0 me-3">
-							<label for="filterType" class="text-nowrap me-2">검사
-								유형</label> <select class="form-control form-control-sm" id="filterType">
+							<label for="historyFilterType" class="text-nowrap me-2">검사 유형</label>
+							<select class="form-control form-control-sm" id="historyFilterType">
 								<option value="ALL">전체</option>
 								<option value="QC001">수입검사</option>
 								<option value="QC002">공정검사</option>
@@ -27,89 +32,232 @@
 							</select>
 						</div>
 						<div class="form-group d-flex align-items-center mb-0 me-3">
-							<label for="filterProduct" class="text-nowrap me-2">제품명</label>
-							<input type="text" class="form-control form-control-sm"
-								id="filterProduct" placeholder="제품명 입력">
+							<label for="historyFilterProduct" class="text-nowrap me-2">제품명</label>
+							<input type="text" class="form-control form-control-sm" id="historyFilterProduct" placeholder="제품명 입력">
 						</div>
 						<div class="form-group d-flex align-items-center mb-0 me-3">
-							<label for="filterLotId" class="text-nowrap me-2">로트번호</label>
-							<input type="text" class="form-control form-control-sm"
-								id="filterLotId" placeholder="로트번호 입력">
+							<label for="historyFilterLotId" class="text-nowrap me-2">로트번호</label>
+							<input type="text" class="form-control form-control-sm" id="historyFilterLotId" placeholder="로트번호 입력">
 						</div>
 						<div class="form-group mb-0">
-							<button class="btn btn-primary btn-sm" id="searchBtn">검색</button>
+							<button class="btn btn-primary btn-sm" id="historySearchBtn">검색</button>
 						</div>
 					</div>
 				</div>
+			</div>
+			<div id="historyGrid"></div>
+			
+			<hr class="my-5">
 
-			<div id="grid"></div>
+			<h2 class="mb-4">검사 대기 목록</h2>
+			<div id="targetGrid"></div>
+		</div>
+
+		<div class="modal fade" id="inspectionModal" tabindex="-1" role="dialog" aria-labelledby="inspectionModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="inspectionModalLabel">품질검사 등록</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="inspectionRegistrationForm">
+							<div class="form-group">
+								<label>제품명</label>
+								<input type="text" class="form-control" id="modalProductName" readonly>
+							</div>
+							<div class="form-group">
+								<label>로트번호</label>
+								<input type="text" class="form-control" id="modalLotId" readonly>
+							</div>
+							<div class="form-group">
+								<label>검사유형</label>
+								<input type="text" class="form-control" id="modalInspectionType" readonly>
+							</div>
+							<div class="form-group">
+								<label>실측값</label>
+								<input type="number" class="form-control" id="modalMeasurement" required>
+							</div>
+							<div class="form-group">
+								<label>결과</label>
+								<input type="text" class="form-control" id="modalResult" readonly>
+							</div>
+							<div class="form-group">
+								<label>비고</label>
+								<textarea class="form-control" id="modalRemarks" rows="2"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-primary" id="registerBtn">등록</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</th:block>
 
 	<th:block layout:fragment="script">
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 		<script th:inline="javascript">
-		document.addEventListener('DOMContentLoaded', function() {
-	        const grid = new tui.Grid({
-	            el: document.getElementById('grid'),
-	            columns: [
-	                { header: '검사ID', name: 'inspectionId' },
-	                { header: '검사유형', name: 'inspectionTypeName' },
-	                { header: '제품명', name: 'productName' },      
-	                { header: '공정명', name: 'processName' },      
-	                { header: '검사일자', name: 'inspectionDate' },
-	                { header: '검사자', name: 'empName' },          
-	                { header: '로트번호', name: 'lotId' },
-	                { header: '검사결과', name: 'result' },
-	                { header: '비고', name: 'remarks' }
-	            ]
-	        });
-
-	        // AJAX를 사용하여 데이터를 가져오는 함수
-	        async function loadData() {
-	            try {
-	                const response = await fetch('/quality/api/inspection-results');
-	                if (!response.ok) {
-	                    throw new Error('데이터 로드 실패');
-	                }
-	                const data = await response.json();
-	                
-	                // Toast UI Grid에 데이터 적용
-	                grid.resetData(data);
-
-	            } catch (error) {
-	                console.error('Fetch error:', error);
-	            }
-	        }
-	     // 필터링 및 검색 함수
-			function filterData() {
-				const filterType = document.getElementById('filterType').value;
-				const filterProduct = document.getElementById('filterProduct').value.toLowerCase();
-				const filterLotId = document.getElementById('filterLotId').value.toLowerCase();
-
-				let filteredData = allInspectionData.filter(item => {
-					// 검사 유형 필터링
-					const typeMatch = (filterType === 'ALL' || item.inspectionType === filterType);
-					
-					// 제품명 필터링 (대소문자 무시)
-					const productMatch = item.productName && item.productName.toLowerCase().includes(filterProduct);
-
-					// 로트번호 필터링 (대소문자 무시)
-					const lotIdMatch = item.lotId && item.lotId.toLowerCase().includes(filterLotId);
-					
-					return typeMatch && productMatch && lotIdMatch;
+			document.addEventListener('DOMContentLoaded', function() {
+				// --- 상단 그리드 (품질검사 이력) ---
+				let allHistoryData = [];
+				const historyGrid = new tui.Grid({
+					el: document.getElementById('historyGrid'),
+					columns: [
+						{ header: '검사ID', name: 'inspectionId' },
+						{ header: '검사유형', name: 'inspectionTypeName' },
+						{ header: '제품명', name: 'productName' },
+						{ header: '공정명', name: 'processName' },
+						{ header: '검사일자', name: 'inspectionDate' },
+						{ header: '검사자', name: 'empName' },
+						{ header: '로트번호', name: 'lotId' },
+						{ header: '검사결과', name: 'result' },
+						{ header: '비고', name: 'remarks' }
+					]
+				});
+	
+				async function loadHistoryData() {
+					try {
+						const response = await fetch('/quality/api/inspection-results');
+						if (!response.ok) { throw new Error('데이터 로드 실패'); }
+						allHistoryData = await response.json();
+						historyGrid.resetData(allHistoryData);
+					} catch (error) {
+						console.error('Fetch error:', error);
+					}
+				}
+	
+				function filterHistoryData() {
+					const filterType = document.getElementById('historyFilterType').value;
+					const filterProduct = document.getElementById('historyFilterProduct').value.toLowerCase();
+					const filterLotId = document.getElementById('historyFilterLotId').value.toLowerCase();
+					let filteredData = allHistoryData.filter(item => {
+						const typeMatch = (filterType === 'ALL' || item.inspectionType === filterType);
+						const productMatch = item.productName && item.productName.toLowerCase().includes(filterProduct);
+						const lotIdMatch = item.lotId && item.lotId.toLowerCase().includes(filterLotId);
+						return typeMatch && productMatch && lotIdMatch;
+					});
+					historyGrid.resetData(filteredData);
+				}
+				document.getElementById('historySearchBtn').addEventListener('click', filterHistoryData);
+				
+				// --- 하단 그리드 (검사 대기 목록) ---
+				const targetGrid = new tui.Grid({
+					el: document.getElementById('targetGrid'),
+					columns: [
+						{ header: '작업지시ID', name: 'workOrderId' },
+				        { header: '제품명', name: 'productName' },
+				        { header: '공정ID', name: 'processId' },
+				        { header: '작업자ID', name: 'empId' },
+				        { header: '수량', name: 'quntity' },
+				        { header: 'LOT번호', name: 'lotId' },
+				        { header: '작업상태', name: 'workOrderStatus' }
+					]
 				});
 
-				grid.resetData(filteredData);
-			}
+				async function loadTargetData() {
+					try {
+						// 백엔드에서 검사 대기 목록을 반환하는 API가 필요합니다.
+						const response = await fetch('/quality/api/inspection-targets');
+						if (!response.ok) { throw new Error('검사 대상 데이터 로드 실패'); }
+						const data = await response.json();
+						targetGrid.resetData(data);
+					} catch (error) {
+						console.error('Fetch error:', error);
+					}
+				}
+				
+				// --- 모달 로직 ---
+				let selectedTargetData = null;
+				let inspectionCriteria = null;
 
-			// 검색 버튼 클릭 이벤트
-			document.getElementById('searchBtn').addEventListener('click', filterData);
-			
-			// 초기 데이터 로드
-			loadData();
-	    });
-    </script>
+				// 하단 그리드 행 클릭 이벤트
+				targetGrid.on('click', async (ev) => {
+					console.log('클릭 이벤트 발생!');
+					console.log('rowKey:', ev.rowKey);
+					if (ev.rowKey) {
+						selectedTargetData = targetGrid.getRow(ev.rowKey);
+						
+						// 모달에 기본 정보 바인딩
+						document.getElementById('modalProductName').value = selectedTargetData.productName;
+						document.getElementById('modalLotId').value = selectedTargetData.lotId;
+						document.getElementById('modalInspectionType').value = 'QC001'; // 예시: 수입검사로 고정
+						
+						// 해당 제품의 검사 기준 (허용 공차)을 가져오는 API가 필요합니다.
+						try {
+							const criteriaResponse = await fetch(`/quality/api/inspection-item/${selectedTargetData.productId}`);
+							inspectionCriteria = await criteriaResponse.json();
+							// 이 데이터를 활용하여 공차 초과 여부 등을 판단합니다.
+						} catch (error) {
+							console.error('검사 기준 로드 실패:', error);
+						}
+						
+						// 모달 열기
+						$('#inspectionModal').modal('show');
+					}
+				});
+				
+				// 실측값 입력 시 합격/불합격 자동 판단
+				document.getElementById('modalMeasurement').addEventListener('input', (event) => {
+					const measurement = parseFloat(event.target.value);
+					if (inspectionCriteria && !isNaN(measurement)) {
+						const minTolerance = inspectionCriteria.minTolerance;
+						const maxTolerance = inspectionCriteria.maxTolerance;
+						const resultField = document.getElementById('modalResult');
+						
+						if (measurement >= minTolerance && measurement <= maxTolerance) {
+							resultField.value = '합격';
+							resultField.style.color = 'blue';
+						} else {
+							resultField.value = '불합격';
+							resultField.style.color = 'red';
+						}
+					}
+				});
+
+				// '등록' 버튼 클릭 이벤트
+				document.getElementById('registerBtn').addEventListener('click', async () => {
+					const registrationData = {
+						workOrderId: selectedTargetData.workOrderId,
+						// ... 기타 데이터
+						measurement: document.getElementById('modalMeasurement').value,
+						result: document.getElementById('modalResult').value,
+						remarks: document.getElementById('modalRemarks').value,
+						status: '검사 완료' // 백엔드에서 업데이트
+					};
+
+					try {
+						// 검사 결과를 DB에 저장하는 API가 필요합니다.
+						const response = await fetch('/quality/api/register-inspection-result', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(registrationData)
+						});
+						const result = await response.json();
+						if (result.success) {
+							alert('검사 등록 성공!');
+							$('#inspectionModal').modal('hide');
+							// 그리드 모두 새로고침
+							loadHistoryData();
+							loadTargetData();
+						} else {
+							alert('등록 실패: ' + result.message);
+						}
+					} catch (error) {
+						console.error('Registration failed:', error);
+						alert('등록 중 오류 발생');
+					}
+				});
+
+				// 초기 데이터 로드
+				loadHistoryData();
+				loadTargetData();
+			});
+		</script>
 	</th:block>
 </body>
 </html>

@@ -25,4 +25,7 @@ public interface QualityMapper {
  
  // 검사결과
  List<InspectionResultDTO> getInspectionResultList();
+ 
+ // 검사대기
+ List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
 }
