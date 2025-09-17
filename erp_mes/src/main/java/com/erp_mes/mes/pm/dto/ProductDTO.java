@@ -12,12 +12,11 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class ProductDTO {
-
-	private String product_id;
-	private String product_name;
-	private String product_type;
+	private String productId;
+	private String productName;
+	private String productType;
 	private String unit;
-	private LocalDateTime created_at;
-	private LocalDateTime updated_at;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 	private String spec;
 }

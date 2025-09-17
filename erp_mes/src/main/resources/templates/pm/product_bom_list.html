@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    </th:block>
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+</head>
+<body>
+	<th:block layout:fragment="content">
+
+		<div class="container-fluid">
+		    <div class="row">
+		        <!-- 왼쪽: 제품 Grid -->
+		        <div class="col-md-6">
+		            <div class="card shadow mb-4">
+		            	<div class="d-flex align-items-center justify-content-between mb-2">
+			                <h3 class="mb-0">제품</h3>
+			                <button class="btn btn-success btn-sm me-3" id="productModalBtn">등록</button>
+		                </div>
+		                <div id="prod-grid"></div>
+		            </div>
+		        </div>
+		
+		        <!-- 오른쪽: BOM Grid -->
+		        <div class="col-md-6">
+		            <div class="card shadow mb-4">
+		            	<div class="d-flex align-items-center justify-content-between mb-2">
+			                <h3 class="mb-0">BOM</h3>
+			                <button class="btn btn-success btn-sm me-3" id="bomModalBtn">등록</button>
+		                </div>
+		                <div id="bom-grid"></div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+	
+		<form id="productForm">
+		<div class="modal fade" id="productRegisterModal" tabindex="-1" aria-labelledby="productRegisterLabel" aria-hidden="true">
+		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		        <div class="modal-content" id="modalContentContainer">
+		            
+		            <!-- 모달 헤더 -->
+		            <div class="modal-header" style="border-bottom: 1px solid black;">
+		                <h5 class="modal-title" id="productRegisterLabel">제품 등록</h5>
+		            </div>
+		
+		            <!-- 모달 바디 -->
+		            <div class="modal-body" style="height: 230px;">
+		                <div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">제품코드</label>
+		                        <input type="text" id="product_id" name="productId" class="form-control" placeholder="제품코드">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">제품명</label>
+		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
+		                    </div>
+		                </div>
+		
+						<div class="row mb-4">
+						    <div class="col">
+						        <label for="product_type" class="form-label">제품 구분</label>
+								<select id="product_type" name="productType" class="form-control">
+								  <option value="">선택하세요</option>
+								  <option th:each="c : ${commonPtype}"
+								          th:value="${c.comDtId}"
+								          th:text="${c.comDtNm}"></option>
+								</select>
+						    </div>
+						    <div class="col">
+						        <label for="unit" class="form-label">단위</label>
+								<select id="unit" name="unit" class="form-control">
+								  <option value="">선택하세요</option>
+								  <option th:each="c : ${commonUnit}"
+								          th:value="${c.comDtId}"
+								          th:text="${c.comDtNm}"></option>
+								</select>
+						    </div>
+						</div>
+		            </div>
+		
+		            <!-- 모달 푸터 -->
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		                <button type="button" class="btn btn-primary" id="productRegisterBtn">등록</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		</form>
+		
+		<form id="bomForm">
+		<div class="modal fade" id="bomRegisterModal" tabindex="-1" aria-labelledby="bomRegisterLabel" aria-hidden="true">
+		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		        <div class="modal-content" id="modalContentContainer">
+		            
+		            <!-- 모달 헤더 -->
+		            <div class="modal-header" style="border-bottom: 1px solid black;">
+		                <h5 class="modal-title" id="bomRegisterLabel">BOM 등록</h5>
+		            </div>
+		
+		            <!-- 모달 바디 -->
+		            <div class="modal-body" style="height: 230px;">
+		                <div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">제품코드</label>
+		                        <input type="text" id="product_id" name="productId" class="form-control" placeholder="제품코드">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">제품명</label>
+		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
+		                    </div>
+		                </div>
+		
+						<div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">원자재</label>
+		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">필요 수량</label>
+		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
+		                    </div>
+						    <div class="col">
+						        <label for="product_type" class="form-label">자재 구분</label>
+								<select id="product_type" name="productType" class="form-control">
+								  <option value="">선택하세요</option>
+								  <option th:each="c : ${commonPtype}"
+								          th:value="${c.comDtId}"
+								          th:text="${c.comDtNm}"></option>
+								</select>
+						    </div>
+						    <div class="col">
+						        <label for="unit" class="form-label">단위</label>
+								<select id="unit" name="unit" class="form-control">
+								  <option value="">선택하세요</option>
+								  <option th:each="c : ${commonUnit}"
+								          th:value="${c.comDtId}"
+								          th:text="${c.comDtNm}"></option>
+								</select>
+						    </div>
+						</div>
+		            </div>
+		
+		            <!-- 모달 푸터 -->
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		                <button type="button" class="btn btn-primary" id="bomRegisterBtn">등록</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		</form>
+	
+	
+	</th:block>
+	<th:block layout:fragment="script">
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="/bootstrap/js/pm/bom_list.js"></script>
+		<script src="/bootstrap/js/pm/produdct_list.js"></script>
+		<script src="/bootstrap/js/pm/product_modal.js"></script>
+	</th:block>
+</body>
+</html>
