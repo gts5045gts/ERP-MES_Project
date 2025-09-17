@@ -41,5 +41,13 @@
         FROM COMMON_DT_CODE
         WHERE COM_ID = 'UNIT'
     </select>
+    
+    <delete id="deleteItems">
+        DELETE FROM INSPECTION_ITEM
+        WHERE ITEM_ID IN
+        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 
 </mapper>

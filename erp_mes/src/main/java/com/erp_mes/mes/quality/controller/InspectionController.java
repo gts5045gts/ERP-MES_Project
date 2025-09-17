@@ -125,4 +125,16 @@ public class InspectionController {
 	        return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
+	@DeleteMapping("/item") // DELETE 요청 처리
+	public ResponseEntity<String> deleteInspectionItems(@RequestBody List<Long> itemIds) {
+	    try {
+	        inspectionService.deleteInspectionItems(itemIds);
+	        String successJson = "{\"success\": true, \"message\": \"선택된 검사 항목이 성공적으로 삭제되었습니다.\"}";
+	        return new ResponseEntity<>(successJson, HttpStatus.OK);
+	    } catch (Exception e) {
+	        log.error("Failed to delete inspection items: {}", e.getMessage());
+	        String errorJson = "{\"success\": false, \"message\": \"삭제 실패: " + e.getMessage() + "\"}";
+	        return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 }

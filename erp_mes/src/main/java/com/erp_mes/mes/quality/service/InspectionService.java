@@ -78,9 +78,15 @@ public class InspectionService {
         qualityMapper.insertItem(inspectionItemDTO);
     }
     
-    // 삭제
+    // 검사기준삭제
     @Transactional
     public void deleteInspectionRecords(List<Long> inspectionFMIds) {
         inspectionFMRepository.deleteAllByIdInBatch(inspectionFMIds);
+    }
+    
+    // 상세기준삭제
+    @Transactional
+    public void deleteInspectionItems(List<Long> itemIds) {
+        qualityMapper.deleteItems(itemIds); // QualityMapper의 deleteItems 메서드 호출
     }
 }
