@@ -93,7 +93,7 @@
 									cellspacing="0">
 									<thead>
 										<tr>
-											<th>항목ID</th>
+											<th>기준ID</th>
 											<th>제품번호</th>
 											<th>검사유형</th>
 											<th>세부항목</th>
@@ -323,7 +323,7 @@
             unit: document.getElementById('unit').value
         };
         
-        fetch('quality/item', {
+        fetch('/quality/item', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
