@@ -39,7 +39,6 @@ public class ChatMessage {
     @JoinColumn(name = "receiver_id", referencedColumnName = "emp_id")
     private Personnel receiver;
     
-    @Lob
     @Column(name="content", columnDefinition ="CLOB")
     private String content;
     private String type;

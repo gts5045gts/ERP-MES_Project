@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
-import com.erp_mes.mes.stock.service.InvService;
 import com.erp_mes.mes.stock.service.WareService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,6 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class WareController {
 	
-	private final InvService invService;
 	private final WareService wareService;
 	
 	//창고내 재고 현황
