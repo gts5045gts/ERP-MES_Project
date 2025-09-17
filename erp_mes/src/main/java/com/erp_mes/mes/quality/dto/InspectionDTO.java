@@ -8,7 +8,7 @@ public class InspectionDTO {
     private Long productId;
     private Long processId;
     private LocalDateTime inspectionDate;
-    private Long inspectorId;
+    private String empId;
     private String lotId;
     private String inspectionType;
 }

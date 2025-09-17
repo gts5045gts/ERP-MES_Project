@@ -11,5 +11,4 @@ public class InspectionResult {
     private Long itemId;
     private String result;
     private String remarks;
-    private Double resultValue; // 결과값 추가
 }

@@ -1,65 +1,114 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/layout}">
-
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
 <head>
-    <meta charset="UTF-8">
-    <title>수입 검사</title>
+<meta charset="UTF-8">
+<title>품질검사 이력관리</title>
+<link rel="stylesheet"
+	href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 </head>
 
 <body>
-<th:block layout:fragment="content">
-	<div class="container mt-5">
-	    <h2 class="mb-4">검사 데이터 목록</h2>
-	    <div class="table-responsive">
-	        <table class="table table-bordered table-hover">
-	            <thead class="table-primary">
-	                <tr>
-	                    <th>검사유형</th>
-	                    <th>제품명</th>
-	                    <th>공정명</th>
-	                    <th>검사일자</th>
-	                    <th>검사자명</th>
-						<th>검사여부</th>
-	                    <th>비고</th>
-	                </tr>
-	            </thead>
-	            <tbody>
-	                <tr>
-	                    <td>test1</td>
-	                    <td>테스트 제품1</td>
-	                    <td>공정A</td>
-	                    <td>2025-09-13</td>
-	                    <td>홍길동</td>
-						<td>합격</td>
-	                    <td>비고1</td>
-	                </tr>
-	                <tr>
-	                    <td>test2</td>
-	                    <td>테스트 제품2</td>
-	                    <td>공정B</td>
-	                    <td>2025-09-14</td>
-	                    <td>김철수</td>
-						<td>합격</td>
-	                    <td>비고2</td>
-	                </tr>
-	                <tr>
-	                    <td>test3</td>
-	                    <td>테스트 제품3</td>
-	                    <td>공정C</td>
-	                    <td>2025-09-15</td>
-	                    <td>이영희</td>
-						<td>불합격</td>
-	                    <td>비고3</td>
-	                </tr>
-	            </tbody>
-	        </table>
-	    </div>
-	</div>
-</th:block>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h2 class="mb-4">품질검사 이력 관리</h2>
+			
+			<div class="card shadow mb-4">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-3 form-group">
+							<label for="filterType">검사 유형</label>
+							<select class="form-control" id="filterType">
+								<option value="ALL">전체</option>
+								<option value="QC001">수입검사</option>
+								<option value="QC002">공정검사</option>
+								<option value="QC003">포장검사</option>
+							</select>
+						</div>
+						<div class="col-md-3 form-group">
+							<label for="filterProduct">제품명</label>
+							<input type="text" class="form-control" id="filterProduct" placeholder="제품명 입력">
+						</div>
+						<div class="col-md-3 form-group">
+							<label for="filterLotId">로트번호</label>
+							<input type="text" class="form-control" id="filterLotId" placeholder="로트번호 입력">
+						</div>
+						<div class="col-md-3 form-group d-flex align-items-end">
+							<button class="btn btn-primary w-100" id="searchBtn">검색</button>
+						</div>
+					</div>
+				</div>
+			</div>
 
-<th:block layout:fragment="script">
-    </th:block>
+			<div id="grid"></div>
+		</div>
+	</th:block>
+
+	<th:block layout:fragment="script">
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script th:inline="javascript">
+		document.addEventListener('DOMContentLoaded', function() {
+	        const grid = new tui.Grid({
+	            el: document.getElementById('grid'),
+	            columns: [
+	                { header: '검사ID', name: 'inspectionId' },
+	                { header: '검사유형', name: 'inspectionTypeName' },
+	                { header: '제품명', name: 'productName' },      
+	                { header: '공정명', name: 'processName' },      
+	                { header: '검사일자', name: 'inspectionDate' },
+	                { header: '검사자', name: 'empName' },          
+	                { header: '로트번호', name: 'lotId' },
+	                { header: '검사결과', name: 'result' },
+	                { header: '비고', name: 'remarks' }
+	            ]
+	        });
+
+	        // AJAX를 사용하여 데이터를 가져오는 함수
+	        async function loadData() {
+	            try {
+	                const response = await fetch('/quality/api/inspection-results');
+	                if (!response.ok) {
+	                    throw new Error('데이터 로드 실패');
+	                }
+	                const data = await response.json();
+	                
+	                // Toast UI Grid에 데이터 적용
+	                grid.resetData(data);
+
+	            } catch (error) {
+	                console.error('Fetch error:', error);
+	            }
+	        }
+	     // 필터링 및 검색 함수
+			function filterData() {
+				const filterType = document.getElementById('filterType').value;
+				const filterProduct = document.getElementById('filterProduct').value.toLowerCase();
+				const filterLotId = document.getElementById('filterLotId').value.toLowerCase();
+
+				let filteredData = allInspectionData.filter(item => {
+					// 검사 유형 필터링
+					const typeMatch = (filterType === 'ALL' || item.inspectionType === filterType);
+					
+					// 제품명 필터링 (대소문자 무시)
+					const productMatch = item.productName && item.productName.toLowerCase().includes(filterProduct);
+
+					// 로트번호 필터링 (대소문자 무시)
+					const lotIdMatch = item.lotId && item.lotId.toLowerCase().includes(filterLotId);
+					
+					return typeMatch && productMatch && lotIdMatch;
+				});
+
+				grid.resetData(filteredData);
+			}
+
+			// 검색 버튼 클릭 이벤트
+			document.getElementById('searchBtn').addEventListener('click', filterData);
+			
+			// 초기 데이터 로드
+			loadData();
+	    });
+    </script>
+	</th:block>
 </body>
 </html>

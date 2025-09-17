@@ -36,8 +36,8 @@ public class Inspection {
 	@Column(name = "INSPECTION_DATE")
 	private LocalDateTime inspectionDate; // 검사일자
 
-	@Column(name = "INSPECTION_NAME")
-	private String inspectionName; // 검사자명
+	@Column(name = "EMP_ID")
+	private String empId; // 검사자명
 
 	@Column(name = "LOT_ID")
 	private String lot_id; // 로트번호

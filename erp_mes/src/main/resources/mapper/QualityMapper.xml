@@ -2,52 +2,83 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.quality.mapper.QualityMapper">
 
-    <insert id="insertItem" parameterType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
-        INSERT INTO INSPECTION_ITEM (
-            ITEM_ID,
-            PRODUCT_ID,
-            INSPECTION_FM_ID,
-            TOLERANCE_VALUE,
-            UNIT
-        )
-        VALUES (
-            INSPECTION_ITEM_SEQ.NEXTVAL,
-            #{productId},
-            #{inspectionFMId},
-            #{toleranceValue},
-            #{unit}
-        )
-    </insert>
+	<insert id="insertItem"
+		parameterType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+		INSERT INTO INSPECTION_ITEM (
+		ITEM_ID,
+		PRODUCT_ID,
+		INSPECTION_FM_ID,
+		TOLERANCE_VALUE,
+		UNIT
+		)
+		VALUES (
+		INSPECTION_ITEM_SEQ.NEXTVAL,
+		#{productId},
+		#{inspectionFMId},
+		#{toleranceValue},
+		#{unit}
+		)
+	</insert>
 
-    <select id="findAllItems" resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
-        SELECT
-            T1.ITEM_ID,
-            T1.PRODUCT_ID AS productId,
-            T1.INSPECTION_FM_ID,
-            T1.TOLERANCE_VALUE,
-            T1.UNIT,
-            T2.INSPECTION_TYPE AS inspectionType,
-            T2.ITEM_NAME AS itemName,
-            T2.METHOD_NAME AS methodName
-        FROM INSPECTION_ITEM T1
-        JOIN INSPECTION_FM T2
-        ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
-    </select>
+	<select id="findAllItems"
+		resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+		SELECT
+			T1.ITEM_ID,
+			T1.PRODUCT_ID AS productId,
+			T1.INSPECTION_FM_ID,
+			T1.TOLERANCE_VALUE,
+			T1.UNIT,
+			T2.INSPECTION_TYPE AS inspectionType,
+			T2.ITEM_NAME AS itemName,
+			T2.METHOD_NAME AS methodName
+		FROM INSPECTION_ITEM T1
+		JOIN INSPECTION_FM T2
+		ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
+	</select>
 
-    <select id="findUnits" resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
-        SELECT
-            COM_DT_ID AS comDtId,
-            COM_DT_NM AS comDtNm
-        FROM COMMON_DT_CODE
-        WHERE COM_ID = 'UNIT'
-    </select>
-    
-    <delete id="deleteItems">
-        DELETE FROM INSPECTION_ITEM
-        WHERE ITEM_ID IN
-        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </delete>
+	<select id="findUnits"
+		resultType="com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO">
+		SELECT
+			COM_DT_ID AS comDtId,
+			COM_DT_NM AS comDtNm
+		FROM COMMON_DT_CODE
+		WHERE COM_ID = 'UNIT'
+	</select>
 
+	<delete id="deleteItems">
+		DELETE FROM INSPECTION_ITEM
+		WHERE ITEM_ID IN
+		<foreach collection="itemIds" item="id" open="(" separator=","
+			close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="getInspectionResultList"
+		resultType="com.erp_mes.mes.quality.dto.InspectionResultDTO">
+		SELECT
+			T1.RESULT_ID AS resultId,
+			T1.INSPECTION_ID AS inspectionId,
+			T1.ITEM_ID AS itemId,
+			T1.RESULT AS result,
+			T1.REMARKS AS remarks,
+			T2.INSPECTION_TYPE AS inspectionType,
+			T2.PRODUCT_ID AS productId,
+			T2.PROCESS_ID AS processId,
+			T2.INSPECTION_DATE AS inspectionDate,
+			T2.EMP_ID AS empId,
+			T2.LOT_ID AS lotId,
+			
+			T3.COM_DT_NM AS inspectionTypeName,  
+			T4.PRO_NM AS processName,          
+			T5.PRODUCT_NAME AS productName,      
+			T6.EMP_NAME AS empName               
+		FROM INSPECTION_RESULT T1
+		JOIN INSPECTION T2 ON T1.INSPECTION_ID = T2.INSPECTION_ID
+		JOIN COMMON_DT_CODE T3 ON T2.INSPECTION_TYPE = T3.COM_DT_ID AND T3.COM_ID = 'QC'
+		JOIN PROCESS T4 ON T2.PROCESS_ID = T4.PRO_ID
+		JOIN PRODUCT T5 ON T2.PRODUCT_ID = T5.PRODUCT_ID
+		JOIN EMPLOYEE T6 ON T2.EMP_ID = T6.EMP_ID
+		ORDER BY T2.INSPECTION_DATE DESC
+	</select>
 </mapper>
