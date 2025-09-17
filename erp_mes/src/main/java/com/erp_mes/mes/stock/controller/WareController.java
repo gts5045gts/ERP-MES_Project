@@ -1,6 +1,7 @@
 package com.erp_mes.mes.stock.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,4 +116,82 @@ public class WareController {
 	    }
 	    return result;
 	}
+	
+	
+	// 0917 입고 관리 페이지
+	@GetMapping("/input")
+	public String inputList(Model model) {
+	    log.info("입고 관리 페이지 접속");
+	    
+	    // 오늘 날짜로 제목 생성
+	    LocalDate today = LocalDate.now();
+	    String pageTitle = today.getMonthValue() + "월 " + today.getDayOfMonth() + "일 입고내역입니다.";
+	    model.addAttribute("pageTitle", pageTitle);
+	    
+	    // 원자재 창고 목록
+	    List<WarehouseDTO> materialWarehouses = wareService.getWarehouseListByType("원자재");
+	    model.addAttribute("warehouseList", materialWarehouses);
+	    
+	    return "inventory/input_list";
+	}
+
+	// 입고 목록 조회 API
+	@GetMapping("/api/inputs")
+	@ResponseBody
+	public List<Map<String, Object>> getInputList(
+	        @RequestParam(required = false) String inType,
+	        @RequestParam(required = false) String inStatus) {
+	    
+	    return wareService.getInputList(inType, inStatus);
+	}
+
+	// 입고 등록 API
+	@PostMapping("/api/inputs")
+	@ResponseBody
+	public Map<String, Object> addInput(@RequestBody Map<String, Object> params, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        params.put("empId", principal.getName());
+	        String inId = wareService.addInput(params);
+	        result.put("success", true);
+	        result.put("inId", inId);
+	        result.put("message", "입고 등록 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 입고 완료 처리 API
+	@PutMapping("/api/inputs/{inId}/complete")
+	@ResponseBody
+	public Map<String, Object> completeInput(@PathVariable String inId, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.completeInput(inId, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고 완료 처리");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 부품 목록 조회 (입고용)
+	@GetMapping("/api/parts")
+	@ResponseBody
+	public List<Map<String, Object>> getPartsList() {
+	    return wareService.getPartsList();
+	}
+
+	// 거래처 목록 조회
+	@GetMapping("/api/clients")
+	@ResponseBody
+	public List<Map<String, Object>> getClientsList() {
+	    return wareService.getClientsList();
+	}
+	
+	
 }

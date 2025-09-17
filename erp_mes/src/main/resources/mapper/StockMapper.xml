@@ -179,13 +179,14 @@
 	<!-- 제품 등록 -->
 	<insert id="insertProduct">
 	    INSERT INTO product (
-	        product_id, product_name, product_type, unit, price, emp_id, created_at
+	        product_id, product_name, product_type, unit, price, quantity, emp_id, created_at
 	    ) VALUES (
 	        #{productId}, 
 	        #{productName}, 
 	        #{productType}, 
 	        #{unit}, 
-	        #{price, jdbcType=NUMERIC},    <!-- jdbcType 명시 -->
+	        #{price, jdbcType=NUMERIC},
+	        #{quantity, jdbcType=NUMERIC},
 	        #{empId}, 
 	        SYSDATE
 	    )
@@ -197,7 +198,7 @@
 	    SET product_name = #{productName},
 	        product_type = #{productType},
 	        unit = #{unit},
-	        price = #{price, jdbcType=NUMERIC},    <!-- jdbcType 명시 -->
+	        price = #{price, jdbcType=NUMERIC},   
 	        emp_id = #{empId},
 	        updated_at = SYSDATE
 	    WHERE product_id = #{productId}
@@ -401,5 +402,4 @@
 	        #{empId}
 	    )
 	</insert>
-    
 </mapper>
