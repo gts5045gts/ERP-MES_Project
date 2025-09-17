@@ -30,4 +30,11 @@ public interface BusinessMapper {
 	
 	// 수주 상세 목록
 	List<OrderDetailDTO> getOrderDetailsByOrderId(@Param("orderId")String orderId);
+
+	// 수주 상태 조회
+	String findOrderStatus(String orderId);
+
+	// 수주 상태 update
+    void updateOrderStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
+
 }

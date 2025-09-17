@@ -46,6 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '납기예정일', name: 'deliveryDate', align: 'center',
+					editor: {
+						type: 'datePicker',
+						options: {
+							format: 'yyyy-MM-dd'
+						}
+					},
 					formatter: function(value) {
 						if (value.value) {
 							// "yyyy-MM-ddTHH:mm:ss.sss" 형식에서 날짜 부분만 추출
@@ -133,14 +139,59 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 페이지 로드 시 전체 수주 목록 불러오기
 		loadOrders();
 
-		// 수주 목록 그리드 행 클릭 이벤트 리스너
-		orderGrid.on('click', (ev) => {
+		orderGrid.on('click', async (ev) => {
 			const rowData = orderGrid.getRow(ev.rowKey);
-			if (rowData) {
+
+			// 수주상태 컬럼만 동작
+			if (rowData && ev.columnName === 'orderStatus') {
+				if (rowData.orderStatus === 'CANCELED') {
+					alert("이미 취소된 수주입니다.");
+					return;
+				}
+
+				if (confirm("수주를 취소하시겠습니까?")) {
+					const orderId = rowData.orderId;
+
+					try {
+						const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+						const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+						const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+								[csrfHeader]: csrfToken
+							}
+						});
+
+						if (!res.ok) {
+							throw new Error(await res.text());
+						}
+
+						// 그리드 상태 즉시 반영
+						orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+
+						alert("수주가 취소되었습니다.");
+					} catch (err) {
+						console.error("수주 취소 실패:", err);
+						alert("수주 취소 실패: " + err.message);
+					}
+				}
+			} else {
 				const orderId = rowData.orderId;
 				loadOrderDetails(orderId);
 			}
 		});
+
+		//		// 수주 목록 그리드 행 클릭 이벤트 리스너
+		//		orderGrid.on('click', (ev) => {
+		//			const rowData = orderGrid.getRow(ev.rowKey);
+		//			if (rowData && ev.columnName !== 'orderStatus') {
+		//				const orderId = rowData.orderId;
+		//				loadOrderDetails(orderId);
+		//			}
+		//		});
+
 	};
 
 	// 페이지 초기화 함수 호출
@@ -161,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				scrollX: false,
 				scrollY: true,
 				rowHeaders: ['checkbox'], // 체크박스 열 추가
-				bodyHeight: 250,
+				bodyHeight: 280,
 				columns: [
 					{ header: '품목번호', name: 'productId', align: 'center', width: 100 },
 					{ header: '품목명', name: 'productName', align: 'left', minwidth: 170 },

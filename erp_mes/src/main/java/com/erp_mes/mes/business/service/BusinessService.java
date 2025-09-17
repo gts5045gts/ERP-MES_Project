@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,4 +113,17 @@ public class BusinessService {
 		
 		return businessMapper.getOrderDetailsByOrderId(orderId);
 	}
+
+	// 수주 취소 처리
+	@Transactional
+    public void cancelOrder(String orderId) {
+        String currentStatus = businessMapper.findOrderStatus(orderId);
+
+        if ("CANCELED".equals(currentStatus)) {
+            throw new IllegalArgumentException("이미 취소된 수주입니다.");
+        }
+
+        businessMapper.updateOrderStatus(orderId, "CANCELED");
+    }
+	
 }

@@ -114,5 +114,25 @@
         WHERE
             order_id = #{orderId}
 	</select>
-		
+	
+<!-- 	수주 상태 조회 -->
+	<select id="findOrderStatus" resultType="string">
+        SELECT 
+        	order_status
+        FROM 
+        	orders
+        WHERE 
+        	order_id = #{orderId}
+    </select>
+
+<!-- 	수주 상태 update -->
+    <update id="updateOrderStatus">
+        UPDATE 
+        	orders
+        SET 
+        	order_status = #{orderStatus}
+        WHERE 
+        	order_id = #{orderId}
+    </update>
+
 </mapper>

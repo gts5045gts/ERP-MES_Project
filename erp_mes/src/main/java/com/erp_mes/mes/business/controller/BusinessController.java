@@ -1,6 +1,5 @@
 package com.erp_mes.mes.business.controller;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -40,7 +40,8 @@ public class BusinessController {
 
 		return "/business/order";
 	}
-
+	
+	// 수주 등록
 	@PostMapping("api/orders/submit")
 	public ResponseEntity<?> submitOrder(@RequestBody Map<String, Object> payload, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
 		log.info("clientName: " + payload.get("clientName"));
@@ -82,17 +83,6 @@ public class BusinessController {
 		return businessService.getOrderDetailsByOrderId(orderId);
 	}
 
-//	// 수주 등록
-//	@PostMapping("/api/orders/submit")
-//	public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDto) {
-//		try {
-//			businessService.saveOrder(orderDto);
-//			return ResponseEntity.ok(Map.of("status", "success", "message", "Order created successfully"));
-//		} catch (Exception e) {
-//			log.error("Order creation failed: {}", e.getMessage());
-//			return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
-//		}
-//	}
 
 	@GetMapping("/api/products")
 	@ResponseBody
@@ -101,5 +91,19 @@ public class BusinessController {
 
 		return businessService.getAllProduct();
 	}
-
+	
+	// 수주 취소 
+    @PutMapping("/api/orders/{orderId}/cancel")
+    public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId) {
+        try {
+            businessService.cancelOrder(orderId);
+            return ResponseEntity.ok(Map.of("orderId", orderId, "newStatus", "CANCELED"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("수주 취소 실패");
+        }
+    }
+	
 }
