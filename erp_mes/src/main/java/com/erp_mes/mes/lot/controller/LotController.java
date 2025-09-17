@@ -96,8 +96,8 @@ public class LotController {
 	}
 	
 	
-	@GetMapping("/list")
-	public String lotList() {
+	@GetMapping("")
+	public String showLotTrackingList() {
 		return "/lot/lot_list";
 	}
 }
