@@ -54,4 +54,50 @@ public interface StockMapper {
 
 	List<Map<String, String>> selectEmployeeList();
 	
+	// 0916 특정 제품의 창고별 재고 조회
+	List<Map<String, Object>> getWarehouseStockByProduct(@Param("productId") String productId);
+	
+	// 창고별 재고 조정 관련 메소드들
+	int getWarehouseItemQty(@Param("productId") String productId, 
+	                        @Param("warehouseId") String warehouseId);
+
+	int updateWarehouseItem(@Param("productId") String productId, 
+	                        @Param("warehouseId") String warehouseId,
+	                        @Param("newQty") Integer newQty);
+
+	Integer getTotalStockByProduct(@Param("productId") String productId);
+
+	int updateProductQuantity(@Param("productId") String productId, 
+							  @Param("totalQty") Integer totalQty);
+	
+	// 운영중인 특정 타입 창고 조회
+	List<String> getActiveWarehousesByType(@Param("warehouseType") String warehouseType);
+
+	// warehouse_item 등록
+	int insertWarehouseItem(@Param("productId") String productId,
+            				@Param("warehouseId") String warehouseId,
+            				@Param("initialQty") Integer initialQty,
+            				@Param("empId") String empId);
+	
+	// 빈 위치 조회
+	List<String> getEmptyLocations(@Param("warehouseId") String warehouseId);
+
+	// 위치 지정해서 warehouse_item 등록
+	int insertWarehouseItemWithLocation(@Param("productId") String productId,
+	                                    @Param("warehouseId") String warehouseId,
+	                                    @Param("locationId") String locationId,
+	                                    @Param("qty") Integer qty,
+	                                    @Param("empId") String empId);
+	
+	List<Map<String, Object>> getProductLocationsWithSpace(@Param("productId") String productId, @Param("warehouseId") String warehouseId);
+	
+	List<Map<String, Object>> getProductLocationsByQty(@Param("productId") String productId, @Param("warehouseId") String warehouseId);
+	
+	int updateLocationStock(@Param("productId") String productId, @Param("warehouseId") String warehouseId,
+							@Param("locationId") String locationId, @Param("newQty") Integer newQty);
+	
+	int deleteEmptyLocation(@Param("productId") String productId, @Param("warehouseId") String warehouseId, @Param("locationId") String locationId);
+	
+	int deleteWarehouseItemsByProduct(@Param("productId") String productId);
+	
 }

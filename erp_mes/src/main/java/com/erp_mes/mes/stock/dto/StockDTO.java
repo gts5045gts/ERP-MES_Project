@@ -13,7 +13,8 @@ public class StockDTO {
     private String productId;        	
     private String productName;      	
     private String productType;      	
-    private Integer itemAmount;      	
+    private Integer itemAmount; 
+    private Integer quantity;
     private String warehouseName;    	
     private String warehouseId;      	
     private String locationId;       	

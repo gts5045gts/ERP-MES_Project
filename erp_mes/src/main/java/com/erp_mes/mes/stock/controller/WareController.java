@@ -30,7 +30,6 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class WareController {
 	
-//	private final InvService invService;
 	private final WareService wareService;
 	
 	//창고내 재고 현황

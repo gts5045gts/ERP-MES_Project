@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -30,7 +30,6 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class InvController {
     
-//	private final InvService invService;
 	private final WareService wareService;
 	private final StockService stockService;
 	
@@ -258,5 +257,36 @@ public class InvController {
 	@ResponseBody
 	public List<Map<String, String>> getEmployeeList() {
 	    return stockService.getEmployeeList();
+	}
+	
+	// 0916 특정 제품의 창고별 재고 조회 API
+	@GetMapping("/api/inventory/warehouse-stock/{productId}")
+	@ResponseBody
+	public List<Map<String, Object>> getWarehouseStock(@PathVariable("productId") String productId) {  // "productId" 명시!
+	    return stockService.getWarehouseStockByProduct(productId);
+	}
+	
+	// 0916 창고별 재고 조정
+	@PostMapping("/api/inventory/adjust-stock")
+	@ResponseBody
+	public Map<String, Object> adjustWarehouseStock(@RequestParam("productId") String productId,      
+	        @RequestParam("warehouseId") String warehouseId,  
+	        @RequestParam("adjustQty") Integer adjustQty,  
+	        @RequestParam("adjustType") String adjustType,  
+	        @RequestParam(value = "reason", required = false) String reason,
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        boolean success = stockService.adjustWarehouseStock(
+	            productId, warehouseId, adjustQty, adjustType, reason, principal.getName()
+	        );
+	        result.put("success", success);
+	        result.put("message", success ? "재고 조정 완료" : "재고 조정 실패");
+	    } catch (Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
 	}
 }
