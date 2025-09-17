@@ -1,11 +1,14 @@
 package com.erp_mes.mes.quality.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.entity.InspectionFM;
@@ -22,6 +25,7 @@ public class InspectionService {
 
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
+	private final ProductBomService productBomService;
 	
     @Transactional(readOnly = true)
     public List<InspectionFMDTO> findAllInspectionFMs() {
@@ -40,8 +44,20 @@ public class InspectionService {
     // 오른쪽 테이블 (검사 항목별 허용 공차) 조회 로직
     @Transactional(readOnly = true)
     public List<InspectionItemDTO> getInspectionItems() {
-        // QualityMapper의 findAllItems() 메서드를 호출하여 조인된 데이터를 가져옴
-        return qualityMapper.findAllItems();
+    	// MyBatis 매퍼를 통해 조인된 InspectionItem 데이터 가져오기
+        List<InspectionItemDTO> items = qualityMapper.findAllItems();
+
+        // 제품 이름을 위한 맵 생성 (성능 최적화)
+        Map<String, String> productMap = productBomService.getProductList().stream()
+                .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getProductName));
+        
+        // 데이터 가공
+        items.forEach(item -> {
+            // productId를 이용해 productName을 DTO에 설정
+            item.setProductName(productMap.get(item.getProductId()));
+            // inspectionFMId를 이용해 inspectionType과 itemName을 DTO에 설정 (이미 매퍼에서 처리되었다고 가정)
+        });
+		return items;
     }
     
     // 왼쪽 테이블 (검사 유형별 기준) 등록 로직

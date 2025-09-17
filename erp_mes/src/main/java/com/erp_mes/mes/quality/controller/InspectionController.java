@@ -57,7 +57,13 @@ public class InspectionController {
 	    
 	    // 오른쪽 테이블 데이터 (검사 항목별 허용 공차)
 	    List<InspectionItemDTO> inspectionItems = inspectionService.getInspectionItems();
-
+	    // inspectionItems의 inspectionType을 이름으로 변환하여 모델에 추가
+	    inspectionItems.forEach(item -> {
+	        String typeName = qcTypeMap.get(item.getInspectionType());
+	        if (typeName != null) {
+	            item.setInspectionType(typeName);
+	        }
+	    });
 	    // UNIT 공통 코드 데이터
 	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
 	    

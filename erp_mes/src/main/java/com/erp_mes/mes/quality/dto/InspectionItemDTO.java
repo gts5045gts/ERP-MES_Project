@@ -18,4 +18,6 @@ public class InspectionItemDTO {
     private String inspectionType;
     private String itemName;
     private String methodName;
+    // product테이블 참조
+    private String productName;
 }
