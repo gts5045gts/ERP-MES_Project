@@ -6,7 +6,6 @@
 <head>
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-<!-- 외부 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -17,425 +16,624 @@
     <div class="container-fluid">
         <h1 class="h3 mb-4 text-gray-800">입고 관리</h1>
         
-        <!-- 요약 카드 -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">입고대기</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">8건</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">금일 입고완료</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">12건</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">금주 입고완료</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">45건</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">금월 입고완료</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">178건</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- 검색 영역 -->
         <div class="card shadow mb-4">
             <div class="card-body">
-                <form>
-                    <div class="row">
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" id="startDate" value="2025-08-11">
-                        </div>
-                        <div class="col-md-1 text-center pt-2">
-                            <span>~</span>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="date" class="form-control" id="endDate" value="2025-09-12">
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-control" id="statusFilter">
-                                <option value="">전체 상태</option>
-                                <option value="waiting">입고대기</option>
-                                <option value="completed">입고완료</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-control" id="clientFilter">
-                                <option value="">전체 거래처</option>
-                                <option value="CLI001">한국철강</option>
-                                <option value="CLI002">부산금속</option>
-                                <option value="CLI003">대한알루미늄</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" class="form-control" placeholder="품목명/LOT번호">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-primary">
-                                <i class="fas fa-search"></i> 검색
-                            </button>
-                        </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" id="searchDate">
                     </div>
-                </form>
+                    <div class="col-md-2">
+                        <select class="form-control" id="inType">
+                            <option value="">전체</option>
+                            <option value="정기입고">정기입고</option>
+                            <option value="긴급입고">긴급입고</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" onclick="searchInput()">검색</button>
+                        <button class="btn btn-success" onclick="showAddModal()">신규입고</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 입고 테이블 -->
+        <!-- 입고 목록 (날짜별 그룹) -->
         <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">입고 목록</h6>
-                <div>
-                    <button class="btn btn-success btn-sm" onclick="completeInbound()">
-                        <i class="fas fa-check"></i> 입고 완료
-                    </button>
-                    <button class="btn btn-warning btn-sm" onclick="showInspection()">
-                        <i class="fas fa-clipboard-check"></i> 검수 처리
-                    </button>
-                </div>
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">입고 내역</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered text-center" width="100%">
-                        <thead class="thead-light">
-                            <tr>
-                                <th width="4%">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th width="8%">입고ID</th>
-                                <th width="10%">거래처</th>
-                                <th width="15%">품목명</th>
-                                <th width="8%">입고수량</th>
-                                <th width="10%">창고</th>
-                                <th width="10%">위치</th>
-                                <th width="10%">LOT번호</th>
-                                <th width="10%">입고완료일</th>
-                                <th width="7%">상태</th>
-                                <th width="8%">작업</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="checkbox" class="item-check" value="IN250912"></td>
-                                <td>IN250912</td>
-                                <td>한국철강</td>
-                                <td>SUS304 스테인리스강</td>
-                                <td>500 kg</td>
-                                <td>원자재창고A</td>
-                                <td>A-01-01</td>
-                                <td>LOT20250912001</td>
-                                <td>-</td>
-                                <td><span class="badge badge-warning">입고대기</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger" onclick="cancelInbound('IN250912')">
-                                        취소
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check" value="IN250911"></td>
-                                <td>IN250911</td>
-                                <td>부산금속</td>
-                                <td>알루미늄 블록</td>
-                                <td>300 kg</td>
-                                <td>원자재창고B</td>
-                                <td>B-02-03</td>
-                                <td>LOT20250911002</td>
-                                <td>-</td>
-                                <td><span class="badge badge-warning">입고대기</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger" onclick="cancelInbound('IN250911')">
-                                        취소
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check" disabled></td>
-                                <td>IN250910</td>
-                                <td>대한알루미늄</td>
-                                <td>피스톤</td>
-                                <td>100 EA</td>
-                                <td>반제품창고1</td>
-                                <td>C-03-02</td>
-                                <td>LOT20250910003</td>
-                                <td>2025-09-10</td>
-                                <td><span class="badge badge-success">입고완료</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" onclick="downloadReceiptPDF('IN250910')">
-                                        PDF
-                                    </button>
-                                    <button class="btn btn-sm btn-success" onclick="exportReceiptExcel('IN250910')">
-                                        엑셀
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check" disabled></td>
-                                <td>IN250909</td>
-                                <td>한국철강</td>
-                                <td>크랭크샤프트 원재료</td>
-                                <td>1000 kg</td>
-                                <td>원자재창고A</td>
-                                <td>A-05-01</td>
-                                <td>LOT20250909004</td>
-                                <td>2025-09-09</td>
-                                <td><span class="badge badge-success">입고완료</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" onclick="downloadReceiptPDF('IN250909')">
-                                        PDF
-                                    </button>
-                                    <button class="btn btn-sm btn-success" onclick="exportReceiptExcel('IN250909')">
-                                        엑셀
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="item-check" disabled></td>
-                                <td>IN250908</td>
-                                <td>부산금속</td>
-                                <td>캠샤프트</td>
-                                <td>50 EA</td>
-                                <td>반제품창고2</td>
-                                <td>D-01-04</td>
-                                <td>LOT20250908005</td>
-                                <td>2025-09-08</td>
-                                <td><span class="badge badge-success">입고완료</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary" onclick="downloadReceiptPDF('IN250908')">
-                                        PDF
-                                    </button>
-                                    <button class="btn btn-sm btn-success" onclick="exportReceiptExcel('IN250908')">
-                                        엑셀
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <table class="table table-bordered">
+					    <thead>
+					        <tr>
+					            <th width="40%">입고 내역</th>
+					            <th width="20%">입고 유형</th>
+					            <th width="20%">품목 수</th>
+					            <th width="20%">작업</th>
+					        </tr>
+					    </thead>
+					    <tbody id="groupedInputTableBody">
+					    </tbody>
+					</table>
                 </div>
-                
-                <!-- 페이지네이션 -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">이전</a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">다음</a>
-                        </li>
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>
+    <!-- 상세 내역 모달 -->
+	<div class="modal fade" id="detailModal" tabindex="-1">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="detailModalTitle">입고 상세 내역</h5>
+	                <button type="button" class="close" data-dismiss="modal">
+	                    <span>&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="table-responsive" id="detailTableWrapper">
+	                    <table class="table table-bordered" id="detailTable">
+	                        <thead>
+	                            <tr>
+	                                <th>입고ID</th>
+	                                <th>거래처</th>
+	                                <th>품목명</th>
+	                                <th>수량</th>
+	                                <th>위치</th>
+	                                <th>상태</th>
+	                                <th>검사</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody id="detailTableBody">
+	                        </tbody>
+	                    </table>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button class="btn btn-info" onclick="exportDetailPDF()">
+	                    <i class="fas fa-file-pdf"></i> PDF
+	                </button>
+	                <button class="btn btn-success" onclick="exportDetailExcel()">
+	                    <i class="fas fa-file-excel"></i> Excel
+	                </button>
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+    <!-- 신규입고 모달 -->
+    <div class="modal fade" id="addInputModal" tabindex="-1">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">신규 입고 등록</h5>
+	                <button type="button" class="close" data-dismiss="modal">
+	                    <span>&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="form-group">
+	                    <label>입고타입</label>
+	                    <select class="form-control" id="new_inType">
+	                        <option value="정기입고">정기입고</option>
+	                        <option value="긴급입고">긴급입고</option>
+	                    </select>
+	                </div>
+	                
+	                <div class="form-group">
+	                    <label>거래처</label>
+	                    <select class="form-control" id="new_clientId">
+	                        <!-- Ajax로 로드 -->
+	                    </select>
+	                </div>
+	                
+	                <div class="form-group">
+	                    <label>창고</label>
+	                    <select class="form-control" id="new_warehouseId">
+	                        <option th:each="warehouse : ${warehouseList}" 
+	                                th:value="${warehouse.warehouseId}"
+	                                th:text="${warehouse.warehouseName}">
+	                        </option>
+	                    </select>
+	                </div>
+	                
+	                <hr>
+	                
+	                <div class="d-flex justify-content-between align-items-center mb-3">
+	                    <h6>부품 목록</h6>
+	                    <button type="button" class="btn btn-sm btn-info" onclick="addPartRow()">
+	                        <i class="fas fa-plus"></i> 부품 추가
+	                    </button>
+	                </div>
+	                
+	                <div id="partsList">
+	                    <div class="part-item mb-2">
+	                        <div class="row">
+	                            <div class="col-md-7">
+	                                <select class="form-control part-select">
+	                                    <!-- Ajax로 로드 -->
+	                                </select>
+	                            </div>
+	                            <div class="col-md-3">
+	                                <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+	                            </div>
+	                            <div class="col-md-2">
+	                                <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)" style="display:none;">
+	                                    <i class="fas fa-trash"></i>
+	                                </button>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                
+	                <div class="alert alert-info mt-3">
+	                    선택한 부품: <span id="selectedPartCount">0</span>종
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+	                <button type="button" class="btn btn-primary" onclick="saveInput()">등록</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 </th:block>
 
 <th:block layout:fragment="script">
 <script>
-// 전체 선택
-document.getElementById('selectAll').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.item-check:not(:disabled)');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+let partsData = [];
+let currentBatchData = [];
+let currentBatchId = '';
+let currentInType = '';
+
+$(document).ready(function() {
+    loadGroupedInputList();
+    loadParts();
+    loadClients();
 });
 
-// 입고 취소
-function cancelInbound(inId) {
-    if (confirm('입고를 취소하시겠습니까?')) {
-        console.log('입고 취소:', inId);
-        // AJAX 처리
-    }
+// 날짜별 그룹화된 입고 목록 로드
+function loadGroupedInputList() {
+    $.ajax({
+        url: '/inventory/api/inputs/grouped',
+        type: 'GET',
+        data: {
+            date: $('#searchDate').val(),
+            inType: $('#inType').val()
+        },
+        success: function(data) {
+            displayGroupedList(data);
+        }
+    });
+}
+//신규 입고 모달 표시
+function showAddModal() {
+    $('#addInputModal').modal('show');
 }
 
-// 입고 완료 처리
-function completeInbound() {
-    const checked = document.querySelectorAll('.item-check:checked');
-    if (checked.length === 0) {
-        alert('입고 처리할 항목을 선택해주세요.');
+// 그룹화된 목록 표시
+function displayGroupedList(data) {
+    const tbody = $('#groupedInputTableBody');
+    tbody.empty();
+    
+    if(data.length === 0) {
+        tbody.append('<tr><td colspan="4" class="text-center">데이터가 없습니다.</td></tr>');
         return;
     }
     
-    if (confirm(checked.length + '건을 입고 완료 처리하시겠습니까?')) {
-        console.log('입고 완료 처리');
-        // AJAX로 처리 후
-        location.reload();
-    }
-}
-
-// 검수 처리
-function showInspection() {
-    const checked = document.querySelectorAll('.item-check:checked');
-    if (checked.length === 0) {
-        alert('검수할 항목을 선택해주세요.');
-        return;
-    }
-    console.log('검수 처리 화면 이동');
-}
-
-// 입고증 Excel 내보내기
-function exportReceiptExcel(inId) {
-    // 입고 데이터 가져오기 (실제로는 AJAX)
-    const data = {
-        inId: inId,
-        inCompleteDate: '2025-09-10',
-        clientName: '한국철강',
-        productName: 'SUS304 스테인리스강',
-        inCount: '500 kg',
-        warehouseName: '원자재창고A',
-        locationId: 'A-01-01',
-        lotId: 'LOT20250910001',
-        empName: '김담당'
-    };
-    
-    const ws_data = [
-        ['입고증'],
-        [],
-        ['입고번호', data.inId],
-        ['입고일자', data.inCompleteDate],
-        ['거래처', data.clientName],
-        ['담당자', data.empName],
-        [],
-        ['품목명', '수량', '창고', '위치', 'LOT번호'],
-        [data.productName, data.inCount, data.warehouseName, data.locationId, data.lotId]
-    ];
-    
-    const ws = XLSX.utils.aoa_to_sheet(ws_data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "입고증");
-    
-    XLSX.writeFile(wb, `입고증_${inId}_${new Date().toISOString().slice(0,10)}.xlsx`);
-}
-
-// PDF 다운로드
-function downloadReceiptPDF(inId) {
-    // 입고 데이터 (실제로는 AJAX로 가져와야 함)
-    const data = {
-        inId: inId,
-        inCompleteDate: '2025-09-10',
-        clientName: '한국철강',
-        productName: 'SUS304 스테인리스강',
-        productId: 'MAT001',
-        inCount: '500',
-        unit: 'kg',
-        warehouseName: '원자재창고A',
-        locationId: 'A-01-01',
-        lotId: 'LOT20250910001',
-        empName: '김담당'
-    };
-    
-    // PDF 생성을 위한 임시 div
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    tempDiv.style.width = '210mm';
-    tempDiv.innerHTML = generateReceiptPDFContent(data);
-    document.body.appendChild(tempDiv);
-    
-    html2canvas(tempDiv, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-    }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+    data.forEach(group => {
+        const date = new Date(group.inDate);
+        const dateStr = `${date.getMonth()+1}월 ${date.getDate()}일`;
+        const timeStr = group.inTime || '';
+        const typeLabel = group.inType === '긴급입고' ? 
+            '<span class="badge badge-danger">긴급입고</span>' : 
+            '<span class="badge badge-info">정기입고</span>';
         
-        const imgWidth = 190;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-        
-        const date = new Date().toISOString().slice(0, 10);
-        pdf.save(`입고증_${inId}_${date}.pdf`);
-        
-        document.body.removeChild(tempDiv);
+        tbody.append(`
+            <tr>
+                <td>${dateStr} ${timeStr} ${group.inType} 내역입니다.</td>
+                <td>${typeLabel}</td>
+                <td>${group.totalCount}종</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" 
+                            onclick="showDetail('${group.batchId}', '${group.inType}')">
+                        내역확인
+                    </button>
+                </td>
+            </tr>
+        `);
     });
 }
 
-// 입고증 PDF HTML 생성
-function generateReceiptPDFContent(data) {
-    return `
-        <div style="padding: 20px; font-family: 'Malgun Gothic', sans-serif;">
-            <h2 style="text-align: center; margin-bottom: 30px;">입 고 증</h2>
+// 상세 내역 보기
+function showDetail(batchId, type) {
+    currentBatchId = batchId;
+    currentInType = type;
+    
+    $.ajax({
+        url: '/inventory/api/inputs',
+        type: 'GET',
+        data: {
+            batchId: batchId
+        },
+        success: function(data) {
+            if(!data || data.length === 0) {
+                alert('상세 내역이 없습니다.');
+                return;
+            }
             
-            <div style="text-align: right; margin-bottom: 20px;">
-                <span style="border: 1px solid #000; padding: 5px 10px;">
-                    문서번호: ${data.inId}
-                </span>
-            </div>
+            $('#detailModalTitle').text(`${type} 상세 내역`);
             
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tr>
-                    <td style="border: 1px solid #000; padding: 8px; background: #f5f5f5; width: 25%;">입고번호</td>
-                    <td style="border: 1px solid #000; padding: 8px; width: 25%;">${data.inId}</td>
-                    <td style="border: 1px solid #000; padding: 8px; background: #f5f5f5; width: 25%;">입고일자</td>
-                    <td style="border: 1px solid #000; padding: 8px; width: 25%;">${data.inCompleteDate}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 8px; background: #f5f5f5;">거래처</td>
-                    <td style="border: 1px solid #000; padding: 8px;">${data.clientName}</td>
-                    <td style="border: 1px solid #000; padding: 8px; background: #f5f5f5;">담당자</td>
-                    <td style="border: 1px solid #000; padding: 8px;">${data.empName}</td>
-                </tr>
-            </table>
+            const tbody = $('#detailTableBody');
+            tbody.empty();
             
-            <h4 style="margin-top: 30px; margin-bottom: 10px;">입고 품목</h4>
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background: #f5f5f5;">
-                        <th style="border: 1px solid #000; padding: 8px;">품목코드</th>
-                        <th style="border: 1px solid #000; padding: 8px;">품목명</th>
-                        <th style="border: 1px solid #000; padding: 8px;">수량</th>
-                        <th style="border: 1px solid #000; padding: 8px;">창고</th>
-                        <th style="border: 1px solid #000; padding: 8px;">위치</th>
-                        <th style="border: 1px solid #000; padding: 8px;">LOT번호</th>
-                    </tr>
-                </thead>
-                <tbody>
+            data.forEach(item => {
+                const statusBadge = item.inStatus === '입고완료' ? 
+                    '<span class="badge badge-success">완료</span>' : 
+                    '<span class="badge badge-warning">대기</span>';
+                
+                const inspectBtn = item.inStatus === '입고대기' ? 
+                    `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
+                    '<span class="text-success">✓</span>';
+                
+                tbody.append(`
                     <tr>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.productId}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.productName}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.inCount} ${data.unit}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.warehouseName}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.locationId}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${data.lotId}</td>
+                        <td>${item.inId || '-'}</td>
+                        <td>${item.clientName || '-'}</td>
+                        <td>${item.productName || '-'}</td>
+                        <td>${item.inCount || 0}개</td>
+                        <td>${item.locationId || '미정'}</td>
+                        <td class="status-col">${statusBadge}</td>
+                        <td class="inspect-col">${inspectBtn}</td>
+                        <td class="complete-time" style="display:none;">${item.completeTime || '-'}</td>
                     </tr>
-                </tbody>
-            </table>
+                `);
+            });
             
-            <div style="margin-top: 100px;">
-                <table style="width: 100%;">
-                    <tr>
-                        <td style="text-align: center; width: 50%;">
-                            <p>인수자: _________________ (인)</p>
-                        </td>
-                        <td style="text-align: center; width: 50%;">
-                            <p>확인자: _________________ (인)</p>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div style="margin-top: 50px; text-align: center;">
-                <p style="font-weight: bold;">부산 아이티윌</p>
-                <p style="font-size: 12px;">부산시 부산진구 중앙대로 | TEL: 051-123-4567</p>
+            $('#detailModal').modal('show');
+        }
+    });
+}
+
+//개별 검사 완료
+function inspectOne(inId) {
+    if(confirm('이 항목을 검사 완료하시겠습니까?')) {
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/complete`,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('검사 완료! 재고가 반영되었습니다.');
+                    showDetail(currentBatchId, currentInType);
+                    loadGroupedInputList();
+                }
+            }
+        });
+    }
+}
+
+//개별 입고 완료
+function completeAllInputs() {
+    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
+        let completedCount = 0;
+        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
+        
+        waitingItems.forEach(item => {
+            $.ajax({
+                url: `/inventory/api/inputs/${item.inId}/complete`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+                },
+                async: false,
+                success: function(result) {
+                    if(result.success) {
+                        completedCount++;
+                    }
+                }
+            });
+        });
+        
+        alert(`${completedCount}건 입고 완료!`);
+        $('#detailModal').modal('hide');
+        loadGroupedInputList();
+    }
+}
+//전체 입고 완료
+function completeAllInputs() {
+    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
+        let completedCount = 0;
+        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
+        
+        waitingItems.forEach(item => {
+            $.ajax({
+                url: `/inventory/api/inputs/${item.inId}/complete`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+                },
+                async: false,
+                success: function(result) {
+                    if(result.success) {
+                        completedCount++;
+                    }
+                }
+            });
+        });
+        
+        alert(`${completedCount}건 입고 완료!`);
+        $('#detailModal').modal('hide');
+        loadGroupedInputList();
+    }
+}
+
+// PDF 출력
+function exportDetailPDF() {
+    const title = $('#detailModalTitle').text();
+    
+    // 테이블 헤더 변경
+    $('#detailTable thead tr').html(`
+        <th>입고ID</th>
+        <th>거래처</th>
+        <th>품목명</th>
+        <th>수량</th>
+        <th>위치</th>
+        <th>입고완료시간</th>
+    `);
+    
+    // 테이블 바디 수정
+    $('#detailTable tbody tr').each(function() {
+        $(this).find('.status-col').hide();
+        $(this).find('.inspect-col').hide();
+        $(this).find('.complete-time').show();
+    });
+    
+    html2canvas(document.querySelector('#detailTableWrapper')).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+        
+        pdf.setFontSize(16);
+        pdf.text(title, 15, 15);
+        
+        const imgWidth = 270;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight);
+        pdf.save(`${title}.pdf`);
+        
+        $('#detailTable thead tr').html(`
+            <th>입고ID</th>
+            <th>거래처</th>
+            <th>품목명</th>
+            <th>수량</th>
+            <th>위치</th>
+            <th>상태</th>
+            <th>검사</th>
+        `);
+        
+        $('#detailTable tbody tr').each(function() {
+            $(this).find('.status-col').show();
+            $(this).find('.inspect-col').show();
+            $(this).find('.complete-time').hide();
+        });
+    });
+}
+
+// Excel 출력
+function exportDetailExcel() {
+    const title = $('#detailModalTitle').text();
+    
+    // 테이블 복사
+    const tempTable = $('#detailTable').clone();
+    
+    // 헤더 변경
+    tempTable.find('thead tr').html(`
+        <th>입고ID</th>
+        <th>거래처</th>
+        <th>품목명</th>
+        <th>수량</th>
+        <th>위치</th>
+        <th>입고완료시간</th>
+    `);
+    
+    // 바디 수정
+    tempTable.find('tbody tr').each(function() {
+        const completeTime = $(this).find('.complete-time').text();
+        $(this).find('.status-col').remove();
+        $(this).find('.inspect-col').remove();
+        $(this).find('.complete-time').remove();
+        $(this).append(`<td>${completeTime}</td>`);
+    });
+    
+    const wb = XLSX.utils.table_to_book(tempTable[0], {sheet: "Sheet1"});
+    XLSX.writeFile(wb, `${title}.xlsx`);
+}
+
+// 검색
+function searchInput() {
+    loadGroupedInputList();
+}
+
+//부품 목록 로드
+function loadParts() {
+    $.ajax({
+        url: '/inventory/api/parts',
+        type: 'GET',
+        success: function(data) {
+            partsData = data;
+            updateAllPartSelects();
+        }
+    });
+}
+
+//부품 select 업데이트
+function updateAllPartSelects() {
+    $('.part-select').each(function() {
+        const currentValue = $(this).val();
+        $(this).empty();
+        $(this).append('<option value="">선택하세요</option>');
+        
+        partsData.forEach(item => {
+            $(this).append(`<option value="${item.productId}">${item.productName}</option>`);
+        });
+        
+        if(currentValue) {
+            $(this).val(currentValue);
+        }
+    });
+    updateSelectedCount();
+}
+
+//부품 행 추가
+function addPartRow() {
+    const newRow = `
+        <div class="part-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control part-select" onchange="updateSelectedCount()">
+                        <option value="">선택하세요</option>
+                        ${partsData.map(item => 
+                            `<option value="${item.productId}">${item.productName}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `;
+    
+    $('#partsList').append(newRow);
+    
+    // 첫번째 행의 삭제 버튼 표시
+    if($('.part-item').length > 1) {
+        $('.remove-part').first().show();
+    }
+    updateSelectedCount();
+}
+
+//부품 행 삭제
+function removePartRow(btn) {
+    $(btn).closest('.part-item').remove();
+    
+    if($('.part-item').length === 1) {
+        $('.remove-part').hide();
+    }
+    updateSelectedCount();
+}
+
+//선택한 부품 수 업데이트
+function updateSelectedCount() {
+    let count = 0;
+    $('.part-select').each(function() {
+        if($(this).val()) {
+            count++;
+        }
+    });
+    $('#selectedPartCount').text(count);
+}
+
+// 거래처 목록 로드
+function loadClients() {
+    $.ajax({
+        url: '/inventory/api/clients',
+        type: 'GET',
+        success: function(data) {
+            const select = $('#new_clientId');
+            select.empty();
+            select.append('<option value="">선택하세요</option>');
+            data.forEach(item => {
+                select.append(`<option value="${item.clientId}">${item.clientName}</option>`);
+            });
+        },
+        error: function() {
+            console.error('거래처 목록 로드 실패');
+        }
+    });
+}
+
+//입고 저장 (각 부품별로 등록)
+function saveInput() {
+    const items = [];
+    
+    $('.part-item').each(function() {
+        const productId = $(this).find('.part-select').val();
+        const qty = $(this).find('.part-qty').val();
+        
+        if(productId && qty) {
+            items.push({
+                inType: $('#new_inType').val(),
+                productId: productId,
+                clientId: $('#new_clientId').val(),
+                inCount: qty,
+                warehouseId: $('#new_warehouseId').val()
+            });
+        }
+    });
+    
+    if(items.length === 0) {
+        alert('최소 하나의 부품을 선택하세요.');
+        return;
+    }
+    
+    if(!$('#new_clientId').val()) {
+        alert('거래처를 선택하세요.');
+        return;
+    }
+    
+    // 배치로 한번에 전송
+    $.ajax({
+        url: '/inventory/api/inputs/batch',  // 배치 API 사용
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(items),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+        },
+        success: function(result) {
+            if(result.success) {
+                alert(result.message);
+                $('#addInputModal').modal('hide');
+                resetInputForm();
+                loadGroupedInputList();
+            } else {
+                alert('등록 실패: ' + result.message);
+            }
+        }
+    });
+}
+
+function resetInputForm() {
+    $('#partsList').html(`
+        <div class="part-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control part-select" onchange="updateSelectedCount()">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `);
+    updateAllPartSelects();
 }
 </script>
 </th:block>

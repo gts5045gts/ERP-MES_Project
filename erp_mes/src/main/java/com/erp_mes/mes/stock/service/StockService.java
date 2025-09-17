@@ -165,20 +165,61 @@ public class StockService {
     // 제품 등록
     @Transactional
     public void addProduct(ProductDTO dto) {
-        log.info("제품 등록: {}", dto.getProductId());
+        log.info("제품 등록 시작: {}, 타입: {}", dto.getProductId(), dto.getProductType());
         
         if(stockMapper.existsMaterialById(dto.getProductId())) {
             throw new RuntimeException("이미 존재하는 제품코드입니다.");
         }
         
-        stockMapper.insertProduct(dto);
+        // totalQty를 한 번만 선언!
+        int totalQty = 1000;
+        dto.setQuantity(totalQty);
         
+        // 1. product 테이블에 등록
+        stockMapper.insertProduct(dto);
+        log.info("product 테이블 저장 완료");
+        
+        // 2. 창고 타입 결정
         String warehouseType = dto.getProductType().equals("완제품") ? "완제품" : "반제품";
+        log.info("창고 타입: {}", warehouseType);
+        
+        // 3. 운영중인 창고 조회
         List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
+        log.info("찾은 창고 개수: {}, 창고ID: {}", warehouseIds.size(), warehouseIds);
         
         if(!warehouseIds.isEmpty()) {
-            String selectedWarehouseId = warehouseIds.get(0);
-            stockMapper.insertWarehouseItem(dto.getProductId(), selectedWarehouseId, 1000, dto.getEmpId());
+            String warehouseId = warehouseIds.get(0);
+            
+            // 4. 빈 위치 조회
+            List<String> emptyLocations = stockMapper.getEmptyLocations(warehouseId);
+            log.info("빈 위치 개수: {}", emptyLocations.size());
+            
+            if(emptyLocations.isEmpty()) {
+                log.error("빈 위치가 없음!");
+                // 위치가 없으면 기본값으로라도 넣기
+                stockMapper.insertWarehouseItem(dto.getProductId(), warehouseId, totalQty, dto.getEmpId());
+            } else {
+                // 5. 위치별로 분산 저장
+                // int totalQty = 1000; <- 이 줄 삭제! 위에서 이미 선언했음
+                int qtyPerLocation = 500;
+                int locationsNeeded = (int) Math.ceil((double) totalQty / qtyPerLocation);
+                
+                for(int i = 0; i < Math.min(locationsNeeded, emptyLocations.size()); i++) {
+                    int qty = (i == locationsNeeded - 1) ? 
+                              totalQty - (qtyPerLocation * i) : qtyPerLocation;
+                    
+                    stockMapper.insertWarehouseItemWithLocation(
+                        dto.getProductId(), 
+                        warehouseId, 
+                        emptyLocations.get(i), 
+                        qty, 
+                        dto.getEmpId()
+                    );
+                    log.info("위치 {} 에 {}개 저장", emptyLocations.get(i), qty);
+                }
+            }
+        } else {
+            log.error("운영중인 {} 창고가 없음!", warehouseType);
         }
     }
     

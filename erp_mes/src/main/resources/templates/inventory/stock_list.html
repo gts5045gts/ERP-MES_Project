@@ -231,16 +231,21 @@ function openStockModal(productId, productName) {
 function displayWarehouseStock(data) {
 	let html = '';
     
-    if(!data || data.length === 0) {
+	if(!data || data.length === 0) {
         html = '<tr><td colspan="6" class="text-center">해당 제품 유형에 맞는 운영중인 창고가 없습니다.</td></tr>';
     } else {
         data.forEach(function(item, index) {
             const currentQty = item.itemAmount || 0;
             const locationCount = item.locationCount || 0;
+            const avgPerLocation = locationCount > 0 ? 
+                Math.floor(currentQty / locationCount) : 0;
             
             html += '<tr>';
             html += '<td>' + (item.warehouseName || '창고명 없음') + '</td>';
-            html += '<td class="text-center">' + locationCount + '개 위치</td>';  // 위치 개수 추가
+            html += '<td class="text-center">';
+            html += '<span class="badge badge-info">' + locationCount + '개 위치</span><br>';
+            html += '<small>평균 ' + avgPerLocation + '개/위치</small>';
+            html += '</td>';
             html += '<td class="text-center"><strong>' + currentQty + '</strong></td>';
             html += '<td>';
             html += '<select class="form-control form-control-sm adjust-type" data-index="' + index + '">';
