@@ -13,33 +13,34 @@
 	<th:block layout:fragment="content">
 		<div class="container-fluid">
 			<h2 class="mb-4">품질검사 이력 관리</h2>
-			
-			<div class="card shadow mb-4">
-				<div class="card-body">
-					<div class="row">
-						<div class="col-md-3 form-group">
-							<label for="filterType">검사 유형</label>
-							<select class="form-control" id="filterType">
+
+				<div class="card-body py-2">
+					<div
+						class="d-flex justify-content-end align-items-center flex-wrap">
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="filterType" class="text-nowrap me-2">검사
+								유형</label> <select class="form-control form-control-sm" id="filterType">
 								<option value="ALL">전체</option>
 								<option value="QC001">수입검사</option>
 								<option value="QC002">공정검사</option>
 								<option value="QC003">포장검사</option>
 							</select>
 						</div>
-						<div class="col-md-3 form-group">
-							<label for="filterProduct">제품명</label>
-							<input type="text" class="form-control" id="filterProduct" placeholder="제품명 입력">
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="filterProduct" class="text-nowrap me-2">제품명</label>
+							<input type="text" class="form-control form-control-sm"
+								id="filterProduct" placeholder="제품명 입력">
 						</div>
-						<div class="col-md-3 form-group">
-							<label for="filterLotId">로트번호</label>
-							<input type="text" class="form-control" id="filterLotId" placeholder="로트번호 입력">
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="filterLotId" class="text-nowrap me-2">로트번호</label>
+							<input type="text" class="form-control form-control-sm"
+								id="filterLotId" placeholder="로트번호 입력">
 						</div>
-						<div class="col-md-3 form-group d-flex align-items-end">
-							<button class="btn btn-primary w-100" id="searchBtn">검색</button>
+						<div class="form-group mb-0">
+							<button class="btn btn-primary btn-sm" id="searchBtn">검색</button>
 						</div>
 					</div>
 				</div>
-			</div>
 
 			<div id="grid"></div>
 		</div>
