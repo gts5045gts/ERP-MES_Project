@@ -65,4 +65,16 @@ public interface WareMapper {
     Integer getTodayBatchCount(@Param("today") String today);
     
     List<Map<String, Object>> selectInputListByBatch(@Param("batchId") String batchId);
+    
+    int updateInputLocation(@Param("inId") String inId, @Param("locationId") String locationId);
+    
+    int insertOrUpdateWarehouseItem(Map<String, Object> params);
+    
+    List<Map<String, Object>> getPartiallyFilledLocations(@Param("warehouseId") String warehouseId,
+            @Param("productId") String productId,
+            @Param("maxAmount") Integer maxAmount);
+
+    int updateWarehouseItemAmount(Map<String, Object> params);
+
+    int insertWarehouseItem(Map<String, Object> params);
 }

@@ -183,7 +183,6 @@
 <th:block layout:fragment="script">
 <script>
 let partsData = [];
-let currentBatchData = [];
 let currentBatchId = '';
 let currentInType = '';
 
@@ -277,13 +276,16 @@ function showDetail(batchId, type) {
                     `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
                     '<span class="text-success">✓</span>';
                 
+                // 위치는 그냥 코드만
+                const locationDisplay = item.locationId || '미정';
+                
                 tbody.append(`
                     <tr>
                         <td>${item.inId || '-'}</td>
                         <td>${item.clientName || '-'}</td>
                         <td>${item.productName || '-'}</td>
                         <td>${item.inCount || 0}개</td>
-                        <td>${item.locationId || '미정'}</td>
+                        <td>${locationDisplay}</td>
                         <td class="status-col">${statusBadge}</td>
                         <td class="inspect-col">${inspectBtn}</td>
                         <td class="complete-time" style="display:none;">${item.completeTime || '-'}</td>
@@ -307,67 +309,12 @@ function inspectOne(inId) {
             },
             success: function(result) {
                 if(result.success) {
-                    alert('검사 완료! 재고가 반영되었습니다.');
+                	alert('검사 완료! 재고가 반영되었습니다.');
                     showDetail(currentBatchId, currentInType);
                     loadGroupedInputList();
                 }
             }
         });
-    }
-}
-
-//개별 입고 완료
-function completeAllInputs() {
-    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
-        let completedCount = 0;
-        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
-        
-        waitingItems.forEach(item => {
-            $.ajax({
-                url: `/inventory/api/inputs/${item.inId}/complete`,
-                type: 'PUT',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
-                },
-                async: false,
-                success: function(result) {
-                    if(result.success) {
-                        completedCount++;
-                    }
-                }
-            });
-        });
-        
-        alert(`${completedCount}건 입고 완료!`);
-        $('#detailModal').modal('hide');
-        loadGroupedInputList();
-    }
-}
-//전체 입고 완료
-function completeAllInputs() {
-    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
-        let completedCount = 0;
-        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
-        
-        waitingItems.forEach(item => {
-            $.ajax({
-                url: `/inventory/api/inputs/${item.inId}/complete`,
-                type: 'PUT',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
-                },
-                async: false,
-                success: function(result) {
-                    if(result.success) {
-                        completedCount++;
-                    }
-                }
-            });
-        });
-        
-        alert(`${completedCount}건 입고 완료!`);
-        $('#detailModal').modal('hide');
-        loadGroupedInputList();
     }
 }
 

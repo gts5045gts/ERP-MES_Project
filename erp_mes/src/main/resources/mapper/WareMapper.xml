@@ -271,6 +271,63 @@
 	    WHERE i.batch_id = #{batchId}
 	    ORDER BY i.in_id
 	</select>
+	
+	<!-- 입고 위치 업데이트 -->
+    <update id="updateInputLocation">
+	    UPDATE input 
+	    SET location_id = #{locationId}
+	    WHERE in_id = #{inId}
+	</update>
+	
+	<!-- warehouse_item 저장/업데이트 -->
+	<insert id="insertOrUpdateWarehouseItem" parameterType="map">
+	    MERGE INTO warehouse_item wi
+	    USING (SELECT #{locationId} as location_id FROM dual) src
+	    ON (wi.location_id = src.location_id AND wi.product_id = #{productId})
+	    WHEN MATCHED THEN
+	        UPDATE SET 
+	            item_amount = item_amount + #{itemAmount},
+	            update_date = SYSDATE
+	    WHEN NOT MATCHED THEN
+	        INSERT (manage_id, warehouse_id, product_id, item_amount, 
+	                use_yn, create_date, location_id, emp_id)
+	        VALUES (#{manageId}, #{warehouseId}, #{productId}, #{itemAmount},
+	                'Y', SYSDATE, #{locationId}, #{empId})
+	</insert>
+	
+	<!-- 500개 미만으로 채워진 위치 조회 -->
+	<select id="getPartiallyFilledLocations" resultType="map">
+	    <![CDATA[
+	    SELECT 
+	        location_id as "locationId",
+	        item_amount as "itemAmount"
+	    FROM warehouse_item
+	    WHERE warehouse_id = #{warehouseId}
+	    AND product_id = #{productId}
+	    AND item_amount < #{maxAmount}
+	    AND use_yn = 'Y'
+	    ORDER BY item_amount DESC
+	    ]]>
+	</select>
 
-    
+	<!-- 기존 위치에 수량 추가 -->
+	<update id="updateWarehouseItemAmount">
+	    UPDATE warehouse_item
+	    SET item_amount = item_amount + #{addAmount},
+	        update_date = SYSDATE
+	    WHERE location_id = #{locationId}
+	    AND product_id = #{productId}
+	</update>
+	
+	<!-- 새 위치에 삽입 -->
+	<insert id="insertWarehouseItem" parameterType="map">
+	    INSERT INTO warehouse_item (
+	        manage_id, warehouse_id, product_id, item_amount,
+	        use_yn, create_date, location_id, emp_id
+	    ) VALUES (
+	        #{manageId}, #{warehouseId}, #{productId}, #{itemAmount},
+	        'Y', SYSDATE, #{locationId}, #{empId}
+	    )
+	</insert>
+	
 </mapper>
