@@ -6,29 +6,28 @@
 <head>
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
 <th:block layout:fragment="content">
     <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800" th:text="${pageTitle}"></h1>
+        <h1 class="h3 mb-4 text-gray-800">입고 관리</h1>
         
         <!-- 검색 영역 -->
         <div class="card shadow mb-4">
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-2">
+                        <input type="date" class="form-control" id="searchDate">
+                    </div>
+                    <div class="col-md-2">
                         <select class="form-control" id="inType">
                             <option value="">전체</option>
                             <option value="정기입고">정기입고</option>
                             <option value="긴급입고">긴급입고</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-control" id="inStatus">
-                            <option value="">전체상태</option>
-                            <option value="입고대기">입고대기</option>
-                            <option value="입고완료">입고완료</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -39,165 +38,515 @@
             </div>
         </div>
 
-        <!-- 입고 테이블 -->
+        <!-- 입고 목록 (날짜별 그룹) -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">입고 목록</h6>
+                <h6 class="m-0 font-weight-bold text-primary">입고 내역</h6>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered text-center">
-                        <thead>
-                            <tr>
-                                <th>입고ID</th>
-                                <th>입고타입</th>
-                                <th>거래처</th>
-                                <th>품목명</th>
-                                <th>입고수량</th>
-                                <th>입고예정위치</th>
-                                <th>입고상태</th>
-                                <th>작업</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inputTableBody">
-                        </tbody>
-                    </table>
+                    <table class="table table-bordered">
+					    <thead>
+					        <tr>
+					            <th width="40%">입고 내역</th>
+					            <th width="20%">입고 유형</th>
+					            <th width="20%">품목 수</th>
+					            <th width="20%">작업</th>
+					        </tr>
+					    </thead>
+					    <tbody id="groupedInputTableBody">
+					    </tbody>
+					</table>
                 </div>
             </div>
         </div>
     </div>
-    
+    <!-- 상세 내역 모달 -->
+	<div class="modal fade" id="detailModal" tabindex="-1">
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="detailModalTitle">입고 상세 내역</h5>
+	                <button type="button" class="close" data-dismiss="modal">
+	                    <span>&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="table-responsive" id="detailTableWrapper">
+	                    <table class="table table-bordered" id="detailTable">
+	                        <thead>
+	                            <tr>
+	                                <th>입고ID</th>
+	                                <th>거래처</th>
+	                                <th>품목명</th>
+	                                <th>수량</th>
+	                                <th>위치</th>
+	                                <th>상태</th>
+	                                <th>검사</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody id="detailTableBody">
+	                        </tbody>
+	                    </table>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button class="btn btn-info" onclick="exportDetailPDF()">
+	                    <i class="fas fa-file-pdf"></i> PDF
+	                </button>
+	                <button class="btn btn-success" onclick="exportDetailExcel()">
+	                    <i class="fas fa-file-excel"></i> Excel
+	                </button>
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
     <!-- 신규입고 모달 -->
     <div class="modal fade" id="addInputModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">신규 입고 등록</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>입고타입</label>
-                        <select class="form-control" id="new_inType">
-                            <option value="정기입고">정기입고</option>
-                            <option value="긴급입고">긴급입고</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>부품선택</label>
-                        <select class="form-control" id="new_productId">
-                            <!-- Ajax로 로드 -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>거래처</label>
-                        <select class="form-control" id="new_clientId">
-                            <!-- Ajax로 로드 -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>입고수량</label>
-                        <input type="number" class="form-control" id="new_inCount" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>창고</label>
-                        <select class="form-control" id="new_warehouseId">
-                            <option th:each="warehouse : ${warehouseList}" 
-                                    th:value="${warehouse.warehouseId}"
-                                    th:text="${warehouse.warehouseName}">
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" onclick="saveInput()">등록</button>
-                </div>
-            </div>
-        </div>
-    </div>
+	    <div class="modal-dialog modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">신규 입고 등록</h5>
+	                <button type="button" class="close" data-dismiss="modal">
+	                    <span>&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="form-group">
+	                    <label>입고타입</label>
+	                    <select class="form-control" id="new_inType">
+	                        <option value="정기입고">정기입고</option>
+	                        <option value="긴급입고">긴급입고</option>
+	                    </select>
+	                </div>
+	                
+	                <div class="form-group">
+	                    <label>거래처</label>
+	                    <select class="form-control" id="new_clientId">
+	                        <!-- Ajax로 로드 -->
+	                    </select>
+	                </div>
+	                
+	                <div class="form-group">
+	                    <label>창고</label>
+	                    <select class="form-control" id="new_warehouseId">
+	                        <option th:each="warehouse : ${warehouseList}" 
+	                                th:value="${warehouse.warehouseId}"
+	                                th:text="${warehouse.warehouseName}">
+	                        </option>
+	                    </select>
+	                </div>
+	                
+	                <hr>
+	                
+	                <div class="d-flex justify-content-between align-items-center mb-3">
+	                    <h6>부품 목록</h6>
+	                    <button type="button" class="btn btn-sm btn-info" onclick="addPartRow()">
+	                        <i class="fas fa-plus"></i> 부품 추가
+	                    </button>
+	                </div>
+	                
+	                <div id="partsList">
+	                    <div class="part-item mb-2">
+	                        <div class="row">
+	                            <div class="col-md-7">
+	                                <select class="form-control part-select">
+	                                    <!-- Ajax로 로드 -->
+	                                </select>
+	                            </div>
+	                            <div class="col-md-3">
+	                                <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+	                            </div>
+	                            <div class="col-md-2">
+	                                <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)" style="display:none;">
+	                                    <i class="fas fa-trash"></i>
+	                                </button>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                
+	                <div class="alert alert-info mt-3">
+	                    선택한 부품: <span id="selectedPartCount">0</span>종
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+	                <button type="button" class="btn btn-primary" onclick="saveInput()">등록</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 </th:block>
 
 <th:block layout:fragment="script">
 <script>
+let partsData = [];
+let currentBatchData = [];
+let currentBatchId = '';
+let currentInType = '';
+
 $(document).ready(function() {
-    loadInputList();
+    loadGroupedInputList();
     loadParts();
     loadClients();
 });
 
-// 입고 목록 로드
-function loadInputList() {
+// 날짜별 그룹화된 입고 목록 로드
+function loadGroupedInputList() {
     $.ajax({
-        url: '/inventory/api/inputs',  // URL 경로 수정!
+        url: '/inventory/api/inputs/grouped',
         type: 'GET',
         data: {
-            inType: $('#inType').val(),
-            inStatus: $('#inStatus').val()
+            date: $('#searchDate').val(),
+            inType: $('#inType').val()
         },
         success: function(data) {
-            displayInputList(data);
+            displayGroupedList(data);
         }
     });
 }
+//신규 입고 모달 표시
+function showAddModal() {
+    $('#addInputModal').modal('show');
+}
 
-function displayInputList(data) {
-    const tbody = $('#inputTableBody');
+// 그룹화된 목록 표시
+function displayGroupedList(data) {
+    const tbody = $('#groupedInputTableBody');
     tbody.empty();
     
     if(data.length === 0) {
-        tbody.append('<tr><td colspan="8">데이터가 없습니다.</td></tr>');
+        tbody.append('<tr><td colspan="4" class="text-center">데이터가 없습니다.</td></tr>');
         return;
     }
     
-    data.forEach(item => {
-        const typeColor = item.inType === '긴급입고' ? 'danger' : 'info';
-        const statusColor = item.inStatus === '입고완료' ? 'success' : 'warning';
-        
-        let actionBtn = '';
-        if(item.inStatus === '입고대기') {
-            actionBtn = `<button class="btn btn-sm btn-success" onclick="completeInput('${item.inId}')">입고완료</button>`;
-        } else {
-            actionBtn = `<span class="text-success">완료</span>`;
-        }
+    data.forEach(group => {
+        const date = new Date(group.inDate);
+        const dateStr = `${date.getMonth()+1}월 ${date.getDate()}일`;
+        const timeStr = group.inTime || '';
+        const typeLabel = group.inType === '긴급입고' ? 
+            '<span class="badge badge-danger">긴급입고</span>' : 
+            '<span class="badge badge-info">정기입고</span>';
         
         tbody.append(`
             <tr>
-                <td>${item.inId}</td>
-                <td><span class="badge badge-${typeColor}">${item.inType}</span></td>
-                <td>${item.clientName || '-'}</td>
-                <td>${item.productName}</td>
-                <td>${item.inCount}개</td>
-                <td>${item.locationId || '미정'}</td>
-                <td><span class="badge badge-${statusColor}">${item.inStatus}</span></td>
-                <td>${actionBtn}</td>
+                <td>${dateStr} ${timeStr} ${group.inType} 내역입니다.</td>
+                <td>${typeLabel}</td>
+                <td>${group.totalCount}종</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" 
+                            onclick="showDetail('${group.batchId}', '${group.inType}')">
+                        내역확인
+                    </button>
+                </td>
             </tr>
         `);
     });
 }
 
-// 부품 목록 로드
-function loadParts() {
+// 상세 내역 보기
+function showDetail(batchId, type) {
+    currentBatchId = batchId;
+    currentInType = type;
+    
     $.ajax({
-        url: '/inventory/api/parts',  // URL 경로 수정!
+        url: '/inventory/api/inputs',
         type: 'GET',
+        data: {
+            batchId: batchId
+        },
         success: function(data) {
-            const select = $('#new_productId');
-            select.empty();
-            select.append('<option value="">선택하세요</option>');
+            if(!data || data.length === 0) {
+                alert('상세 내역이 없습니다.');
+                return;
+            }
+            
+            $('#detailModalTitle').text(`${type} 상세 내역`);
+            
+            const tbody = $('#detailTableBody');
+            tbody.empty();
+            
             data.forEach(item => {
-                select.append(`<option value="${item.productId}">${item.productName}</option>`);
+                const statusBadge = item.inStatus === '입고완료' ? 
+                    '<span class="badge badge-success">완료</span>' : 
+                    '<span class="badge badge-warning">대기</span>';
+                
+                const inspectBtn = item.inStatus === '입고대기' ? 
+                    `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
+                    '<span class="text-success">✓</span>';
+                
+                tbody.append(`
+                    <tr>
+                        <td>${item.inId || '-'}</td>
+                        <td>${item.clientName || '-'}</td>
+                        <td>${item.productName || '-'}</td>
+                        <td>${item.inCount || 0}개</td>
+                        <td>${item.locationId || '미정'}</td>
+                        <td class="status-col">${statusBadge}</td>
+                        <td class="inspect-col">${inspectBtn}</td>
+                        <td class="complete-time" style="display:none;">${item.completeTime || '-'}</td>
+                    </tr>
+                `);
             });
+            
+            $('#detailModal').modal('show');
         }
     });
+}
+
+//개별 검사 완료
+function inspectOne(inId) {
+    if(confirm('이 항목을 검사 완료하시겠습니까?')) {
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/complete`,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('검사 완료! 재고가 반영되었습니다.');
+                    showDetail(currentBatchId, currentInType);
+                    loadGroupedInputList();
+                }
+            }
+        });
+    }
+}
+
+//개별 입고 완료
+function completeAllInputs() {
+    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
+        let completedCount = 0;
+        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
+        
+        waitingItems.forEach(item => {
+            $.ajax({
+                url: `/inventory/api/inputs/${item.inId}/complete`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+                },
+                async: false,
+                success: function(result) {
+                    if(result.success) {
+                        completedCount++;
+                    }
+                }
+            });
+        });
+        
+        alert(`${completedCount}건 입고 완료!`);
+        $('#detailModal').modal('hide');
+        loadGroupedInputList();
+    }
+}
+//전체 입고 완료
+function completeAllInputs() {
+    if(confirm('전체 항목을 입고 완료하시겠습니까?')) {
+        let completedCount = 0;
+        const waitingItems = currentBatchData.filter(item => item.inStatus === '입고대기');
+        
+        waitingItems.forEach(item => {
+            $.ajax({
+                url: `/inventory/api/inputs/${item.inId}/complete`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+                },
+                async: false,
+                success: function(result) {
+                    if(result.success) {
+                        completedCount++;
+                    }
+                }
+            });
+        });
+        
+        alert(`${completedCount}건 입고 완료!`);
+        $('#detailModal').modal('hide');
+        loadGroupedInputList();
+    }
+}
+
+// PDF 출력
+function exportDetailPDF() {
+    const title = $('#detailModalTitle').text();
+    
+    // 테이블 헤더 변경
+    $('#detailTable thead tr').html(`
+        <th>입고ID</th>
+        <th>거래처</th>
+        <th>품목명</th>
+        <th>수량</th>
+        <th>위치</th>
+        <th>입고완료시간</th>
+    `);
+    
+    // 테이블 바디 수정
+    $('#detailTable tbody tr').each(function() {
+        $(this).find('.status-col').hide();
+        $(this).find('.inspect-col').hide();
+        $(this).find('.complete-time').show();
+    });
+    
+    html2canvas(document.querySelector('#detailTableWrapper')).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+        
+        pdf.setFontSize(16);
+        pdf.text(title, 15, 15);
+        
+        const imgWidth = 270;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight);
+        pdf.save(`${title}.pdf`);
+        
+        $('#detailTable thead tr').html(`
+            <th>입고ID</th>
+            <th>거래처</th>
+            <th>품목명</th>
+            <th>수량</th>
+            <th>위치</th>
+            <th>상태</th>
+            <th>검사</th>
+        `);
+        
+        $('#detailTable tbody tr').each(function() {
+            $(this).find('.status-col').show();
+            $(this).find('.inspect-col').show();
+            $(this).find('.complete-time').hide();
+        });
+    });
+}
+
+// Excel 출력
+function exportDetailExcel() {
+    const title = $('#detailModalTitle').text();
+    
+    // 테이블 복사
+    const tempTable = $('#detailTable').clone();
+    
+    // 헤더 변경
+    tempTable.find('thead tr').html(`
+        <th>입고ID</th>
+        <th>거래처</th>
+        <th>품목명</th>
+        <th>수량</th>
+        <th>위치</th>
+        <th>입고완료시간</th>
+    `);
+    
+    // 바디 수정
+    tempTable.find('tbody tr').each(function() {
+        const completeTime = $(this).find('.complete-time').text();
+        $(this).find('.status-col').remove();
+        $(this).find('.inspect-col').remove();
+        $(this).find('.complete-time').remove();
+        $(this).append(`<td>${completeTime}</td>`);
+    });
+    
+    const wb = XLSX.utils.table_to_book(tempTable[0], {sheet: "Sheet1"});
+    XLSX.writeFile(wb, `${title}.xlsx`);
+}
+
+// 검색
+function searchInput() {
+    loadGroupedInputList();
+}
+
+//부품 목록 로드
+function loadParts() {
+    $.ajax({
+        url: '/inventory/api/parts',
+        type: 'GET',
+        success: function(data) {
+            partsData = data;
+            updateAllPartSelects();
+        }
+    });
+}
+
+//부품 select 업데이트
+function updateAllPartSelects() {
+    $('.part-select').each(function() {
+        const currentValue = $(this).val();
+        $(this).empty();
+        $(this).append('<option value="">선택하세요</option>');
+        
+        partsData.forEach(item => {
+            $(this).append(`<option value="${item.productId}">${item.productName}</option>`);
+        });
+        
+        if(currentValue) {
+            $(this).val(currentValue);
+        }
+    });
+    updateSelectedCount();
+}
+
+//부품 행 추가
+function addPartRow() {
+    const newRow = `
+        <div class="part-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control part-select" onchange="updateSelectedCount()">
+                        <option value="">선택하세요</option>
+                        ${partsData.map(item => 
+                            `<option value="${item.productId}">${item.productName}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#partsList').append(newRow);
+    
+    // 첫번째 행의 삭제 버튼 표시
+    if($('.part-item').length > 1) {
+        $('.remove-part').first().show();
+    }
+    updateSelectedCount();
+}
+
+//부품 행 삭제
+function removePartRow(btn) {
+    $(btn).closest('.part-item').remove();
+    
+    if($('.part-item').length === 1) {
+        $('.remove-part').hide();
+    }
+    updateSelectedCount();
+}
+
+//선택한 부품 수 업데이트
+function updateSelectedCount() {
+    let count = 0;
+    $('.part-select').each(function() {
+        if($(this).val()) {
+            count++;
+        }
+    });
+    $('#selectedPartCount').text(count);
 }
 
 // 거래처 목록 로드
 function loadClients() {
     $.ajax({
-        url: '/inventory/api/clients',  // URL 경로 수정!
+        url: '/inventory/api/clients',
         type: 'GET',
         success: function(data) {
             const select = $('#new_clientId');
@@ -206,70 +555,85 @@ function loadClients() {
             data.forEach(item => {
                 select.append(`<option value="${item.clientId}">${item.clientName}</option>`);
             });
+        },
+        error: function() {
+            console.error('거래처 목록 로드 실패');
         }
     });
 }
 
-// 검색
-function searchInput() {
-    loadInputList();
-}
-
-// 신규 입고 모달
-function showAddModal() {
-    $('#addInputModal').modal('show');
-}
-
-// 입고 저장
+//입고 저장 (각 부품별로 등록)
 function saveInput() {
-    const inputData = {
-        inType: $('#new_inType').val(),
-        productId: $('#new_productId').val(),
-        clientId: $('#new_clientId').val(),
-        inCount: $('#new_inCount').val(),
-        warehouseId: $('#new_warehouseId').val()
-    };
+    const items = [];
     
-    if(!inputData.productId || !inputData.clientId || !inputData.inCount) {
-        alert('모든 항목을 입력하세요.');
+    $('.part-item').each(function() {
+        const productId = $(this).find('.part-select').val();
+        const qty = $(this).find('.part-qty').val();
+        
+        if(productId && qty) {
+            items.push({
+                inType: $('#new_inType').val(),
+                productId: productId,
+                clientId: $('#new_clientId').val(),
+                inCount: qty,
+                warehouseId: $('#new_warehouseId').val()
+            });
+        }
+    });
+    
+    if(items.length === 0) {
+        alert('최소 하나의 부품을 선택하세요.');
         return;
     }
     
+    if(!$('#new_clientId').val()) {
+        alert('거래처를 선택하세요.');
+        return;
+    }
+    
+    // 배치로 한번에 전송
     $.ajax({
-        url: '/inventory/api/inputs',  // URL 경로 수정!
+        url: '/inventory/api/inputs/batch',  // 배치 API 사용
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(inputData),
+        data: JSON.stringify(items),
         headers: {
             'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
         },
         success: function(result) {
             if(result.success) {
-                alert('입고 등록 완료');
+                alert(result.message);
                 $('#addInputModal').modal('hide');
-                loadInputList();
+                resetInputForm();
+                loadGroupedInputList();
+            } else {
+                alert('등록 실패: ' + result.message);
             }
         }
     });
 }
 
-// 입고 완료 처리
-function completeInput(inId) {
-    if(confirm('입고를 완료하시겠습니까?')) {
-        $.ajax({
-            url: `/inventory/api/inputs/${inId}/complete`, 
-            type: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
-            },
-            success: function(result) {
-                if(result.success) {
-                    alert('입고 완료!');
-                    loadInputList();
-                }
-            }
-        });
-    }
+function resetInputForm() {
+    $('#partsList').html(`
+        <div class="part-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control part-select" onchange="updateSelectedCount()">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control part-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-part" onclick="removePartRow(this)" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `);
+    updateAllPartSelects();
 }
 </script>
 </th:block>

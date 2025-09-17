@@ -54,4 +54,15 @@ public interface WareMapper {
     List<WarehouseDTO> selectWarehouseListByType(@Param("warehouseType") String warehouseType);
     
     List<String> getEmptyLocations(@Param("warehouseId") String warehouseId); 
+    
+    int updateProductQuantity(@Param("productId") String productId, 
+            				  @Param("inCount") Integer inCount);
+    
+    // 날짜별 그룹화된 입고 목록 조회
+    List<Map<String, Object>> selectGroupedInputList(@Param("date") String date,
+                                                     @Param("inType") String inType);
+    
+    Integer getTodayBatchCount(@Param("today") String today);
+    
+    List<Map<String, Object>> selectInputListByBatch(@Param("batchId") String batchId);
 }

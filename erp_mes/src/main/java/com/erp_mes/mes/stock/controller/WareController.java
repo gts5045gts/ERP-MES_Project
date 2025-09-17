@@ -2,6 +2,7 @@ package com.erp_mes.mes.stock.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +120,7 @@ public class WareController {
 	
 	
 	// 0917 입고 관리 페이지
-	@GetMapping("/input")
+	@GetMapping("/goods")
 	public String inputList(Model model) {
 	    log.info("입고 관리 페이지 접속");
 	    
@@ -132,15 +133,20 @@ public class WareController {
 	    List<WarehouseDTO> materialWarehouses = wareService.getWarehouseListByType("원자재");
 	    model.addAttribute("warehouseList", materialWarehouses);
 	    
-	    return "inventory/input_list";
+	    return "inventory/inbound_list";
 	}
 
 	// 입고 목록 조회 API
 	@GetMapping("/api/inputs")
 	@ResponseBody
 	public List<Map<String, Object>> getInputList(
-	        @RequestParam(required = false) String inType,
-	        @RequestParam(required = false) String inStatus) {
+	        @RequestParam(name = "batchId", required = false) String batchId,
+	        @RequestParam(name = "inType", required = false) String inType,
+	        @RequestParam(name = "inStatus", required = false) String inStatus) {
+	    
+	    if(batchId != null && !batchId.isEmpty()) {
+	        return wareService.getInputListByBatch(batchId);
+	    }
 	    
 	    return wareService.getInputList(inType, inStatus);
 	}
@@ -166,7 +172,7 @@ public class WareController {
 	// 입고 완료 처리 API
 	@PutMapping("/api/inputs/{inId}/complete")
 	@ResponseBody
-	public Map<String, Object> completeInput(@PathVariable String inId, Principal principal) {
+	public Map<String, Object> completeInput(@PathVariable("inId") String inId, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
 	        wareService.completeInput(inId, principal.getName());
@@ -193,5 +199,38 @@ public class WareController {
 	    return wareService.getClientsList();
 	}
 	
+	@GetMapping("/api/inputs/grouped")
+	@ResponseBody
+	public List<Map<String, Object>> getGroupedInputList(
+	        @RequestParam(name = "date", required = false) String date,
+	        @RequestParam(name = "inType", required = false) String inType) {
+	    
+	    return wareService.getGroupedInputList(date, inType);
+	}
 	
+	// 입고 배치 등록 API
+	@PostMapping("/api/inputs/batch")
+	@ResponseBody
+	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+	        Integer batchCount = wareService.getTodayBatchCount(today);
+	        String batchId = "B" + today + String.format("%03d", batchCount + 1);
+	        
+	        for(Map<String, Object> item : items) {
+	            item.put("empId", principal.getName());
+	            item.put("batchId", batchId);
+	            wareService.addInput(item);
+	        }
+	        
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 입고 등록 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
 }

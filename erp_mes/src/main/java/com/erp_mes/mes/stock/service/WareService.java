@@ -90,33 +90,30 @@ private final WareMapper wareMapper;
     // 0917 입고 목록 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getInputList(String inType, String inStatus) {
-        log.info("입고 목록 조회 - 타입: {}, 상태: {}", inType, inStatus);
         return wareMapper.selectInputList(inType, inStatus);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getInputListByBatch(String batchId) {
+        return wareMapper.selectInputListByBatch(batchId);
     }
 
     // 입고 등록
     @Transactional
     public String addInput(Map<String, Object> params) {
-        // 입고ID 생성
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer todayCount = wareMapper.getTodayInputCount(today);
+        if(todayCount == null) todayCount = 0;
+        
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         
         params.put("inId", inId);
-        params.put("lotId", "LOT" + today + params.get("productId"));
-        params.put("inStatus", "입고대기");
-        params.put("manageId", params.get("warehouseId") + "_" + params.get("productId"));
-        
-        // 빈 위치 자동 할당
-        String warehouseId = (String) params.get("warehouseId");
-        List<String> emptyLocations = wareMapper.getEmptyLocations(warehouseId);
-        if(!emptyLocations.isEmpty()) {
-            params.put("locationId", emptyLocations.get(0));
-        }
+        params.put("inStatus", "입고대기");  // 입고대기로 다시 변경!
         
         wareMapper.insertInput(params);
         
         log.info("입고 등록 완료: {}", inId);
+        
         return inId;
     }
 
@@ -125,23 +122,27 @@ private final WareMapper wareMapper;
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
-        if(!"입고대기".equals(input.get("inStatus"))) {
+        if(input == null) {
+            throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
+        }
+        
+        // Oracle에서 가져온 컬럼명은 대문자일 수 있음
+        String currentStatus = (String) input.get("IN_STATUS");  // 대문자로 변경
+        
+        if(!"입고대기".equals(currentStatus)) {
             throw new RuntimeException("이미 처리된 입고입니다.");
         }
         
-        // 입고 상태 업데이트
+        // 1. 입고 상태를 '입고완료'로 변경
         wareMapper.updateInputStatus(inId, "입고완료");
         
-        // 재고 증가 처리
-        String productId = (String) input.get("productId");
-        String warehouseId = (String) input.get("warehouseId");
-        String locationId = (String) input.get("locationId");
-        Integer inCount = ((Number) input.get("inCount")).intValue();
+        // 2. product 테이블 재고 증가
+        String productId = (String) input.get("PRODUCT_ID");  // 대문자
+        Integer inCount = ((Number) input.get("IN_COUNT")).intValue();  // 대문자
         
-        // warehouse_item에서 해당 위치의 재고 증가
-        wareMapper.increaseStock(warehouseId, productId, locationId, inCount);
+        wareMapper.updateProductQuantity(productId, inCount);
         
-        log.info("입고 완료: {} - 수량: {}", inId, inCount);
+        log.info("입고 완료 처리: {} - 제품: {}, 수량: {}", inId, productId, inCount);
     }
 
     // 부품 목록 조회
@@ -160,5 +161,15 @@ private final WareMapper wareMapper;
     @Transactional(readOnly = true)
     public List<WarehouseDTO> getWarehouseListByType(String warehouseType) {
         return wareMapper.selectWarehouseListByType(warehouseType);
+    }
+    // 날짜별 그룹화된 입고 목록
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getGroupedInputList(String date, String inType) {
+        return wareMapper.selectGroupedInputList(date, inType);
+    }
+    
+    public Integer getTodayBatchCount(String today) {
+        Integer count = wareMapper.getTodayBatchCount(today);
+        return count != null ? count : 0;
     }
 }
