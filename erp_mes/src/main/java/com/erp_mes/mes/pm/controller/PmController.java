@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/pm")
 public class PmController {
 
-	@GetMapping("path")
-	public String getMethodName(@RequestParam String param) {
-		return new String();
+	@GetMapping("/productPlan")
+	public String getMethodName() {
+		
+		
+		
+		return "/pm/product_plan_list";
 	}
 	
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.business.mapper.BusinessMapper">
+<!-- 	수주 목록 전체 조회 -->
+	<select id="getAllOrder" resultType="com.erp_mes.mes.business.dto.OrderDTO">
+		SELECT order_id,
+			   order_date,
+			   order_status,
+			   client_id,
+			   client_name,
+			   order_qty,
+			   order_price,
+			   delivery_date,
+			   emp_id,
+			   emp_name
+		 FROM orders
+	</select>
+	
+	<select id="selectMaxOrderIdForToday" resultType="String">
+        SELECT
+            MAX(order_id)
+        FROM
+            orders
+        WHERE
+            order_id LIKE 'ORD-' || #{datePrefix} || '%'
+    </select>
+	
+<!-- 	수주 등록 -->
+	<insert id="insertOrder" parameterType="com.erp_mes.mes.business.dto.OrderDTO">
+		<selectKey keyProperty="orderId" resultType="string" order="BEFORE">
+        	SELECT 'CLI' || LPAD(client_id_seq.NEXTVAL, 3, '0') FROM DUAL
+        	SELECT 'ORD' || LPAD(order_id_seq.NEXTVAL, 4, '0') FROM DUAL
+    	</selectKey>
+	</insert>	
+</mapper>
