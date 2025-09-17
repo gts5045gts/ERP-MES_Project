@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
@@ -20,6 +21,7 @@ import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
+import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 import com.erp_mes.mes.quality.service.InspectionService;
 
 import lombok.extern.log4j.Log4j2;
@@ -79,10 +81,19 @@ public class InspectionController {
 	    return "qc/qcinfo";
 	}
 	
-	@GetMapping("iqc")
-	public String iqc() {
-		return "qc/iqc";
-	}
+    @GetMapping("/iqc")
+    public String iqc(Model model) {
+        List<InspectionResultDTO> inspectionResultList = inspectionService.getInspectionResultList();
+        model.addAttribute("inspectionResultList", inspectionResultList);
+        return "qc/iqc";
+    }
+    
+    @GetMapping("/api/inspection-results") 
+    @ResponseBody
+    public List<InspectionResultDTO> getInspectionResults() {
+        // 기존 서비스 메서드를 호출하여 데이터를 가져옵니다.
+        return inspectionService.getInspectionResultList();
+    }
 
 	// 왼쪽 테이블 (검사 유형별 기준 관리)에 대한 등록 API
 	@PostMapping("/fm")

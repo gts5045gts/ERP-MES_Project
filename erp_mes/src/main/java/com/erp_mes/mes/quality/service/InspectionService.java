@@ -11,6 +11,7 @@ import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
+import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 import com.erp_mes.mes.quality.entity.InspectionFM;
 import com.erp_mes.mes.quality.mapper.QualityMapper;
 import com.erp_mes.mes.quality.repository.InspectionFMRepository;
@@ -88,5 +89,9 @@ public class InspectionService {
     @Transactional
     public void deleteInspectionItems(List<Long> itemIds) {
         qualityMapper.deleteItems(itemIds); // QualityMapper의 deleteItems 메서드 호출
+    }
+    
+    public List<InspectionResultDTO> getInspectionResultList() {
+        return qualityMapper.getInspectionResultList();
     }
 }
