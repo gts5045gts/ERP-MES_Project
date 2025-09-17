@@ -1,29 +1,56 @@
 package com.erp_mes.mes.quality.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "INSPECTION_ITEM")
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class InspectionItem {
+
+	
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inspection_item_seq")
-	@SequenceGenerator(name = "inspection_item_seq", sequenceName = "INSPECTION_ITEM_SEQ", allocationSize = 1)
-	@Column(name = "ITEM_ID")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_gen")
+	@SequenceGenerator(
+		name = "item_seq_gen",
+		sequenceName = "INSPECTION_ITEM_SEQ", 
+		allocationSize = 1
+	)
 	private Long itemId;
 
 //    @Column(name = "INSPECTION_TYPE")
 //    private String inspectionType;
+	@Column(name = "PRODUCT_ID")
+	private String productId;
 
 //    @Column(name = "ITEM_NAME")
 //    private String itemName;
+	@Column(name = "INSPECTION_FM_ID")
+	private Long inspectionFMId;
 
 //    @Column(name = "TOLERANCE_VALUE")
 //    private Double toleranceValue;
 //
 //    @Column(name = "UNIT")
 //    private String unit;
+	@Column(name = "TOLERANCE_VALUE")
+	private BigDecimal toleranceValue;
+
+	@Column(name = "UNIT")
+	private String unit;
 }
