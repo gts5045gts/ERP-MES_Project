@@ -183,15 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
-		//		// 수주 목록 그리드 행 클릭 이벤트 리스너
-		//		orderGrid.on('click', (ev) => {
-		//			const rowData = orderGrid.getRow(ev.rowKey);
-		//			if (rowData && ev.columnName !== 'orderStatus') {
-		//				const orderId = rowData.orderId;
-		//				loadOrderDetails(orderId);
-		//			}
-		//		});
-
 	};
 
 	// 페이지 초기화 함수 호출
