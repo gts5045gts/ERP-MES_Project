@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		stompClient.subscribe('/user/queue/private', onMessageReceived);
 		// 부서 및 사원 목록 불러오기
 		fetchDepartments();
+		// 웹소켓 연결시 채팅 초기화
+		initializeChat();
 	}
 
 	// 웹소켓 연결 실패 시 실행되는 함수
@@ -80,24 +82,69 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	function initializeChat() {
-		// 백엔드에서 읽지 않은 메시지나 최근 대화 상대를 가져오는 API를 호출
-		fetch('/api/chat/recent') // 예시 URL
-			.then(response => response.json())
-			.then(recentConversation => {
-				if (recentConversation && recentConversation.length > 0) {
-					// 가장 최근 메시지를 보낸 사람을 기본 대화 상대로 설정
-					const mostRecentSenderId = recentConversation[0].senderId;
-					// TODO: UI에서 해당 사원 목록 항목을 활성화 (UI 업데이트 로직 추가 필요)
-					currentReceiverId = mostRecentSenderId;
+		const urlParams = new URLSearchParams(window.location.search);
+		const chatPartnerIdFromUrl = urlParams.get('chatPartnerId');
 
-					// 해당 대화 상대와의 대화 기록을 불러와 화면에 표시
-					fetchChatHistory(mostRecentSenderId);
-				} else {
-					// 최근 대화 기록이 없으면 빈 화면 유지
-					console.log("최근 대화 기록이 없습니다.");
+		if (chatPartnerIdFromUrl) {
+			// URL 파라미터가 있으면 해당 사용자와의 대화 기록을 바로 로드
+			currentReceiverId = chatPartnerIdFromUrl;
+			fetchChatHistory(chatPartnerIdFromUrl);
+
+			// UI에서 해당 사원을 선택 상태로 표시 (부서/사원 목록이 로드된 후 실행)
+			deptSelect.addEventListener('change', () => fetchEmployeesByDept(event.target.value));
+			fetchDepartments(() => {
+				const empElement = document.querySelector(`[data-emp-id="${chatPartnerIdFromUrl}"]`);
+				if (empElement) {
+					empElement.classList.add('active');
 				}
+			});
+
+			// 헤더의 알림을 초기화하는 함수 호출
+			markAllMessagesAsRead();
+		} else {
+			// URL 파라미터가 없으면 최근 대화 기록을 불러오는 기존 로직 실행
+			fetch('/api/chat/recent')
+				// ... (기존 initializeChat 로직) ...
+				.then(recentMessages => {
+					if (recentMessages && recentMessages.length > 0) {
+						const recentChatPartnerId = recentMessages[0].senderId === userId ? recentMessages[0].receiverId : recentMessages[0].senderId;
+						currentReceiverId = recentChatPartnerId;
+						fetchChatHistory(recentChatPartnerId);
+
+						// UI 업데이트
+						fetchDepartments(() => {
+							const empElement = document.querySelector(`[data-emp-id="${recentChatPartnerId}"]`);
+							if (empElement) {
+								empElement.classList.add('active');
+							}
+						});
+					} else {
+						console.log("최근 대화 기록이 없습니다.");
+						messageArea.innerHTML = '<div>최근 대화 기록이 없습니다.</div>';
+					}
+				})
+				.catch(error => console.error("채팅 초기화 오류:", error));
+		}
+	}
+
+	function markAllMessagesAsRead() {
+		const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+		fetch('/api/messages/read', {
+			method: 'POST',
+			headers: {
+				'X-CSRF-TOKEN': csrfToken,
+				'Content-Type': 'application/json'
+			}
+		})
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('읽음 상태 업데이트 실패');
+				}
+				console.log("읽지 않은 메시지 상태 업데이트 완료");
 			})
-			.catch(error => console.error("초기 대화 기록 로딩 오류:", error));
+			.catch(error => {
+				console.error('읽음 상태 업데이트 오류:', error);
+			});
 	}
 
 	// 부서 목록을 불러오는 함수

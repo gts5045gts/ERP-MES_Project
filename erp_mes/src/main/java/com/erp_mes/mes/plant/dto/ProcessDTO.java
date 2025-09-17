@@ -18,11 +18,13 @@ import lombok.ToString;
 @Builder
 @ToString
 public class ProcessDTO {
-	private String proId; 
-	private String proNm; 
-	private String useYn;
-	private String insYn;
-	private String note;
+	private Long proId; 		//공정 코드 
+	private String proNm; 		//공정 이름
+	private String note;		//공정 설명 
+	
+	//조인받을 곳 타입
+	private String typeId;
+	private String typeNm;
 	
 	
 	

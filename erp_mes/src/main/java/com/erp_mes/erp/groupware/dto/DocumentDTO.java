@@ -6,7 +6,6 @@ import org.modelmapper.ModelMapper;
 
 import com.erp_mes.erp.approval.constant.ApprReqType;
 import com.erp_mes.erp.groupware.entity.Document;
-import com.erp_mes.erp.personnel.entity.Personnel;
 
 import lombok.Builder;
 import lombok.Getter;

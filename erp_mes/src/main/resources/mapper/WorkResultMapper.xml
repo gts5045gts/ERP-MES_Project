@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp_mes.mes.pop.mapper.WorkResultMapper">
+
+<!-- 작업지시현황을 위한 공정, 작업지시, 사원테이블 조인 -->
+<select id="workerkWithOrder" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+	SELECT 
+        o.work_order_id 	AS workOrderId,
+        o.process_id 		AS processId,
+        p.pro_nm         	AS processNm,
+        o.equipment_id 		AS equipmentId,
+        o.emp_id 			AS empId,
+        e.emp_name 			AS empNm,
+        o.start_date 		AS startDate,
+        o.end_date 			AS endDate,
+        o.work_order_status AS workOrderStatus
+	FROM work_order o
+	LEFT JOIN employee e ON e.emp_id = o.emp_id
+	LEFT JOIN process p ON o.process_id = p.pro_id
+ 	WHERE o.emp_id = #{empId}
+</select>
+
+
+<!-- bom조회 모달을 위한 작업지시, BOM, 설비, 공정 조인 -->
+<select id="workOrderWithBom" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+	SELECT
+		o.work_order_id 	AS workOrderId,
+		o.bom_id 			AS bomId,
+		o.work_order_status AS workOrderStatus,
+		
+		b.product_id 		AS productId,
+		b.material_id 		AS materialId,
+		b.quantity 			AS quantity,
+		b.unit 				AS unit,
+		b.revision_no 		AS revisionNo,
+		
+		o.equipment_id 		AS equipmentId,
+		e.equip_nm 			AS equipmentNm,
+		
+		o.process_id 		AS processId,
+		p.pro_nm 			AS processNm
+
+	FROM work_order o
+	LEFT JOIN bom b ON o.bom_id = b.bom_id
+	LEFT JOIN equipment e ON o.equipment_id = e.equip_id
+    LEFT JOIN process p ON o.process_id   = p.pro_id
+	
+	WHERE o.work_order_id = #{workOrderId}
+</select>
+
+<!-- 작업현황을 위한 조인테이블(생산실적, 공정, 설비, 작업지시) -->
+<select id="workResultWithBom" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+	SELECT
+		w.result_id 		AS resultId,
+        w.good_qty 			AS goodQty,
+        w.defect_qty 		AS defectQty,
+        w.updated_at		AS updatedAt,
+        
+		o.work_order_id 	AS workOrderId,
+		o.bom_id 			AS bomId,
+		o.work_order_status AS workOrderStatus,
+		
+		b.product_id 		AS productId,
+		b.quantity 			AS quantity,
+		b.unit 				AS unit,
+		b.revision_no 		AS revisionNo,
+		
+		o.equipment_id 		AS equipmentId,
+		e.equip_nm 			AS equipmentNm,
+		
+		o.process_id 		AS processId,
+		p.pro_nm 			AS processNm
+
+	FROM work_order o
+	LEFT JOIN bom b ON o.bom_id = b.bom_id
+	LEFT JOIN equipment e ON o.equipment_id = e.equip_id
+    LEFT JOIN process p ON o.process_id   = p.pro_id
+	LEFT JOIN work_result w ON o.work_order_id = w.work_order_id
+	
+	WHERE o.work_order_id IN
+	<foreach item="id" collection="workOrderIds" open="(" separator="," close=")">
+        #{id}
+    </foreach>
+</select>
+
+
+
+
+    
+</mapper>

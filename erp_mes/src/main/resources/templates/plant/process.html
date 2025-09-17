@@ -6,6 +6,15 @@
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+        
+        
+        <style>
+        	.prs-add{
+        	
+        	}
+        	
+        
+        </style>
     </th:block>
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -16,7 +25,7 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
-    	<button id="prs-add" class="btn btn-primary btn-sm">추가</button>
+    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
 		<div id="grid"></div>
 	
 
@@ -44,15 +53,16 @@
 	 
 	 document.addEventListener('DOMContentLoaded', function() {
         // 그리드 초기화
-        console.log(' 실행하자');
-        alert('실행');
+      
         const grid = new tui.Grid({
           el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
           scrollX: false,
           scrollY: false,
           columns: [
-            { header: '코드', name: 'comDtId' },	
-            { header: '코드명', name: 'comDtNm' },
+            { header: '공정번호', name: 'proId' },	
+            { header: '공정명', name: 'proNm' },	
+            { header: '공정 타입', name: 'typeNm' },
+            { header: '공정 설명', name: 'note' },
           ],
         });
         
@@ -72,6 +82,17 @@
           .catch(err => console.error('fetch error:', err));
         });
         
+	 
+	 
+	 
+	 function addProcess(){
+		 alert('작동');
+		 var url = '/plant/process-newForm';
+		 window.open(url, "popup", "width=830,height=750");
+		 
+		 
+		 
+	 }
         
     </script>
 </th:block>
