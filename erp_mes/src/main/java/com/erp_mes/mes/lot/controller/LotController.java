@@ -49,7 +49,7 @@ public class LotController {
 
 	@GetMapping("/saveLot")
 	@ResponseBody
-	@TrackLot(domain = "CUTTING", createLot = true, linkParent = false)
+	@TrackLot(domain = "Assembly", createLot = true, linkParent = false)
 	public LotDTO saveWareHouse() {
 		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM3").materialCode("test-STEEL-11").qty(50).build();
 
