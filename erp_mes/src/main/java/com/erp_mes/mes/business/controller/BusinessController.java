@@ -4,7 +4,9 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.business.service.BusinessService;
@@ -38,6 +41,30 @@ public class BusinessController {
 		return "/business/order";
 	}
 
+	@PostMapping("api/orders/submit")
+	public ResponseEntity<?> submitOrder(@RequestBody Map<String, Object> payload, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+		log.info("clientName: " + payload.get("clientName"));
+		try {
+			// 로그인 사용자 정보 세팅
+			payload.put("empId", userDetails.getEmpId());
+			payload.put("empName", userDetails.getName());
+
+			// 서비스 호출
+			String orderId = businessService.createOrder(payload);
+
+			return ResponseEntity.ok(Map.of("orderId", orderId, "status", "success", "message", "주문이 정상적으로 등록되었습니다."));
+
+		} catch (IllegalArgumentException ex) {
+			return ResponseEntity.badRequest().body(Map.of("status", "fail", "error", ex.getMessage()));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "error", "서버 오류: " + ex.getMessage()));
+		}
+	}
+
+	// ------------------------------------------
+
 	// 수주 목록 조회
 	@GetMapping("/api/orders")
 	@ResponseBody
@@ -55,17 +82,17 @@ public class BusinessController {
 		return businessService.getOrderDetailsByOrderId(orderId);
 	}
 
-	// 수주 등록
-	@PostMapping("/api/orders/submit")
-	public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDto) {
-		try {
-			businessService.saveOrder(orderDto);
-			return ResponseEntity.ok(Map.of("status", "success", "message", "Order created successfully"));
-		} catch (Exception e) {
-			log.error("Order creation failed: {}", e.getMessage());
-			return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
-		}
-	}
+//	// 수주 등록
+//	@PostMapping("/api/orders/submit")
+//	public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDto) {
+//		try {
+//			businessService.saveOrder(orderDto);
+//			return ResponseEntity.ok(Map.of("status", "success", "message", "Order created successfully"));
+//		} catch (Exception e) {
+//			log.error("Order creation failed: {}", e.getMessage());
+//			return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
+//		}
+//	}
 
 	@GetMapping("/api/products")
 	@ResponseBody

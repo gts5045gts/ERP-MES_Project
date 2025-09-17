@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			el: document.getElementById('orderGrid'),
 			scrollX: false,
 			scrollY: true,
-			bodyHeight: 220,
+			bodyHeight: 200,
 			rowHeight: 'auto',
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
@@ -31,33 +31,62 @@ document.addEventListener("DOMContentLoaded", () => {
 				{ header: '수주 번호', name: 'orderId', align: 'center' },
 				{ header: '거래처 번호', name: 'clientId', align: 'center' },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
-				{ header: '사원 번호', name: 'empId', align: 'center' },
-				{ header: '사원명', name: 'empName', align: 'center' },
-				{ header: '수주일', name: 'orderDate', align: 'center' },
-				{ header: '납기예정일', name: 'deliveryDate', align: 'center' },
-				{ header: '수주수량', name: 'orderQty', align: 'center' },
-				{ header: '수주금액', name: 'orderPrice', align: 'center' },
+				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
+				{ header: '등록자', name: 'empName', align: 'center' },
 				{
-					header: '수주상태',
-					name: 'orderStatus',
-					align: 'center',
+					header: '수주일', name: 'orderDate', align: 'center',
+					// formatter 함수 추가
+					formatter: function(value) {
+						// value.value는 "2025-09-17T02:37:19"와 같은 형태
+						if (value.value) {
+							return value.value.split('T')[0]; // T 문자를 기준으로 날짜만 추출
+						}
+						return value.value;
+					}
+				},
+				{
+					header: '납기예정일', name: 'deliveryDate', align: 'center',
+					formatter: function(value) {
+						if (value.value) {
+							// "yyyy-MM-ddTHH:mm:ss.sss" 형식에서 날짜 부분만 추출
+							return value.value.split('T')[0];
+						}
+						return '';
+					}
+				},
+				{ header: '수주수량', name: 'orderQty', align: 'center' },
+				{
+					header: '수주금액', name: 'orderPrice', align: 'center',
+					formatter: function(value) {
+						if (value.value) {
+							return value.value.toLocaleString();
+						}
+						return value.value;
+					}
+				},
+				{
+					header: '수주상태', name: 'orderStatus', align: 'center',
 					formatter: function(value) {
 						let color = '';
 						switch (value.value) {
 							case 'RECEIVED': // 등록
 								color = 'blue';
+								statusText = '등록';
 								break;
 							case 'CANCELED': // 취소
 								color = 'red';
+								statusText = '취소';
 								break;
 							case 'PREPARING': // 납품 대기
 								color = 'green';
+								statusText = '납품 대기';
 								break;
 							default: // 납품 완료 (DELIVERED)는 원래 색상
 								color = 'black';
+								statusText = '납품 완료';
 								break;
 						}
-						return `<span style="color: ${color}; font-weight: bold;">${value.value}</span>`;
+						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;
 					}
 				}
 			],
@@ -73,13 +102,30 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '수주 목록의 행을 클릭하여 상세 정보를 확인하세요.',
 			columns: [
-				{ header: '수주 ID', name: 'orderDetailId', align: 'center' },
+				{ header: 'No.', name: 'id', align: 'center', width: 70 },
+				{ header: '수주번호', name: 'orderId', align: 'center' },
 				{ header: '품목번호', name: 'productId', align: 'center' },
-				{ header: '품목명', name: 'productName', align: 'left' },
-				{ header: '단가', name: 'price', align: 'right' },
-				{ header: '단위', name: 'unit', align: 'right' },
-				{ header: '수량', name: 'quantity', align: 'center' },
-				{ header: '총금액', name: 'totalPrice', align: 'right' }
+				{ header: '품목명', name: 'productName', align: 'center' },
+				{ header: '수량', name: 'orderQty', align: 'center' },
+				{ header: '단위', name: 'unit', align: 'center' },
+				{
+					header: '단가', name: 'orderPrice', align: 'center',
+					formatter: function(value) {
+						if (value.value) {
+							return value.value.toLocaleString();
+						}
+						return value.value;
+					}
+				},
+				{
+					header: '총금액', name: 'totalPrice', align: 'center',
+					formatter: function(value) {
+						if (value.value) {
+							return value.value.toLocaleString();
+						}
+						return value.value;
+					}
+				}
 			],
 			data: []
 		});
@@ -120,7 +166,15 @@ document.addEventListener("DOMContentLoaded", () => {
 					{ header: '품목번호', name: 'productId', align: 'center', width: 100 },
 					{ header: '품목명', name: 'productName', align: 'left', minwidth: 170 },
 					{ header: '단위', name: 'unit', align: 'center', width: 70 },
-					{ header: '단가', name: 'price', align: 'center', minwidth: 90 }
+					{
+						header: '단가', name: 'price', align: 'center', minwidth: 90,
+						formatter: function(value) {
+							if (value.value) {
+								return value.value.toLocaleString();
+							}
+							return value.value;
+						}
+					}
 				],
 				columnOptions: {
 					resizable: true // 컬럼 너비를 사용자가 조절할 수 있게 합니다.
@@ -234,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			selectedItemsContainer.appendChild(emptyMessage);
 		} else {
 			selectedProducts.forEach((item) => {
-				const price = parseInt(item.price) || 0; 
+				const price = parseInt(item.price) || 0;
 
 				const itemDiv = document.createElement('div');
 				itemDiv.classList.add('d-flex', 'align-items-center', 'mb-2');
@@ -245,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	                <div class="d-flex align-items-center w-100">
 	                    <span class="me-2">${item.productName}</span>
 	                    <input type="number" 
-	                        class="form-control form-control-sm me-2" 
+	                        class="form-control form-control-sm me-2 item-qty" 
 	                        style="width: 60px;" 
 	                        value="1" min="1" 
 	                        data-product-price="${price}" 
@@ -262,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				itemDiv.innerHTML = itemHtml;
 				selectedItemsContainer.appendChild(itemDiv);
 
-				total += price; 
+				total += price;
 			});
 		}
 
@@ -336,55 +390,86 @@ document.addEventListener("DOMContentLoaded", () => {
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 
-		// 선택된 품목 가져오기
-		const orderItems = [];
-		const itemElements = selectedItemsContainer.querySelectorAll('div[data-row-key]');
-		itemElements.forEach(div => {
-			const rowKey = div.dataset.rowKey;
-			const item = productListGrid.getRow(rowKey);
-			const quantity = parseInt(div.querySelector('input').value);
-			orderItems.push({
-				itemId: item.productId,
-				itemPrice: item.price,
-				itemQty: quantity
-			});
-		});
+		// 거래처 선택 값
+		const clientSelect = document.getElementById("clientId");
+		const clientId = clientSelect.value; // 실제 DB에 저장되는 값
+		const clientName = clientSelect.options[clientSelect.selectedIndex].text; // 표시용
 
-		if (orderItems.length === 0) {
-			alert('하나 이상의 품목을 선택해주세요.');
+		if (!clientId) {
+			alert("거래처를 선택해주세요.");
 			return;
 		}
 
-		const formData = {
-			clientId: document.getElementById("clientId").value,
-			deliveryDate: document.getElementById("deliveryDate").value,
-			orderItems: orderItems
+		// 납기일
+		const deliveryDate = document.getElementById("deliveryDate").value;
+
+		// 품목 수집
+		const itemDivs = selectedItemsContainer.querySelectorAll('div[data-row-key]');
+		const items = [];
+		let totalQty = 0; // 총 수량 변수 추가
+		let totalPrice = 0; // 총 금액 변수 추가
+
+		itemDivs.forEach(div => {
+			const rowKey = div.dataset.rowKey;
+			let rowObj = productListGrid.getRow(rowKey);
+
+			const qtyInput = div.querySelector('input.item-qty');
+			if (!qtyInput) return;  // qtyInput 없으면 넘어가기
+			const qty = parseInt(qtyInput.value) || 0;
+			const price = parseInt(qtyInput.dataset.productPrice) || 0;
+
+			if (rowObj) {
+				items.push({
+					productId: rowObj.productId,
+					productName: rowObj.productName,
+					unit: rowObj.unit,
+					qty: qty,
+					price: price,
+					deliveryDate: deliveryDate
+				});
+				totalQty += qty; // 총 수량 누적
+				totalPrice += qty * price; // 총 금액 누적
+			}
+		});
+
+		if (items.length === 0) {
+			alert("하나 이상의 품목을 선택해주세요.");
+			return;
+		}
+
+		const payload = {
+			clientId: clientId,       // clientId 직접 전달
+			clientName: clientName,   // 필요시 참고용
+			deliveryDate: deliveryDate,
+			orderQty: totalQty, // 수량 추가
+			orderPrice: totalPrice, // 금액 추가
+			items: items
 		};
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
 		try {
-			const response = await fetch("/business/api/orders/submit", {
+			const res = await fetch("/business/api/orders/submit", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					[csrfHeader]: csrfToken
 				},
-				body: JSON.stringify(formData),
+				body: JSON.stringify(payload)
 			});
-
-			if (response.ok) {
-				alert('수주 등록이 완료되었습니다.');
+			if (res.ok) {
+				const j = await res.json();
+				alert("수주 등록 완료: " + j.orderId);
 				orderAddModal.hide();
-				loadOrders(); // 목록 새로고침
+				loadOrders();
 			} else {
-				const errorText = await response.text();
-				alert('수주 등록 실패: ' + errorText);
+				const txt = await res.text();
+				alert("등록 실패: " + txt);
 			}
-		} catch (error) {
-			console.error('API 호출 중 오류:', error);
-			alert('처리 중 오류가 발생했습니다.');
+		} catch (err) {
+			console.error(err);
+			alert("서버 통신 오류");
 		}
 	});
 });
