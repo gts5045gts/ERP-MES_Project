@@ -83,11 +83,11 @@ public class InspectionController {
 	    return "qc/qcinfo";
 	}
 	
-    @GetMapping("/iqc")
+    @GetMapping("/qih")
     public String iqc(Model model) {
         List<InspectionResultDTO> inspectionResultList = inspectionService.getInspectionResultList();
         model.addAttribute("inspectionResultList", inspectionResultList);
-        return "qc/iqc";
+        return "qc/qih";
     }
     
     @GetMapping("/api/inspection-results") 
@@ -161,7 +161,7 @@ public class InspectionController {
     // 2. 특정 제품의 검사 기준 API
     @GetMapping("/api/inspection-item/{productId}")
     @ResponseBody
-    public List<InspectionItemDTO> getInspectionItemByProductId(@PathVariable String productId) {
+    public List<InspectionItemDTO> getInspectionItemByProductId(@PathVariable("productId") String productId) {
         return inspectionService.getInspectionItemByProductId(productId);
     }
 
@@ -170,7 +170,10 @@ public class InspectionController {
     @ResponseBody
     public ResponseEntity<String> registerInspectionResult(@RequestBody InspectionResultDTO resultDTO) {
         try {
-            inspectionService.registerInspectionResult(resultDTO);
+            Long workOrderId = resultDTO.getWorkOrderId(); // workOrderId 필드를 추가했다고 가정
+            
+            inspectionService.registerInspectionResult(resultDTO, workOrderId);
+
             return new ResponseEntity<>("{\"success\": true}", HttpStatus.OK);
         } catch (Exception e) {
             log.error("Failed to register inspection result: {}", e.getMessage());

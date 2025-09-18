@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class InspectionResultDTO {
     private Long resultId;
-    private String inspectionId;
+    private Long inspectionId;
     private String itemId;
     private String result;
     private String remarks;
@@ -19,7 +19,7 @@ public class InspectionResultDTO {
     // Inspection 테이블의 정보
     private String inspectionType;
     private String productId;
-    private String processId;
+    private Long processId;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime inspectionDate;
     private String empId;
@@ -30,4 +30,5 @@ public class InspectionResultDTO {
     private String productName;
     private String processName;
     private String empName;
+    private Long workOrderId;
 }

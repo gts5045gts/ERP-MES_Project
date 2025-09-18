@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
+import com.erp_mes.mes.pm.mapper.WorkOrderMapper;
 import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
+import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
@@ -29,7 +31,7 @@ public class InspectionService {
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
 	private final ProductBomService productBomService;
-	private final WorkResultMapper workResultMapper;
+	private final WorkOrderMapper workOrderMapper;
 	
     @Transactional(readOnly = true)
     public List<InspectionFMDTO> findAllInspectionFMs() {
@@ -112,16 +114,21 @@ public class InspectionService {
     
     // 3. 검사 결과 등록
     @Transactional
-    public void registerInspectionResult(InspectionResultDTO resultDTO) {
-        // 실제 구현 로직
-        // 1. DTO에서 필요한 정보를 추출
-        // 2. inspection 테이블에 INSERT
-        // 3. inspection_result 테이블에 INSERT
-        // 4. 관련 작업지시 상태를 '검사 완료'로 업데이트
-        
-        // 예시: 매퍼 호출
-        // qualityMapper.insertInspection(resultDTO);
-        // qualityMapper.insertInspectionResult(resultDTO);
-        // qualityMapper.updateWorkOrderStatus(resultDTO.getWorkOrderId(), "검사 완료");
+    public void registerInspectionResult(InspectionResultDTO resultDTO, Long workOrderId) {
+        // 1. Inspection 테이블에 데이터 삽입
+        InspectionDTO inspectionDTO = new InspectionDTO();
+        inspectionDTO.setInspectionType("QC001");
+        inspectionDTO.setProductId(resultDTO.getProductId());
+        inspectionDTO.setProcessId(resultDTO.getProcessId());
+        inspectionDTO.setEmpId(resultDTO.getEmpId());
+        inspectionDTO.setLotId(resultDTO.getLotId());
+        qualityMapper.insertInspection(inspectionDTO);
+
+        // 2. Inspection_Result 테이블에 데이터 삽입
+        resultDTO.setInspectionId(inspectionDTO.getInspectionId());
+        qualityMapper.insertInspectionResult(resultDTO);
+
+        // 3. work_order 테이블 상태 업데이트
+        workOrderMapper.updateWorkOrderStatus(workOrderId);
     }
 }

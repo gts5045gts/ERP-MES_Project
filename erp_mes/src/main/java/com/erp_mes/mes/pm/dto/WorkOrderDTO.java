@@ -11,8 +11,13 @@ public class WorkOrderDTO {
     private String lotId; 
 
     // JOIN을 통해 가져올 필드
-    private String productName;
-    private String empName;
-    private String processName;
     private Long planQuantity;
+    private String productId;
+    private String productName;
+    private String processName;
+    private String empName;
+    private String bomId;
+    private String inspectionType;
+    private String inspectionTypeName;
+    
 }
