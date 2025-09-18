@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InspectionItem {
+
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_gen")
@@ -32,12 +33,21 @@ public class InspectionItem {
 	)
 	private Long itemId;
 
+//    @Column(name = "INSPECTION_TYPE")
+//    private String inspectionType;
 	@Column(name = "PRODUCT_ID")
 	private String productId;
 
+//    @Column(name = "ITEM_NAME")
+//    private String itemName;
 	@Column(name = "INSPECTION_FM_ID")
 	private Long inspectionFMId;
 
+//    @Column(name = "TOLERANCE_VALUE")
+//    private Double toleranceValue;
+//
+//    @Column(name = "UNIT")
+//    private String unit;
 	@Column(name = "TOLERANCE_VALUE")
 	private BigDecimal toleranceValue;
 

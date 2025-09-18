@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <style>
+            /* 토글 화살표 */
+            .caret::before { content: "\25B6"; display:inline-block; transition: transform .15s ease; }
+            a[aria-expanded="true"] > .caret::before { transform: rotate(90deg); }
+        </style>
+
+    </th:block>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+      <h1 class="h4 mb-3 text-gray-800">LOT 추적</h1>
+
+      <div class="row">
+        <!-- LOT 계층구조 -->
+        <div class="col-lg-6">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex align-items-center">
+              <h6 class="m-0 font-weight-bold text-primary">LOT 계층구조</h6>
+              <div class="ml-auto">
+                <input id="search" class="form-control form-control-sm" placeholder="LOT번호 또는 제품코드 검색">
+              </div>
+            </div>
+            <div class="card-body" style="height:56vh; overflow:auto;">
+              <ul class="list-group list-group-flush" id="lotTree">
+                <!-- 1뎁스 -->
+                <li class="list-group-item p-2">
+                    <a data-toggle="collapse" href="#lotA" class="d-flex align-items-center" aria-expanded="true" aria-controls="lotA">
+                     <span class="mr-2 caret"></span>
+                     <span>LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중)</span>
+                   </a>
+                   <ul class="collapse show pl-4 mt-2" id="lotA" data-parent="#lotTree">
+                         <!-- 공정 토글 -->
+                         <li class="list-group-item py-1 px-2 border-0">
+                           <a data-toggle="collapse" href="#procA" aria-controls="procA" class="d-flex align-items-center">
+                             <span class="mr-2 caret"></span> 공정
+                           </a>
+                           <ul class="collapse pl-3 mt-2" id="procA" data-parent="#lotA">
+                             <li class="list-group-item py-1 px-2 border-0">
+                               <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","step":"재단"}'>재단</a>
+                             </li>
+                             <li class="list-group-item py-1 px-2 border-0">
+                               <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","step":"봉제"}'>봉제</a>
+                             </li>
+                             <li class="list-group-item py-1 px-2 border-0">
+                               <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","step":"조립"}'>조립</a>
+                             </li>
+                           </ul>
+                         </li>
+                         <!-- 자재 토글 -->
+                              <li class="list-group-item py-1 px-2 border-0">
+                                <a data-toggle="collapse" href="#matA" aria-controls="matA" class="d-flex align-items-center">
+                                  <span class="mr-2 caret"></span> 자재
+                                </a>
+                                <ul class="collapse pl-3 mt-2" id="matA" data-parent="#lotA">
+                                  <li class="list-group-item py-1 px-2 border-0">
+                                    <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","material":"가죽-브라운"}'>가죽-브라운</a>
+                                  </li>
+                                  <li class="list-group-item py-1 px-2 border-0">
+                                    <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","material":"끈-그레이"}'>끈-그레이</a>
+                                  </li>
+                                </ul>
+                              </li>
+                              <!-- 설비 토글 (참고로 동일 패턴) -->
+                                    <li class="list-group-item py-1 px-2 border-0">
+                                      <a data-toggle="collapse" href="#eqA" aria-controls="eqA" class="d-flex align-items-center">
+                                        <span class="mr-2 caret"></span> 설비
+                                      </a>
+                                      <ul class="collapse pl-3 mt-2" id="eqA" data-parent="#lotA">
+                                        <li class="list-group-item py-1 px-2 border-0">
+                                          <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","equip":"내부 부착기 1호 / EQ060"}'>내부 부착기 1호 / EQ060</a>
+                                        </li>
+                                        <li class="list-group-item py-1 px-2 border-0">
+                                          <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","equip":"조립 자동화 1호 / EQ061"}'>조립 자동화 1호 / EQ061</a>
+                                        </li>
+                                      </ul>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- 더미 2건 -->
+                <li class="list-group-item p-2">
+                  <a data-toggle="collapse" href="#lot-20240715" class="d-flex align-items-center collapsed" aria-expanded="false">
+                    <span class="mr-2 caret"></span>
+                    <span class="text-truncate">LOT-20240715-NKAF-270-검정-001 스니커즈 (완료)</span>
+                  </a>
+                  <ul class="collapse pl-4 mt-2" id="lot-20240715" data-parent="#lotTree">
+                    <li class="list-group-item py-1 px-2 border-0">
+                      <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20240715-NKAF-270-검정-001","empNo":"20231102","itemName":"Black Sneaker","itemCode":"NKAF","itemType":"스니커즈","size":270,"color":"검정","heel":2,"status":"완료","planQty":120,"startDate":"2024-07-15"}'>공정</a>
+                    </li>
+                  </ul>
+                </li>
+
+                <li class="list-group-item p-2">
+                  <a data-toggle="collapse" href="#lot-20230621" class="d-flex align-items-center collapsed" aria-expanded="false">
+                    <span class="mr-2 caret"></span>
+                    <span class="text-truncate">LOT-20230621-JILL-235-검정-002 구두 (완료)</span>
+                  </a>
+                  <ul class="collapse pl-4 mt-2" id="lot-20230621" data-parent="#lotTree">
+                    <li class="list-group-item py-1 px-2 border-0">
+                      <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20230621-JILL-235-검정-002","empNo":"20220930","itemName":"Dress Shoes","itemCode":"JILL","itemType":"구두","size":235,"color":"검정","heel":4,"status":"완료","planQty":80,"startDate":"2023-06-21"}'>공정</a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOT 상세 -->
+        <div class="col-lg-6">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">LOT 상세</h6>
+            </div>
+            <div class="card-body" id="lotDetail">
+              <div class="row">
+                <div class="col-4 text-muted">LOT 코드</div><div class="col-8" id="d_lotCode">-</div>
+                <div class="col-4 text-muted">작업지시자</div><div class="col-8" id="d_empNo">-</div>
+                <div class="col-4 text-muted">제품명</div><div class="col-8" id="d_itemName">-</div>
+                <div class="col-4 text-muted">제품코드</div><div class="col-8" id="d_itemCode">-</div>
+                <div class="col-4 text-muted">제품유형</div><div class="col-8" id="d_itemType">-</div>
+                <div class="col-4 text-muted">사이즈</div><div class="col-8" id="d_size">-</div>
+                <div class="col-4 text-muted">색상</div><div class="col-8" id="d_color">-</div>
+                <div class="col-4 text-muted">굽 높이</div><div class="col-8" id="d_heel">-</div>
+                <div class="col-4 text-muted">생산상태</div><div class="col-8"><span id="d_status" class="badge badge-info">-</span></div>
+                <div class="col-4 text-muted">생산지시수량</div><div class="col-8" id="d_qty">-</div>
+                <div class="col-4 text-muted">시작일자</div><div class="col-8" id="d_startDate">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.container-fluid -->
+
+</th:block>
+
+<th:block layout:fragment="script">
+	<script>
+        // 상세 바인딩
+         function bindDetail(d) {
+           document.getElementById('d_lotCode').textContent = d.lotCode || '-';
+           document.getElementById('d_empNo').textContent = d.empNo || '-';
+           document.getElementById('d_itemName').textContent = d.itemName || '-';
+           document.getElementById('d_itemCode').textContent = d.itemCode || '-';
+           document.getElementById('d_itemType').textContent = d.itemType || '-';
+           document.getElementById('d_size').textContent = d.size || '-';
+           document.getElementById('d_color').textContent = d.color || '-';
+           document.getElementById('d_heel').textContent = d.heel || '-';
+           document.getElementById('d_qty').textContent = d.planQty || '-';
+           document.getElementById('d_startDate').textContent = d.startDate || '-';
+
+           const badge = document.getElementById('d_status');
+           badge.textContent = d.status || '-';
+           badge.className = 'badge ' + (d.status === '완료' ? 'badge-success' : 'badge-info');
+         }
+
+         // 트리 항목 클릭 이벤트 위임
+         document.getElementById('lotTree').addEventListener('click', function(e) {
+           const a = e.target.closest('a.lot-leaf');
+           if (!a) return;
+           e.preventDefault();
+           const data = JSON.parse(a.getAttribute('data-lot'));
+           bindDetail(data);
+         });
+
+         // 초기 선택(첫 번째 leaf)
+         window.addEventListener('DOMContentLoaded', () => {
+           const first = document.querySelector('#lotTree a.lot-leaf');
+           if (first) first.click();
+         });
+
+	</script>
+</th:block>
+</body>
+</html>
