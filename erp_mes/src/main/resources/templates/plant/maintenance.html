@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+        
+        
+    </th:block>
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    
+    
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+    	
+    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
+		<div id="grid"></div>
+	
+
+
+   
+    </div>
+
+</th:block>
+
+<th:block layout:fragment="script">
+ <script>
+ const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+ const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+ 
+	 
+	 document.addEventListener('DOMContentLoaded', function() {
+        // 그리드 초기화
+      
+        const grid = new tui.Grid({
+          el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
+          scrollX: false,
+          scrollY: false,
+          columns: [
+            { 
+            	header: '설비번호',
+            	name: 'equipId',
+            	formatter:  ({value})  => {
+            		const equipId = value.id || value;
+            		return `<a href="#" id="btnHistory"  data-id="${equipId}">${equipId}</a>`;
+            	}
+            },	
+            { header: '설비타입', name: 'typeNm' },
+            { header: '설비이름', name: 'equipNm' },	
+          ],
+        });
+        
+        fetch('/plant/maintenanceGrid', {
+            method: 'GET',
+            headers: {
+              [header]: token  // 동적으로 headerName을 키로 넣음
+            }
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('서버 응답 에러: ' + res.status);
+            return res.json();
+          })
+          .then(data => {
+            grid.resetData(data);
+          })
+          .catch(err => console.error('fetch error:', err));
+        });
+        
+	 
+	 
+	 // 팝업으로 창 띄우기
+	 function addProcess(){
+		 var url = '/plant/fix_newForm';
+		 window.open(url, "popup", "width=830,height=450");
+	 }
+	 
+	 $(document).on('click', '#btnHistory', function() {
+		let btnVal = $(this).data('id');
+		let url = '/plant/fix_history?equipId=' + btnVal;
+		window.open(url, "popup", "width=830,height=450");
+
+		
+	 });
+        
+    </script>
+</th:block>
+</body>
+</html>

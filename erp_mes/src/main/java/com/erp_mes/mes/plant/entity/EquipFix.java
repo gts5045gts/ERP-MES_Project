@@ -1,6 +1,11 @@
 package com.erp_mes.mes.plant.entity;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
+import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
+import com.erp_mes.mes.plant.dto.EquipFixDTO;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,13 +36,23 @@ public class EquipFix {
 	private String note;
 	
 	@Column( name = "start_dt")
-	private Timestamp startDt;
+	private LocalDate startDt;
 	
 	@Column(name = "end_dt")
-	private Timestamp endDt;
+	private LocalDate endDt;
 	
 	
 	
+	static public EquipFix fromDTO(EquipFixDTO eDTO) {
+		EquipFix equip = new EquipFix();
+		equip.setEquipId(eDTO.getEquipId());
+		equip.setNote(eDTO.getNote());
+		equip.setStartDt(eDTO.getStartDt());
+		equip.setEndDt(eDTO.getEndDt());
+		
+		
+		return equip;
+	}
 	
 	
 	

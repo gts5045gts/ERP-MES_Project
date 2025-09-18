@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
+import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 
 @Mapper

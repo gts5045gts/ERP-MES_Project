@@ -7,14 +7,6 @@
     <th:block layout:fragment="style">
         <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
         
-        
-        <style>
-        	.prs-add{
-        	
-        	}
-        	
-        
-        </style>
     </th:block>
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
@@ -25,8 +17,9 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
+<!--     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button> -->
     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
-		<div id="grid"></div>
+		<div id="grid" style="width: 100%; height: 300px;"></div>
 	
 
 
@@ -56,16 +49,17 @@
       
         const grid = new tui.Grid({
           el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
-          scrollX: false,
-          scrollY: false,
+          scrollX: true,
+          scrollY: true,
           columns: [
             { header: '공정번호', name: 'proId' },	
             { header: '공정명', name: 'proNm' },	
-            { header: '공정 타입', name: 'typeNm' },
+            { header: '공정 유형', name: 'typeNm' },
             { header: '공정 설명', name: 'note' },
+//             { header: '공정 시간', name: 'proTime' },
+//             { header: '공정 유무', name: 'equipId' },
           ],
         });
-        
         fetch('/plant/processGrid', {
             method: 'GET',
             headers: {
@@ -84,14 +78,10 @@
         
 	 
 	 
-	 
+	 // 팝업으로 창 띄우기
 	 function addProcess(){
-		 alert('작동');
-		 var url = '/plant/process-newForm';
-		 window.open(url, "popup", "width=830,height=750");
-		 
-		 
-		 
+		 var url = '/plant/process_newForm';
+		 window.open(url, "popup", "width=830,height=450");
 	 }
         
     </script>

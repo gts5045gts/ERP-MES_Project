@@ -1,18 +1,16 @@
 package com.erp_mes.mes.plant.mapper;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.List;
 
-import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
-import com.erp_mes.mes.plant.service.ProcessService;
+import org.apache.ibatis.annotations.Mapper;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import com.erp_mes.mes.plant.dto.EquipDTO;
 
-@Controller
-@RequestMapping("/equip")
-@RequiredArgsConstructor
-@Log4j2
-public class EquipMapper {
+@Mapper
+public interface EquipMapper {
+
+	List<EquipDTO> findAll();
+	
+	
 
 }

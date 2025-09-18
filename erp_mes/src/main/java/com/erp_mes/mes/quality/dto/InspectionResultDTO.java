@@ -2,6 +2,8 @@ package com.erp_mes.mes.quality.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +20,7 @@ public class InspectionResultDTO {
     private String inspectionType;
     private String productId;
     private String processId;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime inspectionDate;
     private String empId;
     private String lotId;

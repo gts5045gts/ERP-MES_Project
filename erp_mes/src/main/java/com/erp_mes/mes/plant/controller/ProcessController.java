@@ -9,11 +9,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
+import com.erp_mes.mes.plant.dto.EquipDTO;
+import com.erp_mes.mes.plant.dto.EquipFixDTO;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.entity.Equip;
+import com.erp_mes.mes.plant.service.EquipService;
 import com.erp_mes.mes.plant.service.ProcessService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +32,10 @@ public class ProcessController {
 	
 	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessService proService ;
+	final private EquipService equipService ;
 	
+	
+	//공정 관련 페이지
 	@GetMapping("/process")
 	public String process() {
 		log.info("완성");
@@ -35,7 +43,7 @@ public class ProcessController {
 		
 		return "/plant/process";
 	}
-	@GetMapping("/process-newForm")
+	@GetMapping("/process_newForm")
 	public String process_newFrom(Model model) {
 		
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
@@ -44,26 +52,130 @@ public class ProcessController {
 		
 		model.addAttribute("comList", comList);
 		
-		return "/plant/process-newForm";
+		return "/plant/process_newForm";
 	}
 	
+	
+	
+	//요청 부분
 	@ResponseBody
 	@GetMapping("/processGrid")
 	public List<Map<String, Object>> processGrid(){
-		List<Map<String, Object>> proList = proService.findAll();
-		log.info("proList" + proList.toString()); 
+		List<Map<String, Object>> equipList = proService.findAll();
+		log.info("proList" + equipList.toString()); 
 		
 		
-		return proList;
+		return equipList;
 	}
 	
 	@ResponseBody
 	@PostMapping("/processAdd")
 	public ResponseEntity<String> processAdd(ProcessDTO proDTO){
-		log.info("공정 데이터를 전송합니다." + proDTO);
+		log.info("설비 데이터를 전송합니다." + proDTO);
 		
 		proService.savePro(proDTO);
 		
 		return ResponseEntity.ok("success");
 	}
+	
+	
+	//설비 관련 페이지-------------------------------------------------------
+	@GetMapping("/equipment")
+	public String equipment() {
+		
+		
+		
+		
+		return "/plant/equipment";
+	}
+	
+	
+	@GetMapping("/equip_newForm")
+	public String equip_newForm(Model model) {
+		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
+		
+		
+		
+		model.addAttribute("comList", comList);
+		
+		return "/plant/equip_newForm";
+	}
+	@GetMapping("/maintenance")
+	public String equip_fix(Model model) {
+		
+		
+		
+		
+		
+		return "/plant/maintenance";
+	}
+	
+	@GetMapping("/fix_newForm")
+	public String equip_Fix(Model model) {
+		List<Equip> equipList = proService.equipAll();
+		
+		
+		
+		model.addAttribute("equipList", equipList);
+		
+		return "/plant/fix_newForm";
+	}
+	
+	@GetMapping("/fix_history")
+	public String fix_history(Model model,
+							@RequestParam("equipId")String equipId) {
+		
+		List<Map<String, Object>> equipList = equipService.findById(equipId);
+		
+		
+		model.addAttribute("equipList", equipList);
+		
+		return "/plant/fix_history";
+	}
+	
+	
+	
+	//요청 부분
+	@ResponseBody
+	@GetMapping("/equipGrid")
+	public List<Map<String, Object>> equipGrid(){
+		List<Map<String, Object>> equipList = equipService.findAll();
+		log.info("equipList" + equipList.toString()); 
+		
+		
+		return equipList;
+	}
+	
+	@ResponseBody
+	@GetMapping("/maintenanceGrid")
+	public List<Map<String, Object>> maintenanceGrid(){
+		List<Map<String, Object>> equipList = equipService.findAll();
+		log.info("equipList" + equipList.toString()); 
+		
+		
+		return equipList;
+	}
+	@ResponseBody
+	@PostMapping("/equipAdd")
+	public ResponseEntity<String> equipAdd(EquipDTO equipDTO){
+		log.info("설비 데이터를 전송합니다." + equipDTO);
+		
+		equipService.saveEquip(equipDTO);
+		
+		return ResponseEntity.ok("success");
+	}
+	
+	@ResponseBody
+	@PostMapping("/fixAdd")
+	public ResponseEntity<String> fixAdd(EquipFixDTO fix){
+		log.info("fix" + fix.toString()); 
+		
+		
+		equipService.saveFix(fix);
+		
+		
+		
+		return ResponseEntity.ok("success");
+	}
+	
 }

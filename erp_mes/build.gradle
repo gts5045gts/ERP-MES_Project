@@ -6,7 +6,7 @@ plugins {
 
 apply plugin: 'war'
 
-group = 'com.erp_mes.erp'
+group = 'com.erp_mes'
 version = '0.0.1-SNAPSHOT'
 
 apply plugin: 'war'
