@@ -42,7 +42,7 @@ public class ClientService {
 	}
 
 	// 매출사 거래처 목록
-	public List<ClientDTO> getOrderClients(String clientType) {
-		return clientMapper.getOrderClients(clientType);
+	public List<ClientDTO> getOrderClients(String clientType, String clientStatus) {
+		return clientMapper.getOrderClients(clientType, clientStatus);
 	}
 }

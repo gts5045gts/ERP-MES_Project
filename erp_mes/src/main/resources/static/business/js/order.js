@@ -12,6 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	const selectedItemsContainer = document.getElementById('selectedItemsContainer');
 	const totalPriceElement = document.getElementById('totalPrice');
 	const emptyMessage = document.getElementById('emptyMessage');
+	
+	// 오늘 날짜를 'YYYY-MM-DD' 형식으로 가져오는 코드
+	const today = new Date();
+	const year = today.getFullYear();
+	const month = String(today.getMonth() + 1).padStart(2, '0');
+	const day = String(today.getDate()).padStart(2, '0');
+	const todayString = `${year}-${month}-${day}`;
 
 	// 선택한 품목 정보를 저장할 배열
 	let selectedProducts = [];
@@ -93,7 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					editor: {
 						type: 'datePicker',
 						options: {
-							format: 'yyyy-MM-dd'
+							format: 'yyyy-MM-dd',
+							minDate: new Date()
 						}
 					},
 					formatter: function(value) {
@@ -279,20 +287,31 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// 수주 등록 모달창 - 거래처 리스트 불러오기 (매출사만)
-	function loadClientsForModal() {
+	function loadClientsForModal(isEditMode) {
 		return fetch("/business/api/clients")
 			.then(response => response.json())
 			.then(data => {
 				const selectElement = document.getElementById("clientId");
 				selectElement.innerHTML = '<option value="">선택</option>';
-				// 거래처 유형이 '매출사'인 데이터만 필터링하여 드롭다운에 추가
-				const salesClients = data.filter(client => client.clientType === '매출사');
+				// '매출사'이면서 '거래중'인 데이터만 필터링하여 드롭다운에 추가
+//				const filteredClients = data.filter(client => 
+//					client.clientType === '매출사' && client.clientStatus === '거래중'
+//				);
 
-				salesClients.forEach(client => {
-					const option = document.createElement("option");
-					option.value = client.clientId;
-					option.textContent = client.clientName;
-					selectElement.appendChild(option);
+				let filteredClients = data;
+
+				// 수정 모드가 아닐 때만 필터링 조건을 적용
+				if (!isEditMode) {
+				    filteredClients = data.filter(client => 
+				    	client.clientType === '매출사' && client.clientStatus === '거래중'
+				    );
+				}
+				
+				filteredClients.forEach(client => {
+				    const option = document.createElement("option");
+				    option.value = client.clientId;
+				    option.textContent = client.clientName;
+				    selectElement.appendChild(option);
 				});
 			})
 			.catch(error => console.error("거래처 목록 불러오기 오류:", error));
@@ -329,13 +348,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (clientSelect) clientSelect.disabled = false;
 
 			// 거래처 리스트를 먼저 로드하고 모달을 띄운다
-			await loadClientsForModal();
+			await loadClientsForModal(false);
 			orderAddModal.show();
 		});
 	}
 
 	// 모달이 완전히 표시된 후에 품목 리스트 그리드 초기화 및 데이터 로드
 	orderAddModalElement.addEventListener('shown.bs.modal', async () => {
+		const deliveryDateInput = document.getElementById("deliveryDate");
+		if (deliveryDateInput) {
+		    deliveryDateInput.min = todayString;
+		}
 		// productListGrid가 아직 생성되지 않았다면 초기화
 		if (!productListGrid) {
 			productListGrid = new tui.Grid({
@@ -699,6 +722,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				orderAddModal.hide();
 				loadOrders();
+				
+				// 신규 등록 시에도 방금 등록된 주문의 상세 목록을 보여줄 수 있도록 orderId를 사용합니다.
+				const updatedOrderId = isEditMode ? editOrderId : j.orderId;
+				loadOrderDetails(updatedOrderId);
+				
 			} else {
 				const txt = await res.text();
 				console.error("서버 응답 에러:", res.status, txt);
@@ -713,7 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 편집 모달 열기 (기존 수주 불러와서 채우기)
 	async function openEditModal(orderId, rowData) {
-		console.log("openEditModal 실행됨, orderId:", orderId, rowData);
+		
 		try {
 			// 서버에서 해당 수주 정보(헤더 + 아이템)를 불러옴
 			const res = await fetch(`/business/api/orders/${orderId}`);
@@ -731,7 +759,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			document.getElementById('orderSubmitBtn').textContent = '수정';
 
 			// 클라이언트 로드 후 선택값 세팅 (거래처는 변경 불가)
-			await loadClientsForModal();
+			await loadClientsForModal(true);
 			const clientSelect = document.getElementById("clientId");
 			if (clientSelect) {
 				clientSelect.value = order.clientId || '';
