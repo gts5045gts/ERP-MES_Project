@@ -39,10 +39,10 @@
     <div class="row mb-3">
       <div class="col-md-6">
         <span class="form-label">공정 유형</span>
-        <select name="typeId" class="form-select" id="typeId">
+        <select name="typeNm" class="form-select" id="typeId">
           <option value="">공정 유형</option>
           <th:block th:each="comList :${comList}">
-          	<option th:value="${comList.comDtId}" th:text="${comList.comDtNm}"></option>
+          	<option th:value="${comList.comDtNm}" th:text="${comList.comDtNm}"></option>
           </th:block>
         </select>
       </div>

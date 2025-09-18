@@ -10,22 +10,15 @@
     <result property="proNm" column="pro_nm"/>
     <result property="note" column="note"/>
     <result property="typeId" column="type_id"/>
-    <result property="typeNm" column="com_dt_Nm"/>
+    <result property="typeNm" column="type_nm"/>
 </resultMap>
 
 	<select id="findAll" resultMap="ProcessMap">
 		SELECT 
-			p.pro_Id, 
-			p.pro_Nm, 
-			p.note,
-			
-			c.com_dt_Nm
-		FROM 
-			process p 
-		INNER JOIN 
-			common_dt_code c
-		ON
-			p.type_id = c.com_dt_id AND C.COM_ID = 'PRO'
-		ORDER BY p.pro_Id ASC
+			pro_id,
+			pro_nm,
+			note,
+			type_nm
+		from process
 	</select>
 </mapper>
