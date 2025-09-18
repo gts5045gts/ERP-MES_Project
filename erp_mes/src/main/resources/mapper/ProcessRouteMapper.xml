@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.plant.mapper.ProcessMapper">
+
+
+<resultMap id="ProcessMap" type="com.erp_mes.mes.plant.dto.ProcessDTO">
+    <result property="proId" column="pro_id"/>
+    <result property="proNm" column="pro_nm"/>
+    <result property="note" column="note"/>
+    <result property="typeId" column="type_id"/>
+    <result property="typeNm" column="type_nm"/>
+</resultMap>
+
+	<select id="findAll" resultMap="ProcessMap">
+		SELECT 
+			pro_id,
+			pro_nm,
+			note,
+			type_nm
+		from process
+	</select>
+</mapper>

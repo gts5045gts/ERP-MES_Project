@@ -14,6 +14,7 @@ import com.erp_mes.mes.plant.dto.ProcessDTO;
 import com.erp_mes.mes.plant.entity.Equip;
 import com.erp_mes.mes.plant.entity.Process;
 import com.erp_mes.mes.plant.mapper.ProcessMapper;
+import com.erp_mes.mes.plant.mapper.ProcessRouteMapper;
 import com.erp_mes.mes.plant.repository.EquipRepository;
 import com.erp_mes.mes.plant.repository.ProcessRepository;
 
@@ -25,7 +26,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProcessRouteService {
 	
-	final private ProcessMapper proMapper;
+	final private ProcessRouteMapper routeMapper;
 	
 	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessRepository proRepository;

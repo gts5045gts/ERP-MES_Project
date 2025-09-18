@@ -35,7 +35,7 @@ public class ProcessController {
 	final private EquipService equipService ;
 	
 	
-	//공정 관련 페이지
+	//공정 관리 페이지
 	@GetMapping("/process")
 	public String process() {
 		log.info("완성");
@@ -79,7 +79,7 @@ public class ProcessController {
 	}
 	
 	
-	//설비 관련 페이지-------------------------------------------------------
+	//설비 및 이력 관리 페이지-------------------------------------------------------
 	@GetMapping("/equipment")
 	public String equipment() {
 		
@@ -100,10 +100,9 @@ public class ProcessController {
 		
 		return "/plant/equip_newForm";
 	}
+	
 	@GetMapping("/maintenance")
 	public String equip_fix(Model model) {
-		
-		
 		
 		
 		
@@ -183,6 +182,35 @@ public class ProcessController {
 	
 	
 	
-	//z
+	//공정 라우팅 페이지 관련 
+	
+	@GetMapping("/process_route")
+	public String processRoute() {
+		
+		
+		
+		
+		return "/plant/process_route";
+	}
+
+	@GetMapping("/route_newForm")
+	public String routeNewForm() {
+		
+		
+		
+		
+		return "/plant/route_newForm";
+	}
+	
+	
+	@ResponseBody
+	@PostMapping("/routeAdd")
+	public ResponseEntity<String> routeAdd(EquipDTO equipDTO){
+		log.info("설비 데이터를 전송합니다." + equipDTO);
+		
+		equipService.saveEquip(equipDTO);
+		
+		return ResponseEntity.ok("success");
+	}
 	
 }
