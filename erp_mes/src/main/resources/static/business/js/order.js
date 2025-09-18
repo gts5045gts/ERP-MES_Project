@@ -15,51 +15,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 선택한 품목 정보를 저장할 배열
 	let selectedProducts = [];
-	
+
 	// 편집 모드 관련
 	let isEditMode = false;
 	let editOrderId = null;
 	let editItems = []; // 서버에서 불러온 편집 대상 품목들
-	
+
 	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
-		const addBtn = document.getElementById("addBtn");
-		let editBtn = document.getElementById("editBtn");
-		if (!editBtn) {
-			editBtn = document.createElement("button");
-			editBtn.id = "editBtn";
-			editBtn.type = "button";
-			editBtn.className = "btn btn-secondary ms-2";
-			editBtn.textContent = "수정";
-			editBtn.style.display = "none"; // 기본 숨김
-			// addBtn이 있는 곳의 부모에 추가 (존재하지 않으면 body에 append)
-			if (addBtn && addBtn.parentNode) {
-				addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
-			} else {
-				document.body.appendChild(editBtn);
-			}
+	const addBtn = document.getElementById("addBtn");
+	let editBtn = document.getElementById("editBtn");
+	if (!editBtn) {
+		editBtn = document.createElement("button");
+		editBtn.id = "editBtn";
+		editBtn.type = "button";
+		editBtn.className = "btn btn-secondary ms-2";
+		editBtn.textContent = "수정";
+		editBtn.style.display = "none"; // 기본 숨김
+		// addBtn이 있는 곳의 부모에 추가 (존재하지 않으면 body에 append)
+		if (addBtn && addBtn.parentNode) {
+			addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
+		} else {
+			document.body.appendChild(editBtn);
+		}
+	}
+
+	// ** 수정된 부분: 수정 버튼 클릭 이벤트는 여기서 한 번만 등록 **
+	editBtn.addEventListener('click', () => {
+		console.log("수정 버튼 클릭됨");
+
+		// 현재 포커스된 셀 정보 가져오기
+		const focused = orderGrid.getFocusedCell();
+		console.log("focused:", focused);
+
+		if (!focused) {
+			alert("수정할 행을 선택해주세요.");
+			return;
 		}
 
-		// ** 수정된 부분: 수정 버튼 클릭 이벤트는 여기서 한 번만 등록 **
-		editBtn.addEventListener('click', () => {
-			console.log("수정 버튼 클릭됨");
-			    
-			    // 현재 포커스된 셀 정보 가져오기
-			    const focused = orderGrid.getFocusedCell();
-			    console.log("focused:", focused);
+		// 포커스된 rowKey 기반으로 행 데이터 가져오기
+		const rowData = orderGrid.getRow(focused.rowKey);
+		console.log("선택된 rowData:", rowData);
 
-			    if (!focused) {
-			        alert("수정할 행을 선택해주세요.");
-			        return;
-			    }
+		// 수정 모달 열기
+		openEditModal(rowData.orderId, rowData);
+	});
 
-			    // 포커스된 rowKey 기반으로 행 데이터 가져오기
-			    const rowData = orderGrid.getRow(focused.rowKey);
-			    console.log("선택된 rowData:", rowData);
-
-			    // 수정 모달 열기
-			    openEditModal(rowData.orderId, rowData);
-		});
-	
 	// TUI Grid 인스턴스들을 초기화하고 데이터를 불러오는 함수
 	const initializePage = () => {
 		// 수주 목록 그리드 초기화
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						let color = '';
 						let statusText = '';
 						switch (value.value) {
-							case 'RECEIVED': 
+							case 'RECEIVED':
 								color = 'blue';
 								statusText = '등록';
 								break;
@@ -128,11 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'red';
 								statusText = '취소';
 								break;
-							case 'PREPARING': 
+							case 'PREPARING':
 								color = 'green';
 								statusText = '납품 대기';
 								break;
-							default: 
+							default:
 								color = 'black';
 								statusText = '납품 완료';
 								break;
@@ -187,62 +187,62 @@ document.addEventListener("DOMContentLoaded", () => {
 		orderGrid.on('click', async (ev) => {
 			const rowData = orderGrid.getRow(ev.rowKey);
 			rowHeaders: ['checkbox']
-			    // rowData가 존재하지 않으면 아무 작업도 하지 않고 함수를 종료
-			    if (!rowData) {
-			        // 행이 선택되지 않은 경우 수정 버튼을 숨김
-			        editBtn.style.display = "none";
-			        editBtn.removeAttribute('data-order-id');
-			        return;
-			    }
+			// rowData가 존재하지 않으면 아무 작업도 하지 않고 함수를 종료
+			if (!rowData) {
+				// 행이 선택되지 않은 경우 수정 버튼을 숨김
+				editBtn.style.display = "none";
+				editBtn.removeAttribute('data-order-id');
+				return;
+			}
 
-			    // 수주상태 컬럼 클릭 시 취소 로직
-			    if (ev.columnName === 'orderStatus') {
-			        if (rowData.orderStatus === 'CANCELED') {
-			            alert("이미 취소된 수주입니다.");
-			            return;
-			        }
-			        
-			        editBtn.style.display = "none";
-			        
-			        if (confirm("수주를 취소하시겠습니까?")) {
-			            const orderId = rowData.orderId;
-			            try {
-			                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-			                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+			// 수주상태 컬럼 클릭 시 취소 로직
+			if (ev.columnName === 'orderStatus') {
+				if (rowData.orderStatus === 'CANCELED') {
+					alert("이미 취소된 수주입니다.");
+					return;
+				}
 
-			                const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
-			                    method: "PUT",
-			                    headers: {
-			                        "Content-Type": "application/json",
-			                        [csrfHeader]: csrfToken
-			                    }
-			                });
+				editBtn.style.display = "none";
 
-			                if (!res.ok) {
-			                    throw new Error(await res.text());
-			                }
+				if (confirm("수주를 취소하시겠습니까?")) {
+					const orderId = rowData.orderId;
+					try {
+						const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+						const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
-			                orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
-			                alert("수주가 취소되었습니다.");
-			            } catch (err) {
-			                console.error("수주 취소 실패:", err);
-			                alert("수주 취소 실패: " + err.message);
-			            }
-			        }
-			        return;
-			    } 
-			    
-			    // 그 외 클릭: 상세 로드 및 수정 버튼 표시
-			    loadOrderDetails(rowData.orderId);
-			    
-			    // 수정 버튼의 표시 여부와 data 속성을 제어합니다.
-			    if (rowData.orderStatus === 'RECEIVED') {
-			        editBtn.style.display = "inline-block";
-			        editBtn.dataset.orderId = rowData.orderId;
-			    } else {
-			        editBtn.style.display = "none";
-			        editBtn.removeAttribute('data-order-id');
-			    }		
+						const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+								[csrfHeader]: csrfToken
+							}
+						});
+
+						if (!res.ok) {
+							throw new Error(await res.text());
+						}
+
+						orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+						alert("수주가 취소되었습니다.");
+					} catch (err) {
+						console.error("수주 취소 실패:", err);
+						alert("수주 취소 실패: " + err.message);
+					}
+				}
+				return;
+			}
+
+			// 그 외 클릭: 상세 로드 및 수정 버튼 표시
+			loadOrderDetails(rowData.orderId);
+
+			// 수정 버튼의 표시 여부와 data 속성을 제어합니다.
+			if (rowData.orderStatus === 'RECEIVED') {
+				editBtn.style.display = "inline-block";
+				editBtn.dataset.orderId = rowData.orderId;
+			} else {
+				editBtn.style.display = "none";
+				editBtn.removeAttribute('data-order-id');
+			}
 		});
 
 	};
@@ -250,9 +250,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 페이지 초기화 함수 호출
 	initializePage();
 
-// 서버에서 목록/데이터 로드하는 함수들
-//--------------------------------------------------------
-	
+	// 서버에서 목록/데이터 로드하는 함수들
+	//--------------------------------------------------------
+
 	// 페이지 로딩 시 전체 수주 목록 불러오기
 	function loadOrders() {
 		fetch("/business/api/orders")
@@ -286,14 +286,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				const selectElement = document.getElementById("clientId");
 				selectElement.innerHTML = '<option value="">선택</option>';
 				// 거래처 유형이 '매출사'인 데이터만 필터링하여 드롭다운에 추가
-				            const salesClients = data.filter(client => client.clientType === '매출사');
-				            
-				            salesClients.forEach(client => {
-				                const option = document.createElement("option");
-				                option.value = client.clientId;
-				                option.textContent = client.clientName;
-				                selectElement.appendChild(option);
-				            });
+				const salesClients = data.filter(client => client.clientType === '매출사');
+
+				salesClients.forEach(client => {
+					const option = document.createElement("option");
+					option.value = client.clientId;
+					option.textContent = client.clientName;
+					selectElement.appendChild(option);
+				});
 			})
 			.catch(error => console.error("거래처 목록 불러오기 오류:", error));
 	}
@@ -309,11 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			})
 			.catch(error => console.error("품목 목록 불러오기 오류:", error));
 	}
-	
-//--------------------------------------------------------------------------------------
+
+	//--------------------------------------------------------------------------------------
 
 	// 모달/품목 선택 UI 관련
-// ----------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------
 	if (addBtn) {
 		addBtn.addEventListener("click", async () => {
 			isEditMode = false;
@@ -333,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			orderAddModal.show();
 		});
 	}
-	
+
 	// 모달이 완전히 표시된 후에 품목 리스트 그리드 초기화 및 데이터 로드
 	orderAddModalElement.addEventListener('shown.bs.modal', async () => {
 		// productListGrid가 아직 생성되지 않았다면 초기화
@@ -389,54 +389,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 품목 데이터를 먼저 로드
 		await loadProductsForModal();
-		
+
 		if (isEditMode && editOrderId) {
-		        try {
-		            const res = await fetch(`/api/orders/${orderId}/details`);
-		            const orderDetails = await res.json(); // [{productId, qty, ...}, ...]
+			try {
+				const res = await fetch(`/api/orders/${orderId}/details`);
+				const orderDetails = await res.json(); // [{productId, qty, ...}, ...]
 
-		            editItems = orderDetails.map(item => ({
-		                productId: item.productId,
-		                productName: item.productName,
-		                unit: item.unit,
-		                price: item.price,
-		                qty: item.qty
-		            }));
+				editItems = orderDetails.map(item => ({
+					productId: item.productId,
+					productName: item.productName,
+					unit: item.unit,
+					price: item.price,
+					qty: item.qty
+				}));
 
-		            // productListGrid에서 해당 품목 체크
-		            const gridData = productListGrid.getData();
-		            productListGrid.uncheckAll();
+				// productListGrid에서 해당 품목 체크
+				const gridData = productListGrid.getData();
+				productListGrid.uncheckAll();
 
-		            const toCheckRowKeys = [];
-		            editItems.forEach(item => {
-		                const idx = gridData.findIndex(r => r.productId == item.productId);
-		                if (idx >= 0) {
-		                    toCheckRowKeys.push(idx);
-		                }
-		            });
+				const toCheckRowKeys = [];
+				editItems.forEach(item => {
+					const idx = gridData.findIndex(r => r.productId == item.productId);
+					if (idx >= 0) {
+						toCheckRowKeys.push(idx);
+					}
+				});
 
-		            toCheckRowKeys.forEach(rk => productListGrid.check(rk));
+				toCheckRowKeys.forEach(rk => productListGrid.check(rk));
 
-		            // selectedProducts 업데이트 후 렌더
-		            selectedProducts = editItems.map(item => {
-		                const gridItem = gridData.find(g => g.productId === item.productId);
-		                return {
-		                    ...gridItem,
-		                    qty: item.qty
-		                };
-		            });
-		            renderSelectedItems();
+				// selectedProducts 업데이트 후 렌더
+				selectedProducts = editItems.map(item => {
+					const gridItem = gridData.find(g => g.productId === item.productId);
+					return {
+						...gridItem,
+						qty: item.qty
+					};
+				});
+				renderSelectedItems();
 
-		        } catch (err) {
-		            console.error('수주 상세 조회 실패', err);
-		        }
-		    } else {
-		        // 신규 등록: 초기 렌더
-		        selectedProducts = [];
-		        renderSelectedItems();
-		    }	
+			} catch (err) {
+				console.error('수주 상세 조회 실패', err);
+			}
+		} else {
+			// 신규 등록: 초기 렌더
+			selectedProducts = [];
+			renderSelectedItems();
+		}
 	});
-	
+
 	// 모달이 완전히 닫힌 후 그리드 파괴 및 상태 리셋
 	orderAddModalElement.addEventListener('hidden.bs.modal', () => {
 		if (productListGrid) {
@@ -459,14 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (clientSelect) clientSelect.disabled = false;
 		// 폼 초기화
 		form.reset();
-	});		
-	
+	});
+
 	// 선택된 품목 목록을 업데이트하는 함수
 	const updateSelectedItems = () => {
 		if (!productListGrid) return;
-		
+
 		const checkedRows = productListGrid.getCheckedRows();
-		
+
 		// 기존 selectedProducts의 수량 정보를 유지
 		const newSelectedProducts = checkedRows.map(r => {
 			const existingItem = selectedProducts.find(sp => sp.productId === r.productId);
@@ -487,15 +487,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (selectedProducts.length === 0) {
 			// 빈 메시지 엘리먼트가 존재하고, 선택된 품목이 없을 때만 표시
-			if(emptyMessage) {
+			if (emptyMessage) {
 				selectedItemsContainer.appendChild(emptyMessage);
 			}
 		} else {
 			// 빈 메시지를 다시 숨김
-			if(emptyMessage && emptyMessage.parentNode) {
+			if (emptyMessage && emptyMessage.parentNode) {
 				emptyMessage.parentNode.removeChild(emptyMessage);
 			}
-			
+
 			selectedProducts.forEach((item, index) => {
 				const price = parseInt(item.price) || 0;
 				const initialQty = item.qty ? item.qty : 1;
@@ -525,7 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				itemDiv.innerHTML = itemHtml;
 				selectedItemsContainer.appendChild(itemDiv);
-				
+
 				// remove 버튼 이벤트
 				itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => {
 					removeItem(item.productId);
@@ -546,13 +546,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const productId = inputElement.dataset.productId;
 		const itemDiv = selectedItemsContainer.querySelector(`[data-product-id='${productId}']`);
-		
+
 		// selectedProducts 배열의 수량 업데이트
 		const itemToUpdate = selectedProducts.find(item => item.productId === productId);
 		if (itemToUpdate) {
 			itemToUpdate.qty = quantity;
 		}
-		
+
 		if (itemDiv) {
 			const el = itemDiv.querySelector('.item-total-price');
 			if (el) el.textContent = `₩${newTotal.toLocaleString()}`;
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// selectedProducts 배열에서도 제거
 		selectedProducts = selectedProducts.filter(item => item.productId !== productId);
-		
+
 		// 화면 다시 렌더링
 		renderSelectedItems();
 	};
@@ -601,8 +601,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			})
 			.catch(error => console.error("품목 검색 오류:", error));
 	});
-	
-// ----------------------------------------------------------------------------------------------
+
+	// ----------------------------------------------------------------------------------------------
 
 	// 폼 제출 이벤트 (수주 등록 및 수정)
 	form.addEventListener("submit", async (event) => {
@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			alert("하나 이상의 품목을 선택해주세요.");
 			return;
 		}
-		
+
 		const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
 		const totalPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
@@ -702,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			alert("서버 통신 오류");
 		}
 	});
-// -------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------
 
 	// 편집 모달 열기 (기존 수주 불러와서 채우기)
 	async function openEditModal(orderId, rowData) {
@@ -722,7 +722,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			// modal 제목/버튼 텍스트 변경
 			document.getElementById('orderModalTitle').textContent = '수주 수정';
 			document.getElementById('orderSubmitBtn').textContent = '수정';
-			
+
 			// 클라이언트 로드 후 선택값 세팅 (거래처는 변경 불가)
 			await loadClientsForModal();
 			const clientSelect = document.getElementById("clientId");
@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 품목 목록 저장 → shown.bs.modal 에서 반영됨
 			editItems = order.items || [];
-			
+
 			// 모달 show (product 그리드는 shown 이벤트에서 editItems를 보고 체크/qty 반영)
 			orderAddModal.show();
 
@@ -744,6 +744,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			console.error("편집 모달 오픈 실패:", err);
 			alert("편집 모달을 열 수 없습니다: " + err.message);
 		}
-	}	
-		
+	}
+
 });
