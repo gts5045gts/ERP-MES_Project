@@ -39,6 +39,10 @@ public class LotMaster {
 // 	각테이블 고유 pk id
 	@Column(name = "TARGET_ID", length = 50, nullable = false, updatable = false)
 	private String targetId;
+	
+// 	각테이블 고유 pk id value
+	@Column(name = "TARGET_ID_VALUE", length = 50, nullable = false, updatable = false)
+	private String targetIdValue;
 
 // 	조회 대상 테이블
 	@Column(length = 40, nullable = false, updatable = false)
@@ -50,8 +54,6 @@ public class LotMaster {
 
 	@Column(length = 50)
 	private String materialCode;
-//수량
-	private int qty;
 
 	@Column(length = 50)
 	private String machineId;

@@ -10,10 +10,8 @@ import org.springframework.stereotype.Service;
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
-import com.erp_mes.mes.lot.dto.ProcessHistoryDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
-import com.erp_mes.mes.lot.entity.LotProcessHistory;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
@@ -42,9 +40,9 @@ public class LotService {
 	        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 	        LotDomain lotDomain = LotDomain.fromDomain(domain);
 	        String prefix = lotDomain.getPrefix();
-	        Integer qty = lotDTO.getQty();
+//	        Integer qty = lotDTO.getQty();
 	        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
-	        int lotQty = (qty != null) ? qty : 0;
+//	        int lotQty = (qty != null) ? qty : 0;
 
 	        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, machineId);
 	        lotId = generateLotId(prefix, datePart, machineId, lastLotId);
@@ -52,10 +50,11 @@ public class LotService {
 	        lot = LotMaster.builder()
 	            .lotId(lotId)
 	            .targetId(lotDTO.getTargetId())
+	            .targetIdValue(lotDTO.getTargetIdValue())
 	            .tableName(lotDTO.getTableName())
 	            .type(prefix)
 	            .materialCode(lotDTO.getMaterialCode())
-	            .qty(lotQty)
+//	            .qty(lotQty)
 	            .machineId(machineId)
 	            .createdAt(LocalDateTime.now())
 	            .build();
@@ -80,7 +79,6 @@ public class LotService {
 	            LotMaterialUsage usage = LotMaterialUsage.builder()
 	                .parentLot(parentLot)
 	                .childLot(childLot)
-	                .qtyUsed(usageDTO.getQtyUsed())
 	                .createdAt(LocalDateTime.now())
 	                .build();
 	            usageRepository.save(usage);

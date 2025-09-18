@@ -33,7 +33,7 @@ public class LotController {
 	public String testCallAOP() {
 		// lotDTO를 먼저 호출하면서 필수정보 입력
 		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM2").type("process").materialCode("test-STEEL-444")
-				.qty(200).build();
+				.build();
 
 		String targetId = lotService.registWareHouse(lotDTO);
 		// 입고등을 insert한후에 pk id값을 받아서 setTargetId하면
@@ -51,7 +51,8 @@ public class LotController {
 	@ResponseBody
 	@TrackLot
 	public LotDTO saveWareHouse() {
-		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM3").materialCode("test-STEEL-11").qty(50).build();
+		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM3").materialCode("test-STEEL-11")
+				.build();
 
 		String targetId = lotService.registWareHouse(lotDTO);
 		// table 고유 pk값 저장
@@ -70,7 +71,7 @@ public class LotController {
 		List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 		MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
 								.parentLotId("PR20250912-001") // 원자재 LOT ID
-								.qtyUsed(100) // 사용 수량
+//								.qtyUsed(100) // 사용 수량
 								.build();
 		usages.add(usage1);
 //		MaterialUsageDTO usage2 = MaterialUsageDTO.builder()
@@ -80,7 +81,7 @@ public class LotController {
 //		usages.add(usage2);
 		// LotDTO 생성
 		LotDTO lotDTO = LotDTO.builder().tableName("PRODUCT_PLAN")
-				.qty(150) // 총 생산 수량
+//				.qty(150) // 총 생산 수량
 				.machineId("L1") // 생산 설비 ID
 				.usages(usages) // 자재 사용 내역 등록
 				.build();

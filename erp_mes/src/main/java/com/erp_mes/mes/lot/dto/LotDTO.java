@@ -26,13 +26,13 @@ public class LotDTO {
 	@NotBlank
 	private String materialCode; // 자재/품목 코드
 	
-	@Min(0)
-	private int qty; // LOT 수량(기본 0 가능)
-	
 	private String machineId; // 생산 LOT이면 설비/라인 ID, 원자재/출하는 null 가능
 	
 	@NotBlank
 	private String targetId; // 각 테이블 PK(문자/숫자 모두 수용)
+	
+	@NotBlank
+	private String targetIdValue; // 각 테이블 PK의 값
 	
 	private String lotId; // 생성된 LOT ID(Prefix+날짜+[-machine]+-SEQ)
 	
@@ -45,15 +45,15 @@ public class LotDTO {
 //	private List<ProcessHistoryDTO> processes; // 공정 이력(있을 때만 저장) //작업지시 참조로 변경
 	
 	@Builder
-	public LotDTO(@NotBlank String tableName, @NotBlank String type, @NotBlank String materialCode, @Min(0) int qty,
-			String machineId, @NotBlank String targetId, String lotId, Long workOrderId, LocalDateTime createdAt,
+	public LotDTO(@NotBlank String tableName, @NotBlank String type, @NotBlank String materialCode,
+			String machineId, @NotBlank String targetId, @NotBlank String targetIdValue, String lotId, Long workOrderId, LocalDateTime createdAt,
 			List<MaterialUsageDTO> usages, List<ProcessHistoryDTO> processes) {
 		this.tableName = tableName;
 		this.type = type;
 		this.materialCode = materialCode;
-		this.qty = qty;
 		this.machineId = machineId;
 		this.targetId = targetId;
+		this.targetIdValue = targetIdValue;
 		this.lotId = lotId;
 		this.workOrderId = workOrderId;
 		this.createdAt = createdAt;
