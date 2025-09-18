@@ -16,7 +16,11 @@ public interface StockMapper {
     
     // ==================== 재고 현황 관련 ====================
     
-    // 재고 목록 조회
+    // 전체 재고 목록 조회 (material + product 통합)
+    List<StockDTO> getAllStockList(@Param("productName") String productName, 
+                                   @Param("warehouseId") String warehouseId);
+    
+    // 재고 목록 조회 (기존 product만)
     List<StockDTO> getStockList(@Param("productName") String productName, 
                                 @Param("warehouseId") String warehouseId);
     
@@ -30,6 +34,13 @@ public interface StockMapper {
     int updateStockAmount(@Param("productId") String productId, 
                          @Param("warehouseId") String warehouseId,
                          @Param("itemAmount") Integer itemAmount);
+    
+    // Material 재고 차감 (투입용)
+    int reduceMaterialStock(@Param("materialId") String materialId, 
+                           @Param("reduceQty") Integer reduceQty);
+    
+    // Material 창고별 재고 조회
+    List<Map<String, Object>> getMaterialWarehouseStock(@Param("materialId") String materialId);
     
     // ==================== Material 테이블 관련 (부품/반제품) ====================
     
@@ -146,4 +157,28 @@ public interface StockMapper {
     List<Map<String, String>> selectEmployeeList();
     
     List<Map<String, String>> getMaterialTypes();
+    
+    int insertMaterialStock(@Param("materialId") String materialId,
+            @Param("warehouseId") String warehouseId,
+            @Param("locationId") String locationId,
+            @Param("qty") Integer qty,
+            @Param("empId") String empId);
+    
+    // Material 조회
+    MaterialDTO selectMaterialById(@Param("materialId") String materialId);
+
+    // Material warehouse_item 조회 (수량 오름차순)
+    List<Map<String, Object>> getMaterialLocationsByQty(@Param("materialId") String materialId, 
+                                                         @Param("warehouseId") String warehouseId);
+
+    // Material warehouse_item 재고 업데이트
+    int updateMaterialLocationStock(@Param("materialId") String materialId, 
+                                    @Param("warehouseId") String warehouseId,
+                                    @Param("locationId") String locationId, 
+                                    @Param("newQty") Integer newQty);
+
+    // Material warehouse_item 빈 위치 삭제
+    int deleteEmptyMaterialLocation(@Param("materialId") String materialId, 
+                                    @Param("warehouseId") String warehouseId, 
+                                    @Param("locationId") String locationId);
 }

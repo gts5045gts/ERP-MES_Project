@@ -18,6 +18,7 @@ public class MaterialDTO {
     private String unit;
     private String spec;
     private Double price;
+    private Integer quantity;
     private String empId;
     private String empName;
     private LocalDateTime createdAt;

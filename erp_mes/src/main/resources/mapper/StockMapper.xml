@@ -22,7 +22,65 @@
     
     <!-- ==================== 재고 현황 관련 ==================== -->
     
-    <!-- 재고 목록 조회 (전체) -->
+    <!-- 전체 재고 목록 조회 (material + product 통합) -->
+	<select id="getAllStockList" resultMap="stockResultMap">
+	    SELECT * FROM (
+	        SELECT 
+	            material_id as product_id,
+	            material_name as product_name,
+	            material_type as product_type,
+	            NVL(quantity, 0) as quantity
+	        FROM material
+	        WHERE 1=1
+	        <if test="productName != null and productName != ''">
+	            AND material_name LIKE '%' || #{productName} || '%'
+	        </if>
+	        
+	        UNION ALL
+	        
+	        SELECT 
+	            product_id,
+	            product_name,
+	            CASE WHEN product_type = 'PTYPE001' THEN '완제품' 
+	                 ELSE product_type 
+	            END as product_type,
+	            NVL(quantity, 0) as quantity
+	        FROM product
+	        WHERE product_type = 'PTYPE001'  <!-- PTYPE001만 조회 -->
+	        <if test="productName != null and productName != ''">
+	            AND product_name LIKE '%' || #{productName} || '%'
+	        </if>
+	    )
+	    ORDER BY product_type DESC, product_id
+	</select>
+    
+    <!-- Material 재고 차감 (투입용) -->
+    <update id="reduceMaterialStock">
+        UPDATE material 
+        SET quantity = NVL(quantity, 0) - #{reduceQty}
+        WHERE material_id = #{materialId}
+    </update>
+    
+    <!-- Material 창고별 재고 조회 -->
+    <select id="getMaterialWarehouseStock" resultType="map">
+        SELECT 
+            w.warehouse_id as "warehouseId",
+            w.warehouse_name as "warehouseName",
+            w.warehouse_type as "warehouseType",
+            NVL(SUM(wi.item_amount), 0) as "itemAmount",
+            COUNT(wi.location_id) as "locationCount"
+        FROM warehouse w
+        LEFT JOIN warehouse_item wi 
+            ON w.warehouse_id = wi.warehouse_id 
+            AND wi.product_id = #{materialId}
+            AND wi.use_yn = 'Y'
+        WHERE w.warehouse_status = 'Y'
+        AND w.warehouse_type IN ('부품창고', '반제품창고', '원자재')
+        GROUP BY w.warehouse_id, w.warehouse_name, w.warehouse_type
+        ORDER BY w.warehouse_name
+    </select>
+    
+    <!-- 재고 목록 조회 (기존) -->
     <select id="getStockList" resultMap="stockResultMap">
         SELECT 
             p.product_id,
@@ -85,6 +143,7 @@
 	        m.unit,
 	        m.spec,
 	        m.price,
+	        m.quantity,
 	        m.emp_id as empId,
 	        e.emp_name as empName,
 	        m.created_at as createdAt,
@@ -93,7 +152,7 @@
 	    LEFT JOIN employee e ON m.emp_id = e.emp_id
 	    WHERE 1=1
 	    <if test="materialType != null and materialType != ''">
-	        AND m.material_type = #{materialType}  <!-- '부품' or '반제품' 직접 비교 -->
+	        AND m.material_type = #{materialType}
 	    </if>
 	    <if test="searchKeyword != null and searchKeyword != ''">
 	        AND (m.material_id LIKE '%' || #{searchKeyword} || '%'
@@ -112,8 +171,6 @@
 	    AND USE_YN = 'Y'
 	</select>
     
-    
-    
     <!-- 자재 중복 체크 -->
     <select id="existsMaterialById" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
@@ -123,26 +180,15 @@
     
     <!-- 자재 등록 -->
     <insert id="insertIntoMaterial">
-        INSERT INTO material (
-            material_id, 
-            material_name, 
-            material_type, 
-            unit, 
-            spec,
-            price,
-            emp_id, 
-            created_at
-        ) VALUES (
-            #{materialId}, 
-            #{materialName}, 
-            #{materialType}, 
-            #{unit}, 
-            #{spec},
-            #{price, jdbcType=NUMERIC},
-            #{empId}, 
-            SYSDATE
-        )
-    </insert>
+	    INSERT INTO material (
+	        material_id, material_name, material_type, unit, 
+	        spec,price,quantity,emp_id, created_at
+	    ) VALUES (
+	        #{materialId}, #{materialName}, #{materialType}, #{unit}, 
+	        #{spec}, #{price, jdbcType=NUMERIC}, #{quantity, jdbcType=NUMERIC},
+	        #{empId}, SYSDATE
+	    )
+	</insert>
     
     <!-- 자재 수정 -->
     <update id="updateMaterialTable">
@@ -195,6 +241,7 @@
             p.product_type as productType,
             p.unit,
             p.price,
+            p.quantity,
             p.emp_id as empId,
             e.emp_name as empName,
             p.created_at as createdAt,
@@ -338,17 +385,19 @@
     
     <!-- 빈 위치 조회 -->
     <select id="getEmptyLocations" resultType="string">
-        SELECT il.location_id
-        FROM item_location il
-        WHERE il.warehouse_id = #{warehouseId}
-        AND il.zone_yn = 'Y'
-        AND NOT EXISTS (
-            SELECT 1 FROM warehouse_item wi
-            WHERE wi.location_id = il.location_id
-            AND wi.item_amount > 0
-        )
-        ORDER BY il.loc_zone, il.loc_rack, il.loc_level, il.loc_cell
-    </select>
+	    SELECT il.location_id
+	    FROM item_location il
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    AND NOT EXISTS (
+	        SELECT 1 FROM warehouse_item wi
+	        WHERE wi.location_id = il.location_id
+	        AND wi.item_amount > 0
+	        AND wi.use_yn = 'Y'
+	    )
+	    ORDER BY il.loc_zone, il.loc_rack, il.loc_level, il.loc_cell
+	    FETCH FIRST 10 ROWS ONLY
+	</select>
     
     <!-- warehouse_item 등록 -->
     <insert id="insertWarehouseItem">
@@ -395,6 +444,71 @@
             #{empId}
         )
     </insert>
+    
+    <insert id="insertMaterialStock">
+	    INSERT INTO warehouse_item (
+	        manage_id, 
+	        warehouse_id, 
+	        material_id,
+	        item_amount, 
+	        location_id, 
+	        use_yn,
+	        create_date, 
+	        emp_id
+	    ) VALUES (
+	        #{materialId} || '_' || #{locationId},
+	        #{warehouseId},
+	        #{materialId},
+	        #{qty},
+	        #{locationId},
+	        'Y',
+	        SYSDATE,
+	        #{empId}
+	    )
+	</insert>
+	
+	<!-- Material 조회 -->
+	<select id="selectMaterialById" resultType="com.erp_mes.mes.stock.dto.MaterialDTO">
+	    SELECT 
+	        material_id as materialId,
+	        material_name as materialName,
+	        material_type as materialType,
+	        unit,
+	        quantity
+	    FROM material
+	    WHERE material_id = #{materialId}
+	</select>
+	
+	<!-- Material warehouse_item 수량순 조회 -->
+	<select id="getMaterialLocationsByQty" resultType="map">
+	    SELECT 
+	        location_id as "locationId",
+	        item_amount as "itemAmount"
+	    FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND item_amount > 0
+	    AND use_yn = 'Y'
+	    ORDER BY item_amount ASC
+	</select>
+	
+	<!-- Material warehouse_item 재고 업데이트 -->
+	<update id="updateMaterialLocationStock">
+	    UPDATE warehouse_item
+	    SET item_amount = #{newQty},
+	        update_date = SYSDATE
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</update>
+	
+	<!-- Material warehouse_item 빈 위치 삭제 -->
+	<delete id="deleteEmptyMaterialLocation">
+	    DELETE FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</delete>
     
     <!-- 500개 미만인 위치 조회 -->
     <select id="getProductLocationsWithSpace" resultType="map">
