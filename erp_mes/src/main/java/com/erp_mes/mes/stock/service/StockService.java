@@ -9,11 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.stock.dto.ProductDTO;
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.erp.config.util.TableMetadataManager;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.mapper.StockMapper;
 
+import jakarta.security.auth.message.callback.PrivateKeyCallback.Request;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -67,6 +72,7 @@ public class StockService {
     
     // 자재 등록
     @Transactional
+    @TrackLot // lot 생성 관련 어노테이션 
     public void addMaterial(MaterialDTO dto) {
         log.info("자재 등록: {}", dto.getMaterialId());
         
@@ -76,6 +82,10 @@ public class StockService {
         
         // 1. material 테이블에 등록
         stockMapper.insertIntoMaterial(dto);
+        
+//		lot 생성을 위해 entity(없으면 dto) 를 넘겨주는 곳
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("dto", dto);
         
         // 2. 자재 타입에 맞는 창고 찾기
         String warehouseType = dto.getMaterialType().equals("부품") ? "부품창고" : "반제품창고";

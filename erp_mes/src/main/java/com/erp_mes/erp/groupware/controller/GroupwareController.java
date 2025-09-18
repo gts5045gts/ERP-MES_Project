@@ -93,13 +93,6 @@ public class GroupwareController {
 
 		documentRepository.save(doc);
 		
-//		엔티티로부터 테이블 정보 가져오기
-		System.out.println("엔티티 정보 : " + TableMetadataManager.getTableInfo(doc));
-//		 ---------------------------------------------------------------
-//		 ---------------------------------------------------------------
-//		 DTO 객체로부터 테이블 정보 가져오기
-		System.out.println("DTO 객체 정보 : " + TableMetadataManager.getTableInfo(documentDTO));
-		
 		return "redirect:/groupware/document";
 	}
 	

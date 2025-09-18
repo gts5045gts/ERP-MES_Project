@@ -6,10 +6,14 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.erp.config.util.TableMetadataManager;
+import com.erp_mes.erp.config.util.TableMetadataManager.TableInfo;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -49,13 +53,20 @@ public class LotAOP {
 		try {
 			// 핵심 메서드 실행
 			result = pjp.proceed();
-
+			HttpSession session = SessionUtil.getSession();
+			Object obj = session.getAttribute("dto");
+			TableInfo tableInfo = TableMetadataManager.getTableInfo(obj);
+//			tableInfo.getTableName
+//			tableInfo.pkColumnName
+			log.info("DTO 객체 정보 : " + obj);
+			log.info("테이블 정보 : " + tableInfo);
+			log.info("result 정보 : " + result);
+			
 			// 반환값이 LotDTO인지 판단
 			if (result instanceof LotDTO dto) {
 				lotDTO = dto;
-//                String parentLotId = lotDTO.getpa
 
-				lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
+//				lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
 			}
 
 			return result; // 반드시 반환

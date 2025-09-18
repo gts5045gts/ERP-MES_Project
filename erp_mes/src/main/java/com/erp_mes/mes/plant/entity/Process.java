@@ -42,7 +42,7 @@ public class Process {
 	private String note;
 	
 	@ManyToOne
-	@JoinColumn(nullable = false, name = "TYPE_ID", referencedColumnName = "COM_DT_ID")
+	@JoinColumn(nullable = false, name = "TYPE_NM", referencedColumnName = "COM_DT_ID")
 	private CommonDetailCode common;
 
 	

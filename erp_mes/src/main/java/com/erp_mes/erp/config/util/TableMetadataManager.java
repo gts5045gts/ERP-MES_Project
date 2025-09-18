@@ -102,7 +102,7 @@ public class TableMetadataManager {
     @Getter
     @AllArgsConstructor
     @ToString
-    private static class TableInfo {
+    public static class TableInfo {
         private final String tableName; // 테이블명
         private final String pkColumnName; // PK 컬럼명
     }
