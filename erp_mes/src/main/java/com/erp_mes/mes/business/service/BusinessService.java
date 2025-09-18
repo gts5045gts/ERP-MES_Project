@@ -107,6 +107,15 @@ public class BusinessService {
 	public List<OrderDTO> getAllOrder() {
 		return businessMapper.getAllOrder();
 	}
+	
+	public OrderDTO getOrderById(String orderId) {
+	    return businessMapper.getOrderById(orderId);
+	}
+	
+	// 검색 조건에 따른 수주 목록 조회
+	public List<OrderDTO> searchOrders(String orderStatus, String clientName) {
+	    return businessMapper.searchOrders(orderStatus, clientName);
+	}
 
 	// 수주 상세 목록 리스트
 	public List<OrderDetailDTO> getOrderDetailsByOrderId(String orderId) {

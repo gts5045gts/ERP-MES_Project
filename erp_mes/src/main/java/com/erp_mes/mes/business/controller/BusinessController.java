@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
@@ -74,6 +75,29 @@ public class BusinessController {
 
 		return businessService.getAllOrder();
 	}
+	
+	// 수주 단건 조회
+	@GetMapping("/api/orders/{orderId}")
+	@ResponseBody
+	public ResponseEntity<?> getOrder(@PathVariable("orderId") String orderId) {
+	    OrderDTO order = businessService.getOrderById(orderId);
+	    if (order == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("해당 수주를 찾을 수 없습니다.");
+	    }
+	    return ResponseEntity.ok(order);
+	}
+	
+	// 수주 목록 (검색조건 적용)
+	@GetMapping("/api/orders/search")
+	@ResponseBody
+	public List<OrderDTO> searchOrders(
+	        @RequestParam(required = false) String orderStatus,
+	        @RequestParam(required = false) String clientName
+	) {
+	    log.info("수주 검색 요청: 상태={}, 거래처명={}", orderStatus, clientName);
+	    return businessService.searchOrders(orderStatus, clientName);
+	}
 
 	// 수주 상세 목록 조회
 	@GetMapping("/api/orders/{orderId}/details")
@@ -83,7 +107,7 @@ public class BusinessController {
 		return businessService.getOrderDetailsByOrderId(orderId);
 	}
 
-
+	// 품목 리스트 
 	@GetMapping("/api/products")
 	@ResponseBody
 	public List<ProductDTO> getAllProduct() {

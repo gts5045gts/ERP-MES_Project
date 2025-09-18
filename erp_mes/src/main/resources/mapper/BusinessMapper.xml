@@ -3,6 +3,54 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.business.mapper.BusinessMapper">
+
+<resultMap id="orderWithDetailsMap" type="com.erp_mes.mes.business.dto.OrderDTO">
+    <result property="orderId" column="order_id"/>
+    <result property="clientId" column="client_id"/>
+    <result property="clientName" column="client_name"/>
+    <result property="empId" column="emp_id"/>
+    <result property="empName" column="emp_name"/>
+    <result property="orderDate" column="order_date"/>
+    <result property="deliveryDate" column="delivery_date"/>
+    <result property="orderQty" column="order_qty"/>
+    <result property="orderPrice" column="order_price"/>
+    <result property="orderStatus" column="order_status"/>
+
+    <!-- items 매핑 -->
+    <collection property="items" ofType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+        <result property="orderId" column="order_id"/>
+        <result property="id" column="id"/>
+        <result property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="unit" column="unit"/>
+        <result property="orderQty" column="order_qty"/>
+        <result property="orderPrice" column="order_price"/>
+    </collection>
+</resultMap>
+
+<select id="getOrderById" parameterType="string" resultMap="orderWithDetailsMap">
+    SELECT 
+        o.order_id,
+        o.client_id,
+        o.client_name,
+        o.emp_id,
+        o.emp_name,
+        o.order_date,
+        o.delivery_date,
+        o.order_qty,
+        o.order_price,
+        o.order_status,
+        d.id,
+        d.product_id,
+        d.product_name,
+        d.unit,
+        d.order_qty,
+        d.order_price
+    FROM orders o
+    LEFT JOIN orders_detail d ON o.order_id = d.order_id
+    WHERE o.order_id = #{orderId}
+</select>
+
 <!-- 전체 orders 개수 가져오기 -->
   <select id="countOrders" resultType="int">
   		SELECT 
@@ -97,6 +145,51 @@
 		FROM 
 		 	orders
 	</select>
+	
+<!-- 수주 목록 검색 (상태/거래처명 조건) -->
+	<select id="searchOrders" resultType="com.erp_mes.mes.business.dto.OrderDTO">
+    	SELECT 
+     		order_id,
+        	order_date,
+        	order_status,
+        	client_id,
+        	client_name,
+        	order_qty,
+        	order_price,
+        	delivery_date,
+        	emp_id,
+        	emp_name
+    	FROM
+    		orders
+    	<where>
+        	<if test="orderStatus != null and orderStatus != '' and orderStatus != 'ALL'">
+            	order_status = #{orderStatus}
+        	</if>
+        	<if test="clientName != null and clientName != ''">
+            	<if test="orderStatus != null and orderStatus != '' and orderStatus != 'ALL'">
+                	AND
+            	</if>
+            	client_name LIKE CONCAT('%', #{clientName}, '%')
+        	</if>
+    	</where>
+    	ORDER BY order_date DESC
+	</select>	
+
+<!-- 	<select id="getOrderById" parameterType="string" resultType="com.erp_mes.mes.business.dto.OrderDTO"> -->
+<!--     	SELECT  -->
+<!--         	order_id, -->
+<!--         	order_date, -->
+<!--         	order_status, -->
+<!--         	client_id, -->
+<!--         	client_name, -->
+<!--         	order_qty, -->
+<!--         	order_price, -->
+<!--         	delivery_date, -->
+<!--         	emp_id, -->
+<!--         	emp_name -->
+<!--     	FROM orders -->
+<!--     	WHERE order_id = #{orderId} -->
+<!-- 	</select> -->
 
 <!-- 	수주 상세 목록 조회 -->
 	<select id="getOrderDetailsByOrderId" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">

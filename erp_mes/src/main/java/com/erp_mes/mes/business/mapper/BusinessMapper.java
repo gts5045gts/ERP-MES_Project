@@ -28,6 +28,11 @@ public interface BusinessMapper {
  	// 수주 목록
 	List<OrderDTO> getAllOrder();
 	
+	OrderDTO getOrderById(String orderId);
+	
+	// 검색조건 수주 조회
+	List<OrderDTO> searchOrders(@Param("orderStatus") String orderStatus, @Param("clientName") String clientName);
+	
 	// 수주 상세 목록
 	List<OrderDetailDTO> getOrderDetailsByOrderId(@Param("orderId")String orderId);
 

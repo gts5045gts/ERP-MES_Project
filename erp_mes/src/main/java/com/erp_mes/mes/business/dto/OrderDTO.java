@@ -1,6 +1,7 @@
 package com.erp_mes.mes.business.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,4 +24,6 @@ public class OrderDTO {
 	private String empId;				// 수주 등록자 (= 로그인한 사용자)
 	private String empName;
 	private LocalDateTime updateAt;			// 수정일
+	
+	private List<OrderDetailDTO> items;
 }
