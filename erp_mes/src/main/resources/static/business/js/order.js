@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// ** 수정된 부분: 수정 버튼 클릭 이벤트는 여기서 한 번만 등록 **
+	// 수정 버튼 클릭 이벤트는 여기서 한 번만 등록
 	editBtn.addEventListener('click', () => {
 		console.log("수정 버튼 클릭됨");
 
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			el: document.getElementById('orderDetailGrid'),
 			scrollX: false,
 			scrollY: true,
-			bodyHeight: 220,
+			bodyHeight: 200,
 			minBodyHeight: 200,
 			emptyMessage: '수주 목록의 행을 클릭하여 상세 정보를 확인하세요.',
 			columns: [
@@ -286,17 +286,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
 	}
 
-	// 수주 등록 모달창 - 거래처 리스트 불러오기 (매출사만)
+	// 수주 등록 모달창 - 거래처 리스트 불러오기 (매출사 && 거래중)
 	function loadClientsForModal(isEditMode) {
 		return fetch("/business/api/clients")
 			.then(response => response.json())
 			.then(data => {
 				const selectElement = document.getElementById("clientId");
 				selectElement.innerHTML = '<option value="">선택</option>';
-				// '매출사'이면서 '거래중'인 데이터만 필터링하여 드롭다운에 추가
-//				const filteredClients = data.filter(client => 
-//					client.clientType === '매출사' && client.clientStatus === '거래중'
-//				);
 
 				let filteredClients = data;
 
@@ -347,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const clientSelect = document.getElementById("clientId");
 			if (clientSelect) clientSelect.disabled = false;
 
-			// 거래처 리스트를 먼저 로드하고 모달을 띄운다
+			// 거래처 리스트를 먼저 로드하고 모달 띄움
 			await loadClientsForModal(false);
 			orderAddModal.show();
 		});
@@ -382,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				],
 				columnOptions: {
-					resizable: true // 컬럼 너비를 사용자가 조절할 수 있게 합니다.
+					resizable: true // 컬럼 너비를 사용자가 조절 가능
 				},
 				data: []
 			});
@@ -612,18 +608,18 @@ document.addEventListener("DOMContentLoaded", () => {
 		renderSelectedItems();
 	};
 
-	// 품목 검색 버튼 이벤트
-	document.getElementById("searchProductBtn").addEventListener("click", () => {
-		const keyword = document.getElementById("productSearch").value;
-		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
-			.then(response => response.json())
-			.then(data => {
-				if (productListGrid) {
-					productListGrid.resetData(data);
-				}
-			})
-			.catch(error => console.error("품목 검색 오류:", error));
-	});
+//	// 품목 검색 버튼 이벤트
+//	document.getElementById("searchProductBtn").addEventListener("click", () => {
+//		const keyword = document.getElementById("productSearch").value;
+//		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
+//			.then(response => response.json())
+//			.then(data => {
+//				if (productListGrid) {
+//					productListGrid.resetData(data);
+//				}
+//			})
+//			.catch(error => console.error("품목 검색 오류:", error));
+//	});
 
 	// ----------------------------------------------------------------------------------------------
 
