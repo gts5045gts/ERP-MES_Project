@@ -44,15 +44,15 @@ public class BusinessController {
 	
 	// 수주 등록
 	@PostMapping("api/orders/submit")
-	public ResponseEntity<?> submitOrder(@RequestBody Map<String, Object> payload, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
-		log.info("clientName: " + payload.get("clientName"));
+	public ResponseEntity<?> submitOrder(@RequestBody OrderDTO orderDTO, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+
 		try {
 			// 로그인 사용자 정보 세팅
-			payload.put("empId", userDetails.getEmpId());
-			payload.put("empName", userDetails.getName());
+	        orderDTO.setEmpId(userDetails.getEmpId());
+	        orderDTO.setEmpName(userDetails.getName());
 
-			// 서비스 호출
-			String orderId = businessService.createOrder(payload);
+	        // 서비스 호출
+	        String orderId = businessService.createOrder(orderDTO);
 
 			return ResponseEntity.ok(Map.of("orderId", orderId, "status", "success", "message", "주문이 정상적으로 등록되었습니다."));
 
@@ -128,6 +128,22 @@ public class BusinessController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("수주 취소 실패");
         }
+    }
+    
+    @PutMapping("/api/orders/{orderId}")
+    public ResponseEntity<?> updateOrder(@PathVariable("orderId") String orderId, @RequestBody OrderDTO orderDTO) {
+    	log.info("updateOrder body: {}", orderDTO); 
+        orderDTO.setOrderId(orderId);
+        
+     // items 안에도 orderId 세팅
+        if (orderDTO.getItems() != null) {
+            orderDTO.getItems().forEach(item -> item.setOrderId(orderId));
+        }
+        
+        businessService.updateOrder(orderDTO);
+        
+        return ResponseEntity.ok(Map.of("orderId", orderId, "message", "수주 수정이 완료되었습니다."));
+
     }
 	
 }

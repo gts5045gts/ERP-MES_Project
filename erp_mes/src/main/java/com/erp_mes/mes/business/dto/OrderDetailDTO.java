@@ -12,7 +12,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class OrderDetailDTO {
-	private Long id;
+	private Integer id;
 	private String orderId;
 	private String unit;
 	private String productId;

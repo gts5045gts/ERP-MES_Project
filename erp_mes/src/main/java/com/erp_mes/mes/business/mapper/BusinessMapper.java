@@ -18,9 +18,9 @@ public interface BusinessMapper {
 	// 수주 등록 시 선택한 clientName값으로 client_id값 찾음
 	String findClientIdByName(@Param("clientName") String clientName);
 
-    int insertOrder(Map<String, Object> params);
+    int insertOrder(OrderDTO orderDTO);
 
-    int insertOrderDetail(Map<String, Object> params);
+    int insertOrderDetail(OrderDetailDTO detailDTO);
 	
     // 품목 리스트
  	List<ProductDTO> getAllProduct();
@@ -28,6 +28,7 @@ public interface BusinessMapper {
  	// 수주 목록
 	List<OrderDTO> getAllOrder();
 	
+	// 수주 수정 모달창에 기존 값 불러오기
 	OrderDTO getOrderById(String orderId);
 	
 	// 검색조건 수주 조회
@@ -41,5 +42,13 @@ public interface BusinessMapper {
 
 	// 수주 상태 update
     void updateOrderStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
+    
+    
+    void updateOrder(OrderDTO orderDTO);  
+    
+    void deleteOrderDetails(String orderId);
+    
+    // 한번의 수행에 여러 건의 OrderDetailDTO insert 
+    void insertOrderDetails(List<OrderDetailDTO> items);
 
 }

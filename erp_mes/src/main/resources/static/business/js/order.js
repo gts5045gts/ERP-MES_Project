@@ -104,9 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
 						return '';
 					}
 				},
-				{ header: '수주수량', name: 'orderQty', align: 'center' },
+				{ header: '수주수량', name: 'totalOrderQty', align: 'center' },
 				{
-					header: '수주금액', name: 'orderPrice', align: 'center',
+					header: '수주금액', name: 'totalOrderPrice', align: 'center',
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -392,24 +392,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		if (isEditMode && editOrderId) {
 			try {
-				const res = await fetch(`/api/orders/${orderId}/details`);
-				const orderDetails = await res.json(); // [{productId, qty, ...}, ...]
-
-				editItems = orderDetails.map(item => ({
-					productId: item.productId,
-					productName: item.productName,
-					unit: item.unit,
-					price: item.price,
-					qty: item.qty
-				}));
-
 				// productListGrid에서 해당 품목 체크
 				const gridData = productListGrid.getData();
 				productListGrid.uncheckAll();
 
 				const toCheckRowKeys = [];
 				editItems.forEach(item => {
-					const idx = gridData.findIndex(r => r.productId == item.productId);
+					const idx = gridData.findIndex(r => r.productId === item.productId);
 					if (idx >= 0) {
 						toCheckRowKeys.push(idx);
 					}
@@ -422,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					const gridItem = gridData.find(g => g.productId === item.productId);
 					return {
 						...gridItem,
-						qty: item.qty
+						qty: item.orderQty
 					};
 				});
 				renderSelectedItems();
@@ -467,13 +456,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const checkedRows = productListGrid.getCheckedRows();
 
-		// 기존 selectedProducts의 수량 정보를 유지
 		const newSelectedProducts = checkedRows.map(r => {
 			const existingItem = selectedProducts.find(sp => sp.productId === r.productId);
+			let quantity = 1; // 기본값
+
+			if (isEditMode && editItems.length > 0) {
+				// 편집 모드에서는 editItems에서 수량을 찾음
+				const editItem = editItems.find(it => it.productId === r.productId);
+				if (editItem) {
+					quantity = editItem.orderQty; // orders_detail의 orderQty 컬럼값 사용
+				}
+			} else if (existingItem) {
+				// 신규 등록에서는 기존에 선택된 수량 정보가 있으면 유지
+				quantity = existingItem.qty;
+			}
+
 			return {
 				...r,
-				// 편집모드이거나 기존에 수량 정보가 있으면 그 값을 사용, 아니면 1로 초기화
-				qty: (isEditMode && editItems.length > 0) ? (editItems.find(it => it.productId === r.productId)?.qty || 1) : (existingItem?.qty || 1)
+				qty: quantity
 			};
 		});
 
@@ -618,8 +618,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		// 납기일
-		const deliveryDate = document.getElementById("deliveryDate").value;
+		// deliveryDate: input 값이 보통 "YYYY-MM-DD" 이므로 그대로 사용 (서버의 java.sql.Date에 맞춰)
+		let deliveryDate = document.getElementById("deliveryDate").value || "";
+		// 안전하게 "YYYY-MM-DD" 형태로 맞춤
+		if (deliveryDate.includes("T")) deliveryDate = deliveryDate.split("T")[0];
+
 		if (!deliveryDate) {
 			alert("납기예정일을 선택해주세요.");
 			return;
@@ -627,16 +630,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 품목 수집은 selectedProducts 배열을 사용
 		const items = selectedProducts.map(item => {
-			const qty = parseInt(item.qty) || 0;
-			const price = parseInt(item.price) || 0;
+			const orderQty = parseInt(item.qty) || 0;
+			const orderPrice = parseInt(item.price) || 0;
+			//			const orderQty = parseInt(item.orderQty ?? item.qty) || 0;
+			//			const orderPrice = parseInt(item.orderPrice ?? item.price) || 0;
 			return {
 				productId: item.productId,
 				productName: item.productName,
 				unit: item.unit,
-				qty: qty,
-				price: price,
-				totalPrice: qty * price,
-				deliveryDate: deliveryDate
+				orderQty: orderQty,
+				orderPrice: orderPrice,
+				totalPrice: orderQty * orderPrice,
+				//				deliveryDate: deliveryDate
 			};
 		});
 
@@ -645,17 +650,19 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		const totalQty = items.reduce((sum, item) => sum + item.qty, 0);
-		const totalPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
+		const totalOrderQty = items.reduce((sum, item) => sum + item.orderQty, 0);
+		const totalOrderPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
 		const payload = {
 			clientId: clientId,
 			clientName: clientName,
 			deliveryDate: deliveryDate,
-			orderQty: totalQty,
-			orderPrice: totalPrice,
+			totalOrderQty: totalOrderQty,     // DTO 필드명
+			totalOrderPrice: totalOrderPrice, // DTO 필드명
 			items: items
 		};
+		
+		console.log("전송될 페이로드:", payload); // 이 부분을 추가하여 값 확인
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
@@ -663,7 +670,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			let res;
 			if (isEditMode && editOrderId) {
-				// 수정 처리: PUT -> /business/api/orders/{orderId}
 				res = await fetch(`/business/api/orders/${editOrderId}`, {
 					method: "PUT",
 					headers: {
@@ -695,6 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				loadOrders();
 			} else {
 				const txt = await res.text();
+				console.error("서버 응답 에러:", res.status, txt);
 				alert((isEditMode ? "수정 실패: " : "등록 실패: ") + txt);
 			}
 		} catch (err) {
@@ -745,5 +752,4 @@ document.addEventListener("DOMContentLoaded", () => {
 			alert("편집 모달을 열 수 없습니다: " + err.message);
 		}
 	}
-
 });
