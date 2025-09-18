@@ -20,7 +20,4 @@ public interface WorkResultMapper {
 	// 작업현황을 위한 조인
 	List<WorkResultDTO> workResultWithBom(@Param("workOrderIds") List<Long> workOrderIds);
 	
-	// 검사 대기 목록
-	List<WorkOrderDTO> getInspectionTargets();
-	
 }

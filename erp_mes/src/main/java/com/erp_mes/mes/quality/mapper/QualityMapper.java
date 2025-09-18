@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 
@@ -26,6 +27,9 @@ public interface QualityMapper {
  // 검사결과
  List<InspectionResultDTO> getInspectionResultList();
  
- // 검사대기
+ // 검사 대기 목록 조회
+ List<WorkOrderDTO> getInspectionTargets();
+ 
+ // 검사 항목 및 허용 공차 조회
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
 }

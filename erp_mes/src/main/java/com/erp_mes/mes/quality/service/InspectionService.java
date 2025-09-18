@@ -101,7 +101,7 @@ public class InspectionService {
     // 1. 검사 대기 목록 조회
     @Transactional(readOnly = true)
     public List<WorkOrderDTO> getInspectionTargets() {
-        return workResultMapper.getInspectionTargets();
+        return qualityMapper.getInspectionTargets();
     }
 
     // 2. 특정 제품의 검사 항목 및 허용 공차 조회
