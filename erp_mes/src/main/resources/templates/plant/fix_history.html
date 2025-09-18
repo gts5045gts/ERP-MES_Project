@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      >
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+    </th:block>
+        <link th:href="@{/bootstrap/css/sb-admin-2.min.css}" rel="stylesheet" />
+        <link href="/personnel/css/personnel.regist.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    	<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	    
+</head>
+<body>
+<th:block layout:fragment="content">
+  <h2 class="mb-4">수리 상세 내역</h2>
+  <div id="grid"></div>
+
+</th:block>
+
+<th:block layout:fragment="script">
+<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+<script th:inline="javascript">
+	const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+	const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+	
+	const equipList = /*[[${equipList}]]*/ [];
+	 
+	 
+	 
+	document.addEventListener('DOMContentLoaded', function() {
+	     // 그리드 초기화
+	   console.log(equipList);
+	   const grid = new tui.Grid({
+	     el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
+	     scrollX: false,
+	     scrollY: false,
+	     columns: [
+	       { header: '수리 시작일', name: 'startDt' },	
+	       { header: '수리 종료일', name: 'endDt' },	
+	       { header: '수리 사유', name: 'note' },
+	     ],
+	   });
+		grid.resetData(equipList);
+	});
+	
+	      
+	   
+	   
+	const closeBtn = document.querySelector(".btn.btn-secondary");
+		if (closeBtn) {
+	       closeBtn.addEventListener("click", () => {
+	           window.close();
+	       });
+	 	}
+	 
+
+        
+    </script>
+</th:block>
+</body>
+</html>

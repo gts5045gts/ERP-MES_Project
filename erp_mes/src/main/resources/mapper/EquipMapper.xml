@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.plant.mapper.EquipMapper">
+
+
+<resultMap id="EquipMap" type="com.erp_mes.mes.plant.dto.EquipDTO">
+    <result property="equipId" column="equip_id"/>
+    <result property="equipNm" column="equip_nm"/>
+    <result property="note" column="note"/>
+    <result property="useYn" column="use_yn"/>
+    <result property="purchaseDt" column="purchase_dt"/>
+    <result property="installDt" column="install_dt"/>
+
+<!-- 참조값 -->
+    <result property="typeId" column="type_id"/>
+    <result property="typeNm" column="com_dt_nm"/>
+</resultMap>
+
+
+
+	<select id="findAll" resultMap="EquipMap">
+		SELECT 
+			e.equip_id, 
+			e.equip_nm, 
+			e.note,
+			e.use_yn,
+			e.purchase_dt,
+			e.install_dt,
+			
+			c.com_dt_nm
+		FROM 
+			equipment e 
+		INNER JOIN 
+			common_dt_code c
+		ON
+			e.type_id = c.com_dt_id AND C.COM_ID = 'PRO'
+	</select>
+	
+	
+</mapper>
