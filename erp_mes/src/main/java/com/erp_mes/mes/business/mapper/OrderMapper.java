@@ -1,7 +1,6 @@
 package com.erp_mes.mes.business.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,7 +10,7 @@ import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 
 @Mapper
-public interface BusinessMapper {
+public interface OrderMapper {
 	// 수주번호 부여를 위한 orders 테이블 컬럼수 체크
 	int countOrders();
 	

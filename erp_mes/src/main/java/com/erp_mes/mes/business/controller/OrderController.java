@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
-import com.erp_mes.mes.business.service.BusinessService;
+import com.erp_mes.mes.business.service.OrderService;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 
 import lombok.extern.log4j.Log4j2;
@@ -27,12 +27,12 @@ import lombok.extern.log4j.Log4j2;
 @Controller
 @RequestMapping("/business")
 @Log4j2
-public class BusinessController {
+public class OrderController {
 
-	private BusinessService businessService;
+	private final OrderService orderService;
 
-	public BusinessController(BusinessService businessService) {
-		this.businessService = businessService;
+	public OrderController(OrderService orderService) {
+		this.orderService = orderService;
 	}
 
 	// 수주 화면
@@ -52,7 +52,7 @@ public class BusinessController {
 	        orderDTO.setEmpName(userDetails.getName());
 
 	        // 서비스 호출
-	        String orderId = businessService.createOrder(orderDTO);
+	        String orderId = orderService.createOrder(orderDTO);
 
 			return ResponseEntity.ok(Map.of("orderId", orderId, "status", "success", "message", "주문이 정상적으로 등록되었습니다."));
 
@@ -73,14 +73,14 @@ public class BusinessController {
 	public List<OrderDTO> getAllOrder() {
 		log.info("수주 목록 조회 요청");
 
-		return businessService.getAllOrder();
+		return orderService.getAllOrder();
 	}
 	
 	// 수주 단건 조회
 	@GetMapping("/api/orders/{orderId}")
 	@ResponseBody
 	public ResponseEntity<?> getOrder(@PathVariable("orderId") String orderId) {
-	    OrderDTO order = businessService.getOrderById(orderId);
+	    OrderDTO order = orderService.getOrderById(orderId);
 	    if (order == null) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
 	                .body("해당 수주를 찾을 수 없습니다.");
@@ -96,7 +96,7 @@ public class BusinessController {
 	        @RequestParam(required = false) String clientName
 	) {
 	    log.info("수주 검색 요청: 상태={}, 거래처명={}", orderStatus, clientName);
-	    return businessService.searchOrders(orderStatus, clientName);
+	    return orderService.searchOrders(orderStatus, clientName);
 	}
 
 	// 수주 상세 목록 조회
@@ -104,7 +104,7 @@ public class BusinessController {
 	@ResponseBody
 	public List<OrderDetailDTO> getOrderDetailsByOrderId(@PathVariable("orderId") String orderId) {
 		log.info("수주 상세 목록 조회 요청, 수주 ID: {}", orderId);
-		return businessService.getOrderDetailsByOrderId(orderId);
+		return orderService.getOrderDetailsByOrderId(orderId);
 	}
 
 	// 품목 리스트 
@@ -113,14 +113,14 @@ public class BusinessController {
 	public List<ProductDTO> getAllProduct() {
 		log.info("품목 목록 조회 요청");
 
-		return businessService.getAllProduct();
+		return orderService.getAllProduct();
 	}
 	
 	// 수주 취소 
     @PutMapping("/api/orders/{orderId}/cancel")
     public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId) {
         try {
-            businessService.cancelOrder(orderId);
+        	orderService.cancelOrder(orderId);
             return ResponseEntity.ok(Map.of("orderId", orderId, "newStatus", "CANCELED"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -140,7 +140,7 @@ public class BusinessController {
             orderDTO.getItems().forEach(item -> item.setOrderId(orderId));
         }
         
-        businessService.updateOrder(orderDTO);
+        orderService.updateOrder(orderDTO);
         
         return ResponseEntity.ok(Map.of("orderId", orderId, "message", "수주 수정이 완료되었습니다."));
 
