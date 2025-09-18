@@ -23,44 +23,44 @@ import lombok.ToString;
 @Entity
 @Table(name = "process")
 public class Process {
-   
-   @Id
-   @Column( name = "PRO_ID")
-   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "process_seq")
-   @SequenceGenerator(
-          name = "process_seq",
-          sequenceName = "process_seq",
-          allocationSize = 1 // DB 시퀀스랑 동일하게!
-      )
-   private Long proId;
-   
-   @Column(nullable = false, name = "PRO_NM")
-   private String proNm;
-   
-   
-   @Column(nullable = false, name = "NOTE")
-   private String note;
-   
-   @ManyToOne
-   @JoinColumn(nullable = false, name = "TYPE_ID", referencedColumnName = "COM_DT_ID")
-   private CommonDetailCode common;
+	
+	@Id
+	@Column( name = "PRO_ID")
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "process_seq")
+	@SequenceGenerator(
+		    name = "process_seq",
+		    sequenceName = "process_seq",
+		    allocationSize = 1 // DB 시퀀스랑 동일하게!
+		)
+	private Long proId;
+	
+	@Column(nullable = false, name = "PRO_NM")
+	private String proNm;
+	
+	
+	@Column(nullable = false, name = "NOTE")
+	private String note;
+	
+	@ManyToOne
+	@JoinColumn(nullable = false, name = "TYPE_ID", referencedColumnName = "COM_DT_ID")
+	private CommonDetailCode common;
 
-   
-   
-   static public Process fromDTO(ProcessDTO proDTO, CommonDetailCodeRepository repo) {
-      Process pro = new Process();
-      pro.setProId(proDTO.getProId());
-      pro.setProNm(proDTO.getProNm());
-      pro.setNote(proDTO.getNote());
-      
-      if(proDTO.getTypeId() != null) {
-         CommonDetailCode compro = repo.findById(proDTO.getTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("없는 부서 코드"));
-         pro.setCommon(compro);
-      }
-      return pro;
-   }
-   
-   
+	
+	
+	static public Process fromDTO(ProcessDTO proDTO, CommonDetailCodeRepository repo) {
+		Process pro = new Process();
+		pro.setProId(proDTO.getProId());
+		pro.setProNm(proDTO.getProNm());
+		pro.setNote(proDTO.getNote());
+		
+		if(proDTO.getTypeId() != null) {
+			CommonDetailCode compro = repo.findById(proDTO.getTypeId())
+					 .orElseThrow(() -> new IllegalArgumentException("없는 부서 코드"));
+			pro.setCommon(compro);
+		}
+		return pro;
+	}
+	
+	
 
 }

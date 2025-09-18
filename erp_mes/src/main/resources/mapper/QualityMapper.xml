@@ -81,4 +81,30 @@
 		JOIN EMPLOYEE T6 ON T2.EMP_ID = T6.EMP_ID
 		ORDER BY T2.INSPECTION_DATE DESC
 	</select>
+	
+	<!--검사 대기 목록 -->
+<select id="getInspectionTargets" resultType="com.erp_mes.mes.pm.dto.WorkOrderDTO">
+    SELECT
+        o.work_order_id     AS workOrderId,
+        o.process_id        AS processId,
+        o.emp_id            AS empId,
+        o.work_order_status AS workOrderStatus,
+        
+        p.pro_nm            AS processName,
+        e.emp_name          AS empName,
+        pd.product_name     AS productName,
+        pp.plan_quantity    AS planQuantity
+    FROM work_order o
+    LEFT JOIN process p ON o.process_id = p.pro_id
+    LEFT JOIN employee e ON o.emp_id = e.emp_id
+    LEFT JOIN bom b ON o.bom_id = b.bom_id 
+    LEFT JOIN product pd ON b.product_id = pd.product_id
+    LEFT JOIN product_plan pp ON o.plan_id = pp.plan_id
+    
+    WHERE o.work_order_status = '검사대기'
+    ORDER BY o.created_at DESC
+</select>
+
+
+
 </mapper>

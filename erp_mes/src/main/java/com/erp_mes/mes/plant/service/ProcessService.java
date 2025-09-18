@@ -11,8 +11,10 @@ import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.entity.Equip;
 import com.erp_mes.mes.plant.entity.Process;
 import com.erp_mes.mes.plant.mapper.ProcessMapper;
+import com.erp_mes.mes.plant.repository.EquipRepository;
 import com.erp_mes.mes.plant.repository.ProcessRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProcessService {
 	
-	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessMapper proMapper;
+	
+	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessRepository proRepository;
+	final private EquipRepository equipRepository;
 	
 	
 	public List<Map<String, Object>> findAll() {
@@ -69,6 +73,13 @@ public class ProcessService {
 			proRepository.save(pro);
 			log.info("저장완료!!");
 		
+	}
+
+
+	public List<Equip> equipAll() {
+		List<Equip> equipList = equipRepository.findAll(); 
+		
+		return equipList;
 	}
 	
 	

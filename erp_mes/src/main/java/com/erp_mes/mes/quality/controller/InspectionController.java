@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
 import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
@@ -148,4 +150,31 @@ public class InspectionController {
 	        return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
+	
+    // 1. 검사 대기 목록 API
+    @GetMapping("/api/inspection-targets")
+    @ResponseBody
+    public List<WorkOrderDTO> getInspectionTargets() {
+        return inspectionService.getInspectionTargets();
+    }
+
+    // 2. 특정 제품의 검사 기준 API
+    @GetMapping("/api/inspection-item/{productId}")
+    @ResponseBody
+    public List<InspectionItemDTO> getInspectionItemByProductId(@PathVariable String productId) {
+        return inspectionService.getInspectionItemByProductId(productId);
+    }
+
+    // 3. 검사 결과 등록 API
+    @PostMapping("/api/register-inspection-result")
+    @ResponseBody
+    public ResponseEntity<String> registerInspectionResult(@RequestBody InspectionResultDTO resultDTO) {
+        try {
+            inspectionService.registerInspectionResult(resultDTO);
+            return new ResponseEntity<>("{\"success\": true}", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Failed to register inspection result: {}", e.getMessage());
+            return new ResponseEntity<>("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
