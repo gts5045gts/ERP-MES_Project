@@ -21,7 +21,7 @@ public class LotAOP {
 
 	private final LotService lotService;
 
-//	@AfterReturning(pointcut = "execution(* com.erp_mes.mes.lot.service.LotService.registWareHouse(..))", returning = "targetId")
+//	@AfterReturning(pointcut = "execution(* com.erp_mes.mes..service.*Service.*(com.erp_mes.mes.lot.dto.LotDTO))", returning = "targetId")
 	public void LotTraceAspect(JoinPoint joinPoint, Object targetId) throws Throwable {
 //		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
 //		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
@@ -56,7 +56,6 @@ public class LotAOP {
 //                String parentLotId = lotDTO.getpa
 
 				lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
-
 			}
 
 			return result; // 반드시 반환

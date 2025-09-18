@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.erp_mes.erp.approval.constant.ApprReqType;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.erp.config.util.TableMetadataManager;
 import com.erp_mes.erp.groupware.dto.DocumentDTO;
 import com.erp_mes.erp.groupware.entity.Document;
 import com.erp_mes.erp.groupware.repository.DocumentRepository;
@@ -43,6 +45,7 @@ public class GroupwareController {
 	//공통문서목록
 	@GetMapping("/document")
 	public String document(Model model) {
+
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
@@ -56,9 +59,10 @@ public class GroupwareController {
 	@GetMapping("/docWrite")
 	public String docWrite(@RequestParam(name = "docId", required = false) Long docId, Model model) {
 		
-//		log.info(">>>>>>>>>>>>>>>>>>>>>>"+docId);
+		log.info(">>>>>>>>>>>>>>>>>>>>>>"+docId);
 		
 		model.addAttribute("dtCodes", comService.findByComId("DOC"));
+		model.addAttribute("reqTypes", ApprReqType.values());
 		
 		if (docId == null) {
 			
@@ -88,6 +92,13 @@ public class GroupwareController {
 		doc.setReqType(documentDTO.getReqType());
 
 		documentRepository.save(doc);
+		
+//		엔티티로부터 테이블 정보 가져오기
+		System.out.println("엔티티 정보 : " + TableMetadataManager.getTableInfo(doc));
+//		 ---------------------------------------------------------------
+//		 ---------------------------------------------------------------
+//		 DTO 객체로부터 테이블 정보 가져오기
+		System.out.println("DTO 객체 정보 : " + TableMetadataManager.getTableInfo(documentDTO));
 		
 		return "redirect:/groupware/document";
 	}

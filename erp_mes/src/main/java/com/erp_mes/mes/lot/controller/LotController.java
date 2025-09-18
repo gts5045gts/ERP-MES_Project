@@ -73,11 +73,11 @@ public class LotController {
 								.qtyUsed(100) // 사용 수량
 								.build();
 		usages.add(usage1);
-		MaterialUsageDTO usage2 = MaterialUsageDTO.builder()
-								.parentLotId("PR20250912-005")
-								.qtyUsed(50)
-								.build();
-		usages.add(usage2);
+//		MaterialUsageDTO usage2 = MaterialUsageDTO.builder()
+//								.parentLotId("PR20250912-005")
+//								.qtyUsed(50)
+//								.build();
+//		usages.add(usage2);
 		// LotDTO 생성
 		LotDTO lotDTO = LotDTO.builder().tableName("PRODUCT_PLAN")
 				.qty(150) // 총 생산 수량

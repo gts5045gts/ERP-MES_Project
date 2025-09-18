@@ -87,24 +87,20 @@ public class LotService {
 	        }
 	    }
 
-	    // 3. 공정 이력 기록 (processes는 리스트 유무로 분기)
-	    if (lotDTO.getProcesses() != null && !lotDTO.getProcesses().isEmpty() && lot != null) {
-	        for (ProcessHistoryDTO processDTO : lotDTO.getProcesses()) {
-	            LotProcessHistory history = LotProcessHistory.builder()
-	                .lot(lot)
-	                .processCode(processDTO.getProcessCode())
-	                .machineId(processDTO.getMachineId())
-	                .operator(processDTO.getOperator())
-	                .processStart(processDTO.getProcessStart())
-	                .processEnd(processDTO.getProcessEnd())
-	                .inputQty(processDTO.getInputQty())
-	                .resultQty(processDTO.getResultQty())
-	                .scrapQty(processDTO.getScrapQty())
-	                .createdAt(LocalDateTime.now())
-	                .build();
-	            historyRepository.save(history);
-	        }
-	    }
+	    //작업지시 테이블 참조로 변경
+		/*
+		 * // 3. 공정 이력 기록 (processes는 리스트 유무로 분기) if (lotDTO.getProcesses() != null &&
+		 * !lotDTO.getProcesses().isEmpty() && lot != null) { for (ProcessHistoryDTO
+		 * processDTO : lotDTO.getProcesses()) { LotProcessHistory history =
+		 * LotProcessHistory.builder() .lot(lot)
+		 * .processCode(processDTO.getProcessCode())
+		 * .machineId(processDTO.getMachineId()) .operator(processDTO.getOperator())
+		 * .processStart(processDTO.getProcessStart())
+		 * .processEnd(processDTO.getProcessEnd()) .inputQty(processDTO.getInputQty())
+		 * .resultQty(processDTO.getResultQty()) .scrapQty(processDTO.getScrapQty())
+		 * .createdAt(LocalDateTime.now()) .build(); historyRepository.save(history); }
+		 * }
+		 */
 
 	    return lotId;
 	}

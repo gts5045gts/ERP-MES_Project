@@ -7,12 +7,12 @@ public enum LotDomain {
 	  PROCESS("process", "PR"), // 반제품
 	  FINISHED("finished", "FG"), // 완제품
 	  QUALITY("quality", "QA"), // 품질검사
-	  POP("pop", "POP"), // POP 
+//	  POP("pop", "POP"), // POP 
 	  EQUIPMENT("equipment", "EQ"), // 설비
 	  CONSUMABLE("consumable", "SP"), // 소모품 → 새로 추가
 	  
 	  // 2️⃣ 공정(Process / 작업 공정)
-	  INBOUND("Inbound", "RM"), // 입고
+	  INBOUND("Inbound", "IN"), // 입고
 	  CUTTING("Cutting", "CUT"), // 절단 
 	  MACHINING("Machining", "MCH"), // 성형/가공
 	  ASSEMBLY("Assembly", "AS"), // 조립 
