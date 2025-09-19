@@ -33,9 +33,6 @@ public class InspectionItem {
     )
     private Long itemId;
 
-    @Column(name = "PRODUCT_ID", nullable = true)
-    private String productId;
-
     @Column(name = "PRO_ID", nullable = true) 
     private Long proId; 
     

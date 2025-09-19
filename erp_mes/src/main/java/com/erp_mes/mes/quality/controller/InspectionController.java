@@ -133,6 +133,7 @@ public class InspectionController {
 	// 오른쪽 테이블 (검사 항목별 허용 공차 관리)에 대한 등록 API
 	@PostMapping("/item")
 	public ResponseEntity<String> registerInspectionItem(@RequestBody InspectionItemDTO inspectionItemDTO) {
+		log.info("수신된 DTO: " + inspectionItemDTO);
 		try {
 			// InspectionItemDTO를 받아서 서비스로 전달
 			inspectionService.registerInspectionItem(inspectionItemDTO);

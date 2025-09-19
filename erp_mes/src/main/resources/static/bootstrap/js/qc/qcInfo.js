@@ -75,22 +75,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const targetType = document.querySelector('input[name="targetType"]:checked').value;
         let targetId = null;
 
-        if (targetType === 'material') {
-            targetId = document.getElementById('targetCodeMaterial').value;
-        } else if (targetType === 'process') {
-            targetId = document.getElementById('targetCodeProcess').value;
-        } else if (targetType === 'product') { // 제품도 처리하려면 추가
-            targetId = document.getElementById('targetCodeProduct').value;
-        }
+		if (targetType === 'material') {
+		    targetId = document.getElementById('targetCodeMaterial').value;
+		} else if (targetType === 'process') {
+		    targetId = document.getElementById('targetCodeProcess').value;
+		}
+		// targetId가 빈 문자열이면 null로 처리하는 로직을 추가
+		if (targetId === "") {
+		    targetId = null;
+		}
 
         const formData = {
             materialId: targetType === 'material' ? targetId : null,
-            processId: targetType === 'process' ? targetId : null,
-            productId: targetType === 'product' ? targetId : null, // 제품도 처리하려면 추가
+            proId: targetType === 'process' ? targetId : null,
             inspectionFMId: document.getElementById('inspectionFMId').value,
             toleranceValue: document.getElementById('toleranceValue').value,
             unit: document.getElementById('unit').value
         };
+		
+		console.log('전송될 formData:', formData);
 
         fetch('/quality/item', {
             method: 'POST',

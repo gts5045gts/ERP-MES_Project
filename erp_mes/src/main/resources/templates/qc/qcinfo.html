@@ -104,7 +104,7 @@
 									<tbody>
 										<tr th:each="item : ${inspectionItems}"
 											th:data-id="${item.itemId}">
-											<td th:text="${item.itemId}"></td>
+											<td th:text="${item.inspectionFMId}"></td>
 											<td th:text="${item.materialName != null ? item.materialName : item.proNm}"></td>
 											<td th:text="${item.inspectionType}"></td>
 											<td th:text="${item.itemName}"></td>
