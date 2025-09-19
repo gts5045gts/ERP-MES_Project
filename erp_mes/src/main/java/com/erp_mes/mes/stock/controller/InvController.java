@@ -48,7 +48,23 @@ public class InvController {
         return "inventory/stock_list";
     }
     
-    // 재고 목록 조회 (Ajax)
+    // 전체 재고 목록 조회 (material + product)
+    @GetMapping("/api/inventory/all-stock")
+    @ResponseBody
+    public List<StockDTO> getAllStockList(
+            @RequestParam(name = "productName", required = false) String productName,
+            @RequestParam(name = "warehouseId", required = false) String warehouseId) {
+        
+        log.info("========== 전체 재고 API 호출됨 ==========");
+        log.info("productName: {}", productName);
+        
+        List<StockDTO> stockList = stockService.getAllStockList(productName, warehouseId);
+        log.info("조회 결과 개수: {}", stockList.size());
+        
+        return stockList;
+    }
+    
+    // 재고 목록 조회 (Ajax) - 기존 API
     @GetMapping("/api/inventory/stock")
     @ResponseBody
     public List<StockDTO> getStockList(
@@ -90,6 +106,37 @@ public class InvController {
         result.put("message", success ? "재고 수량이 수정되었습니다." : "재고 수량 수정에 실패했습니다.");
         
         return result;
+    }
+    
+    // Material 재고 차감 (투입용)
+    @PostMapping("/api/inventory/material/reduce")
+    @ResponseBody
+    public Map<String, Object> reduceMaterialStock(
+            @RequestParam("materialId") String materialId,
+            @RequestParam("reduceQty") Integer reduceQty,
+            Principal principal) {
+        
+        log.info("Material 재고 차감 API - materialId: {}, 차감수량: {}", materialId, reduceQty);
+        
+        Map<String, Object> result = new HashMap<>();
+        try {
+            boolean success = stockService.reduceMaterialStock(materialId, reduceQty);
+            result.put("success", success);
+            result.put("message", success ? "재고 차감 완료" : "재고 차감 실패");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+    
+    
+    
+    // Material 창고별 재고 조회
+    @GetMapping("/api/inventory/material-warehouse-stock/{materialId}")
+    @ResponseBody
+    public List<Map<String, Object>> getMaterialWarehouseStock(@PathVariable("materialId") String materialId) {
+        return stockService.getMaterialWarehouseStock(materialId);
     }
     
     // 입고 관리
