@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
@@ -143,9 +144,8 @@ public class LotService {
 	}
 
 	//targetTable 조회
-	public List<Map<String, Object>> getTagetInfo(String tableName, String targetId, String targetIdValue) {
+	public List<Map<String, Object>> getTargetInfo(String tableName, String targetId, String targetIdValue) {
 		
-		 // 동적 쿼리 문자열 생성 (SQL 인젝션 방지용 별도 검증 필요)
         String sql = "SELECT * FROM " + tableName + " WHERE " + targetId + " = :targetIdValue";
 
         NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
@@ -162,6 +162,23 @@ public class LotService {
         });
 
         return (List<Map<String, Object>>) nativeQuery.getResultList();
+	}
+
+	public void updateLotId(String tableName, String targetId, String targetIdValue, String LotId) {
+		
+		if (!tableName.matches("^[a-zA-Z0-9_]+$")) {
+		    throw new IllegalArgumentException("Invalid table name format");
+		}
+
+		if (!targetId.matches("^[a-zA-Z0-9_]+$")) {
+		    throw new IllegalArgumentException("Invalid column name format");
+		}
+		
+		String sql = "UPDATE "+ tableName +" SET LOT_ID = :lot_id WHERE "+ targetId +" = :targetIdValue";
+		NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
+        nativeQuery.setParameter("targetIdValue", targetIdValue);
+        nativeQuery.setParameter("lot_id", LotId);
+        nativeQuery.executeUpdate();
 	}
 
 }

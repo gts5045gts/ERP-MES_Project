@@ -71,7 +71,7 @@ public class LotAOP {
 				String targetId = trackLot.pkColumnName();
 				String targetIdValue = (String) obj;
 				
-				List<Map<String, Object>> tableInfo = lotService.getTagetInfo(tableName, targetId, targetIdValue);
+				List<Map<String, Object>> tableInfo = lotService.getTargetInfo(tableName, targetId, targetIdValue);
 				
 //				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+obj);
 				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>레코드 정보는 : "+tableInfo);
@@ -116,9 +116,11 @@ public class LotAOP {
 //				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
-				lotService.createLotWithRelations(lotDTO, tableName, true, false);
+			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, true, false);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-				
+			 	if(!tableName.equals("MATERIAL_TYPE")){
+			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
+		    	}
 			}
 			
 			if (session != null) {
