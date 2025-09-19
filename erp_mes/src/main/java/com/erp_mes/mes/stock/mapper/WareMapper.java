@@ -81,6 +81,15 @@ public interface WareMapper {
     int updateMaterialQuantity(@Param("materialId") String materialId, 
                               @Param("inCount") Integer inCount);
     
+    // Product 관련 warehouse_item 메서드 추가
+    List<Map<String, Object>> getPartiallyFilledLocationsProduct(@Param("warehouseId") String warehouseId,
+                                                                 @Param("productId") String productId,
+                                                                 @Param("maxAmount") Integer maxAmount);
+    
+    int updateWarehouseItemAmountProduct(Map<String, Object> params);
+
+    int insertWarehouseItemProduct(Map<String, Object> params);
+
     // ==================== 창고 위치 관리 ====================
     
     // 창고 내 빈 위치 조회
@@ -126,4 +135,7 @@ public interface WareMapper {
     
     // 거래처 목록 조회
     List<Map<String, Object>> selectClientsList();
+    
+    // 생산후 입고 가능한 Product 목록 조회 (완제품)
+    List<Map<String, Object>> selectProductsForInput();
 }

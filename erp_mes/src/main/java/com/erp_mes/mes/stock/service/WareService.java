@@ -119,24 +119,52 @@ public class WareService {
     // 개별 입고 등록
     @Transactional
     public String addInput(Map<String, Object> params) {
-        // 입고번호 생성 (IN + 날짜 + 순번)
+        String itemType = (String) params.get("itemType");
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer todayCount = wareMapper.getTodayInputCount(today);
         if(todayCount == null) todayCount = 0;
         
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         
-        // productId를 materialId로 변환
-        String materialId = (String) params.get("productId");
-        
         params.put("inId", inId);
-        params.put("inStatus", "입고대기");
-        params.put("materialId", materialId);
-        params.remove("productId");
         
-        wareMapper.insertInput(params);
-        
-        log.info("입고 등록 완료: {}", inId);
+        // 완제품/부품 구분 처리
+        if("product".equals(itemType)) {
+            // 완제품은 바로 입고완료 상태로
+            params.put("inStatus", "입고완료");
+            params.put("productId", params.get("productId"));
+            
+            // 입고 등록
+            wareMapper.insertInput(params);
+            
+            // 바로 재고 처리
+            String productId = (String) params.get("productId");
+            String warehouseId = (String) params.get("warehouseId");
+            Integer inCount = Integer.parseInt(params.get("inCount").toString());
+            String empId = (String) params.get("empId");
+            
+            // product 테이블 수량 증가
+            wareMapper.updateProductQuantity(productId, inCount);
+            
+            // warehouse_item 분산 저장
+            String firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
+            
+            if(firstLocation != null) {
+                wareMapper.updateInputLocation(inId, firstLocation);
+            }
+            
+            log.info("완제품 입고 즉시 완료: {} ({}개)", inId, inCount);
+            
+        } else {
+            // 부품/반제품은 기존대로 입고대기
+            params.put("inStatus", "입고대기");
+            String materialId = (String) params.get("productId");
+            params.put("materialId", materialId);
+            params.remove("productId");
+            
+            wareMapper.insertInput(params);
+            log.info("부품/반제품 입고 대기: {}", inId);
+        }
         
         return inId;
     }
@@ -159,29 +187,35 @@ public class WareService {
         
         String currentStatus = (String) input.get("IN_STATUS");
         
-        // 중복 처리 방지
         if("입고완료".equals(currentStatus)) {
             log.info("이미 입고완료 처리된 건입니다: {}", inId);
             return;
         }
         
         String materialId = (String) input.get("MATERIAL_ID");
+        String productId = (String) input.get("PRODUCT_ID");
         String warehouseId = (String) input.get("WAREHOUSE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
         // 입고 상태 변경
         wareMapper.updateInputStatus(inId, "입고완료");
         
-        // material 테이블 재고 증가
-        wareMapper.updateMaterialQuantity(materialId, inCount);
-        
-        // warehouse_item 재고 분산 저장
-        String firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
-        
-        // 입고 위치 정보 업데이트
-        if(firstLocation != null) {
-            wareMapper.updateInputLocation(inId, firstLocation);
-            log.info("위치 업데이트: {} -> {}", inId, firstLocation);
+        if(productId != null) {
+            // 완제품 처리
+            wareMapper.updateProductQuantity(productId, inCount);
+            String firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
+            
+            if(firstLocation != null) {
+                wareMapper.updateInputLocation(inId, firstLocation);
+            }
+        } else if(materialId != null) {
+            // 부품/반제품 처리 (기존 코드)
+            wareMapper.updateMaterialQuantity(materialId, inCount);
+            String firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
+            
+            if(firstLocation != null) {
+                wareMapper.updateInputLocation(inId, firstLocation);
+            }
         }
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
@@ -268,6 +302,70 @@ public class WareService {
         return firstLocation;
     }
     
+    // 완제품 warehouse_item 분산 저장 메서드 추가
+    private String distributeToWarehouseItemsForProduct(String warehouseId, String productId, Integer totalCount, String empId) {
+        String firstLocation = null;
+        int remaining = totalCount;
+        int maxPerLocation = 500;
+        
+        // 기존 위치 확인
+        List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocationsProduct(warehouseId, productId, maxPerLocation);
+        
+        // 기존 위치 채우기
+        for(Map<String, Object> item : existingItems) {
+            if(remaining <= 0) break;
+            
+            String locationId = (String) item.get("locationId");
+            Integer currentAmount = ((Number) item.get("itemAmount")).intValue();
+            int availableSpace = maxPerLocation - currentAmount;
+            int amountToAdd = Math.min(remaining, availableSpace);
+            
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("locationId", locationId);
+            params.put("productId", productId);
+            params.put("addAmount", amountToAdd);
+            
+            wareMapper.updateWarehouseItemAmountProduct(params);
+            
+            remaining -= amountToAdd;
+        }
+        
+        // 새 위치 할당
+        while(remaining > 0) {
+            List<String> emptyLocations = wareMapper.getEmptyLocations(warehouseId);
+            
+            if(emptyLocations.isEmpty()) {
+                log.warn("창고 {}에 빈 위치가 없습니다. 남은 수량: {}", warehouseId, remaining);
+                break;
+            }
+            
+            String locationId = emptyLocations.get(0);
+            int amountToStore = Math.min(remaining, maxPerLocation);
+            
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("manageId", warehouseId + "_" + productId + "_" + locationId);
+            params.put("warehouseId", warehouseId);
+            params.put("productId", productId);
+            params.put("itemAmount", amountToStore);
+            params.put("locationId", locationId);
+            params.put("empId", empId);
+            
+            wareMapper.insertWarehouseItemProduct(params);
+            
+            remaining -= amountToStore;
+        }
+        
+        return firstLocation;
+    }
+    
     // 구역 추출 유틸리티 (DD02Z1R1L2C1 -> DD02Z1)
     private String extractZone(String locationId) {
         if(locationId == null || locationId.length() < 6) {
@@ -276,7 +374,7 @@ public class WareService {
         return locationId.substring(0, 6);
     }
     
-    // ==================== 기초 데이터 조회 ====================
+    // ==================== 데이터 조회 ====================
 
     // 부품 목록 조회 (구버전)
     @Transactional(readOnly = true)
@@ -294,5 +392,11 @@ public class WareService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getClientsList() {
         return wareMapper.selectClientsList();
+    }
+    
+    // 완제품 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getProductsForInput() {
+        return wareMapper.selectProductsForInput();
     }
 }

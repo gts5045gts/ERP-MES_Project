@@ -64,7 +64,7 @@
 	    AND use_yn = 'Y'
 	</select>
 	
-	<!-- Material 창고별 재고 상세 조회 (getMaterialWarehouseStock 수정 버전) -->
+	<!-- Material 창고별 재고 상세 조회 -->
 	<select id="getMaterialWarehouseStock" resultType="map">
 	    SELECT 
 	        wi.warehouse_id as "warehouseId",
