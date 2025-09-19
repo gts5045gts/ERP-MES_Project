@@ -14,8 +14,61 @@ document.addEventListener('DOMContentLoaded', function() {
     const targetCodeProcess = document.getElementById('targetCodeProcess');
     const targetCodeProduct = document.getElementById('targetCodeProduct'); // 제품 드롭다운도 사용하려면 추가
 
-    // 왼쪽 테이블 (dataTable1) 검색 기능
-    // ... (기존 검색/삭제 로직) ...
+	// 왼쪽 테이블 (dataTable1) 검색 기능
+	const searchInput1 = document.querySelector('#dataTable1').closest('.card-body').querySelector('input[type="text"]');
+	const searchBtn1 = document.querySelector('#dataTable1').closest('.card-body').querySelector('#searchBtn1');
+	const tableBody1 = document.querySelector('#dataTable1 tbody');
+	const rows1 = tableBody1.querySelectorAll('tr');
+
+	const filterTable1 = () => {
+	    const searchText = searchInput1.value.toLowerCase();
+	    rows1.forEach(row => {
+	        const rowData = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+	        row.style.display = rowData.includes(searchText) ? '' : 'none';
+	    });
+	};
+	searchBtn1.addEventListener('click', filterTable1);
+	searchInput1.addEventListener('keyup', (event) => {
+	    if (event.key === 'Enter') { filterTable1(); }
+	});
+
+	// 오른쪽 테이블 (dataTable2) 검색 기능
+	const searchInput2 = document.querySelector('#dataTable2').closest('.card-body').querySelector('input[type="text"]');
+	const searchBtn2 = document.querySelector('#dataTable2').closest('.card-body').querySelector('#searchBtn2');
+	const tableBody2 = document.querySelector('#dataTable2 tbody');
+	const rows2 = tableBody2.querySelectorAll('tr');
+
+	const filterTable2 = () => {
+	    const searchText = searchInput2.value.toLowerCase();
+	    rows2.forEach(row => {
+	        const rowData = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+	        row.style.display = rowData.includes(searchText) ? '' : 'none';
+	    });
+	};
+	searchBtn2.addEventListener('click', filterTable2);
+	searchInput2.addEventListener('keyup', (event) => {
+	    if (event.key === 'Enter') { filterTable2(); }
+	});
+
+	// 왼쪽 모달 ('검사 유형별 기준 등록')의 '저장' 버튼 클릭 이벤트
+	document.getElementById('saveRecordBtn').addEventListener('click', function() {
+	    const formData = {
+	        inspectionType: document.getElementById('inspectionTypeId').value,
+	        itemName: document.getElementById('itemName_record').value,
+	        methodName: document.getElementById('methodName').value
+	    };
+	    fetch('/quality/fm', {
+	        method: 'POST',
+	        headers: { 'Content-Type': 'application/json', [header]: token },
+	        body: JSON.stringify(formData)
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        alert(data.message);
+	        if (data.success) { window.location.reload(); }
+	    })
+	    .catch(error => { console.error('Error:', error); alert('등록 실패: 서버 연결 또는 응답 오류'); });
+	});
 
     // 오른쪽 모달 ('검사 항목 등록 및 공차 설정')의 '저장' 버튼 클릭 이벤트
     document.getElementById('saveItemBtn').addEventListener('click', function() {
@@ -52,7 +105,55 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => { console.error('Error:', error); alert('등록 실패: 서버 연결 또는 응답 오류'); });
     });
 
-    // ... (기존 테이블 검색, 삭제 로직) ...
+	// 테이블 행 클릭 시 선택 상태 토글 (왼쪽 테이블)
+	document.getElementById('dataTable1').addEventListener('click', function(event) {
+	    const row = event.target.closest('tr');
+	    if (row?.parentNode.tagName === 'TBODY') { row.classList.toggle('selected'); }
+	});
+
+	// '삭제' 버튼 클릭 이벤트 (왼쪽 테이블)
+	document.getElementById('deleteFmBtn').addEventListener('click', function() {
+	    const selectedRows = document.querySelectorAll('#dataTable1 tbody tr.selected');
+	    if (selectedRows.length === 0) { alert('삭제할 항목을 선택해주세요.'); return; }
+	    if (!confirm('선택된 항목을 정말 삭제하시겠습니까?')) { return; }
+	    const idsToDelete = Array.from(selectedRows).map(row => row.dataset.id);
+	    fetch('/quality/fm', {
+	        method: 'DELETE',
+	        headers: { 'Content-Type': 'application/json', [header]: token },
+	        body: JSON.stringify(idsToDelete)
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        alert(data.message);
+	        if (data.success) { window.location.reload(); }
+	    })
+	    .catch(error => { console.error('Error:', error); alert('삭제 실패: 서버 연결 또는 응답 오류'); });
+	});
+
+	// 테이블 행 클릭 시 선택 상태 토글 (오른쪽 테이블)
+	document.getElementById('dataTable2').addEventListener('click', function(event) {
+	    const row = event.target.closest('tr');
+	    if (row?.parentNode.tagName === 'TBODY') { row.classList.toggle('selected'); }
+	});
+
+	// '삭제' 버튼 클릭 이벤트 (오른쪽 테이블)
+	document.getElementById('deleteItemBtn').addEventListener('click', function() {
+	    const selectedRows = document.querySelectorAll('#dataTable2 tbody tr.selected');
+	    if (selectedRows.length === 0) { alert('삭제할 항목을 선택해주세요.'); return; }
+	    if (!confirm('선택된 항목을 정말 삭제하시겠습니까?')) { return; }
+	    const idsToDelete = Array.from(selectedRows).map(row => row.dataset.id);
+	    fetch('/quality/item', {
+	        method: 'DELETE',
+	        headers: { 'Content-Type': 'application/json', [header]: token },
+	        body: JSON.stringify(idsToDelete)
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        alert(data.message);
+	        if (data.success) { window.location.reload(); }
+	    })
+	    .catch(error => { console.error('Error:', error); alert('삭제 실패: 서버 연결 또는 응답 오류'); });
+	});
 
     // 검사 대상 라디오 버튼 변경 이벤트 리스너
     targetTypeRadios.forEach(radio => {
