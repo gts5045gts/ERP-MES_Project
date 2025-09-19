@@ -87,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			// 모달에 기본 정보 바인딩
 			document.getElementById('modalProductName').value = selectedTargetData.productName;
-			document.getElementById('modalInspectionType').value = selectedTargetData.inspectionTypeName;
 			document.getElementById('modalLotId').value = selectedTargetData.lotId;
 			
 			// 검사 기준 (허용 공차)을 가져오는 API
@@ -98,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			    // 여러 검사 항목 중 첫 번째 항목을 사용 (상황에 맞게 로직 변경 가능)
 			    if (criteriaList && criteriaList.length > 0) {
 			        inspectionCriteria = criteriaList[0];
-			        document.getElementById('modalInspectionType').value = inspectionCriteria.inspectionType; // 검사 유형 채우기
+			        document.getElementById('modalInspectionType').value = inspectionCriteria.inspectionTypeName; // 검사 유형 채우기
 			    }
 			} catch (error) {
 			    console.error('검사 기준 로드 실패:', error);

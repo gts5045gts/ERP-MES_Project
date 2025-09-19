@@ -55,7 +55,6 @@ public class LotService {
 	            .tableName(lotDTO.getTableName())
 	            .type(prefix)
 	            .materialCode(lotDTO.getMaterialCode())
-	            .qty(lotQty)
 	            .machineId(machineId)
 	            .createdAt(LocalDateTime.now())
 	            .build();

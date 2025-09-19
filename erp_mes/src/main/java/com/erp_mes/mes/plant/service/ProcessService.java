@@ -81,6 +81,13 @@ public class ProcessService {
 		
 		return equipList;
 	}
+
+	
+	// 기준검사 등록에 사용 - 품질관리
+	public List<ProcessDTO> getProcessList() {
+
+		return proMapper.findAll();
+	}
 	
 	
 	

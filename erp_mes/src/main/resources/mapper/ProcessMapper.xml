@@ -18,7 +18,8 @@
 			pro_id,
 			pro_nm,
 			note,
-			type_nm
+			type_nm,
+			inspection_fm_id
 		from process
 	</select>
 </mapper>

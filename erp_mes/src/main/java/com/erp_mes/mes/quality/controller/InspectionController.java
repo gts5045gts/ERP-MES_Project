@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.service.ProcessService;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
@@ -25,6 +27,8 @@ import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 import com.erp_mes.mes.quality.service.InspectionService;
+import com.erp_mes.mes.stock.dto.MaterialDTO;
+import com.erp_mes.mes.stock.service.StockService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -33,15 +37,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class InspectionController {
 
-	private final InspectionService inspectionService;
-	private final CommonCodeService commonCodeService;
-	private final ProductBomService productBomService; 
+    private final InspectionService inspectionService;
+    private final CommonCodeService commonCodeService;
+    private final ProductBomService productBomService;
+    private final ProcessService processService;
+    private final StockService stockService;
 
-	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductBomService productBomService) {
-		this.inspectionService = inspectionService;
-		this.commonCodeService = commonCodeService;
-		this.productBomService = productBomService;
-	}
+    public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductBomService productBomService, ProcessService processService, StockService stockService) {
+        this.inspectionService = inspectionService;
+        this.commonCodeService = commonCodeService;
+        this.productBomService = productBomService;
+        this.processService = processService;
+        this.stockService = stockService;
+    }
 
 	@GetMapping("/qcinfo")
 	public String qualityDashboard(Model model) {
@@ -71,16 +79,24 @@ public class InspectionController {
 	    // UNIT 공통 코드 데이터
 	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
 	    
-	    // 제품 목록 데이터
-	    List<ProductDTO> products = productBomService.getProductList();
+        // 제품 목록 데이터
+        List<ProductDTO> products = productBomService.getProductList();
+        // 공정 목록 데이터
+        List<ProcessDTO> processes = processService.getProcessList();
+        // 자재 목록 데이터
+        List<MaterialDTO> materials = stockService.getMaterialList();
 
-	    model.addAttribute("inspectionFMs", inspectionFMs);
-	    model.addAttribute("inspectionItems", inspectionItems);
-	    model.addAttribute("qcTypes", qcTypes);
-	    model.addAttribute("units", units);
-	    model.addAttribute("products", products); // 제품 목록 추가
+        model.addAttribute("inspectionFMs", inspectionFMs);
+        model.addAttribute("inspectionItems", inspectionItems);
+        model.addAttribute("qcTypes", qcTypes);
+        model.addAttribute("units", units);
+        model.addAttribute("products", products);
+        model.addAttribute("processes", processes);
+        model.addAttribute("materials", materials);
+        log.info(materials);
+        log.info(processes);
 
-	    return "qc/qcinfo";
+        return "qc/qcinfo";
 	}
 	
     @GetMapping("/qih")

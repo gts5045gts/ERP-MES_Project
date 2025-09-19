@@ -453,4 +453,10 @@ public class StockService {
     public List<Map<String, String>> getEmployeeList() {
         return stockMapper.selectEmployeeList();
     }
+
+    // 품질기준정보 등록시 사용 - 품질관리
+    public List<MaterialDTO> getMaterialList() {
+    	
+        return stockMapper.findAllMaterials();
+    }
 }

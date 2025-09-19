@@ -573,4 +573,12 @@
         ORDER BY emp_name
     </select>
     
+    <!-- 품질검사기준등록시 자재아이디 이름 조회 -->
+	<select id="findAllMaterials" resultType="com.erp_mes.mes.stock.dto.MaterialDTO">
+	    SELECT
+	        MATERIAL_ID AS materialId,
+	        MATERIAL_NAME AS materialName
+	    FROM MATERIAL
+	</select>
+    
 </mapper>

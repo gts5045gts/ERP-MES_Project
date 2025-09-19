@@ -181,4 +181,7 @@ public interface StockMapper {
     int deleteEmptyMaterialLocation(@Param("materialId") String materialId, 
                                     @Param("warehouseId") String warehouseId, 
                                     @Param("locationId") String locationId);
+    
+    // 품질검사기준 등록시 참조 - 품질관리
+	List<MaterialDTO> findAllMaterials();
 }
