@@ -35,8 +35,8 @@ public class InspectionItem {
 
 //    @Column(name = "INSPECTION_TYPE")
 //    private String inspectionType;
-	@Column(name = "PRODUCT_ID")
-	private String productId;
+	@Column(name = "PRO_ID")
+	private Long proId;
 
 //    @Column(name = "ITEM_NAME")
 //    private String itemName;
