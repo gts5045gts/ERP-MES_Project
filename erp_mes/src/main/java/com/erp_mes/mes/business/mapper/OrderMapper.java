@@ -41,7 +41,7 @@ public interface OrderMapper {
 
 	// 수주 상태 update
     void updateOrderStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
-    
+    void updateOrderDetailsStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
     
     void updateOrder(OrderDTO orderDTO);  
     
@@ -51,5 +51,11 @@ public interface OrderMapper {
     void insertOrderDetails(List<OrderDetailDTO> items);
 
 	int updateOrderDetailStatus();
+
+	
+	// 모든 수주 상세 품목이 출하완료 되었는지 확인
+//	boolean isAllDetailsCompleted(String orderId);
+//	// 수주 상태를 출하완료로 변경
+//	void updateOrderStatusToCompletion(String orderId);
 
 }

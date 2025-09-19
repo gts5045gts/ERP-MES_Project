@@ -259,6 +259,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 						orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
 						alert("수주가 취소되었습니다.");
+						
+						loadOrderDetails(orderId);
 					} catch (err) {
 						console.error("수주 취소 실패:", err);
 						alert("수주 취소 실패: " + err.message);
