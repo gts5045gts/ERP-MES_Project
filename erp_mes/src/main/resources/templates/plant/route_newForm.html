@@ -29,7 +29,7 @@
         <select name="productId" class="form-select" id="productId">
           <option value="">제품 이름을 선택하세요</option>
           <th:block th:each="product :${product}">
-          	<option th:value="${product.productId}" th:text="${product.productNm}"></option>
+          	<option th:value="${product.productId}" th:text="${product.productName}"></option>
           </th:block>
         </select>
       </div>

@@ -17,9 +17,14 @@ import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
 import com.erp_mes.mes.plant.dto.EquipDTO;
 import com.erp_mes.mes.plant.dto.EquipFixDTO;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.dto.ProcessRouteDTO;
 import com.erp_mes.mes.plant.entity.Equip;
+import com.erp_mes.mes.plant.entity.Process;
+import com.erp_mes.mes.plant.mapper.ProcessRouteMapper;
 import com.erp_mes.mes.plant.service.EquipService;
+import com.erp_mes.mes.plant.service.ProcessRouteService;
 import com.erp_mes.mes.plant.service.ProcessService;
+import com.erp_mes.mes.pm.dto.ProductDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +37,7 @@ public class ProcessController {
 	
 	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessService proService ;
+	final private ProcessRouteService proRouteService ;
 	final private EquipService equipService ;
 	
 	
@@ -94,7 +100,7 @@ public class ProcessController {
 	public String equip_newForm(Model model) {
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
 		
-		
+																																																																																																																							
 		
 		model.addAttribute("comList", comList);
 		
@@ -194,9 +200,15 @@ public class ProcessController {
 	}
 
 	@GetMapping("/route_newForm")
-	public String routeNewForm() {
+	public String routeNewForm(Model model) {
+		List<ProductDTO> productList = proRouteService.productList();
+		List<Process> proList = proRouteService.proList();
+		List<Equip> equipList = proRouteService.equipList();
 		
 		
+		model.addAttribute("product", productList);
+		model.addAttribute("proList", proList);
+		model.addAttribute("equipList", equipList);
 		
 		
 		return "/plant/route_newForm";
@@ -205,12 +217,23 @@ public class ProcessController {
 	
 	@ResponseBody
 	@PostMapping("/routeAdd")
-	public ResponseEntity<String> routeAdd(EquipDTO equipDTO){
-		log.info("설비 데이터를 전송합니다." + equipDTO);
+	public ResponseEntity<String> routeAdd(ProcessRouteDTO routeDTO){
+		log.info("설비 데이터를 전송합니다." + routeDTO);
 		
-		equipService.saveEquip(equipDTO);
+		proRouteService.saveRoute(routeDTO);
 		
 		return ResponseEntity.ok("success");
+	}
+	
+	@ResponseBody
+	@GetMapping("/routeGrid")
+	public List<Map<String, Object>> routeGrid(){
+		log.info("Grid 데이터 요청 받음");
+		
+		List<Map<String, Object>> routeList = proRouteService.findAll();
+		
+		log.info("-------------------------------------------------------" + routeList);
+		return routeList;
 	}
 	
 }

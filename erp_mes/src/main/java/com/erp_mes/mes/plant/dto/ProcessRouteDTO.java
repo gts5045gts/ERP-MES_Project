@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 public class ProcessRouteDTO {
 	private Long routeId; 			//라우트 아이디 기본키 
-	private String proSeq;			//공정 순서 
+	private Long proSeq;			//공정 순서 
 	private String note;			//설명  
 	
 	//조인받을 곳 타입
