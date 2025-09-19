@@ -10,14 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.stock.dto.ProductDTO;
 import com.erp_mes.erp.config.util.SessionUtil;
-import com.erp_mes.erp.config.util.TableMetadataManager;
 import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.mapper.StockMapper;
 
-import jakarta.security.auth.message.callback.PrivateKeyCallback.Request;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,14 +29,14 @@ public class StockService {
     
     // ==================== 재고 현황 관련 ====================
     
-    // 전체 재고 목록 조회 (material + product)
+    // 전체 재고 목록 조회 (material + product 통합)
     @Transactional(readOnly = true)
     public List<StockDTO> getAllStockList(String productName, String warehouseId) {
         log.info("전체 재고 목록 조회 - 품목명: {}", productName);
         return stockMapper.getAllStockList(productName, warehouseId);
     }
     
-    // 재고 목록 조회
+    // 재고 목록 조회 (product만)
     @Transactional(readOnly = true)
     public List<StockDTO> getStockList(String productName, String warehouseId) {
         log.info("재고 목록 조회 - 품목명: {}, 창고ID: {}", productName, warehouseId);
@@ -52,14 +50,14 @@ public class StockService {
         return stockMapper.getWarehouseList();
     }
     
-    // 재고 상세 조회
+    // 재고 상세 정보 조회
     @Transactional(readOnly = true)
     public StockDTO getStockDetail(String productId) {
         log.info("재고 상세 조회 - 품목ID: {}", productId);
         return stockMapper.getStockDetail(productId);
     }
     
-    // 재고 수량 업데이트
+    // 재고 수량 직접 업데이트
     @Transactional
     public boolean updateStockAmount(String productId, String warehouseId, Integer itemAmount) {
         log.info("재고 수량 업데이트 - 품목ID: {}, 창고ID: {}, 수량: {}", 
@@ -68,16 +66,18 @@ public class StockService {
         return result > 0;
     }
     
-    // Material 재고 차감 (투입용)
+    // ==================== Material 재고 차감 관련 ====================
+    
+    // Material 재고 차감 (생산 투입용)
     @Transactional
     public boolean reduceMaterialStock(String materialId, Integer reduceQty) {
         log.info("Material 재고 차감 - materialId: {}, 차감수량: {}", materialId, reduceQty);
         
-        // 1. material 테이블의 quantity 차감
+        // material 테이블 수량 차감
         int result = stockMapper.reduceMaterialStock(materialId, reduceQty);
         
         if(result > 0) {
-            // 2. warehouse_item 테이블에서도 차감 처리
+            // warehouse_item 테이블 차감 처리
             MaterialDTO material = stockMapper.selectMaterialById(materialId);
             String warehouseType = "";
             
@@ -91,8 +91,6 @@ public class StockService {
                 List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
                 if(!warehouseIds.isEmpty()) {
                     String warehouseId = warehouseIds.get(0);
-                    
-                    // warehouse_item에서 차감
                     reduceMaterialWarehouseStock(materialId, warehouseId, reduceQty);
                 }
             }
@@ -104,6 +102,38 @@ public class StockService {
         return false;
     }
     
+    // 특정 창고에서 Material 재고 차감
+    @Transactional
+    public boolean reduceMaterialStockFromWarehouse(String materialId, String warehouseId, 
+            String locationId, Integer reduceQty, String reason, String empId) {
+        
+        log.info("특정 창고에서 Material 재고 차감 - materialId: {}, warehouseId: {}, locationId: {}, 차감수량: {}", 
+                 materialId, warehouseId, locationId, reduceQty);
+        
+        // warehouse_item 재고 확인 및 차감
+        int currentQty = stockMapper.getWarehouseItemQtyByLocation(materialId, warehouseId, locationId);
+        
+        if(currentQty < reduceQty) {
+            throw new RuntimeException("재고가 부족합니다.");
+        }
+        
+        int newQty = currentQty - reduceQty;
+        if(newQty == 0) {
+            stockMapper.deleteEmptyMaterialLocation(materialId, warehouseId, locationId);
+        } else {
+            stockMapper.updateMaterialLocationStock(materialId, warehouseId, locationId, newQty);
+        }
+        
+        // material 테이블 수량 동기화
+        stockMapper.reduceMaterialStock(materialId, reduceQty);
+        
+        log.info("Material {} 재고 {} 차감 완료 (창고: {}, 위치: {})", 
+                 materialId, reduceQty, warehouseId, locationId);
+        
+        return true;
+    }
+    
+    // Material warehouse_item 재고 차감 (내부 메서드)
     private void reduceMaterialWarehouseStock(String materialId, String warehouseId, Integer qty) {
         List<Map<String, Object>> locations = stockMapper.getMaterialLocationsByQty(materialId, warehouseId);
         
@@ -114,6 +144,7 @@ public class StockService {
         
         int remainingQty = qty;
         
+        // 수량 적은 곳부터 차감
         for(Map<String, Object> loc : locations) {
             if(remainingQty <= 0) break;
             
@@ -135,7 +166,7 @@ public class StockService {
         }
     }
     
-    // Material 창고별 재고 조회
+    // Material 창고별 재고 현황 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getMaterialWarehouseStock(String materialId) {
         return stockMapper.getMaterialWarehouseStock(materialId);
@@ -150,19 +181,20 @@ public class StockService {
         return stockMapper.selectMaterialListFromMaterial(materialType, searchKeyword);
     }
     
-    // 자재 등록
+    // 자재 신규 등록
     @Transactional
     @TrackLot(tableName = "material", pkColumnName = "material_id") // ******로트 관련 어노테이션 //테이블명, pk_id 입력****** 
     public void addMaterial(MaterialDTO dto) {
         log.info("자재 등록: {}", dto.getMaterialId());
         
+        // 중복 체크
         if(stockMapper.existsMaterialById(dto.getMaterialId())) {
             throw new RuntimeException("이미 존재하는 자재코드입니다.");
         }
         
-        // 1. material 테이블에 등록 (quantity 기본값 100 설정)
+        // material 테이블 등록 (기본 수량 100)
         if(dto.getQuantity() == null || dto.getQuantity() == 0) {
-            dto.setQuantity(100);  // 기본값 100
+            dto.setQuantity(100);
         }
         stockMapper.insertIntoMaterial(dto);
         
@@ -170,7 +202,7 @@ public class StockService {
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", dto.getMaterialId()); //pk_id의 값 입력
         
-        // 2. 자재 타입에 맞는 창고 찾기 및 warehouse_item 등록
+        // 자재 타입별 창고 배정 및 warehouse_item 등록
         String warehouseType = "";
         if(dto.getMaterialType().equals("부품")) {
             warehouseType = "원자재";
@@ -183,16 +215,13 @@ public class StockService {
             
             if(!warehouseIds.isEmpty()) {
                 String warehouseId = warehouseIds.get(0);
-                
-                // 3. warehouse_item에 초기 재고 분산 저장 (기본 100개)
                 distributeStock(dto.getMaterialId(), warehouseId, dto.getQuantity(), dto.getEmpId());
-                
                 log.info("자재 등록 완료 - 창고: {}, 수량: {}", warehouseId, dto.getQuantity());
             }
         }
     }
     
-    // 자재 수정
+    // 자재 정보 수정
     @Transactional
     public boolean updateMaterial(MaterialDTO dto, String modifierId) {
         log.info("자재 수정: {} by {}", dto.getMaterialId(), modifierId);
@@ -200,7 +229,7 @@ public class StockService {
         return stockMapper.updateMaterialTable(dto) > 0;
     }
     
-    // 자재 삭제
+    // 자재 삭제 (다중 선택)
     @Transactional
     public Map<String, Object> deleteMaterials(List<String> materialIds) {
         log.info("자재 삭제 요청: {} 건", materialIds.size());
@@ -208,8 +237,8 @@ public class StockService {
         List<String> canDelete = new ArrayList<>();
         List<String> cannotDelete = new ArrayList<>();
         
+        // 최근 거래 확인
         for(String materialId : materialIds) {
-            // 최근 1개월 내 입출고 체크
             int recentCount = stockMapper.checkRecentTransactionForMaterial(materialId);
             
             if(recentCount > 0) {
@@ -221,12 +250,11 @@ public class StockService {
         
         Map<String, Object> result = new HashMap<>();
         
+        // 삭제 가능한 것만 처리
         if(!canDelete.isEmpty()) {
-            // warehouse_item에서 먼저 삭제
             for(String materialId : canDelete) {
                 stockMapper.deleteWarehouseItemsByMaterial(materialId);
             }
-            // material 테이블에서 삭제
             stockMapper.deleteMaterialsFromTable(canDelete);
             result.put("deleted", canDelete.size());
         }
@@ -249,44 +277,42 @@ public class StockService {
         return stockMapper.selectProductList(productType, searchKeyword);
     }
     
-    // 제품 등록
+    // 제품 신규 등록
     @Transactional
     public void addProduct(ProductDTO dto) {
         log.info("제품 등록: {}", dto.getProductId());
         
+        // 중복 체크
         if(stockMapper.existsMaterialById(dto.getProductId())) {
             throw new RuntimeException("이미 존재하는 제품코드입니다.");
         }
         
-        // 1. product 테이블에 등록 (quantity 초기값 설정)
+        // product 테이블 등록
         if(dto.getQuantity() == null) {
             dto.setQuantity(0);
         }
         stockMapper.insertProduct(dto);
         
-        // 2. PTYPE001인 경우 완제품 창고 찾기
+        // 완제품인 경우 창고 배정
         if("PTYPE001".equals(dto.getProductType())) {
             List<String> warehouseIds = stockMapper.getActiveWarehousesByType("완제품");
             
             if(!warehouseIds.isEmpty() && dto.getQuantity() > 0) {
                 String warehouseId = warehouseIds.get(0);
-                
-                // 3. warehouse_item에 초기 재고 분산 저장
                 distributeStock(dto.getProductId(), warehouseId, dto.getQuantity(), dto.getEmpId());
-                
                 log.info("제품 등록 완료 - 창고: {}, 수량: {}", warehouseId, dto.getQuantity());
             }
         }
     }
     
-    // 제품 수정
+    // 제품 정보 수정
     @Transactional
     public boolean updateProduct(ProductDTO dto) {
         log.info("제품 수정: {}", dto.getProductId());
         return stockMapper.updateProduct(dto) > 0;
     }
     
-    // 제품 삭제
+    // 제품 삭제 (다중 선택)
     @Transactional
     public Map<String, Object> deleteProducts(List<String> productIds) {
         log.info("제품 삭제 요청: {} 건", productIds.size());
@@ -294,6 +320,7 @@ public class StockService {
         List<String> canDelete = new ArrayList<>();
         List<String> cannotDelete = new ArrayList<>();
         
+        // 최근 거래 확인
         for(String productId : productIds) {
             int recentCount = stockMapper.checkRecentTransaction(productId);
             
@@ -321,13 +348,40 @@ public class StockService {
     
     // ==================== 재고 조정 관련 ====================
     
-    // 특정 제품의 창고별 재고 조회
+    // 제품별 창고 재고 현황 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getWarehouseStockByProduct(String productId) {
         return stockMapper.getWarehouseStockByProduct(productId);
     }
     
-    // 재고 차감 메서드 (출고)
+    // 창고별 재고 조정 (입고/출고)
+    @Transactional
+    public boolean adjustWarehouseStock(String productId, String warehouseId, 
+            Integer adjustQty, String adjustType, String reason, String empId) {
+        
+        log.info("재고조정 시작 - productId: {}, warehouseId: {}, adjustQty: {}, type: {}", 
+                 productId, warehouseId, adjustQty, adjustType);
+        
+        try {
+            if("IN".equals(adjustType)) {
+                distributeStock(productId, warehouseId, adjustQty, empId);
+            } else if("OUT".equals(adjustType)) {
+                reduceStock(productId, warehouseId, adjustQty);
+            }
+            
+            // 전체 재고 동기화
+            Integer totalStock = stockMapper.getTotalStockByProduct(productId);
+            stockMapper.updateProductQuantity(productId, totalStock);
+            
+            return true;
+            
+        } catch(Exception e) {
+            log.error("재고조정 실패: ", e);
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+    
+    // 재고 차감 처리 (출고용)
     private void reduceStock(String productId, String warehouseId, Integer qty) {
         List<Map<String, Object>> locations = 
             stockMapper.getProductLocationsByQty(productId, warehouseId);
@@ -338,6 +392,7 @@ public class StockService {
         
         int remainingQty = qty;
         
+        // 수량 적은 곳부터 차감
         for(Map<String, Object> loc : locations) {
             if(remainingQty <= 0) break;
             
@@ -363,36 +418,7 @@ public class StockService {
         }
     }
     
-    // 창고별 재고 조정
-    @Transactional
-    public boolean adjustWarehouseStock(String productId, String warehouseId, 
-            Integer adjustQty, String adjustType, String reason, String empId) {
-        
-        log.info("재고조정 시작 - productId: {}, warehouseId: {}, adjustQty: {}, type: {}", 
-                 productId, warehouseId, adjustQty, adjustType);
-        
-        try {
-            if("IN".equals(adjustType)) {
-                // 입고 처리
-                distributeStock(productId, warehouseId, adjustQty, empId);
-            } else if("OUT".equals(adjustType)) {
-                // 출고 처리
-                reduceStock(productId, warehouseId, adjustQty);
-            }
-            
-            // product 테이블의 전체 재고 업데이트
-            Integer totalStock = stockMapper.getTotalStockByProduct(productId);
-            stockMapper.updateProductQuantity(productId, totalStock);
-            
-            return true;
-            
-        } catch(Exception e) {
-            log.error("재고조정 실패: ", e);
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-    
-    // 재고 분산 (입고)
+    // 재고 분산 저장 (입고용)
     private void distributeStock(String productId, String warehouseId, Integer qty, String empId) {
         if(qty == null || qty <= 0) {
             return;
@@ -403,7 +429,7 @@ public class StockService {
         
         int remainingQty = qty;
         
-        // 기존 위치에 먼저 채우기
+        // 기존 위치 채우기 (최대 500개)
         for(Map<String, Object> loc : existingLocations) {
             if(remainingQty <= 0) break;
             
@@ -418,7 +444,7 @@ public class StockService {
             }
         }
         
-        // 새 위치에 배정
+        // 새 위치 할당
         while(remainingQty > 0) {
             List<String> emptyLocations = stockMapper.getEmptyLocations(warehouseId);
             if(emptyLocations.isEmpty()) {
@@ -429,7 +455,7 @@ public class StockService {
             String newLocation = emptyLocations.get(0);
             int storeQty = Math.min(remainingQty, 500);
             
-            // Material인지 Product인지 확인해서 다른 메서드 호출
+            // Material/Product 구분 처리
             boolean isMaterial = stockMapper.existsMaterialById(productId);
             
             if(isMaterial) {
@@ -445,11 +471,25 @@ public class StockService {
         }
     }
     
-    // 자재 타입 조회
+    // ==================== 공통 기능 ====================
+    
+    // 자재 타입 공통코드 조회
     @Transactional(readOnly = true)
     public List<Map<String, String>> getMaterialTypes() {
         log.info("공통코드에서 자재타입 조회");
         return stockMapper.getMaterialTypes();
+    }
+    
+    // 검사방법 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getInspectionMethods() {
+        return stockMapper.getInspectionMethods();
+    }
+    
+    // 단위 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getUnitList() {
+        return stockMapper.getUnitList();
     }
     
     // 직원 이름 조회
