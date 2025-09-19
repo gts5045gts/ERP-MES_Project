@@ -12,7 +12,7 @@ function updateQuantityChart(workOrders) {
 		goodCount += Number(d.goodQty) || 0;
 		defectCount += Number(d.defectQty) || 0;
 	});
-	
+
 
 	var data = [
 		{ label: "불량률", value: defectCount },
@@ -77,7 +77,7 @@ function updateQuantityChart(workOrders) {
 }
 
 
-	
+
 //=============== 도넛차트(전체진행률) ======================================= 
 function updateProgressChart(workOrders) {
 	var width = 230, height = 270, radius = Math.min(width, height) / 2;
@@ -93,26 +93,26 @@ function updateProgressChart(workOrders) {
 	];
 
 	var color = d3.scaleOrdinal()
-       .domain(["완료", "미완료"])
-       .range(["#4caf50", "#ccc"]);
+		.domain(["완료", "미완료"])
+		.range(["#4caf50", "#ccc"]);
 
 	d3.select("#progressChart").selectAll("*").remove(); // 이전 차트 제거
 
-	
+
 	var pie = d3.pie()
 		.sort(null)
-		.value(d => d.value);    	
-		
+		.value(d => d.value);
+
 	var arc = d3.arc()
 		.outerRadius(radius - 10)
 		.innerRadius(radius / 2);
 
 	var svg = d3.select("#progressChart")
-			.attr("width", width)
-			.attr("height", height)
-			.append("g")
-			.attr("transform", `translate(${width/2},${height/2 - 20})`);
-			
+		.attr("width", width)
+		.attr("height", height)
+		.append("g")
+		.attr("transform", `translate(${width / 2},${height / 2 - 20})`);
+
 	// 제목 추가
 	svg.append("text")
 		.attr("x", 0)
@@ -120,7 +120,7 @@ function updateProgressChart(workOrders) {
 		.attr("text-anchor", "middle")
 		.style("font-size", "16px")
 		.style("font-weight", "bold")
-		.text("작업 진행률");			
+		.text("작업 진행률");
 
 	var g = svg.selectAll(".arc")
 		.data(pie(data))
@@ -236,3 +236,4 @@ function updateEquipmentChart() {
   		.text(d => d.quantity + "개");
 		
 }
+
