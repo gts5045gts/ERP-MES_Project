@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -28,6 +30,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class LotMaster {
 	@Id
 	@Column(name = "lot_id", updatable = false, length = 50)
@@ -36,6 +39,10 @@ public class LotMaster {
 // 	각테이블 고유 pk id
 	@Column(name = "TARGET_ID", length = 50, nullable = false, updatable = false)
 	private String targetId;
+	
+// 	각테이블 고유 pk id value
+	@Column(name = "TARGET_ID_VALUE", length = 50, nullable = false, updatable = false)
+	private String targetIdValue;
 
 // 	조회 대상 테이블
 	@Column(length = 40, nullable = false, updatable = false)
@@ -48,11 +55,11 @@ public class LotMaster {
 	@Column(length = 50)
 	private String materialCode;
 
-	//수량
-	//private int qty;
-
 	@Column(length = 50)
 	private String machineId;
+	
+	//작업지시 테이블 참조
+	private Long workOrderId;
 
 	@CreatedDate
 	@Column(updatable = false)
@@ -64,7 +71,7 @@ public class LotMaster {
 	@OneToMany(mappedBy = "childLot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<LotMaterialUsage> materialUsagesAsChild = new ArrayList<LotMaterialUsage>();
 
-	@OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<LotProcessHistory> processHistories = new ArrayList<LotProcessHistory>();
+//	@OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+//	private List<LotProcessHistory> processHistories = new ArrayList<LotProcessHistory>();
 
 }

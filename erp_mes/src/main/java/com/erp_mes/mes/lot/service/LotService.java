@@ -3,21 +3,26 @@ package com.erp_mes.mes.lot.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.hibernate.query.NativeQuery;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.stereotype.Service;
 
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
-import com.erp_mes.mes.lot.dto.ProcessHistoryDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
-import com.erp_mes.mes.lot.entity.LotProcessHistory;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,83 +35,88 @@ public class LotService {
 
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
-	private final LotProcessHistoryRepository historyRepository;
+	@PersistenceContext
+    private EntityManager entityManager;
 
-	@Transactional
 	public String createLotWithRelations(LotDTO lotDTO, String domain, boolean createLot, boolean linkParent) {
 	    String lotId = null;
 	    LotMaster lot = null;
 
-	    // 1. LOT 생성 및 lot_master 저장
-	    if (createLot) {
-	        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-	        LotDomain lotDomain = LotDomain.fromDomain(domain);
-	        String prefix = lotDomain.getPrefix();
-	        Integer qty = lotDTO.getQty();
-	        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
-	        int lotQty = (qty != null) ? qty : 0;
+	    try {
+	    	// 1. LOT 생성 및 lot_master 저장
+		    if (createLot) {
+		        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		        LotDomain lotDomain = LotDomain.fromDomain(domain.toLowerCase().trim());
+		        String prefix = lotDomain.getPrefix();
+//		        Integer qty = lotDTO.getQty();
+		        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
+//		        int lotQty = (qty != null) ? qty : 0;
 
-	        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, machineId);
-	        lotId = generateLotId(prefix, datePart, machineId, lastLotId);
+		        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, machineId);
+		        lotId = generateLotId(prefix, datePart, machineId, lastLotId);
 
-	        lot = LotMaster.builder()
-	            .lotId(lotId)
-	            .targetId(lotDTO.getTargetId())
-	            .tableName(lotDTO.getTableName())
-	            .type(prefix)
-	            .materialCode(lotDTO.getMaterialCode())
-	            .qty(lotQty)
-	            .machineId(machineId)
-	            .createdAt(LocalDateTime.now())
-	            .build();
+		        lot = LotMaster.builder()
+		            .lotId(lotId)
+		            .targetId(lotDTO.getTargetId())
+		            .targetIdValue(lotDTO.getTargetIdValue())
+		            .tableName(lotDTO.getTableName())
+		            .type(prefix)
+		            .materialCode(lotDTO.getMaterialCode())
+//		            .qty(lotQty)
+		            .machineId(machineId)
+		            .createdAt(LocalDateTime.now())
+		            .build();
 
-	        lotRepository.save(lot);
-	        lotDTO.setLotId(lotId); // 생성된 LOT ID 설정
-	    } else {
-			// createLot==false : 기존 LOT 정보를 사용
-	        lotId = lotDTO.getLotId();
-	        if (lotId != null) {
-	            lot = lotRepository.getReferenceById(lotId);
-	        }
-	    }
+		        lotRepository.save(lot);
+		        lotDTO.setLotId(lotId); // 생성된 LOT ID 설정
+		    } else {
+				// createLot==false : 기존 LOT 정보를 사용
+		        lotId = lotDTO.getLotId();
+		        if (lotId != null) {
+		            lot = lotRepository.getReferenceById(lotId);
+		        }
+		    }
 
-	    // 2. 자재 사용 기록 (부모-자식 LOT 연결)
-	    if (linkParent && lotDTO.getUsages() != null && !lotDTO.getUsages().isEmpty()) {
-	        for (MaterialUsageDTO usageDTO : lotDTO.getUsages()) {
-	            LotMaster parentLot = lotRepository.getReferenceById(usageDTO.getParentLotId());
-	            String childLotId = Optional.ofNullable(usageDTO.getChildLotId()).orElse(lotId);
-	            LotMaster childLot = lotRepository.getReferenceById(childLotId);
+		    // 2. 자재 사용 기록 (부모-자식 LOT 연결)
+		    if (linkParent && lotDTO.getUsages() != null && !lotDTO.getUsages().isEmpty()) {
+		        for (MaterialUsageDTO usageDTO : lotDTO.getUsages()) {
+		            LotMaster parentLot = lotRepository.getReferenceById(usageDTO.getParentLotId());
+		            String childLotId = Optional.ofNullable(usageDTO.getChildLotId()).orElse(lotId);
+		            LotMaster childLot = lotRepository.getReferenceById(childLotId);
 
-	            LotMaterialUsage usage = LotMaterialUsage.builder()
-	                .parentLot(parentLot)
-	                .childLot(childLot)
-	                .qtyUsed(usageDTO.getQtyUsed())
-	                .createdAt(LocalDateTime.now())
-	                .build();
-	            usageRepository.save(usage);
-	        }
-	    }
+		            LotMaterialUsage usage = LotMaterialUsage.builder()
+		                .parentLot(parentLot)
+		                .childLot(childLot)
+		                .createdAt(LocalDateTime.now())
+		                .build();
+		            usageRepository.save(usage);
+		        }
+		    }
 
-	    // 3. 공정 이력 기록 (processes는 리스트 유무로 분기)
-	    if (lotDTO.getProcesses() != null && !lotDTO.getProcesses().isEmpty() && lot != null) {
-	        for (ProcessHistoryDTO processDTO : lotDTO.getProcesses()) {
-	            LotProcessHistory history = LotProcessHistory.builder()
-	                .lot(lot)
-	                .processCode(processDTO.getProcessCode())
-	                .machineId(processDTO.getMachineId())
-	                .operator(processDTO.getOperator())
-	                .processStart(processDTO.getProcessStart())
-	                .processEnd(processDTO.getProcessEnd())
-	                .inputQty(processDTO.getInputQty())
-	                .resultQty(processDTO.getResultQty())
-	                .scrapQty(processDTO.getScrapQty())
-	                .createdAt(LocalDateTime.now())
-	                .build();
-	            historyRepository.save(history);
-	        }
-	    }
+		    //작업지시 테이블 참조로 변경
+			/*
+			 * // 3. 공정 이력 기록 (processes는 리스트 유무로 분기) if (lotDTO.getProcesses() != null &&
+			 * !lotDTO.getProcesses().isEmpty() && lot != null) { for (ProcessHistoryDTO
+			 * processDTO : lotDTO.getProcesses()) { LotProcessHistory history =
+			 * LotProcessHistory.builder() .lot(lot)
+			 * .processCode(processDTO.getProcessCode())
+			 * .machineId(processDTO.getMachineId()) .operator(processDTO.getOperator())
+			 * .processStart(processDTO.getProcessStart())
+			 * .processEnd(processDTO.getProcessEnd()) .inputQty(processDTO.getInputQty())
+			 * .resultQty(processDTO.getResultQty()) .scrapQty(processDTO.getScrapQty())
+			 * .createdAt(LocalDateTime.now()) .build(); historyRepository.save(history); }
+			 * }
+			 */
 
+		    
+			
+		} catch (Exception e) {
+			log.error("traceLot 처리 중 예외 발생222222222222222", e);
+			throw e;
+		}
+	    
 	    return lotId;
+	    
 	}
 	
 	public String generateLotId(String prefix, String datePart, String machineId, String lastLotId) {
@@ -130,6 +140,28 @@ public class LotService {
 
 //		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
 		return "PRD002";
+	}
+
+	//targetTable 조회
+	public List<Map<String, Object>> getTagetInfo(String tableName, String targetId, String targetIdValue) {
+		
+		 // 동적 쿼리 문자열 생성 (SQL 인젝션 방지용 별도 검증 필요)
+        String sql = "SELECT * FROM " + tableName + " WHERE " + targetId + " = :targetIdValue";
+
+        NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
+
+        nativeQuery.setParameter("targetIdValue", targetIdValue);
+
+        // Hibernate 6부터는 아래와 같이 Transformer 대신 TupleTransformer 사용 권장
+        nativeQuery.setTupleTransformer((tuple, aliases) -> {
+            Map<String, Object> result = new java.util.HashMap<>();
+            for (int i = 0; i < aliases.length; i++) {
+                result.put(aliases[i], tuple[i]);
+            }
+            return result;
+        });
+
+        return (List<Map<String, Object>>) nativeQuery.getResultList();
 	}
 
 }
