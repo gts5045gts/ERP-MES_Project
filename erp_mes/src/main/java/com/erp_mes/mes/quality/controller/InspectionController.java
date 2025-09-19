@@ -98,8 +98,6 @@ public class InspectionController {
         model.addAttribute("products", products);
         model.addAttribute("processes", processes);
         model.addAttribute("materials", materials);
-        log.info(materials);
-        log.info(processes);
 
         return "qc/qcinfo";
 	}
