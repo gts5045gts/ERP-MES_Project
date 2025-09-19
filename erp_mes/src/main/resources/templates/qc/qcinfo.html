@@ -94,7 +94,7 @@
 									<thead>
 										<tr>
 											<th>기준ID</th>
-											<th>제품이름</th>
+											<th>검사대상 이름</th>
 											<th>검사유형</th>
 											<th>세부항목</th>
 											<th>허용 공차</th>
@@ -104,8 +104,8 @@
 									<tbody>
 										<tr th:each="item : ${inspectionItems}"
 											th:data-id="${item.itemId}">
-											<td th:text="${item.itemId}"></td>
-											<td th:text="${item.productName}"></td>
+											<td th:text="${item.inspectionFMId}"></td>
+											<td th:text="${item.materialName != null ? item.materialName : item.proNm}"></td>
 											<td th:text="${item.inspectionType}"></td>
 											<td th:text="${item.itemName}"></td>
 											<td th:text="${item.toleranceValue}"></td>
@@ -180,12 +180,31 @@
 					<div class="modal-body">
 						<form id="item-form">
 							<div class="mb-3">
-								<label for="productCode" class="form-label">제품</label> <select
-									class="form-control" id="productCode" name="productCode">
+								<label class="form-label">검사 대상</label><br>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" type="radio" name="targetType"
+										id="targetTypeMaterial" value="material" checked> <label
+										class="form-check-label" for="targetTypeMaterial">자재</label>
+								</div>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" type="radio" name="targetType"
+										id="targetTypeProcess" value="process"> <label
+										class="form-check-label" for="targetTypeProcess">공정</label>
+								</div>
+							</div>
+
+							<div class="mb-3" id="materialDropdownContainer">
+								<label for="targetCodeMaterial" class="form-label">자재</label> <select
+									class="form-control" id="targetCodeMaterial" name="materialId">
 									<option value="">선택</option>
-									<option th:each="product : ${products}"
-										th:value="${product.productId}"
-										th:text="${product.productName}"></option>
+								</select>
+							</div>
+
+							<div class="mb-3" id="processDropdownContainer"
+								style="display: none;">
+								<label for="targetCodeProcess" class="form-label">공정</label> <select
+									class="form-control" id="targetCodeProcess" name="processId">
+									<option value="">선택</option>
 								</select>
 							</div>
 
@@ -198,8 +217,9 @@
 							</div>
 
 							<div class="mb-3">
-								<label for="toleranceValue" class="form-label">허용 공차</label>
-								<input type="number" step="0.01" class="form-control" id="toleranceValue" name="toleranceValue">
+								<label for="toleranceValue" class="form-label">허용 공차</label> <input
+									type="number" step="0.01" class="form-control"
+									id="toleranceValue" name="toleranceValue">
 							</div>
 
 							<div class="mb-3">
@@ -222,274 +242,15 @@
 
 	<th:block layout:fragment="script">
 		<script th:inline="javascript">
-    /*<![CDATA[*/
-    // CSRF 토큰
-    const token = document.querySelector('meta[name="_csrf"]').content;
-    const header = document.querySelector('meta[name="_csrf_header"]').content;
-
-    // 왼쪽 테이블 (dataTable1) 검색 기능
-    const searchInput1 = document.querySelector('#dataTable1').closest('.card-body').querySelector('input[type="text"]');
-    const searchBtn1 = document.querySelector('#dataTable1').closest('.card-body').querySelector('#searchBtn1');
-    const tableBody1 = document.querySelector('#dataTable1 tbody');
-    const rows1 = tableBody1.querySelectorAll('tr');
-
-    const filterTable1 = () => {
-        const searchText = searchInput1.value.toLowerCase();
-        
-        rows1.forEach(row => {
-            const rowData = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-            if (rowData.includes(searchText)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    };
-
-    searchBtn1.addEventListener('click', filterTable1);
-    searchInput1.addEventListener('keyup', (event) => {
-        if (event.key === 'Enter') {
-            filterTable1();
-        }
-    });
-
-    // 오른쪽 테이블 (dataTable2) 검색 기능
-    const searchInput2 = document.querySelector('#dataTable2').closest('.card-body').querySelector('input[type="text"]');
-    const searchBtn2 = document.querySelector('#dataTable2').closest('.card-body').querySelector('#searchBtn2');
-    const tableBody2 = document.querySelector('#dataTable2 tbody');
-    const rows2 = tableBody2.querySelectorAll('tr');
-
-    const filterTable2 = () => {
-        const searchText = searchInput2.value.toLowerCase();
-        
-        rows2.forEach(row => {
-            const rowData = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
-            if (rowData.includes(searchText)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    };
-
-    searchBtn2.addEventListener('click', filterTable2);
-    searchInput2.addEventListener('keyup', (event) => {
-        if (event.key === 'Enter') {
-            filterTable2();
-        }
-    });
-
-    // 왼쪽 모달 ('검사 유형별 기준 등록')의 '저장' 버튼 클릭 이벤트
-    document.getElementById('saveRecordBtn').addEventListener('click', function() {
-        const formData = {
-            inspectionType: document.getElementById('inspectionTypeId').value,
-            itemName: document.getElementById('itemName_record').value,
-            methodName: document.getElementById('methodName').value
-        };
-        
-        fetch('/quality/fm', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [header]: token
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(data.message);
-            if (data.success) {
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('등록 실패: 서버 연결 또는 응답 오류');
-        });
-    });
-
-    // 오른쪽 모달 ('검사 항목 등록 및 공차 설정')의 '저장' 버튼 클릭 이벤트
-    document.getElementById('saveItemBtn').addEventListener('click', function() {
-        const formData = {
-            productId: document.getElementById('productCode').value,
-            inspectionFMId: document.getElementById('inspectionFMId').value,
-            toleranceValue: document.getElementById('toleranceValue').value,
-            unit: document.getElementById('unit').value
-        };
-        
-        fetch('/quality/item', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                [header]: token
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(data.message);
-            if (data.success) {
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('등록 실패: 서버 연결 또는 응답 오류');
-        });
-    });
-    
-     // 테이블 행 클릭 시 선택 상태 토글 (왼쪽 테이블)
-    document.getElementById('dataTable1').addEventListener('click', function(event) {
-        const row = event.target.closest('tr');
-        if (row && row.parentNode.tagName === 'TBODY') {
-            row.classList.toggle('selected');
-        }
-    });
-
-    // '삭제' 버튼 클릭 이벤트 (왼쪽 테이블)
-    document.getElementById('deleteFmBtn').addEventListener('click', function() {
-        const selectedRows = document.querySelectorAll('#dataTable1 tbody tr.selected');
-        const idsToDelete = [];
-
-        if (selectedRows.length === 0) {
-            alert('삭제할 항목을 선택해주세요.');
-            return;
-        }
-
-        if (!confirm('선택된 항목을 정말 삭제하시겠습니까?')) {
-            return;
-        }
-
-        selectedRows.forEach(row => {
-            idsToDelete.push(row.dataset.id);
-        });
-
-        fetch('/quality/fm', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                [header]: token
-            },
-            body: JSON.stringify(idsToDelete)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(data.message);
-            if (data.success) {
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('삭제 실패: 서버 연결 또는 응답 오류');
-        });
-    });
-
-    // 테이블 행 클릭 시 선택 상태 토글 (오른쪽 테이블)
-    document.getElementById('dataTable2').addEventListener('click', function(event) {
-        const row = event.target.closest('tr');
-        if (row && row.parentNode.tagName === 'TBODY') {
-            row.classList.toggle('selected');
-        }
-    });
-
-    // '삭제' 버튼 클릭 이벤트 (오른쪽 테이블)
-    document.getElementById('deleteItemBtn').addEventListener('click', function() {
-        const selectedRows = document.querySelectorAll('#dataTable2 tbody tr.selected');
-        const idsToDelete = [];
-
-        if (selectedRows.length === 0) {
-            alert('삭제할 항목을 선택해주세요.');
-            return;
-        }
-
-        if (!confirm('선택된 항목을 정말 삭제하시겠습니까?')) {
-            return;
-        }
-
-        selectedRows.forEach(row => {
-            idsToDelete.push(row.dataset.id);
-        });
-
-        fetch('/quality/item', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                [header]: token
-            },
-            body: JSON.stringify(idsToDelete)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(data.message);
-            if (data.success) {
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('삭제 실패: 서버 연결 또는 응답 오류');
-        });
-    });
-
-    // 모달이 열릴 때 이벤트 리스너 추가 (수정된 코드)
-    $('#standardModal').on('show.bs.modal', function() {
-        const inspectionFMDropdown = document.getElementById('inspectionFMId');
-        const unitDropdown = document.getElementById('unit');
-
-        // 초기화
-        inspectionFMDropdown.innerHTML = '<option value="">선택</option>';
-        unitDropdown.innerHTML = '<option value="">선택</option>';
-
-        // 컨트롤러에서 받아온 inspectionFMs와 units 데이터를 직접 주입
-        const inspectionFMs = /*[[${inspectionFMs}]]*/ [];
-        const units = /*[[${units}]]*/ [];
-
-        if (inspectionFMs && inspectionFMs.length > 0) {
-            inspectionFMs.forEach(fm => {
-                const option = document.createElement('option');
-                option.value = fm.inspectionFMId;
-                option.textContent = `${fm.inspectionType} - ${fm.itemName}`;
-                inspectionFMDropdown.appendChild(option);
-            });
-        }
-
-        if (units && units.length > 0) {
-            units.forEach(unit => {
-                const option = document.createElement('option');
-                option.value = unit.comDtNm;
-                option.textContent = unit.comDtNm;
-                unitDropdown.appendChild(option);
-            });
-        }
-    });
-
-    // 모달이 닫힐 때 폼 초기화
-    $('#standardModal').on('hidden.bs.modal', function() {
-        document.getElementById('item-form').reset();
-    });
-    /*]]>*/
-</script>
+			const pageData = {
+				processes : /*[[${processes}]]*/[],
+				materials : /*[[${materials}]]*/[],
+				inspectionFMs : /*[[${inspectionFMs}]]*/[],
+				units : /*[[${units}]]*/[],
+				products : /*[[${products}]]*/[],
+			};
+		</script>
+		<script th:src="@{/bootstrap/js/qc/qcInfo.js}"></script>
 	</th:block>
 </body>
 </html>

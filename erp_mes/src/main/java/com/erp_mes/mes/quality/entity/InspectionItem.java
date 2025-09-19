@@ -24,36 +24,27 @@ import lombok.NoArgsConstructor;
 public class InspectionItem {
 
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_gen")
-	@SequenceGenerator(
-		name = "item_seq_gen",
-		sequenceName = "INSPECTION_ITEM_SEQ", 
-		allocationSize = 1
-	)
-	private Long itemId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_gen")
+    @SequenceGenerator(
+        name = "item_seq_gen",
+        sequenceName = "INSPECTION_ITEM_SEQ", 
+        allocationSize = 1
+    )
+    private Long itemId;
 
-//    @Column(name = "INSPECTION_TYPE")
-//    private String inspectionType;
-	@Column(name = "PRO_ID")
-	private Long proId;
-	
-	@Column(name = "MATERIAL_ID")
-	private String materialId;
+    @Column(name = "PRO_ID", nullable = true) 
+    private Long proId; 
+    
+    @Column(name = "MATERIAL_ID", nullable = true)
+    private String materialId;
+    
+    @Column(name = "INSPECTION_FM_ID")
+    private Long inspectionFMId;
 
-//    @Column(name = "ITEM_NAME")
-//    private String itemName;
-	@Column(name = "INSPECTION_FM_ID")
-	private Long inspectionFMId;
+    @Column(name = "TOLERANCE_VALUE")
+    private BigDecimal toleranceValue;
 
-//    @Column(name = "TOLERANCE_VALUE")
-//    private Double toleranceValue;
-//
-//    @Column(name = "UNIT")
-//    private String unit;
-	@Column(name = "TOLERANCE_VALUE")
-	private BigDecimal toleranceValue;
-
-	@Column(name = "UNIT")
-	private String unit;
+    @Column(name = "UNIT")
+    private String unit;
 }

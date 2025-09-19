@@ -108,6 +108,12 @@
 <th:block layout:fragment="script">
 <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
 <script>
+
+
+	document.addEventListener('DOMContentLoaded', function() {
+		alert("공정 순서에 맞게 생성해주세요");
+	});
+
 	document.addEventListener('DOMContentLoaded', function() {
 		const token = $("meta[name='_csrf']").attr("content");
 		const header = $("meta[name='_csrf_header']").attr("content");

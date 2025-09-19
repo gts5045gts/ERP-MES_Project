@@ -11,15 +11,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.erp_mes.erp.config.util.SessionUtil;
-import com.erp_mes.erp.config.util.TableMetadataManager;
-import com.erp_mes.erp.config.util.TableMetadataManager.TableInfo;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
-import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

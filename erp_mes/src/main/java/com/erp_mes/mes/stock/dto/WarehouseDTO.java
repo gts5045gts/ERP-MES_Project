@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+//창고 정보 DTO
 @Data
 @Builder
 @NoArgsConstructor

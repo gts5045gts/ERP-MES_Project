@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.service.ProcessService;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pm.service.ProductBomService;
@@ -25,6 +27,8 @@ import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 import com.erp_mes.mes.quality.service.InspectionService;
+import com.erp_mes.mes.stock.dto.MaterialDTO;
+import com.erp_mes.mes.stock.service.StockService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -33,15 +37,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class InspectionController {
 
-	private final InspectionService inspectionService;
-	private final CommonCodeService commonCodeService;
-	private final ProductBomService productBomService; 
+    private final InspectionService inspectionService;
+    private final CommonCodeService commonCodeService;
+    private final ProductBomService productBomService;
+    private final ProcessService processService;
+    private final StockService stockService;
 
-	public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductBomService productBomService) {
-		this.inspectionService = inspectionService;
-		this.commonCodeService = commonCodeService;
-		this.productBomService = productBomService;
-	}
+    public InspectionController(InspectionService inspectionService, CommonCodeService commonCodeService, ProductBomService productBomService, ProcessService processService, StockService stockService) {
+        this.inspectionService = inspectionService;
+        this.commonCodeService = commonCodeService;
+        this.productBomService = productBomService;
+        this.processService = processService;
+        this.stockService = stockService;
+    }
 
 	@GetMapping("/qcinfo")
 	public String qualityDashboard(Model model) {
@@ -61,9 +69,14 @@ public class InspectionController {
 	    
 	    // 오른쪽 테이블 데이터 (검사 항목별 허용 공차)
 	    List<InspectionItemDTO> inspectionItems = inspectionService.getInspectionItems();
-	    // inspectionItems의 inspectionType을 이름으로 변환하여 모델에 추가
+
+	    // 이미 변환된 inspectionFMs 목록을 사용하여 매핑 맵 생성
+	    Map<Long, String> inspectionFmNameMap = inspectionFMs.stream()
+	        .collect(Collectors.toMap(InspectionFMDTO::getInspectionFMId, InspectionFMDTO::getInspectionType));
+
+	    // inspectionItems의 inspectionFMId를 사용하여 이름 찾아와서 매핑
 	    inspectionItems.forEach(item -> {
-	        String typeName = qcTypeMap.get(item.getInspectionType());
+	        String typeName = inspectionFmNameMap.get(item.getInspectionFMId());
 	        if (typeName != null) {
 	            item.setInspectionType(typeName);
 	        }
@@ -71,23 +84,29 @@ public class InspectionController {
 	    // UNIT 공통 코드 데이터
 	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
 	    
-	    // 제품 목록 데이터
-	    List<ProductDTO> products = productBomService.getProductList();
+        // 제품 목록 데이터
+        List<ProductDTO> products = productBomService.getProductList();
+        // 공정 목록 데이터
+        List<ProcessDTO> processes = processService.getProcessList();
+        // 자재 목록 데이터
+        List<MaterialDTO> materials = stockService.getMaterialList();
 
-	    model.addAttribute("inspectionFMs", inspectionFMs);
-	    model.addAttribute("inspectionItems", inspectionItems);
-	    model.addAttribute("qcTypes", qcTypes);
-	    model.addAttribute("units", units);
-	    model.addAttribute("products", products); // 제품 목록 추가
+        model.addAttribute("inspectionFMs", inspectionFMs);
+        model.addAttribute("inspectionItems", inspectionItems);
+        model.addAttribute("qcTypes", qcTypes);
+        model.addAttribute("units", units);
+        model.addAttribute("products", products);
+        model.addAttribute("processes", processes);
+        model.addAttribute("materials", materials);
 
-	    return "qc/qcinfo";
+        return "qc/qcinfo";
 	}
 	
-    @GetMapping("/iqc")
+    @GetMapping("/qih")
     public String iqc(Model model) {
         List<InspectionResultDTO> inspectionResultList = inspectionService.getInspectionResultList();
         model.addAttribute("inspectionResultList", inspectionResultList);
-        return "qc/iqc";
+        return "qc/qih";
     }
     
     @GetMapping("/api/inspection-results") 
@@ -114,6 +133,7 @@ public class InspectionController {
 	// 오른쪽 테이블 (검사 항목별 허용 공차 관리)에 대한 등록 API
 	@PostMapping("/item")
 	public ResponseEntity<String> registerInspectionItem(@RequestBody InspectionItemDTO inspectionItemDTO) {
+		log.info("수신된 DTO: " + inspectionItemDTO);
 		try {
 			// InspectionItemDTO를 받아서 서비스로 전달
 			inspectionService.registerInspectionItem(inspectionItemDTO);
@@ -161,7 +181,7 @@ public class InspectionController {
     // 2. 특정 제품의 검사 기준 API
     @GetMapping("/api/inspection-item/{productId}")
     @ResponseBody
-    public List<InspectionItemDTO> getInspectionItemByProductId(@PathVariable String productId) {
+    public List<InspectionItemDTO> getInspectionItemByProductId(@PathVariable("productId") String productId) {
         return inspectionService.getInspectionItemByProductId(productId);
     }
 
@@ -170,7 +190,10 @@ public class InspectionController {
     @ResponseBody
     public ResponseEntity<String> registerInspectionResult(@RequestBody InspectionResultDTO resultDTO) {
         try {
-            inspectionService.registerInspectionResult(resultDTO);
+            Long workOrderId = resultDTO.getWorkOrderId(); // workOrderId 필드를 추가했다고 가정
+            
+            inspectionService.registerInspectionResult(resultDTO, workOrderId);
+
             return new ResponseEntity<>("{\"success\": true}", HttpStatus.OK);
         } catch (Exception e) {
             log.error("Failed to register inspection result: {}", e.getMessage());

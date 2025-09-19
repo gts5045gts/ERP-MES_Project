@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.pm.mapper.WorkOrderMapper">
+
+    <update id="updateWorkOrderStatus" >
+        UPDATE work_order
+        SET work_order_status = '작업완료'
+        WHERE work_order_id = #{workOrderId}
+    </update>
+
+</mapper>
