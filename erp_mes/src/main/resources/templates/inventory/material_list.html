@@ -87,18 +87,36 @@ let currentUserId = '';
 let currentEditRow = null;
 let materialTypes = []; // 공통코드에서 가져올 자재타입
 let inspectionMethods = [];
+let unitList = [];		// 공통코드에서 가져올 단위타입
 
 
 $(document).ready(function() {
     loadMaterialTypes(); 
-    loadMaterials();
     getCurrentUser();
     loadInspectionMethods();
+    loadUnitList(); 
+    
+    setTimeout(function() { loadMaterials(); }, 500);
     
     $('#selectAll').on('change', function() {
         $('.item-check').prop('checked', $(this).is(':checked'));
     });
 });
+
+//단위 목록 로드
+function loadUnitList() {
+    $.ajax({
+        url: '/api/inventory/units',
+        type: 'GET',
+        success: function(data) {
+            console.log("단위 목록 로드 성공:", data);
+            unitList = data;
+        },
+        error: function(xhr) {
+            console.error("단위 목록 로드 실패:", xhr);
+        }
+    });
+}
 
 function loadMaterialTypes() {
     console.log("loadMaterialTypes 시작");
@@ -169,7 +187,16 @@ function displayMaterials(data) {
 function createTableRow(item) {
     const typeColor = item.materialType === '부품' ? 'text-info' : 'text-warning';
     const price = item.price ? new Intl.NumberFormat('ko-KR').format(item.price) + '원' : '-';
-    const inspectionMethod = item.inspectionItemName || '-'; 
+    const inspectionMethod = item.inspectionItemName || '-';
+    
+    // unit 코드로 unitList에서 이름 찾기
+    let unitDisplay = item.unit;
+    if(unitList && unitList.length > 0) {
+        const unitItem = unitList.find(u => u.code === item.unit);
+        if(unitItem) {
+            unitDisplay = unitItem.name;
+        }
+    }
     
     return `
         <tr data-id="${item.materialId}">
@@ -177,10 +204,10 @@ function createTableRow(item) {
             <td>${item.materialId}</td>
             <td>${item.materialName}</td>
             <td><span class="badge badge-light ${typeColor}" style="font-size: 14px;">${item.materialType || item.materialTypeName}</span></td>
-            <td>${item.unit}</td>
+            <td>${unitDisplay}</td>  
             <td>${item.spec || '-'}</td>
             <td class="text-right">${price}</td>
-            <td>${inspectionMethod}</td> <!-- 추가 -->
+            <td>${inspectionMethod}</td>
             <td>${item.empId || '-'}</td>
             <td>${formatDate(item.createdAt)}</td>
         </tr>
@@ -290,6 +317,7 @@ function cancelEdit() {
 }
 
 // ========== 추가 관련 ==========
+// showAddRow 함수 수정
 function showAddRow() {
     if($('#newRow').length > 0) {
         alert('이미 추가 중입니다.');
@@ -308,6 +336,14 @@ function showAddRow() {
         ).join('');
     }
     
+    // 단위 옵션 추가
+    let unitOptions = '';
+    if(unitList && unitList.length > 0) {
+        unitOptions = unitList.map(u => 
+            `<option value="${u.code}">${u.name}</option>`
+        ).join('');
+    }
+    
     const newRow = `
         <tr id="newRow" class="table-warning">
             <td><input type="checkbox" disabled></td>
@@ -318,7 +354,11 @@ function showAddRow() {
                     ${typeOptions}
                 </select>
             </td>
-            <td><input type="text" class="form-control form-control-sm" id="new_unit" placeholder="단위"></td>
+            <td>
+                <select class="form-control form-control-sm" id="new_unit">
+                    ${unitOptions}
+                </select>
+            </td>
             <td><input type="text" class="form-control form-control-sm" id="new_spec" placeholder="사양"></td>
             <td><input type="number" class="form-control form-control-sm" id="new_price" placeholder="단가"></td>
             <td>

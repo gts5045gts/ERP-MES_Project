@@ -200,6 +200,13 @@ public class InvController {
         return stockService.getInspectionMethods();
     }
     
+    // 단위 목록 조회(공통코드)
+    @GetMapping("/api/inventory/units")
+    @ResponseBody
+    public List<Map<String, Object>> getUnitList() {
+        return stockService.getUnitList();
+    }
+    
     // 기준정보관리 - 자재(부품/반제품) 수정
     @PutMapping("/api/inventory/materials/{materialId}")
     @ResponseBody
@@ -217,7 +224,7 @@ public class InvController {
         result.put("success", success);
         return result;
     }
-
+    
     // 기준정보관리 - 자재(부품/반제품) 삭제
     @DeleteMapping("/api/inventory/materials")
     @ResponseBody

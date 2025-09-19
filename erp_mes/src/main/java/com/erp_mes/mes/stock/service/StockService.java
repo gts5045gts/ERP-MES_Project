@@ -313,6 +313,12 @@ public class StockService {
         return stockMapper.updateProduct(dto) > 0;
     }
     
+    // 단위 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getUnitList() {
+        return stockMapper.getUnitList();
+    }
+    
     // 제품 삭제
     @Transactional
     public Map<String, Object> deleteProducts(List<String> productIds) {

@@ -47,6 +47,8 @@ public interface StockMapper {
     // 자재 목록 조회
     List<MaterialDTO> selectMaterialListFromMaterial(@Param("materialType") String materialType,
                                                      @Param("searchKeyword") String searchKeyword);
+    // 단위 목록 조회
+    List<Map<String, Object>> getUnitList();
     
     // 자재 ID 중복 체크
     boolean existsMaterialById(@Param("materialId") String materialId);

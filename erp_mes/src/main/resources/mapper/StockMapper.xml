@@ -226,6 +226,17 @@
         WHERE material_id = #{materialId}
     </update>
     
+    <!-- 단위 목록 조회 (공통코드) -->
+	<select id="getUnitList" resultType="map">
+	    SELECT 
+	        COM_DT_ID as "code",
+	        COM_DT_NM as "name"
+	    FROM common_dt_code
+	    WHERE com_id = 'UNIT'
+	    AND USE_YN = 'Y'
+	    ORDER BY COM_DT_ID
+	</select>
+    
     <!-- 자재 삭제 -->
     <delete id="deleteMaterialsFromTable">
         DELETE FROM material
@@ -248,11 +259,11 @@
         )
     </select>
     
-    <!-- 자재별 warehouse_item 삭제 -->
-    <delete id="deleteWarehouseItemsByMaterial">
-        DELETE FROM warehouse_item
-        WHERE product_id = #{materialId}
-    </delete>
+    <!-- material 삭제 시 warehouse_item도 삭제 -->
+	<delete id="deleteWarehouseItemsByMaterial">
+	    DELETE FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	</delete>
     
     <!-- ==================== Product 테이블 관련 (완제품) ==================== -->
     
