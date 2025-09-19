@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+//자재(부품/반제품) 정보 DTO
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,6 +19,8 @@ public class MaterialDTO {
     private String unit;
     private String spec;
     private Double price;
+    private Integer inspectionFmId;
+    private String inspectionItemName;
     private Integer quantity;
     private String empId;
     private String empName;

@@ -22,8 +22,8 @@ public class MaterialUsageDTO {
     // 미지정 시 서비스에서 현재 생성 LOT(lotId)로 기본 세팅
     private String childLotId; // 자식 LOT(생산 결과)
 
-    @Positive
-    private Integer qtyUsed; // 사용 수량
+//    @Positive
+//    private Integer qtyUsed; // 사용 수량
 
     // 선택: 기록 시간
     private LocalDateTime createdAt;

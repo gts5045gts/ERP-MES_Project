@@ -25,7 +25,6 @@ import com.erp_mes.mes.stock.service.WareService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-
 @Log4j2  
 @Controller
 @RequestMapping("/inventory")
@@ -34,19 +33,38 @@ public class WareController {
 	
 	private final WareService wareService;
 	
-	//창고내 재고 현황
+	// ==================== 1. 페이지 라우팅 ====================
+	
+	// 창고내 재고 현황 페이지
 	@GetMapping("/warehouse")
     public String warehouseList(Model model) {
         log.info("창고 현황 페이지 접속");
         return "inventory/warehouse_list";
     }
 	
-	//창고 정보 관리
+	// 창고 정보 관리 페이지
 	@GetMapping("/ware")
     public String wareList(Model model) {
-        log.info("창고 현황 페이지 접속");
+        log.info("창고 정보 관리 페이지 접속");
         return "inventory/ware_list";
     }
+	
+	// 입고 관리 페이지
+	@GetMapping("/goods")
+	public String inputList(Model model) {
+	    log.info("입고 관리 페이지 접속");
+	    
+	    LocalDate today = LocalDate.now();
+	    String pageTitle = today.getMonthValue() + "월 " + today.getDayOfMonth() + "일 입고내역입니다.";
+	    model.addAttribute("pageTitle", pageTitle);
+	    
+	    List<WarehouseDTO> materialWarehouses = wareService.getWarehouseListByType("원자재");
+	    model.addAttribute("warehouseList", materialWarehouses);
+	    
+	    return "inventory/inbound_list";
+	}
+	
+	// ==================== 2. 창고 관리 API ====================
 	
 	// 창고 목록 조회
 	@GetMapping("/api/warehouses")
@@ -60,14 +78,13 @@ public class WareController {
 	    return wareService.getWarehouseList(warehouseType, warehouseStatus, searchKeyword);
 	}
 	
-	// 창고 등록
+	// 창고 신규 등록
 	@PostMapping("/api/warehouses")
 	@ResponseBody
 	public Map<String, Object> addWarehouse(@RequestBody WarehouseDTO dto, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    
 	    try {
-	        // 기본값 설정
 	        if(dto.getWarehouseStatus() == null) {
 	            dto.setWarehouseStatus("Y");
 	        }
@@ -82,7 +99,7 @@ public class WareController {
 	    return result;
 	}
 	
-	// 창고 수정
+	// 창고 정보 수정
 	@PutMapping("/api/warehouses/{warehouseId}")
 	@ResponseBody
 	public Map<String, Object> updateWarehouse(
@@ -92,7 +109,6 @@ public class WareController {
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    dto.setWarehouseId(warehouseId);
-	    // dto.setEmpId() 제거 - 담당자 변경 안 함
 	    
 	    boolean success = wareService.updateWarehouse(dto);
 	    result.put("success", success);
@@ -101,7 +117,7 @@ public class WareController {
 	    return result;
 	}
 	
-	// 창고 삭제
+	// 창고 삭제 (다중 선택 가능)
 	@DeleteMapping("/api/warehouses")
 	@ResponseBody
 	public Map<String, Object> deleteWarehouses(@RequestBody List<String> ids) {
@@ -118,25 +134,9 @@ public class WareController {
 	    return result;
 	}
 	
+	// ==================== 3. 입고 관리 API ====================
 	
-	// 0917 입고 관리 페이지
-	@GetMapping("/goods")
-	public String inputList(Model model) {
-	    log.info("입고 관리 페이지 접속");
-	    
-	    // 오늘 날짜로 제목 생성
-	    LocalDate today = LocalDate.now();
-	    String pageTitle = today.getMonthValue() + "월 " + today.getDayOfMonth() + "일 입고내역입니다.";
-	    model.addAttribute("pageTitle", pageTitle);
-	    
-	    // 원자재 창고 목록
-	    List<WarehouseDTO> materialWarehouses = wareService.getWarehouseListByType("원자재");
-	    model.addAttribute("warehouseList", materialWarehouses);
-	    
-	    return "inventory/inbound_list";
-	}
-
-	// 입고 목록 조회 API
+	// 입고 목록 조회
 	@GetMapping("/api/inputs")
 	@ResponseBody
 	public List<Map<String, Object>> getInputList(
@@ -150,8 +150,18 @@ public class WareController {
 	    
 	    return wareService.getInputList(inType, inStatus);
 	}
+	
+	// 날짜별 그룹화된 입고 목록 조회
+	@GetMapping("/api/inputs/grouped")
+	@ResponseBody
+	public List<Map<String, Object>> getGroupedInputList(
+	        @RequestParam(name = "date", required = false) String date,
+	        @RequestParam(name = "inType", required = false) String inType) {
+	    
+	    return wareService.getGroupedInputList(date, inType);
+	}
 
-	// 입고 등록 API
+	// 개별 입고 등록
 	@PostMapping("/api/inputs")
 	@ResponseBody
 	public Map<String, Object> addInput(@RequestBody Map<String, Object> params, Principal principal) {
@@ -168,47 +178,8 @@ public class WareController {
 	    }
 	    return result;
 	}
-
-	// 입고 완료 처리 API
-	@PutMapping("/api/inputs/{inId}/complete")
-	@ResponseBody
-	public Map<String, Object> completeInput(@PathVariable("inId") String inId, Principal principal) {
-	    Map<String, Object> result = new HashMap<>();
-	    try {
-	        wareService.completeInput(inId, principal.getName());
-	        result.put("success", true);
-	        result.put("message", "입고 완료 처리");
-	    } catch(Exception e) {
-	        result.put("success", false);
-	        result.put("message", e.getMessage());
-	    }
-	    return result;
-	}
-
-	// 부품 목록 조회 (입고용)
-	@GetMapping("/api/parts")
-	@ResponseBody
-	public List<Map<String, Object>> getPartsList() {
-	    return wareService.getPartsList();
-	}
-
-	// 거래처 목록 조회
-	@GetMapping("/api/clients")
-	@ResponseBody
-	public List<Map<String, Object>> getClientsList() {
-	    return wareService.getClientsList();
-	}
 	
-	@GetMapping("/api/inputs/grouped")
-	@ResponseBody
-	public List<Map<String, Object>> getGroupedInputList(
-	        @RequestParam(name = "date", required = false) String date,
-	        @RequestParam(name = "inType", required = false) String inType) {
-	    
-	    return wareService.getGroupedInputList(date, inType);
-	}
-	
-	// 입고 배치 등록 API
+	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
@@ -232,5 +203,37 @@ public class WareController {
 	        result.put("message", e.getMessage());
 	    }
 	    return result;
+	}
+
+	// 입고 검사 완료 처리
+	@PutMapping("/api/inputs/{inId}/complete")
+	@ResponseBody
+	public Map<String, Object> completeInput(@PathVariable("inId") String inId, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.completeInput(inId, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고 완료 처리");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// ==================== 4. 데이터 조회 API ====================
+
+	// 입고 가능한 자재 목록 조회
+	@GetMapping("/api/materials-for-input")
+	@ResponseBody
+	public List<Map<String, Object>> getMaterialsForInput() {
+	    return wareService.getMaterialsForInput();
+	}
+
+	// 거래처 목록 조회
+	@GetMapping("/api/clients")
+	@ResponseBody
+	public List<Map<String, Object>> getClientsList() {
+	    return wareService.getClientsList();
 	}
 }
