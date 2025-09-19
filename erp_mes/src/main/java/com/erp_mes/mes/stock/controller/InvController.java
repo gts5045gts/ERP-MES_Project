@@ -1,6 +1,7 @@
 package com.erp_mes.mes.stock.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.mes.stock.dto.ProductDTO;
+import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.dto.StockDTO;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.service.StockService;
@@ -24,16 +26,17 @@ import com.erp_mes.mes.stock.service.WareService;
 
 import org.springframework.ui.Model;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;  
+import lombok.extern.log4j.Log4j2;
+
 @Log4j2  
 @Controller
 @RequiredArgsConstructor
 public class InvController {
     
-	private final WareService wareService;
-	private final StockService stockService;
-	
-	// 재고 현황 페이지
+    private final WareService wareService;
+    private final StockService stockService;
+    
+    // 재고 현황 페이지
     @GetMapping("/inventory/stock")
     public String stockList(Model model) {
         log.info("재고 현황 페이지 접속");
@@ -45,14 +48,30 @@ public class InvController {
         return "inventory/stock_list";
     }
     
-    // 재고 목록 조회 (Ajax)
+    // 전체 재고 목록 조회 (material + product)
+    @GetMapping("/api/inventory/all-stock")
+    @ResponseBody
+    public List<StockDTO> getAllStockList(
+            @RequestParam(name = "productName", required = false) String productName,
+            @RequestParam(name = "warehouseId", required = false) String warehouseId) {
+        
+        log.info("========== 전체 재고 API 호출됨 ==========");
+        log.info("productName: {}", productName);
+        
+        List<StockDTO> stockList = stockService.getAllStockList(productName, warehouseId);
+        log.info("조회 결과 개수: {}", stockList.size());
+        
+        return stockList;
+    }
+    
+    // 재고 목록 조회 (Ajax) - 기존 API
     @GetMapping("/api/inventory/stock")
     @ResponseBody
     public List<StockDTO> getStockList(
-    		@RequestParam(name = "productName", required = false) String productName,
-    		@RequestParam(name = "warehouseId", required = false) String warehouseId) {
+            @RequestParam(name = "productName", required = false) String productName,
+            @RequestParam(name = "warehouseId", required = false) String warehouseId) {
         
-    	log.info("========== 재고 API 호출됨 ==========");  // 이거 추가!
+        log.info("========== 재고 API 호출됨 ==========");
         log.info("productName: {}, warehouseId: {}", productName, warehouseId);
         
         List<StockDTO> stockList = stockService.getStockList(productName, warehouseId);
@@ -89,204 +108,247 @@ public class InvController {
         return result;
     }
     
+    // Material 재고 차감 (투입용)
+    @PostMapping("/api/inventory/material/reduce")
+    @ResponseBody
+    public Map<String, Object> reduceMaterialStock(
+            @RequestParam("materialId") String materialId,
+            @RequestParam("reduceQty") Integer reduceQty,
+            Principal principal) {
+        
+        log.info("Material 재고 차감 API - materialId: {}, 차감수량: {}", materialId, reduceQty);
+        
+        Map<String, Object> result = new HashMap<>();
+        try {
+            boolean success = stockService.reduceMaterialStock(materialId, reduceQty);
+            result.put("success", success);
+            result.put("message", success ? "재고 차감 완료" : "재고 차감 실패");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
     
-	
-	// 입고 관리
-	@GetMapping("/purchase/goods")
-	public String inboundList(Model model) {
-	    log.info("입고 관리 페이지 접속");
-	    return "inventory/inbound_list";
-	}
-	
-	// 출고 관리
-	@GetMapping("/inventory/outbound")
-	public String outboundList(Model model) {
-	    log.info("출고 관리 페이지 접속");
-	    return "inventory/outbound_list";
-	}
-	
-	// 0915 기준정보관리 - 자재 목록 페이지
-	@GetMapping("/inventory/material")
-	public String materialList(Model model) {
-	    log.info("자재 관리 페이지 접속");
-	    return "inventory/material_list";
-	}
-	
-	// 기준정보관리 - 자재(부품) 목록 조회 API
-	@GetMapping("/api/inventory/materials")
-	@ResponseBody
-	public List<ProductDTO> getMaterialList(
-	        @RequestParam(name = "productType", required = false) String productType,  
-	        @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {  
-	    log.info("자재 목록 조회 - 구분: {}, 검색어: {}", productType, searchKeyword);
-	    return stockService.getMaterialList(productType, searchKeyword);
-	}
+    
+    
+    // Material 창고별 재고 조회
+    @GetMapping("/api/inventory/material-warehouse-stock/{materialId}")
+    @ResponseBody
+    public List<Map<String, Object>> getMaterialWarehouseStock(@PathVariable("materialId") String materialId) {
+        return stockService.getMaterialWarehouseStock(materialId);
+    }
+    
+    // 입고 관리
+    @GetMapping("/purchase/goods")
+    public String inboundList(Model model) {
+        log.info("입고 관리 페이지 접속");
+        return "inventory/inbound_list";
+    }
+    
+    // 출고 관리
+    @GetMapping("/inventory/outbound")
+    public String outboundList(Model model) {
+        log.info("출고 관리 페이지 접속");
+        return "inventory/outbound_list";
+    }
+    
+    // ==================== Material 테이블 관련 (자재: 부품/반제품) ====================
+    
+    // 기준정보관리 - 자재 목록 페이지
+    @GetMapping("/inventory/material")
+    public String materialList(Model model) {
+        log.info("자재 관리 페이지 접속");
+        return "inventory/material_list";
+    }
+    
+    // 기준정보관리 - 자재(부품/반제품) 목록 조회 API
+    @GetMapping("/api/inventory/materials")
+    @ResponseBody
+    public List<MaterialDTO> getMaterialList(
+            @RequestParam(name = "materialType", required = false) String materialType,
+            @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {
+        log.info("자재 목록 조회 - 구분: {}, 검색어: {}", materialType, searchKeyword);
+        return stockService.getMaterialList(materialType, searchKeyword);
+    }
 
-	// 기준정보관리 - 자재(부품) 등록
-	@PostMapping("/api/inventory/materials")
-	@ResponseBody
-	public Map<String, Object> addMaterial(@RequestBody ProductDTO dto) {
-	    Map<String, Object> result = new HashMap<>();
-	    try {
-	        stockService.addMaterial(dto);
-	        result.put("success", true);
-	        result.put("message", "자재가 등록되었습니다.");
-	    } catch (Exception e) {
-	        result.put("success", false);
-	        result.put("message", e.getMessage());
-	    }
-	    return result;
-	}
+    // 기준정보관리 - 자재(부품/반제품) 등록
+    @PostMapping("/api/inventory/materials")
+    @ResponseBody
+    public Map<String, Object> addMaterial(@RequestBody MaterialDTO dto) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            stockService.addMaterial(dto);
+            result.put("success", true);
+            result.put("message", "자재가 등록되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
 
-	// 기준정보관리 - 자재(부품) 수정
-	@PutMapping("/api/inventory/materials/{productId}")
-	@ResponseBody
-	public Map<String, Object> updateMaterial(
-	        @PathVariable("productId") String productId, 
-	        @RequestBody ProductDTO dto,
-	        Principal principal) {  // 현재 로그인 사용자 정보
-	    
-	    Map<String, Object> result = new HashMap<>();
-	    dto.setProductId(productId);
-	    
-	    String modifierId = principal.getName();  // 수정자 ID
-	    boolean success = stockService.updateMaterial(dto, modifierId);
-	    
-	    result.put("success", success);
-	    return result;
-	}
+    // 기준정보관리 - 자재(부품/반제품) 수정
+    @PutMapping("/api/inventory/materials/{materialId}")
+    @ResponseBody
+    public Map<String, Object> updateMaterial(
+            @PathVariable("materialId") String materialId, 
+            @RequestBody MaterialDTO dto,
+            Principal principal) {
+        
+        Map<String, Object> result = new HashMap<>();
+        dto.setMaterialId(materialId);
+        
+        String modifierId = principal.getName();
+        boolean success = stockService.updateMaterial(dto, modifierId);
+        
+        result.put("success", success);
+        return result;
+    }
 
-	// 기준정보관리 - 자재(부품) 삭제
-	@DeleteMapping("/api/inventory/materials")
-	@ResponseBody
-	public Map<String, Object> deleteMaterials(@RequestBody List<String> ids) {
-	    Map<String, Object> result = stockService.deleteMaterials(ids);
-	    
-	    if(result.containsKey("failed")) {
-	        List<String> failed = (List<String>) result.get("failed");
-	        result.put("message", 
-	            failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.\n" +
-	            "자재코드: " + String.join(", ", failed));
-	    } else {
-	        result.put("message", "삭제 완료");
-	    }
-	    
-	    return result;
-	}
-	
-	@GetMapping("/api/current-user")
+    // 기준정보관리 - 자재(부품/반제품) 삭제
+    @DeleteMapping("/api/inventory/materials")
+    @ResponseBody
+    public Map<String, Object> deleteMaterials(@RequestBody List<String> ids) {
+        Map<String, Object> result = stockService.deleteMaterials(ids);
+        
+        if(result.containsKey("failed")) {
+            List<String> failed = (List<String>) result.get("failed");
+            result.put("message", 
+                failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.\n" +
+                "자재코드: " + String.join(", ", failed));
+        } else {
+            result.put("message", "삭제 완료");
+        }
+        
+        return result;
+    }
+    
+    // ==================== Product 테이블 관련 (제품: 완제품) ====================
+    
+    // 기준정보관리 - 제품정보(완제품)
+    @GetMapping("/inventory/item")
+    public String itemList(Model model) {
+        log.info("제품 관리 페이지 접속");
+        return "inventory/item_list";
+    }
+    
+    @GetMapping("/api/inventory/products") 
+    @ResponseBody
+    public List<ProductDTO> getProductList(
+            @RequestParam(name = "productType", required = false) String productType,
+            @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {
+        return stockService.getProductList(productType, searchKeyword);
+    }
+
+    // 제품 등록
+    @PostMapping("/api/inventory/products")
+    @ResponseBody
+    public Map<String, Object> addProduct(@RequestBody ProductDTO dto, Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            dto.setEmpId(principal.getName());
+            stockService.addProduct(dto);
+            result.put("success", true);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    // 제품 수정
+    @PutMapping("/api/inventory/products/{productId}")
+    @ResponseBody
+    public Map<String, Object> updateProduct(
+            @PathVariable("productId") String productId,
+            @RequestBody ProductDTO dto,
+            Principal principal) {
+        Map<String, Object> result = new HashMap<>();
+        dto.setProductId(productId);
+        dto.setEmpId(principal.getName());
+        
+        boolean success = stockService.updateProduct(dto);
+        result.put("success", success);
+        return result;
+    }
+
+    // 제품 삭제
+    @DeleteMapping("/api/inventory/products")
+    @ResponseBody
+    public Map<String, Object> deleteProducts(@RequestBody List<String> ids) {
+        Map<String, Object> result = stockService.deleteProducts(ids);
+        
+        if(result.containsKey("failed")) {
+            List<String> failed = (List<String>) result.get("failed");
+            result.put("message", 
+                failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.");
+        } else {
+            result.put("message", "삭제 완료");
+        }
+        
+        return result;
+    }
+    
+    // ==================== 공통 ====================
+    
+    @GetMapping("/api/current-user")
     @ResponseBody
     public Map<String, String> getCurrentUser(Principal principal) {
         Map<String, String> result = new HashMap<>();
-        String empId = principal.getName();  // 로그인한 사용자 ID
+        String empId = principal.getName();
         
-        // 사용자 정보 조회 (PersonnelService 사용)
-        // 또는 간단하게 empId만 반환해도 됨
         result.put("empId", empId);
         result.put("empName", stockService.getEmployeeName(empId));
         
         return result;
     }
-	
-	// 기준정보관리 - 제품정보(완제품/반제품)
-	@GetMapping("/inventory/item")
-	public String itemList(Model model) {
-	    log.info("출고 관리 페이지 접속");
-	    return "inventory/item_list";
-	}
-	
-	@GetMapping("/api/inventory/products") 
-	@ResponseBody
-	public List<ProductDTO> getProductList(
-	        @RequestParam(name = "productType", required = false) String productType,
-	        @RequestParam(name = "searchKeyword", required = false) String searchKeyword) {
-	    return stockService.getProductList(productType, searchKeyword);
-	}
-
-	// 제품 등록
-	@PostMapping("/api/inventory/products")
-	@ResponseBody
-	public Map<String, Object> addProduct(@RequestBody ProductDTO dto, Principal principal) {
-	    Map<String, Object> result = new HashMap<>();
-	    try {
-	        dto.setEmpId(principal.getName());
-	        stockService.addProduct(dto);
-	        result.put("success", true);
-	    } catch (Exception e) {
-	        result.put("success", false);
-	        result.put("message", e.getMessage());
-	    }
-	    return result;
-	}
-
-	// 제품 수정
-	@PutMapping("/api/inventory/products/{productId}")
-	@ResponseBody
-	public Map<String, Object> updateProduct(
-	        @PathVariable("productId") String productId,  // 이름 명시
-	        @RequestBody ProductDTO dto,
-	        Principal principal) {
-	    Map<String, Object> result = new HashMap<>();
-	    dto.setProductId(productId);
-	    dto.setEmpId(principal.getName());
-	    
-	    boolean success = stockService.updateProduct(dto);
-	    result.put("success", success);
-	    return result;
-	}
-
-	// 제품 삭제
-	@DeleteMapping("/api/inventory/products")
-	@ResponseBody
-	public Map<String, Object> deleteProducts(@RequestBody List<String> ids) {
-	    Map<String, Object> result = stockService.deleteProducts(ids);
-	    
-	    if(result.containsKey("failed")) {
-	        List<String> failed = (List<String>) result.get("failed");
-	        result.put("message", 
-	            failed.size() + "개 항목은 최근 1개월 내 입출고 내역이 있어 삭제할 수 없습니다.");
-	    } else {
-	        result.put("message", "삭제 완료");
-	    }
-	    
-	    return result;
-	}
-	
-	// 직원 목록 조회 API
-	@GetMapping("/api/employees")
-	@ResponseBody
-	public List<Map<String, String>> getEmployeeList() {
-	    return stockService.getEmployeeList();
-	}
-	
-	// 0916 특정 제품의 창고별 재고 조회 API
-	@GetMapping("/api/inventory/warehouse-stock/{productId}")
-	@ResponseBody
-	public List<Map<String, Object>> getWarehouseStock(@PathVariable("productId") String productId) {  // "productId" 명시!
-	    return stockService.getWarehouseStockByProduct(productId);
-	}
-	
-	// 0916 창고별 재고 조정
-	@PostMapping("/api/inventory/adjust-stock")
-	@ResponseBody
-	public Map<String, Object> adjustWarehouseStock(@RequestParam("productId") String productId,      
-	        @RequestParam("warehouseId") String warehouseId,  
-	        @RequestParam("adjustQty") Integer adjustQty,  
-	        @RequestParam("adjustType") String adjustType,  
-	        @RequestParam(value = "reason", required = false) String reason,
-	        Principal principal) {
-	    
-	    Map<String, Object> result = new HashMap<>();
-	    try {
-	        boolean success = stockService.adjustWarehouseStock(
-	            productId, warehouseId, adjustQty, adjustType, reason, principal.getName()
-	        );
-	        result.put("success", success);
-	        result.put("message", success ? "재고 조정 완료" : "재고 조정 실패");
-	    } catch (Exception e) {
-	        result.put("success", false);
-	        result.put("message", e.getMessage());
-	    }
-	    return result;
-	}
+    
+    // 직원 목록 조회 API
+    @GetMapping("/api/employees")
+    @ResponseBody
+    public List<Map<String, String>> getEmployeeList() {
+        return stockService.getEmployeeList();
+    }
+    
+    // 특정 제품의 창고별 재고 조회 API
+    @GetMapping("/api/inventory/warehouse-stock/{productId}")
+    @ResponseBody
+    public List<Map<String, Object>> getWarehouseStock(@PathVariable("productId") String productId) {
+        return stockService.getWarehouseStockByProduct(productId);
+    }
+    
+    // 창고별 재고 조정
+    @PostMapping("/api/inventory/adjust-stock")
+    @ResponseBody
+    public Map<String, Object> adjustWarehouseStock(
+            @RequestParam("productId") String productId,      
+            @RequestParam("warehouseId") String warehouseId,  
+            @RequestParam("adjustQty") Integer adjustQty,  
+            @RequestParam("adjustType") String adjustType,  
+            @RequestParam(value = "reason", required = false) String reason,
+            Principal principal) {
+        
+        Map<String, Object> result = new HashMap<>();
+        try {
+            boolean success = stockService.adjustWarehouseStock(
+                productId, warehouseId, adjustQty, adjustType, reason, principal.getName()
+            );
+            result.put("success", success);
+            result.put("message", success ? "재고 조정 완료" : "재고 조정 실패");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+    
+    @GetMapping("/api/common-codes/material-types")
+    @ResponseBody
+    public List<Map<String, String>> getMaterialTypes() {
+        log.info("자재타입 공통코드 조회 API 호출");
+        List<Map<String, String>> types = stockService.getMaterialTypes();
+        log.info("조회된 타입 개수: {}", types.size());
+        return types;
+    }
 }

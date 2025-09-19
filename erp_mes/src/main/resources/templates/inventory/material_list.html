@@ -11,7 +11,7 @@
 <body>
 <th:block layout:fragment="content">
     <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">자재(부품) 관리</h1>
+        <h1 class="h3 mb-4 text-gray-800">자재(부품/반제품) 관리</h1>
         
         <!-- 검색 영역 -->
         <div class="card shadow mb-4">
@@ -19,21 +19,20 @@
                 <form id="searchForm">
                     <div class="row">
                         <div class="col-md-2">
-						    <select class="form-control" id="productType">
-						        <option value="">자재구분 전체</option>
-						        <option value="부품">부품</option>
-						        <option value="반제품">반제품</option>
-						        <option value="완제품">완제품</option>
-						    </select>
-						</div>
+                            <select class="form-control" id="materialType">
+                                <option value="">자재구분 전체</option>
+                                <option value="부품">부품</option>
+                                <option value="반제품">반제품</option>
+                            </select>
+                        </div>
                         <div class="col-md-3">
-		                    <input type="text" class="form-control" id="searchKeyword" 
-		                           placeholder="자재코드 또는 자재명">
-		                </div>
+                            <input type="text" class="form-control" id="searchKeyword" 
+                                   placeholder="자재코드 또는 자재명">
+                        </div>
                         <div class="col-md-3">
-		                    <button type="button" class="btn btn-primary" onclick="searchMaterial()">검색</button>
-		                    <button type="button" class="btn btn-secondary" onclick="resetSearch()">초기화</button>
-		                </div>
+                            <button type="button" class="btn btn-primary" onclick="searchMaterial()">검색</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetSearch()">초기화</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -48,38 +47,35 @@
                 <div class="table-responsive">
                     <table class="table table-bordered text-center">
                         <thead class="thead-light">
-						    <tr>
-						        <th width="3%">
-						            <input type="checkbox" id="selectAll">
-						        </th>
-						        <th width="10%">자재코드</th>
-						        <th width="15%">자재명</th>
-						        <th width="12%">자재유형(부품 고정)</th> 
-						        <th width="6%">단위</th>
-						        <th width="20%">자재 사양</th>
-						        <th width="10%">등록자(수정)</th>
-						        <th width="10%">등록일</th>
-						    </tr>
-						</thead>
+                            <tr>
+                                <th width="3%">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th width="10%">자재코드</th>
+                                <th width="15%">자재명</th>
+                                <th width="10%">자재유형</th>
+                                <th width="6%">단위</th>
+                                <th width="20%">자재 사양</th>
+                                <th width="10%">단가</th>
+                                <th width="10%">등록자</th>
+                                <th width="10%">등록일</th>
+                            </tr>
+                        </thead>
                         <tbody id="materialTableBody">
                         </tbody>
                     </table>
                     <div>
-	                    <button class="btn btn-success btn-sm" onclick="showAddRow()">
-	                        <i class="fas fa-plus"></i> 추가
-	                    </button>
-	                    <button class="btn btn-warning btn-sm" onclick="toggleEditMode()">
-	                        <i class="fas fa-edit"></i> 수정
-	                    </button>
-	                    <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
-	                        <i class="fas fa-trash"></i> 삭제
-	                    </button>
-                	</div>
+                        <button class="btn btn-success btn-sm" onclick="showAddRow()">
+                            <i class="fas fa-plus"></i> 추가
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="toggleEditMode()">
+                            <i class="fas fa-edit"></i> 수정
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSelected()">
+                            <i class="fas fa-trash"></i> 삭제
+                        </button>
+                    </div>
                 </div>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center" id="pagination">
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>
@@ -87,13 +83,13 @@
 
 <th:block layout:fragment="script">
 <script>
-// 전역 변수
 let materialData = [];
 let currentUserId = '';
 let currentEditRow = null;
+let materialTypes = []; // 공통코드에서 가져올 자재타입
 
-// 페이지 로드시 실행
 $(document).ready(function() {
+    loadMaterialTypes(); 
     loadMaterials();
     getCurrentUser();
     
@@ -102,20 +98,41 @@ $(document).ready(function() {
     });
 });
 
-//현재 로그인 사용자 정보 조회
+function loadMaterialTypes() {
+    console.log("loadMaterialTypes 시작");
+    
+    // API 호출 없이 직접 데이터 설정
+    materialTypes = [
+        {code: 'PTYPE003', name: '부품'},
+        {code: 'PTYPE002', name: '반제품'}
+    ];
+    
+    const select = $('#materialType');
+    select.empty();
+    select.append('<option value="">자재구분 전체</option>');
+    
+    materialTypes.forEach(item => {
+        select.append(`<option value="${item.name}">${item.name}</option>`);
+    });
+    
+    console.log("materialTypes 설정 완료:", materialTypes);
+}
+
+// 현재 로그인 사용자
 function getCurrentUser() {
     $.ajax({
         url: '/api/current-user',
         type: 'GET',
         success: function(data) {
-            currentUserId = data.empId;  // ID만 저장
+            currentUserId = data.empId;
         }
     });
 }
 
-// ========== 데이터 조회 관련 ==========
+// 자재 목록 조회
 function loadMaterials() {
     const params = {
+        materialType: $('#materialType').val(),
         searchKeyword: $('#searchKeyword').val()
     };
     
@@ -138,7 +155,7 @@ function displayMaterials(data) {
     tbody.empty();
     
     if(data.length === 0) {
-        tbody.append('<tr><td colspan="8">데이터가 없습니다.</td></tr>');
+        tbody.append('<tr><td colspan="9">데이터가 없습니다.</td></tr>');
         return;
     }
     
@@ -148,46 +165,36 @@ function displayMaterials(data) {
 }
 
 function createTableRow(item) {
+    const typeColor = item.materialType === '부품' ? 'text-info' : 'text-warning';
+    const price = item.price ? new Intl.NumberFormat('ko-KR').format(item.price) + '원' : '-';
+    
     return `
-        <tr data-id="${item.productId}">
-            <td><input type="checkbox" class="item-check" value="${item.productId}"></td>
-            <td class="editable" data-field="productId">${item.productId}</td>
-            <td class="editable" data-field="productName">${item.productName}</td>
-            <td>
-                <span class="badge badge-light text-info" style="font-size: 14px;">부품</span>
-            </td>
-            <td class="editable" data-field="unit">${item.unit}</td>
-            <td class="editable" data-field="spec">${item.spec || '-'}</td>
-            <td>${item.empId || '-'}</td>  
+        <tr data-id="${item.materialId}">
+            <td><input type="checkbox" class="item-check" value="${item.materialId}"></td>
+            <td>${item.materialId}</td>
+            <td>${item.materialName}</td>
+            <td><span class="badge badge-light ${typeColor}" style="font-size: 14px;">${item.materialType || item.materialTypeName}</span></td>
+            <td>${item.unit}</td>
+            <td>${item.spec || '-'}</td>
+            <td class="text-right">${price}</td>
+            <td>${item.empId || '-'}</td>
             <td>${formatDate(item.createdAt)}</td>
         </tr>
     `;
 }
 
-// ========== 검색 관련 ==========
+// 검색
 function searchMaterial() {
     loadMaterials();
 }
 
 function resetSearch() {
-    $('#productType').val('');
+    $('#materialType').val('');
     $('#searchKeyword').val('');
     loadMaterials();
 }
 
 // ========== 수정 관련 ==========
-function editRow(productId) {
-    // 이미 수정 중인 행이 있는지 확인
-    if(currentEditRow) {
-        alert('현재 수정 중인 항목을 먼저 저장하거나 취소해주세요.');
-        return;
-    }
-    
-    const row = $(`tr[data-id="${productId}"]`);
-    currentEditRow = productId;
-    enableEditMode(row);
-}	
-
 function toggleEditMode() {
     const checked = $('.item-check:checked');
     
@@ -214,55 +221,60 @@ function toggleEditMode() {
 function enableEditMode(row) {
     row.addClass('edit-mode bg-warning');
     
-    // 각 필드를 input으로 변경 (인덱스 수정)
-    const productName = row.find('td:eq(2)').text();
+    // 각 필드값 가져오기
+    const materialName = row.find('td:eq(2)').text();
+    const currentType = row.find('td:eq(3) span').text();
     const unit = row.find('td:eq(4)').text();
     const spec = row.find('td:eq(5)').text();
+    const price = row.find('td:eq(6)').text().replace(/[^0-9]/g, '');
     
-    row.find('td:eq(2)').html(`<input type="text" class="form-control form-control-sm" value="${productName}">`);
+    // 공통코드로 select 만들기
+    const typeOptions = materialTypes.map(t => 
+        `<option value="${t.name}" ${t.name === currentType ? 'selected' : ''}>${t.name}</option>`
+    ).join('');
+    
+    // input으로 변경
+    row.find('td:eq(2)').html(`<input type="text" class="form-control form-control-sm" value="${materialName}">`);
+    row.find('td:eq(3)').html(`
+        <select class="form-control form-control-sm">
+            ${typeOptions}
+        </select>
+    `);
     row.find('td:eq(4)').html(`<input type="text" class="form-control form-control-sm" value="${unit}">`);
     row.find('td:eq(5)').html(`<input type="text" class="form-control form-control-sm" value="${spec === '-' ? '' : spec}">`);
+    row.find('td:eq(6)').html(`<input type="number" class="form-control form-control-sm" value="${price || ''}">`);
     
-    // 마지막 열(등록일)에 버튼 추가
-    const originalDate = row.find('td:eq(7)').text();
-    row.find('td:eq(7)').html(`
+    // 버튼 추가
+    const originalDate = row.find('td:eq(8)').text();
+    row.find('td:eq(8)').html(`
         <button class="btn btn-sm btn-success" onclick="saveRow('${row.data('id')}')">저장</button>
         <button class="btn btn-sm btn-danger" onclick="cancelEdit()">취소</button>
     `);
-    row.find('td:eq(7)').data('original-date', originalDate); // 원래 날짜 저장
 }
 
-function createSelectBox(selectedValue) {
-    const options = ['부품', '반제품', '완제품'];
-    const optionHtml = options.map(opt => 
-        `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`
-    ).join('');
-    
-    return `<select class="form-control form-control-sm">${optionHtml}</select>`;
-}
-
-function saveRow(productId) {
-    const row = $(`tr[data-id="${productId}"]`);
+function saveRow(materialId) {
+    const row = $(`tr[data-id="${materialId}"]`);
     const updateData = {
-        productId: productId,
-        productName: row.find('td:eq(2) input').val(),
-        productType: '부품',
+        materialId: materialId,
+        materialName: row.find('td:eq(2) input').val(),
+        materialType: row.find('td:eq(3) select').val(),
         unit: row.find('td:eq(4) input').val(),
         spec: row.find('td:eq(5) input').val(),
-        empId: currentUserId  // 현재 로그인한 사용자 ID 추가
+        price: row.find('td:eq(6) input').val(),
+        empId: currentUserId
     };
     
     // 유효성 검사
-    if(!updateData.productName || !updateData.unit) {
+    if(!updateData.materialName || !updateData.unit) {
         alert('자재명과 단위는 필수 입력 항목입니다.');
         return;
     }
     
-    ajaxCall('PUT', `/api/inventory/materials/${productId}`, updateData, 
+    ajaxCall('PUT', `/api/inventory/materials/${materialId}`, updateData, 
         () => {
             alert('수정 완료');
             currentEditRow = null;
-            loadMaterials();  // 리로드하면 새로운 수정자 ID가 표시됨
+            loadMaterials();
         },
         () => alert('수정 실패')
     );
@@ -285,17 +297,24 @@ function showAddRow() {
         return;
     }
     
+    const typeOptions = materialTypes.map(t => 
+        `<option value="${t.name}">${t.name}</option>`
+    ).join('');
+    
     const newRow = `
         <tr id="newRow" class="table-warning">
             <td><input type="checkbox" disabled></td>
-            <td><input type="text" class="form-control form-control-sm" id="new_productId" placeholder="자재코드"></td>
-            <td><input type="text" class="form-control form-control-sm" id="new_productName" placeholder="자재명"></td>
+            <td><input type="text" class="form-control form-control-sm" id="new_materialId" placeholder="자재코드"></td>
+            <td><input type="text" class="form-control form-control-sm" id="new_materialName" placeholder="자재명"></td>
             <td>
-                <span class="badge badge-light text-info" style="font-size: 14px;">부품</span>
+                <select class="form-control form-control-sm" id="new_materialType">
+                    ${typeOptions}
+                </select>
             </td>
             <td><input type="text" class="form-control form-control-sm" id="new_unit" placeholder="단위"></td>
             <td><input type="text" class="form-control form-control-sm" id="new_spec" placeholder="사양"></td>
-            <td>${currentUserId || '로딩중...'}</td>  
+            <td><input type="number" class="form-control form-control-sm" id="new_price" placeholder="단가"></td>
+            <td>${currentUserId || '로딩중...'}</td>
             <td>
                 <button class="btn btn-sm btn-success" onclick="saveMaterial()">저장</button>
                 <button class="btn btn-sm btn-danger" onclick="cancelAdd()">취소</button>
@@ -308,13 +327,20 @@ function showAddRow() {
 
 function saveMaterial() {
     const newMaterial = {
-        productId: $('#new_productId').val(),
-        productName: $('#new_productName').val(),
-        productType: '부품',  
+        materialId: $('#new_materialId').val(),
+        materialName: $('#new_materialName').val(),
+        materialType: $('#new_materialType').val(),
         unit: $('#new_unit').val(),
         spec: $('#new_spec').val(),
-        empId: currentUserId  
+        price: $('#new_price').val(),
+        empId: currentUserId
     };
+    
+    // 유효성 검사
+    if(!newMaterial.materialId || !newMaterial.materialName || !newMaterial.unit) {
+        alert('자재코드, 자재명, 단위는 필수 입력 항목입니다.');
+        return;
+    }
     
     ajaxCall('POST', '/api/inventory/materials', newMaterial,
         (result) => {
@@ -334,21 +360,6 @@ function cancelAdd() {
 }
 
 // ========== 삭제 관련 ==========
-function deleteRow(productId) {
-    if(confirm('이 항목을 삭제하시겠습니까?')) {
-        ajaxCall('DELETE', '/api/inventory/materials', [productId],
-            (result) => {
-                if(result.success) {
-                    alert('삭제 완료');
-                    loadMaterials();
-                } else {
-                    alert(result.message || '삭제 실패');
-                }
-            }
-        );
-    }
-}
-
 function deleteSelected() {
     const checked = $('.item-check:checked');
     if(checked.length === 0) {
@@ -372,6 +383,7 @@ function deleteSelected() {
     }
 }
 
+// ========== 공통 함수 ==========
 function ajaxCall(method, url, data, successCallback, errorCallback) {
     $.ajax({
         url: url,
@@ -386,22 +398,9 @@ function ajaxCall(method, url, data, successCallback, errorCallback) {
     });
 }
 
-function getBadgeColor(type) {
-    const colors = {
-        '부품': 'text-info',
-        '반제품': 'text-warning',
-        '완제품': 'text-success'
-    };
-    return colors[type] || 'text-secondary';
-}
-
 function formatDate(dateStr) {
     if(!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('ko-KR');
-}
-
-function viewDetail(productId) {
-    console.log('상세보기:', productId);
 }
 </script>
 </th:block>
