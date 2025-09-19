@@ -60,7 +60,7 @@
         
         <!-- Material 재고조정 모달 -->
         <div class="modal fade" id="materialAdjustModal" tabindex="-1">
-		    <div class="modal-dialog">
+		    <div class="modal-dialog modal-lg">
 		        <div class="modal-content">
 		            <div class="modal-header">
 		                <h5 class="modal-title">재고 투입</h5>
@@ -72,18 +72,39 @@
 		                <div class="mb-3">
 		                    <h6>품목: <span id="material_productName"></span> (<span id="material_productId"></span>)</h6>
 		                </div>
-		                <div class="form-group">
-		                    <label>현재고</label>
-		                    <input type="text" class="form-control" id="material_currentQty" readonly>
+		                
+		                <!-- 창고별 재고 현황 테이블 -->
+		                <div class="mb-3">
+		                    <label>창고별 재고 현황</label>
+		                    <table class="table table-sm table-bordered">
+		                        <thead>
+		                            <tr>
+		                                <th width="15%">선택</th>
+		                                <th width="35%">창고명</th>
+		                                <th width="25%">위치</th>
+		                                <th width="25%">재고수량</th>
+		                            </tr>
+		                        </thead>
+		                        <tbody id="warehouseStockList">
+		                        </tbody>
+		                    </table>
 		                </div>
+		                
+		                <div class="form-group">
+		                    <label>총 재고</label>
+		                    <input type="text" class="form-control" id="material_totalQty" readonly>
+		                </div>
+		                
 		                <div class="form-group">
 		                    <label>투입수량</label>
 		                    <input type="number" class="form-control" id="material_reduceQty" min="1">
 		                </div>
+		                
 		                <div class="form-group">
 		                    <label>투입 후 재고</label>
 		                    <input type="text" class="form-control" id="material_afterQty" readonly>
 		                </div>
+		                
 		                <div class="form-group">
 		                    <label>투입사유</label>
 		                    <input type="text" class="form-control" id="material_reason" placeholder="투입 사유 입력">
@@ -212,13 +233,90 @@ function openMaterialModal(materialId, materialName, currentQty) {
     
     $('#material_productName').text(materialName);
     $('#material_productId').text(materialId);
-    $('#material_currentQty').val(currentQty);
+    $('#material_totalQty').val(currentQty);
     $('#material_reduceQty').val('');
     $('#material_afterQty').val('');
     $('#material_reason').val('');
     
+    // 창고별 재고 조회
+    loadWarehouseStock(materialId);
+    
     $('#materialAdjustModal').modal('show');
 }
+
+//창고별 재고 조회
+function loadWarehouseStock(materialId) {
+    $.ajax({
+        url: `/api/inventory/material-warehouse-stock/${materialId}`,
+        type: 'GET',
+        success: function(data) {
+            const tbody = $('#warehouseStockList');
+            tbody.empty();
+            
+            if(data.length === 0) {
+                tbody.append('<tr><td colspan="4" class="text-center">재고가 없습니다.</td></tr>');
+                return;
+            }
+            
+            let totalStock = 0;
+            data.forEach((item, index) => {
+                if(item.itemAmount > 0) {
+                    totalStock += item.itemAmount;
+                    tbody.append(`
+                        <tr>
+                            <td class="text-center">
+                                <input type="radio" name="warehouseSelect" 
+                                       value="${item.warehouseId}" 
+                                       data-location="${item.locationId}"
+                                       data-amount="${item.itemAmount}"
+                                       onchange="selectWarehouse(this)">
+                            </td>
+                            <td>${item.warehouseName}</td>
+                            <td>${item.locationId ? item.locationId.substring(0, 6) : '-'}</td>
+                            <td class="text-right">${item.itemAmount}개</td>
+                        </tr>
+                    `);
+                }
+            });
+            
+            // 총 재고 업데이트
+            currentMaterialQty = totalStock;
+            $('#material_totalQty').val(totalStock);
+        },
+        error: function() {
+            alert('창고 재고 조회 실패');
+        }
+    });
+}
+
+//창고 선택 시
+function selectWarehouse(radio) {
+    const maxQty = $(radio).data('amount');
+    $('#material_reduceQty').attr('max', maxQty);
+    $('#material_reduceQty').val('');
+    $('#material_afterQty').val('');
+}
+
+// 투입수량 입력 시
+$('#material_reduceQty').on('input', function() {
+    const selectedRadio = $('input[name="warehouseSelect"]:checked');
+    if(!selectedRadio.length) {
+        alert('창고를 먼저 선택하세요.');
+        $(this).val('');
+        return;
+    }
+    
+    const warehouseStock = selectedRadio.data('amount');
+    const reduceQty = parseInt($(this).val()) || 0;
+    
+    if(reduceQty > warehouseStock) {
+        alert('투입수량이 창고 재고보다 많습니다!');
+        $(this).val(warehouseStock);
+        $('#material_afterQty').val('0');
+    } else {
+        $('#material_afterQty').val(currentMaterialQty - reduceQty);
+    }
+});
 
 // Material 투입 후 재고 계산
 function updateMaterialAfterQty() {
@@ -236,6 +334,14 @@ function updateMaterialAfterQty() {
 
 // Material 재고 차감 저장
 function saveMaterialReduce() {
+    const selectedRadio = $('input[name="warehouseSelect"]:checked');
+    if(!selectedRadio.length) {
+        alert('창고를 선택하세요.');
+        return;
+    }
+    
+    const warehouseId = selectedRadio.val();
+    const locationId = selectedRadio.data('location');
     const reduceQty = parseInt($('#material_reduceQty').val()) || 0;
     const reason = $('#material_reason').val();
     
@@ -244,26 +350,26 @@ function saveMaterialReduce() {
         return;
     }
     
-    if(reduceQty > currentMaterialQty) {
-        alert('투입수량이 현재고보다 많습니다.');
-        return;
-    }
-    
     if(!reason || reason.trim() === '') {
         alert('투입사유를 입력하세요.');
         return;
     }
     
-    if(confirm('재고를 투입하시겠습니까?\n\n품목: ' + currentMaterialId + 
-               '\n투입수량: ' + reduceQty + 
-               '\n투입 후 재고: ' + (currentMaterialQty - reduceQty))) {
+    if(confirm('재고를 투입하시겠습니까?\n\n' +
+               '품목: ' + currentMaterialId + '\n' +
+               '창고: ' + warehouseId + '\n' +
+               '투입수량: ' + reduceQty + '\n' +
+               '투입 후 재고: ' + (currentMaterialQty - reduceQty))) {
         
         $.ajax({
             url: '/api/inventory/material/reduce',
             type: 'POST',
             data: {
                 materialId: currentMaterialId,
-                reduceQty: reduceQty
+                warehouseId: warehouseId,
+                locationId: locationId,
+                reduceQty: reduceQty,
+                reason: reason
             },
             beforeSend: function(xhr) {
                 xhr.setRequestHeader(header, token);
@@ -272,7 +378,7 @@ function saveMaterialReduce() {
                 if(result.success) {
                     alert('재고 투입이 완료되었습니다.');
                     $('#materialAdjustModal').modal('hide');
-                    loadAllStockList(); // 목록 새로고침
+                    loadAllStockList();
                 } else {
                     alert('재고 투입 실패: ' + result.message);
                 }

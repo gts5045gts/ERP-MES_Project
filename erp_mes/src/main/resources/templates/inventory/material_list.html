@@ -47,20 +47,19 @@
                 <div class="table-responsive">
                     <table class="table table-bordered text-center">
                         <thead class="thead-light">
-                            <tr>
-                                <th width="3%">
-                                    <input type="checkbox" id="selectAll">
-                                </th>
-                                <th width="10%">자재코드</th>
-                                <th width="15%">자재명</th>
-                                <th width="10%">자재유형</th>
-                                <th width="6%">단위</th>
-                                <th width="20%">자재 사양</th>
-                                <th width="10%">단가</th>
-                                <th width="10%">등록자</th>
-                                <th width="10%">등록일</th>
-                            </tr>
-                        </thead>
+						    <tr>
+						        <th width="3%"><input type="checkbox" id="selectAll"></th>
+						        <th width="10%">자재코드</th>
+						        <th width="15%">자재명</th>
+						        <th width="8%">자재유형</th>
+						        <th width="5%">단위</th>
+						        <th width="15%">자재 사양</th>
+						        <th width="8%">단가</th>
+						        <th width="12%">검사방법</th>
+						        <th width="8%">등록자</th>
+						        <th width="8%">등록일</th>
+						    </tr>
+						</thead>
                         <tbody id="materialTableBody">
                         </tbody>
                     </table>
@@ -87,11 +86,14 @@ let materialData = [];
 let currentUserId = '';
 let currentEditRow = null;
 let materialTypes = []; // 공통코드에서 가져올 자재타입
+let inspectionMethods = [];
+
 
 $(document).ready(function() {
     loadMaterialTypes(); 
     loadMaterials();
     getCurrentUser();
+    loadInspectionMethods();
     
     $('#selectAll').on('change', function() {
         $('.item-check').prop('checked', $(this).is(':checked'));
@@ -167,6 +169,7 @@ function displayMaterials(data) {
 function createTableRow(item) {
     const typeColor = item.materialType === '부품' ? 'text-info' : 'text-warning';
     const price = item.price ? new Intl.NumberFormat('ko-KR').format(item.price) + '원' : '-';
+    const inspectionMethod = item.inspectionItemName || '-'; 
     
     return `
         <tr data-id="${item.materialId}">
@@ -177,6 +180,7 @@ function createTableRow(item) {
             <td>${item.unit}</td>
             <td>${item.spec || '-'}</td>
             <td class="text-right">${price}</td>
+            <td>${inspectionMethod}</td> <!-- 추가 -->
             <td>${item.empId || '-'}</td>
             <td>${formatDate(item.createdAt)}</td>
         </tr>
@@ -292,14 +296,17 @@ function showAddRow() {
         return;
     }
     
-    if(currentEditRow) {
-        alert('현재 수정 중인 항목을 먼저 저장하거나 취소해주세요.');
-        return;
-    }
-    
     const typeOptions = materialTypes.map(t => 
         `<option value="${t.name}">${t.name}</option>`
     ).join('');
+    
+    // 검사방법 옵션
+    let inspectionOptions = '<option value="">선택</option>';
+    if(inspectionMethods && inspectionMethods.length > 0) {
+        inspectionOptions += inspectionMethods.map(m => 
+            `<option value="${m.inspectionFmId}">${m.itemName}</option>`
+        ).join('');
+    }
     
     const newRow = `
         <tr id="newRow" class="table-warning">
@@ -314,6 +321,11 @@ function showAddRow() {
             <td><input type="text" class="form-control form-control-sm" id="new_unit" placeholder="단위"></td>
             <td><input type="text" class="form-control form-control-sm" id="new_spec" placeholder="사양"></td>
             <td><input type="number" class="form-control form-control-sm" id="new_price" placeholder="단가"></td>
+            <td>
+                <select class="form-control form-control-sm" id="new_inspectionFmId">
+                    ${inspectionOptions}
+                </select>
+            </td>
             <td>${currentUserId || '로딩중...'}</td>
             <td>
                 <button class="btn btn-sm btn-success" onclick="saveMaterial()">저장</button>
@@ -333,6 +345,7 @@ function saveMaterial() {
         unit: $('#new_unit').val(),
         spec: $('#new_spec').val(),
         price: $('#new_price').val(),
+        inspectionFmId: $('#new_inspectionFmId').val(), // 추가
         empId: currentUserId
     };
     
@@ -340,6 +353,13 @@ function saveMaterial() {
     if(!newMaterial.materialId || !newMaterial.materialName || !newMaterial.unit) {
         alert('자재코드, 자재명, 단위는 필수 입력 항목입니다.');
         return;
+    }
+    
+    // inspection_fm_id가 필수인지 확인
+    if(!newMaterial.inspectionFmId) {
+        if(!confirm('검사방법을 선택하지 않았습니다. 계속하시겠습니까?')) {
+            return;
+        }
     }
     
     ajaxCall('POST', '/api/inventory/materials', newMaterial,
@@ -382,6 +402,24 @@ function deleteSelected() {
         );
     }
 }
+
+function loadInspectionMethods() {
+    console.log("검사방법 로드 시작");
+    $.ajax({
+        url: '/api/inventory/inspection-methods',
+        type: 'GET',
+        success: function(data) {
+            console.log("검사방법 로드 성공:", data);
+            inspectionMethods = data;
+        },
+        error: function(xhr, status, error) {
+            console.error("검사방법 로드 실패:", error);
+            console.error("상태:", status);
+            console.error("응답:", xhr.responseText);
+        }
+    });
+}
+
 
 // ========== 공통 함수 ==========
 function ajaxCall(method, url, data, successCallback, errorCallback) {

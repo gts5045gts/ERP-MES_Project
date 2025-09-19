@@ -108,19 +108,25 @@ public class InvController {
         return result;
     }
     
-    // Material 재고 차감 (투입용)
+ // Material 재고 차감 (특정 창고에서)
     @PostMapping("/api/inventory/material/reduce")
     @ResponseBody
     public Map<String, Object> reduceMaterialStock(
             @RequestParam("materialId") String materialId,
+            @RequestParam("warehouseId") String warehouseId,
+            @RequestParam("locationId") String locationId,
             @RequestParam("reduceQty") Integer reduceQty,
+            @RequestParam("reason") String reason,
             Principal principal) {
         
-        log.info("Material 재고 차감 API - materialId: {}, 차감수량: {}", materialId, reduceQty);
+        log.info("Material 재고 차감 - materialId: {}, warehouseId: {}, 차감수량: {}", 
+                 materialId, warehouseId, reduceQty);
         
         Map<String, Object> result = new HashMap<>();
         try {
-            boolean success = stockService.reduceMaterialStock(materialId, reduceQty);
+            boolean success = stockService.reduceMaterialStockFromWarehouse(
+                materialId, warehouseId, locationId, reduceQty, reason, principal.getName()
+            );
             result.put("success", success);
             result.put("message", success ? "재고 차감 완료" : "재고 차감 실패");
         } catch (Exception e) {
@@ -187,7 +193,13 @@ public class InvController {
         }
         return result;
     }
-
+    // 검사방법 목록 조회
+    @GetMapping("/api/inventory/inspection-methods")
+    @ResponseBody
+    public List<Map<String, Object>> getInspectionMethods() {
+        return stockService.getInspectionMethods();
+    }
+    
     // 기준정보관리 - 자재(부품/반제품) 수정
     @PutMapping("/api/inventory/materials/{materialId}")
     @ResponseBody
