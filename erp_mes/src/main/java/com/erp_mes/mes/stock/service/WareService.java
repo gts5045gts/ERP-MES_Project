@@ -107,8 +107,13 @@ private final WareMapper wareMapper;
         
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         
+        // productId로 받은 값을 material_id로 저장
+        String materialId = (String) params.get("productId");
+        
         params.put("inId", inId);
-        params.put("inStatus", "입고대기");  // 입고대기로 다시 변경!
+        params.put("inStatus", "입고대기");
+        params.put("materialId", materialId); 
+        params.remove("productId");  
         
         wareMapper.insertInput(params);
         
@@ -117,7 +122,6 @@ private final WareMapper wareMapper;
         return inId;
     }
 
-    // 입고 완료 처리
     @Transactional
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
@@ -128,35 +132,54 @@ private final WareMapper wareMapper;
         
         String currentStatus = (String) input.get("IN_STATUS");
         
-        if(!"입고대기".equals(currentStatus)) {
-            throw new RuntimeException("이미 처리된 입고입니다.");
+        // 이미 완료된 건은 처리하지 않음
+        if("입고완료".equals(currentStatus)) {
+            log.info("이미 입고완료 처리된 건입니다: {}", inId);
+            return;  // 에러 대신 그냥 리턴
         }
         
-        String productId = (String) input.get("PRODUCT_ID");
+        String materialId = (String) input.get("MATERIAL_ID");
         String warehouseId = (String) input.get("WAREHOUSE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
         // 1. 입고 상태를 '입고완료'로 변경
         wareMapper.updateInputStatus(inId, "입고완료");
         
-        // 2. product 테이블 재고 증가
-        wareMapper.updateProductQuantity(productId, inCount);
+        // 2. material 테이블 재고 증가
+        wareMapper.updateMaterialQuantity(materialId, inCount);
         
-        // 3. warehouse_item 테이블에 재고 분산 저장
-        distributeToWarehouseItems(warehouseId, productId, inCount, empId);
+        // 3. warehouse_item 테이블에 재고 분산 저장하고 첫번째 위치 가져오기
+        String firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
+        
+        // 4. input 테이블의 location_id 업데이트 (전체 location_id 저장)
+        if(firstLocation != null) {
+            // 구역 추출 대신 전체 location_id 저장
+            wareMapper.updateInputLocation(inId, firstLocation);
+            log.info("위치 업데이트: {} -> {}", inId, firstLocation);
+        }
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
     }
     
-    // 창고 위치에 분산 저장
-    private void distributeToWarehouseItems(String warehouseId, String productId, Integer totalCount, String empId) {
+    // 구역 추출 메서드
+    private String extractZone(String locationId) {
+        if(locationId == null || locationId.length() < 6) {
+            return locationId;
+        }
+        // DD02Z1R1L2C1 -> DD02Z1 (처음 6자리)
+        return locationId.substring(0, 6);
+    }
+    
+    // Material용 분산 저장 메서드 추가
+    private String distributeToWarehouseItemsForMaterial(String warehouseId, String materialId, Integer totalCount, String empId) {
+        String firstLocation = null;
         int remaining = totalCount;
         int maxPerLocation = 500;
         
-        // 1. 먼저 기존에 해당 제품이 있는 위치들 확인 (500개 미만인 곳)
-        List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocations(warehouseId, productId, maxPerLocation);
+        // 1. 기존 위치 확인
+        List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocationsMaterial(warehouseId, materialId, maxPerLocation);
         
-        // 2. 기존 위치에 먼저 채우기
+        // 2. 기존 위치에 채우기
         for(Map<String, Object> item : existingItems) {
             if(remaining <= 0) break;
             
@@ -165,20 +188,22 @@ private final WareMapper wareMapper;
             int availableSpace = maxPerLocation - currentAmount;
             int amountToAdd = Math.min(remaining, availableSpace);
             
-            // 기존 위치에 추가
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
+            
             Map<String, Object> params = new HashMap<>();
             params.put("locationId", locationId);
-            params.put("productId", productId);
+            params.put("materialId", materialId);
             params.put("addAmount", amountToAdd);
             
-            wareMapper.updateWarehouseItemAmount(params);
+            wareMapper.updateWarehouseItemAmountMaterial(params);
             
             remaining -= amountToAdd;
-            log.info("기존 위치 {}에 {} 개 추가 (기존: {}, 총: {})", 
-                    locationId, amountToAdd, currentAmount, currentAmount + amountToAdd);
+            log.info("기존 위치 {}에 {} 개 추가", locationId, amountToAdd);
         }
         
-        // 3. 남은 수량은 새 위치에 저장
+        // 3. 새 위치에 저장
         while(remaining > 0) {
             List<String> emptyLocations = wareMapper.getEmptyLocations(warehouseId);
             
@@ -190,19 +215,37 @@ private final WareMapper wareMapper;
             String locationId = emptyLocations.get(0);
             int amountToStore = Math.min(remaining, maxPerLocation);
             
-            Map<String, Object> params = new HashMap<>();
-            params.put("manageId", warehouseId + "_" + productId);
-            params.put("warehouseId", warehouseId);
-            params.put("productId", productId);
-            params.put("itemAmount", amountToStore);
-            params.put("locationId", locationId);
-            params.put("empId", empId);
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
             
-            wareMapper.insertWarehouseItem(params);
+            // 먼저 해당 위치에 이미 있는지 확인
+            Map<String, Object> checkParams = new HashMap<>();
+            checkParams.put("locationId", locationId);
+            checkParams.put("materialId", materialId);
+            checkParams.put("itemAmount", amountToStore);
+            
+            // 이미 있으면 업데이트, 없으면 신규 생성
+            int updated = wareMapper.updateExistingMaterialLocation(checkParams);
+            
+            if(updated == 0) {
+                // 신규 생성
+                Map<String, Object> params = new HashMap<>();
+                params.put("manageId", warehouseId + "_" + materialId + "_" + locationId);
+                params.put("warehouseId", warehouseId);
+                params.put("materialId", materialId);
+                params.put("itemAmount", amountToStore);
+                params.put("locationId", locationId);
+                params.put("empId", empId);
+                
+                wareMapper.insertWarehouseItemMaterial(params);
+            }
             
             remaining -= amountToStore;
-            log.info("새 위치 {}에 {} 개 저장", locationId, amountToStore);
+            log.info("위치 {}에 {} 개 저장", locationId, amountToStore);
         }
+        
+        return firstLocation;
     }
 
     // 부품 목록 조회
@@ -231,5 +274,11 @@ private final WareMapper wareMapper;
     public Integer getTodayBatchCount(String today) {
         Integer count = wareMapper.getTodayBatchCount(today);
         return count != null ? count : 0;
+    }
+    
+    //0919
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMaterialsForInput() {
+        return wareMapper.selectMaterialsForInput();
     }
 }
