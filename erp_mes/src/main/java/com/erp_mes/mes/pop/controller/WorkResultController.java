@@ -1,5 +1,6 @@
 package com.erp_mes.mes.pop.controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -9,8 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.commonCode.dto.CommonCodeDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.entity.WorkResult;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
@@ -20,9 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 
-
-
-
 @Controller
 @RequestMapping("/pop")
 @Log4j2
@@ -30,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 public class WorkResultController {
 	
 	private final WorkResultMapper workResultMapper;
+	private final WorkResultService workResultService;
 	
 	
 // ===================================================================
@@ -63,10 +64,54 @@ public class WorkResultController {
 	@PostMapping("/workList") 
 	@ResponseBody
 	public List<WorkResultDTO> workList(@RequestBody List<Long> workOrderIds) {
-		List<WorkResultDTO> list = workResultMapper.workResultWithBom(workOrderIds);
-		return list;
+		
+		if (workOrderIds == null || workOrderIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		// 상태 업데이트
+		workResultMapper.updateWorkOrderStatus(workOrderIds);
+		
+		// 생산실적 테이블
+		workResultService.workResultList(workOrderIds);
+		
+		return workResultMapper.workResultWithBom(workOrderIds);
 	}
 	
+	// 작업현황 전체 조회(무한스크롤)
+	@GetMapping("/workResultList")
+	@ResponseBody
+	public List<WorkResultDTO> getWorkResultList(
+			@RequestParam(value = "page", defaultValue = "0") int page, 
+			@RequestParam(value = "size", defaultValue = "20") int size) {
+		return workResultService.getPagedWorkResults(page, size);
+	}
+	
+	// 수량 업데이트
+	@PostMapping("/workResultUpdate")
+	@ResponseBody
+	public int workResultUpdate(@RequestBody WorkResultDTO dto) {
+		 return workResultService.updateWorkResult(dto);
+	}
+	
+	// 작업완료 
+	@PostMapping("/workFinish")
+    @ResponseBody
+    public void workFinish(@RequestBody Long workOrderId) {
+		if (workOrderId != null) {
+			workResultMapper.updateWorkStatusFinish(workOrderId);  
+		}
+	        
+    }
+	
+	
+	// 불량 사유
+//	@GetMapping("/defectReason")
+//	@ResponseBody
+//	public List<CommonCodeDTO> getDefectReason() {
+//		return workResultService.getDefectReason();  
+//	}
+
 	
 	
 }

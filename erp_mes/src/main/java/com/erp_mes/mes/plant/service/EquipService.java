@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
 import com.erp_mes.mes.plant.dto.EquipDTO;
 import com.erp_mes.mes.plant.dto.EquipFixDTO;
+import com.erp_mes.mes.plant.dto.ProcessRouteDTO;
 import com.erp_mes.mes.plant.entity.Equip;
 import com.erp_mes.mes.plant.entity.EquipFix;
 import com.erp_mes.mes.plant.mapper.EquipFixMapper;
@@ -119,4 +120,7 @@ public class EquipService {
 		equipFixRepository.save(equipFix);
 	}
 
+
+
+	
 }

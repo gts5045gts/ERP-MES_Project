@@ -118,7 +118,9 @@ public class LotAOP {
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
 			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, true, false);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-			 	if(!tableName.equals("MATERIAL_TYPE")){
+			 	//일단 전부 다 넣어봄
+			 	lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
+			 	if(!tableName.equals("MATERIAL")){
 			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
 		    	}
 			}

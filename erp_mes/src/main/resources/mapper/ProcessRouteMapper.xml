@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.plant.mapper.ProcessRouteMapper">
+
+
+<resultMap id="ProcessRouteMap" type="com.erp_mes.mes.plant.dto.ProcessRouteDTO">
+<!--  	기본값 -->
+	<result property="routeId" column="route_id"/>
+    <result property="proSeq" column="pro_seq"/>
+    <result property="note" column="note"/>
+
+<!-- 	참조값 -->
+    <result property="productId" column="product_id"/>
+    <result property="productNm" column="product_name"/>
+    <result property="proId" column="pro_id"/>
+    <result property="proNm" column="pro_nm"/>
+    <result property="equipId" column="equip_id"/>
+    <result property="equipNm" column="equip_nm"/>
+
+</resultMap>
+
+	<select id="findAll" resultMap="ProcessRouteMap">
+		SELECT 
+			r.route_id,
+			r.pro_seq,
+			r.note,
+			
+			p.pro_id,
+			p.pro_nm,
+			e.equip_id,
+			e.equip_nm,
+			d.product_id,
+			d.product_name
+		FROM 
+			process_routing r
+		LEFT JOIN
+			process p 
+		ON 
+			r.pro_id = p.pro_id
+		LEFT JOIN 
+			equipment e
+		ON 
+			r.equip_id = e.equip_id
+		LEFT JOIN
+			product d
+		ON
+			r.product_id = d.product_id
+		ORDER BY 
+			r.pro_seq ASC
+			
+	</select>
+	
+	
+	
+	<insert id="save" parameterType="com.erp_mes.mes.plant.dto.ProcessRouteDTO">
+	    
+	    <selectKey keyProperty="routeId" resultType="int" order="BEFORE">
+   			 SELECT route_id.NEXTVAL FROM DUAL
+  		</selectKey>
+	    
+	    
+	    insert into process_routing 
+	    (
+	        route_id, pro_seq, note, product_id, pro_id, equip_id
+	    )
+	    values 
+	    (
+	        #{routeId}, #{proSeq}, #{note}, #{productId}, #{proId}, #{equipId}
+	    )
+	</insert>
+	
+</mapper>
