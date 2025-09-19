@@ -59,8 +59,7 @@ public interface WareMapper {
             				  @Param("inCount") Integer inCount);
     
     // 날짜별 그룹화된 입고 목록 조회
-    List<Map<String, Object>> selectGroupedInputList(@Param("date") String date,
-                                                     @Param("inType") String inType);
+    List<Map<String, Object>> selectGroupedInputList(@Param("date") String date, @Param("inType") String inType);
     
     Integer getTodayBatchCount(@Param("today") String today);
     
@@ -77,4 +76,25 @@ public interface WareMapper {
     int updateWarehouseItemAmount(Map<String, Object> params);
 
     int insertWarehouseItem(Map<String, Object> params);
+    
+    // 부품/반제품 목록 조회 (입고용)
+    List<Map<String, Object>> selectMaterialsForInput();
+    
+    // Material 재고 증가 (입고완료 시)
+    int updateMaterialQuantity(@Param("materialId") String materialId, 
+            					@Param("inCount") Integer inCount);
+    
+    // Material 관련 warehouse_item 메서드들
+    List<Map<String, Object>> getPartiallyFilledLocationsMaterial(@Param("warehouseId") String warehouseId,
+            													@Param("materialId") String materialId,
+            													@Param("maxAmount") Integer maxAmount);
+
+    int updateWarehouseItemAmountMaterial(Map<String, Object> params);
+
+    int insertWarehouseItemMaterial(Map<String, Object> params);
+    
+    // 기존 Material 위치 업데이트 (중복 방지용)
+    int updateExistingMaterialLocation(Map<String, Object> params);
+    
+    
 }

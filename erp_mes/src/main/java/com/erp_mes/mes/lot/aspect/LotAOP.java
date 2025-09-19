@@ -97,7 +97,6 @@ public class LotAOP {
 					usages.add(usage1);	
 				}
 				
-				
 				LotDTO lotDTO = LotDTO
 								.builder()
 								.tableName(tableName)
@@ -120,13 +119,6 @@ public class LotAOP {
 			    log.info("lotDto 속성이 세션에서 삭제.");
 			}
 			
-			// 반환값이 LotDTO인지 판단
-//				if (result instanceof LotDTO dto) {
-//					lotDTO = dto;
-	//
-//					lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
-//				}
-//				return result; // 반드시 반환
 			
 		} catch (Exception e) {
 			 log.error("Error during lotDTO creation or logging", e);

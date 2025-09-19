@@ -186,10 +186,10 @@ public class WareController {
 	}
 
 	// 부품 목록 조회 (입고용)
-	@GetMapping("/api/parts")
+	@GetMapping("/api/materials-for-input")
 	@ResponseBody
-	public List<Map<String, Object>> getPartsList() {
-	    return wareService.getPartsList();
+	public List<Map<String, Object>> getMaterialsForInput() {
+	    return wareService.getMaterialsForInput();
 	}
 
 	// 거래처 목록 조회

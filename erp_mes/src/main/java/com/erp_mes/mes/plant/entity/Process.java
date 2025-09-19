@@ -41,23 +41,17 @@ public class Process {
 	@Column(nullable = false, name = "NOTE")
 	private String note;
 	
-	@ManyToOne
-	@JoinColumn(nullable = false, name = "TYPE_NM", referencedColumnName = "COM_DT_ID")
-	private CommonDetailCode common;
+	@Column(nullable = false, name = "TYPE_NM")
+	private String typeNm;
 
-	
 	
 	static public Process fromDTO(ProcessDTO proDTO, CommonDetailCodeRepository repo) {
 		Process pro = new Process();
 		pro.setProId(proDTO.getProId());
 		pro.setProNm(proDTO.getProNm());
 		pro.setNote(proDTO.getNote());
+		pro.setTypeNm(proDTO.getTypeNm());
 		
-		if(proDTO.getTypeId() != null) {
-			CommonDetailCode compro = repo.findById(proDTO.getTypeId())
-					 .orElseThrow(() -> new IllegalArgumentException("없는 부서 코드"));
-			pro.setCommon(compro);
-		}
 		return pro;
 	}
 	
