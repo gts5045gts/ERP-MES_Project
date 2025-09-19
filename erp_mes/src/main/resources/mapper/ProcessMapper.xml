@@ -9,17 +9,34 @@
     <result property="proId" column="pro_id"/>
     <result property="proNm" column="pro_nm"/>
     <result property="note" column="note"/>
-    <result property="typeId" column="type_id"/>
     <result property="typeNm" column="type_nm"/>
+
+
+    <result property="inspecId" column="insepection_fm_id"/>
+    <result property="inspecNm" column="com_dt_nm"/>
+    
+    
 </resultMap>
 
 	<select id="findAll" resultMap="ProcessMap">
 		SELECT 
-			pro_id,
-			pro_nm,
-			note,
-			type_nm,
-			inspection_fm_id
-		from process
+			p.pro_id,
+			p.pro_nm,
+			p.note,
+			p.type_nm,
+			
+			c.com_dt_nm
+		FROM 
+			process p
+		LEFT JOIN 
+			inspection_fm i
+		ON 
+			p.inspection_fm_id = i.inspection_fm_id
+		LEFT JOIN 
+			common_dt_code c 
+		ON 
+			i.inspection_type = c.com_dt_id
+		WHERE 
+			c.com_dt_id = 'QC002'
 	</select>
 </mapper>

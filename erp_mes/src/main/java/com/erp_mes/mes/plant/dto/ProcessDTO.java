@@ -20,17 +20,14 @@ import lombok.ToString;
 public class ProcessDTO {
 	private Long proId; 		//설비 코드 
 	private String proNm; 		//설비 이름
-	private String note;		//설비 설명
-		
-	//조인받을 곳 타입
-	private String typeId;
-	private String typeNm;
-	private Long inspectionFmId;
+	private String note;		//설비 설명 
+	private String typeNm;		
+
+	private Long inspecId;	//검사유형 id 
+	private String inspecNm;	//검사유형 이름
 	
 	
-	public static ProcessDTO formEntity(Process proc) {
-		
-		return null;
-	}
+	
+	
 	
 }

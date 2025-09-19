@@ -52,5 +52,8 @@ public class WorkResult {
 	@LastModifiedDate
 	private LocalDateTime updatedAt; // 수정시간
 	
+	@Column(name = "LOT_ID")   // 로트
+	private String lotId;
+	
 
 }

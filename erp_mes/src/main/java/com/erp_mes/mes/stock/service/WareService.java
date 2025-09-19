@@ -1,6 +1,5 @@
 package com.erp_mes.mes.stock.service;
 
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -11,9 +10,12 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.mapper.WareMapper;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -22,7 +24,9 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class WareService {
     
-private final WareMapper wareMapper;
+    private final WareMapper wareMapper;
+    
+    // ==================== 창고 관리 ====================
     
     // 창고 목록 조회
     @Transactional(readOnly = true)
@@ -31,7 +35,13 @@ private final WareMapper wareMapper;
         return wareMapper.selectWarehouseList(warehouseType, warehouseStatus, searchKeyword);
     }
     
-    // 창고 등록
+    // 창고 타입별 목록 조회
+    @Transactional(readOnly = true)
+    public List<WarehouseDTO> getWarehouseListByType(String warehouseType) {
+        return wareMapper.selectWarehouseListByType(warehouseType);
+    }
+    
+    // 신규 창고 등록
     @Transactional
     public void addWarehouse(WarehouseDTO dto) {
         log.info("창고 등록: {}", dto.getWarehouseId());
@@ -43,14 +53,14 @@ private final WareMapper wareMapper;
         wareMapper.insertWarehouse(dto);
     }
     
-    // 창고 수정
+    // 창고 정보 수정
     @Transactional
     public boolean updateWarehouse(WarehouseDTO dto) {
         log.info("창고 수정: {}", dto.getWarehouseId());
         return wareMapper.updateWarehouse(dto) > 0;
     }
     
-    // 창고 삭제
+    // 창고 삭제 (재고 확인)
     @Transactional
     public Map<String, Object> deleteWarehouses(List<String> warehouseIds) {
         log.info("창고 삭제 요청: {} 건", warehouseIds.size());
@@ -58,7 +68,7 @@ private final WareMapper wareMapper;
         List<String> canDelete = new ArrayList<>();
         List<String> cannotDelete = new ArrayList<>();
         
-        // 각 창고에 재고가 있는지 체크
+        // 재고 보유 여부 확인
         for(String warehouseId : warehouseIds) {
             int inUseCount = wareMapper.checkWarehouseInUse(warehouseId);
             
@@ -71,13 +81,12 @@ private final WareMapper wareMapper;
         
         Map<String, Object> result = new HashMap<>();
         
-        // 삭제 가능한 창고만 삭제
+        // 삭제 가능한 것만 처리
         if(!canDelete.isEmpty()) {
             wareMapper.deleteWarehouses(canDelete);
             result.put("deleted", canDelete.size());
         }
         
-        // 삭제 불가능한 창고 정보
         if(!cannotDelete.isEmpty()) {
             result.put("failed", cannotDelete);
             result.put("failedCount", cannotDelete.size());
@@ -87,28 +96,43 @@ private final WareMapper wareMapper;
         return result;
     }
     
-    // 0917 입고 목록 조회
+    // ==================== 입고 관리 ====================
+    
+    // 입고 목록 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getInputList(String inType, String inStatus) {
         return wareMapper.selectInputList(inType, inStatus);
     }
     
+    // 배치별 입고 목록 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getInputListByBatch(String batchId) {
         return wareMapper.selectInputListByBatch(batchId);
     }
+    
+    // 날짜별 그룹화된 입고 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getGroupedInputList(String date, String inType) {
+        return wareMapper.selectGroupedInputList(date, inType);
+    }
 
-    // 입고 등록
+    // 개별 입고 등록
     @Transactional
     public String addInput(Map<String, Object> params) {
+        // 입고번호 생성 (IN + 날짜 + 순번)
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer todayCount = wareMapper.getTodayInputCount(today);
         if(todayCount == null) todayCount = 0;
         
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         
+        // productId를 materialId로 변환
+        String materialId = (String) params.get("productId");
+        
         params.put("inId", inId);
-        params.put("inStatus", "입고대기");  // 입고대기로 다시 변경!
+        params.put("inStatus", "입고대기");
+        params.put("materialId", materialId);
+        params.remove("productId");
         
         wareMapper.insertInput(params);
         
@@ -116,9 +140,16 @@ private final WareMapper wareMapper;
         
         return inId;
     }
+    
+    // 오늘 배치 건수 조회
+    public Integer getTodayBatchCount(String today) {
+        Integer count = wareMapper.getTodayBatchCount(today);
+        return count != null ? count : 0;
+    }
 
-    // 입고 완료 처리
+    // 입고 검사 완료 처리
     @Transactional
+    @TrackLot(tableName = "input", pkColumnName = "IN_ID") // ******로트 관련 어노테이션****** 
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
@@ -128,35 +159,48 @@ private final WareMapper wareMapper;
         
         String currentStatus = (String) input.get("IN_STATUS");
         
-        if(!"입고대기".equals(currentStatus)) {
-            throw new RuntimeException("이미 처리된 입고입니다.");
+        // 중복 처리 방지
+        if("입고완료".equals(currentStatus)) {
+            log.info("이미 입고완료 처리된 건입니다: {}", inId);
+            return;
         }
         
-        String productId = (String) input.get("PRODUCT_ID");
+        String materialId = (String) input.get("MATERIAL_ID");
         String warehouseId = (String) input.get("WAREHOUSE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
-        // 1. 입고 상태를 '입고완료'로 변경
+        // 입고 상태 변경
         wareMapper.updateInputStatus(inId, "입고완료");
         
-        // 2. product 테이블 재고 증가
-        wareMapper.updateProductQuantity(productId, inCount);
+        // material 테이블 재고 증가
+        wareMapper.updateMaterialQuantity(materialId, inCount);
         
-        // 3. warehouse_item 테이블에 재고 분산 저장
-        distributeToWarehouseItems(warehouseId, productId, inCount, empId);
+        // warehouse_item 재고 분산 저장
+        String firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
+        
+        // 입고 위치 정보 업데이트
+        if(firstLocation != null) {
+            wareMapper.updateInputLocation(inId, firstLocation);
+            log.info("위치 업데이트: {} -> {}", inId, firstLocation);
+        }
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
+        
+//		*******로트 생성: pk 값을 넘겨주는 곳**********
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", (String) input.get("IN_ID"));
     }
     
-    // 창고 위치에 분산 저장
-    private void distributeToWarehouseItems(String warehouseId, String productId, Integer totalCount, String empId) {
+    // Material 재고 분산 저장 (내부 메서드)
+    private String distributeToWarehouseItemsForMaterial(String warehouseId, String materialId, Integer totalCount, String empId) {
+        String firstLocation = null;
         int remaining = totalCount;
         int maxPerLocation = 500;
         
-        // 1. 먼저 기존에 해당 제품이 있는 위치들 확인 (500개 미만인 곳)
-        List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocations(warehouseId, productId, maxPerLocation);
+        // 기존 위치 확인 (500개 미만)
+        List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocationsMaterial(warehouseId, materialId, maxPerLocation);
         
-        // 2. 기존 위치에 먼저 채우기
+        // 기존 위치 채우기
         for(Map<String, Object> item : existingItems) {
             if(remaining <= 0) break;
             
@@ -165,20 +209,22 @@ private final WareMapper wareMapper;
             int availableSpace = maxPerLocation - currentAmount;
             int amountToAdd = Math.min(remaining, availableSpace);
             
-            // 기존 위치에 추가
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
+            
             Map<String, Object> params = new HashMap<>();
             params.put("locationId", locationId);
-            params.put("productId", productId);
+            params.put("materialId", materialId);
             params.put("addAmount", amountToAdd);
             
-            wareMapper.updateWarehouseItemAmount(params);
+            wareMapper.updateWarehouseItemAmountMaterial(params);
             
             remaining -= amountToAdd;
-            log.info("기존 위치 {}에 {} 개 추가 (기존: {}, 총: {})", 
-                    locationId, amountToAdd, currentAmount, currentAmount + amountToAdd);
+            log.info("기존 위치 {}에 {} 개 추가", locationId, amountToAdd);
         }
         
-        // 3. 남은 수량은 새 위치에 저장
+        // 새 위치 할당
         while(remaining > 0) {
             List<String> emptyLocations = wareMapper.getEmptyLocations(warehouseId);
             
@@ -190,46 +236,63 @@ private final WareMapper wareMapper;
             String locationId = emptyLocations.get(0);
             int amountToStore = Math.min(remaining, maxPerLocation);
             
-            Map<String, Object> params = new HashMap<>();
-            params.put("manageId", warehouseId + "_" + productId);
-            params.put("warehouseId", warehouseId);
-            params.put("productId", productId);
-            params.put("itemAmount", amountToStore);
-            params.put("locationId", locationId);
-            params.put("empId", empId);
+            if(firstLocation == null) {
+                firstLocation = locationId;
+            }
             
-            wareMapper.insertWarehouseItem(params);
+            // 중복 확인 후 처리
+            Map<String, Object> checkParams = new HashMap<>();
+            checkParams.put("locationId", locationId);
+            checkParams.put("materialId", materialId);
+            checkParams.put("itemAmount", amountToStore);
+            
+            int updated = wareMapper.updateExistingMaterialLocation(checkParams);
+            
+            if(updated == 0) {
+                // 신규 등록
+                Map<String, Object> params = new HashMap<>();
+                params.put("manageId", warehouseId + "_" + materialId + "_" + locationId);
+                params.put("warehouseId", warehouseId);
+                params.put("materialId", materialId);
+                params.put("itemAmount", amountToStore);
+                params.put("locationId", locationId);
+                params.put("empId", empId);
+                
+                wareMapper.insertWarehouseItemMaterial(params);
+            }
             
             remaining -= amountToStore;
-            log.info("새 위치 {}에 {} 개 저장", locationId, amountToStore);
+            log.info("위치 {}에 {} 개 저장", locationId, amountToStore);
         }
+        
+        return firstLocation;
     }
+    
+    // 구역 추출 유틸리티 (DD02Z1R1L2C1 -> DD02Z1)
+    private String extractZone(String locationId) {
+        if(locationId == null || locationId.length() < 6) {
+            return locationId;
+        }
+        return locationId.substring(0, 6);
+    }
+    
+    // ==================== 기초 데이터 조회 ====================
 
-    // 부품 목록 조회
+    // 부품 목록 조회 (구버전)
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getPartsList() {
         return wareMapper.selectPartsList();
+    }
+    
+    // 입고 가능한 Material 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMaterialsForInput() {
+        return wareMapper.selectMaterialsForInput();
     }
 
     // 거래처 목록 조회
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getClientsList() {
         return wareMapper.selectClientsList();
-    }
-
-    // 창고 타입별 조회
-    @Transactional(readOnly = true)
-    public List<WarehouseDTO> getWarehouseListByType(String warehouseType) {
-        return wareMapper.selectWarehouseListByType(warehouseType);
-    }
-    // 날짜별 그룹화된 입고 목록
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getGroupedInputList(String date, String inType) {
-        return wareMapper.selectGroupedInputList(date, inType);
-    }
-    
-    public Integer getTodayBatchCount(String today) {
-        Integer count = wareMapper.getTodayBatchCount(today);
-        return count != null ? count : 0;
     }
 }
