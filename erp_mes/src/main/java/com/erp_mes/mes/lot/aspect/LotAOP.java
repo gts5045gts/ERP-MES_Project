@@ -124,8 +124,7 @@ public class LotAOP {
 			}
 			
 			if (session != null) {
-			    session.removeAttribute("lotInfo");
-			    log.info("lotDto 속성이 세션에서 삭제.");
+			    session.removeAttribute("targetIdValue");
 			}
 			
 			
