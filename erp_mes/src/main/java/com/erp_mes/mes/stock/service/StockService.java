@@ -72,7 +72,7 @@ public class StockService {
     
     // 자재 등록
     @Transactional
-    @TrackLot // lot 생성 관련 어노테이션 
+    @TrackLot // 로트 관련 어노테이션 
     public void addMaterial(MaterialDTO dto) {
         log.info("자재 등록: {}", dto.getMaterialId());
         
@@ -83,9 +83,9 @@ public class StockService {
         // 1. material 테이블에 등록
         stockMapper.insertIntoMaterial(dto);
         
-//		lot 생성을 위해 entity(없으면 dto) 를 넘겨주는 곳
+//		로트 생성: jpa -> entity(mybatis -> dto) 를 넘겨주는 곳
         HttpSession session = SessionUtil.getSession();
-        session.setAttribute("dto", dto);
+        session.setAttribute("lotDto", dto);
         
         // 2. 자재 타입에 맞는 창고 찾기
         String warehouseType = dto.getMaterialType().equals("부품") ? "부품창고" : "반제품창고";

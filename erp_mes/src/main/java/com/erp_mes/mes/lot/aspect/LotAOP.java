@@ -49,19 +49,21 @@ public class LotAOP {
 	}
 
 	@Around("@annotation(trackLot)")
-	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot, List<MaterialUsageDTO> usages) throws Throwable {
-		log.info("AOP 진입, TrackLot: " + trackLot);
-
-//		Object result = null;
-//		LotDTO lotDTO = null;
-
+	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
+		
 		try {
+			
+			log.info("AOP 진입, TrackLot: " + trackLot);
+
+//			Object result = null;
+//			LotDTO lotDTO = null;
+
 			// 핵심 메서드 실행
-//			result = pjp.proceed();
+//				result = pjp.proceed();
 			pjp.proceed();
 			
 			HttpSession session = SessionUtil.getSession();
-			Object obj = session.getAttribute("dto");
+			Object obj = session.getAttribute("lotDto");
 			
 			
 			if (obj != null) {
@@ -70,23 +72,27 @@ public class LotAOP {
 				String tableName = tableInfo.getTableName();
 				String getterPkIdName = "get" + pkColumnName.substring(0,1).toUpperCase() + pkColumnName.substring(1);
 				
+				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+obj);
+				
+				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				Object targetIdVal = null;
 				Object materialType = null;
+				Object parentLotId = null;
 			
 				targetIdVal = obj.getClass().getMethod(getterPkIdName).invoke(obj);
 				//자재테이블만 자재코드를 입력함.
-				if(tableName == "material")
-				{
+				if(tableName.equals("material")){
 					materialType = obj.getClass().getMethod("getMaterialType").invoke(obj);	
+				} else {
+					parentLotId = obj.getClass().getMethod("getLotId").invoke(obj);	
 				}
-				
-				Object parentLotId = obj.getClass().getMethod("getLotId").invoke(obj);
 				
 				//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
 				if (parentLotId != null) {
+					
 					usages = new ArrayList<MaterialUsageDTO>();
 					MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
-											.parentLotId((String) parentLotId) // 원자재 LOT ID
+											.parentLotId((String) parentLotId) // 이전 기록 LOT ID
 											.build();
 					usages.add(usage1);	
 				}
@@ -100,31 +106,30 @@ public class LotAOP {
 								.materialCode((String) materialType)
 								.usages(usages)
 								.build();
+				
+				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
 				lotService.createLotWithRelations(lotDTO, tableName.toUpperCase(), true, false);
-				
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
 				
 			}
 			
-			// 반환값이 LotDTO인지 판단
-//			if (result instanceof LotDTO dto) {
-//				lotDTO = dto;
-//
-//				lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
-//			}
+			if (session != null) {
+			    session.removeAttribute("lotDto");
+			    log.info("lotDto 속성이 세션에서 삭제.");
+			}
 			
-
-//			return result; // 반드시 반환
-
+			// 반환값이 LotDTO인지 판단
+//				if (result instanceof LotDTO dto) {
+//					lotDTO = dto;
+	//
+//					lotService.createLotWithRelations(lotDTO, trackLot.domain(), trackLot.createLot(), trackLot.linkParent());
+//				}
+//				return result; // 반드시 반환
+			
 		} catch (Exception e) {
-			log.error("traceLot 처리 중 예외 발생", e);
-			// 필요시 예외 재던지기 가능
-			throw e;
-
-		} finally {
-
+			 log.error("Error during lotDTO creation or logging", e);
 		}
 	}
 }
