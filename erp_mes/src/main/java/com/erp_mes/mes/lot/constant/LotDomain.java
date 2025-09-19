@@ -13,12 +13,12 @@ public enum LotDomain {
 	  CONSUMABLE("consumable", "SP"), // 소모품 → 새로 추가
 	  
 	  // 2️⃣ 공정(Process / 작업 공정)
-	  INPUT("Inbound", "IN"), // 입고
-	  CUTTING("Cutting", "CUT"), // 절단 
-	  MACHINING("Machining", "MCH"), // 성형/가공
-	  ASSEMBLY("Assembly", "AS"), // 조립 
-	  SHIPPING("Shipping", "FG"), // 포장/출하
-	  ETC("Etc", "XX"); // 기타 미정의
+	  INPUT("input", "IN"), // 입고
+	  CUTTING("cutting", "CUT"), // 절단 
+	  MACHINING("machining", "MCH"), // 성형/가공
+	  ASSEMBLY("assembly", "AS"), // 조립 
+	  SHIPPING("shipping", "FG"), // 포장/출하
+	  ETC("etc", "XX"); // 기타 미정의
 	
 	/*
 	 * // 1️⃣ 자재(Material) MATERIAL("RM", "원자재"), PROCESS("PR", "반제품"),

@@ -3,8 +3,12 @@ package com.erp_mes.mes.lot.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.hibernate.query.NativeQuery;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.stereotype.Service;
 
 import com.erp_mes.mes.lot.constant.LotDomain;
@@ -16,6 +20,9 @@ import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,7 +35,8 @@ public class LotService {
 
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
-	private final LotProcessHistoryRepository historyRepository;
+	@PersistenceContext
+    private EntityManager entityManager;
 
 	public String createLotWithRelations(LotDTO lotDTO, String domain, boolean createLot, boolean linkParent) {
 	    String lotId = null;
@@ -38,7 +46,7 @@ public class LotService {
 	    	// 1. LOT 생성 및 lot_master 저장
 		    if (createLot) {
 		        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		        LotDomain lotDomain = LotDomain.fromDomain(domain);
+		        LotDomain lotDomain = LotDomain.fromDomain(domain.toLowerCase().trim());
 		        String prefix = lotDomain.getPrefix();
 //		        Integer qty = lotDTO.getQty();
 		        String machineId = (lotDTO.getMachineId() != null) ? lotDTO.getMachineId() : "";
@@ -132,6 +140,28 @@ public class LotService {
 
 //		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
 		return "PRD002";
+	}
+
+	//targetTable 조회
+	public List<Map<String, Object>> getTagetInfo(String tableName, String targetId, String targetIdValue) {
+		
+		 // 동적 쿼리 문자열 생성 (SQL 인젝션 방지용 별도 검증 필요)
+        String sql = "SELECT * FROM " + tableName + " WHERE " + targetId + " = :targetIdValue";
+
+        NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
+
+        nativeQuery.setParameter("targetIdValue", targetIdValue);
+
+        // Hibernate 6부터는 아래와 같이 Transformer 대신 TupleTransformer 사용 권장
+        nativeQuery.setTupleTransformer((tuple, aliases) -> {
+            Map<String, Object> result = new java.util.HashMap<>();
+            for (int i = 0; i < aliases.length; i++) {
+                result.put(aliases[i], tuple[i]);
+            }
+            return result;
+        });
+
+        return (List<Map<String, Object>>) nativeQuery.getResultList();
 	}
 
 }

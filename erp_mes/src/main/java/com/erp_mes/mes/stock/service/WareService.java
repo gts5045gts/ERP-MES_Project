@@ -11,9 +11,12 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.mapper.WareMapper;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -123,6 +126,7 @@ private final WareMapper wareMapper;
     }
 
     @Transactional
+    @TrackLot(tableName = "input", pkColumnName = "IN_ID") // ******로트 관련 어노테이션****** 
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
@@ -159,6 +163,10 @@ private final WareMapper wareMapper;
         }
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
+        
+//		*******로트 생성: pk 값을 넘겨주는 곳**********
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", (String) input.get("IN_ID"));
     }
     
     // 구역 추출 메서드

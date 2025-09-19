@@ -49,7 +49,7 @@ public class LotController {
 
 	@GetMapping("/saveLot")
 	@ResponseBody
-	@TrackLot
+//	@TrackLot
 	public LotDTO saveWareHouse() {
 		LotDTO lotDTO = LotDTO.builder().tableName("WAREHOUSE_ITEM3").materialCode("test-STEEL-11")
 				.build();
@@ -66,7 +66,7 @@ public class LotController {
 
 	@GetMapping("/saveUsage")
 	@ResponseBody
-	@TrackLot
+//	@TrackLot
 	public LotDTO saveUsage() {
 		List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 		MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
