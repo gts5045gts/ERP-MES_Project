@@ -83,6 +83,7 @@ public class ApprController {
     	model.addAttribute("remain", remain);
     	model.addAttribute("docTitle", docTitle);
     	model.addAttribute("docContent", docContent);
+    	model.addAttribute("reqTypes", ApprReqType.values());
     	        
         return "approval/drafting_form";
     }

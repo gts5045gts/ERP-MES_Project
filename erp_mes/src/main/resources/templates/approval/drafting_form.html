@@ -80,7 +80,7 @@
 								<label class="col-sm-2 col-form-label">양식 종류</label>
 								<div class="col-sm-2">
 									<select class="form-control selected-req-type" name="reqType">
-										<option th:each="reqType : ${T(com.erp_mes.erpapproval.constant.ApprReqType).values()}"
+										<option th:each="reqType : ${reqTypes}"
 												th:value="${reqType.name()}"
 												th:text="${reqType.label}"
 												th:selected="${reqType.name() == selectedRole.name()}"
@@ -95,7 +95,7 @@
 								<label class="col-sm-2 col-form-label">휴가 종류</label>
 								<div class="col-sm-2">
 									<select class="form-control" th:field="*{apprDetailDTOList[0].vacType}">
-										<option th:each="vacType : ${T(com.erp_mes.erpapproval.constant.ApprVacType).values()}"
+										<option th:each="vacType : ${T(com.erp_mes.erp.approval.constant.ApprVacType).values()}"
 												th:value="${vacType}" th:text="${vacType.label}"></option>
 									</select>
 								</div>
@@ -126,7 +126,7 @@
 							<div class="form-group row vac">
 								<label class="col-sm-2 col-form-label">반차 여부</label>
 								<div class="col-sm-8">
-									<div class="form-check form-check-inline" th:each="halfType : ${T(com.erp_mes.erpapproval.constant.ApprHalfType).values()}">
+									<div class="form-check form-check-inline" th:each="halfType : ${T(com.erp_mes.erp.approval.constant.ApprHalfType).values()}">
 										
 										<input class="form-check-input" type="radio" th:field="*{apprDetailDTOList[0].halfType}" th:id="'halfType_' + ${halfType.name()}" th:value="${halfType}">
 										<label class="form-check-label" th:for="'halfType_' + ${halfType.name()}" th:text="${halfType.label}"></label>
