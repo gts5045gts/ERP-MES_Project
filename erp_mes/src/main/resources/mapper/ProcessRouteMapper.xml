@@ -51,37 +51,6 @@
 			r.pro_seq ASC
 			
 	</select>
-	<select id="findAll" resultMap="ProcessRouteMap">
-		SELECT 
-			r.route_id,
-			r.pro_seq,
-			r.note,
-			
-			p.pro_id,
-			p.pro_nm,
-			e.equip_id,
-			e.equip_nm,
-			d.product_id,
-			d.product_name
-		FROM 
-			process_routing r
-		LEFT JOIN
-			process p 
-		ON 
-			r.pro_id = p.pro_id
-		LEFT JOIN 
-			equipment e
-		ON 
-			r.equip_id = e.equip_id
-		LEFT JOIN
-			product d
-		ON
-			r.product_id = d.product_id
-		ORDER BY 
-			r.pro_seq ASC
-			
-	</select>
-	
 	
 	
 	

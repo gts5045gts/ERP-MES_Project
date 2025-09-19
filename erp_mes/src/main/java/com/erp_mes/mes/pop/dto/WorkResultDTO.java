@@ -29,7 +29,7 @@ public class WorkResultDTO {
 	// ========================================
 	
 	private Long bomId;
-	private String processId;	// 공정 id
+	private Long processId;	// 공정 id
     private String equipmentId;	// 설비 id
     private String empId;
     @JsonFormat(pattern="yyyy-MM-dd")
@@ -46,12 +46,21 @@ public class WorkResultDTO {
     private String materialId;	// 자재
     private BigDecimal quantity;// 수량
     private String unit;		// 단위
-    private String revisionNo;		// 차수 
+    private String revisionNo;	// 차수 
 
     // 설비
     private String equipmentNm;	// 설비명
 
     // 공정
     private String processNm;	// 공정명
+    
+    // 자재
+    private String materialNm;	// 자재명
+    
+    // 불량사유
+    private String defectReason; // 불량사유
+    
+    // 제품
+    private String productNm; 	// 제품명
 
 }
