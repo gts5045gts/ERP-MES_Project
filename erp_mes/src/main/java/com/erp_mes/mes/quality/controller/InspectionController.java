@@ -69,9 +69,14 @@ public class InspectionController {
 	    
 	    // 오른쪽 테이블 데이터 (검사 항목별 허용 공차)
 	    List<InspectionItemDTO> inspectionItems = inspectionService.getInspectionItems();
-	    // inspectionItems의 inspectionType을 이름으로 변환하여 모델에 추가
+
+	    // 이미 변환된 inspectionFMs 목록을 사용하여 매핑 맵 생성
+	    Map<Long, String> inspectionFmNameMap = inspectionFMs.stream()
+	        .collect(Collectors.toMap(InspectionFMDTO::getInspectionFMId, InspectionFMDTO::getInspectionType));
+
+	    // inspectionItems의 inspectionFMId를 사용하여 이름 찾아와서 매핑
 	    inspectionItems.forEach(item -> {
-	        String typeName = qcTypeMap.get(item.getInspectionType());
+	        String typeName = inspectionFmNameMap.get(item.getInspectionFMId());
 	        if (typeName != null) {
 	            item.setInspectionType(typeName);
 	        }

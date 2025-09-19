@@ -10,7 +10,7 @@ public class WorkOrderDTO {
     private String workOrderStatus;
     private String lotId; 
 
-    // JOIN을 통해 가져올 필드
+    // JOIN을 통해 가져올 필드 - 품질관리
     private Long planQuantity;
     private String productId;
     private String productName;

@@ -182,6 +182,7 @@
                                 <label for="inspectionFMId" class="form-label">검사 유형 기준</label>
                                 <select class="form-control" id="inspectionFMId" name="inspectionFMId">
                                     <option value="">선택</option>
+                                    <option th:each="fm : ${inspectionFMs}" th:value="${fm.inspectionFMId}" th:text="${fm.inspectionType} + ' - ' + ${fm.itemName}"></option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -192,6 +193,7 @@
                                 <label for="unit" class="form-label">단위</label>
                                 <select class="form-control" id="unit" name="unit">
                                     <option value="">선택</option>
+                                    <option th:each="unit : ${units}" th:value="${unit.comDtNm}" th:text="${unit.comDtNm}"></option>
                                 </select>
                             </div>
                         </form>
