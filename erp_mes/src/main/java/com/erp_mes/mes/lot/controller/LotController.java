@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -98,7 +100,11 @@ public class LotController {
 	
 	
 	@GetMapping("")
+	@TrackLot(tableName = "work_order", pkColumnName = "work_order_id")
 	public String showLotTrackingList() {
+		
+		HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", "3"); //pk_id의 값 입력
 		return "/lot/lot_list";
 	}
 }
