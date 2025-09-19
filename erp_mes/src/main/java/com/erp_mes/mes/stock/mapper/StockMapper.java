@@ -181,4 +181,15 @@ public interface StockMapper {
     int deleteEmptyMaterialLocation(@Param("materialId") String materialId, 
                                     @Param("warehouseId") String warehouseId, 
                                     @Param("locationId") String locationId);
+    
+    // 특정 위치의 재고 수량 조회
+    int getWarehouseItemQtyByLocation(@Param("materialId") String materialId, 
+                                      @Param("warehouseId") String warehouseId,
+                                      @Param("locationId") String locationId);
+    
+    // Material이 있는 창고별 재고 상세 조회 (위치 포함)
+    List<Map<String, Object>> getMaterialWarehouseStockDetail(@Param("materialId") String materialId);
+    
+    // 검사방법 목록 조회
+    List<Map<String, Object>> getInspectionMethods();
 }

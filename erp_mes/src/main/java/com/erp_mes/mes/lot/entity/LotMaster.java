@@ -47,8 +47,9 @@ public class LotMaster {
 
 	@Column(length = 50)
 	private String materialCode;
-//수량
-//	private int qty;
+
+	//수량
+	//private int qty;
 
 	@Column(length = 50)
 	private String machineId;

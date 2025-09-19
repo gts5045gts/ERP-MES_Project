@@ -99,6 +99,37 @@ public class StockService {
         return false;
     }
     
+    // 특정 창고에서 Material 재고 차감
+    @Transactional
+    public boolean reduceMaterialStockFromWarehouse(String materialId, String warehouseId, 
+            String locationId, Integer reduceQty, String reason, String empId) {
+        
+        log.info("특정 창고에서 Material 재고 차감 - materialId: {}, warehouseId: {}, locationId: {}, 차감수량: {}", 
+                 materialId, warehouseId, locationId, reduceQty);
+        
+        // 1. warehouse_item에서 차감
+        int currentQty = stockMapper.getWarehouseItemQtyByLocation(materialId, warehouseId, locationId);
+        
+        if(currentQty < reduceQty) {
+            throw new RuntimeException("재고가 부족합니다.");
+        }
+        
+        int newQty = currentQty - reduceQty;
+        if(newQty == 0) {
+            stockMapper.deleteEmptyMaterialLocation(materialId, warehouseId, locationId);
+        } else {
+            stockMapper.updateMaterialLocationStock(materialId, warehouseId, locationId, newQty);
+        }
+        
+        // 2. material 테이블의 quantity도 차감
+        stockMapper.reduceMaterialStock(materialId, reduceQty);
+        
+        log.info("Material {} 재고 {} 차감 완료 (창고: {}, 위치: {})", 
+                 materialId, reduceQty, warehouseId, locationId);
+        
+        return true;
+    }
+    
     private void reduceMaterialWarehouseStock(String materialId, String warehouseId, Integer qty) {
         List<Map<String, Object>> locations = stockMapper.getMaterialLocationsByQty(materialId, warehouseId);
         
@@ -267,6 +298,12 @@ public class StockService {
                 log.info("제품 등록 완료 - 창고: {}, 수량: {}", warehouseId, dto.getQuantity());
             }
         }
+    }
+    
+    // 검사방법 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getInspectionMethods() {
+        return stockMapper.getInspectionMethods();
     }
     
     // 제품 수정
