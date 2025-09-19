@@ -1,6 +1,5 @@
 package com.erp_mes.mes.plant.entity;
 
-import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
 
@@ -9,8 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Getter;

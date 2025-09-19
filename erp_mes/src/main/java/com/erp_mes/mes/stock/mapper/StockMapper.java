@@ -197,6 +197,10 @@ public interface StockMapper {
     // 자재 타입 공통코드 조회
     List<Map<String, String>> getMaterialTypes();
     
-    // 검사방법 목록 조회
+    // 품질검사기준 등록시 참조 - 품질관리
+	List<MaterialDTO> findAllMaterials();
+    
+	// 검사방법 목록 조회
     List<Map<String, Object>> getInspectionMethods();
+
 }

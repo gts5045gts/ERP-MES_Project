@@ -7,16 +7,19 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.plant.service.ProcessService;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
-import com.erp_mes.mes.pm.service.ProductBomService;
-import com.erp_mes.mes.pop.mapper.WorkResultMapper;
+import com.erp_mes.mes.pm.mapper.WorkOrderMapper;
+import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 import com.erp_mes.mes.quality.entity.InspectionFM;
 import com.erp_mes.mes.quality.mapper.QualityMapper;
 import com.erp_mes.mes.quality.repository.InspectionFMRepository;
+import com.erp_mes.mes.stock.dto.MaterialDTO;
+import com.erp_mes.mes.stock.service.StockService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,8 +31,9 @@ public class InspectionService {
 
 	private final QualityMapper qualityMapper;
 	private final InspectionFMRepository inspectionFMRepository;
-	private final ProductBomService productBomService;
-	private final WorkResultMapper workResultMapper;
+	private final WorkOrderMapper workOrderMapper;
+	private final ProcessService processService;
+	private final StockService stockService;
 	
     @Transactional(readOnly = true)
     public List<InspectionFMDTO> findAllInspectionFMs() {
@@ -48,20 +52,30 @@ public class InspectionService {
     // 오른쪽 테이블 (검사 항목별 허용 공차) 조회 로직
     @Transactional(readOnly = true)
     public List<InspectionItemDTO> getInspectionItems() {
-    	// MyBatis 매퍼를 통해 조인된 InspectionItem 데이터 가져오기
+        // 1. MyBatis 매퍼를 통해 새로운 테이블 구조의 InspectionItem 데이터 가져오기
+        //    이 쿼리는 materialId와 proId를 조회해야 합니다.
         List<InspectionItemDTO> items = qualityMapper.findAllItems();
 
-        // 제품 이름을 위한 맵 생성 (성능 최적화)
-        Map<String, String> productMap = productBomService.getProductList().stream()
-                .collect(Collectors.toMap(ProductDTO::getProductId, ProductDTO::getProductName));
-        
-        // 데이터 가공
+        // 2. Process와 Material 데이터를 조회하여 맵 생성 (성능 최적화)
+        Map<Long, String> processMap = processService.getProcessList().stream()
+                .collect(Collectors.toMap(ProcessDTO::getProId, ProcessDTO::getProNm));
+
+        Map<String, String> materialMap = stockService.getMaterialList().stream()
+                .collect(Collectors.toMap(MaterialDTO::getMaterialId, MaterialDTO::getMaterialName));
+
+        // 3. 데이터 가공: DTO에 이름 정보 설정
         items.forEach(item -> {
-            // productId를 이용해 productName을 DTO에 설정
-            item.setProductName(productMap.get(item.getProductId()));
-            // inspectionFMId를 이용해 inspectionType과 itemName을 DTO에 설정 (이미 매퍼에서 처리되었다고 가정)
+            // proId를 이용해 proNm을 DTO에 설정
+            if (item.getProId() != null) {
+                item.setProNm(processMap.get(item.getProId()));
+            }
+            // materialId를 이용해 materialName을 DTO에 설정
+            if (item.getMaterialId() != null) {
+                item.setMaterialName(materialMap.get(item.getMaterialId()));
+            }
         });
-		return items;
+
+        return items;
     }
     
     // 왼쪽 테이블 (검사 유형별 기준) 등록 로직
@@ -112,16 +126,21 @@ public class InspectionService {
     
     // 3. 검사 결과 등록
     @Transactional
-    public void registerInspectionResult(InspectionResultDTO resultDTO) {
-        // 실제 구현 로직
-        // 1. DTO에서 필요한 정보를 추출
-        // 2. inspection 테이블에 INSERT
-        // 3. inspection_result 테이블에 INSERT
-        // 4. 관련 작업지시 상태를 '검사 완료'로 업데이트
-        
-        // 예시: 매퍼 호출
-        // qualityMapper.insertInspection(resultDTO);
-        // qualityMapper.insertInspectionResult(resultDTO);
-        // qualityMapper.updateWorkOrderStatus(resultDTO.getWorkOrderId(), "검사 완료");
+    public void registerInspectionResult(InspectionResultDTO resultDTO, Long workOrderId) {
+        // 1. Inspection 테이블에 데이터 삽입
+        InspectionDTO inspectionDTO = new InspectionDTO();
+        inspectionDTO.setInspectionType("QC001");
+        inspectionDTO.setProductId(resultDTO.getProductId());
+        inspectionDTO.setProcessId(resultDTO.getProcessId());
+        inspectionDTO.setEmpId(resultDTO.getEmpId());
+        inspectionDTO.setLotId(resultDTO.getLotId());
+        qualityMapper.insertInspection(inspectionDTO);
+
+        // 2. Inspection_Result 테이블에 데이터 삽입
+        resultDTO.setInspectionId(inspectionDTO.getInspectionId());
+        qualityMapper.insertInspectionResult(resultDTO);
+
+        // 3. work_order 테이블 상태 업데이트
+        workOrderMapper.updateWorkOrderStatus(workOrderId);
     }
 }
