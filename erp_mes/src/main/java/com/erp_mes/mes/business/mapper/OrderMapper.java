@@ -50,4 +50,6 @@ public interface OrderMapper {
     // 한번의 수행에 여러 건의 OrderDetailDTO insert 
     void insertOrderDetails(List<OrderDetailDTO> items);
 
+	int updateOrderDetailStatus();
+
 }

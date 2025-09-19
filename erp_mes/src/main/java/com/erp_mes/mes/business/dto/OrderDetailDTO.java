@@ -19,6 +19,7 @@ public class OrderDetailDTO {
 	private String productName;
 	private Integer orderQty;
 	private Integer orderPrice;
+	private String orderDetailStatus;
 	private Integer totalPrice;			// 수주 상세 목록에서 총금액(= 수량*단가)
 	private LocalDateTime createAt;
 	private LocalDateTime updateAt;

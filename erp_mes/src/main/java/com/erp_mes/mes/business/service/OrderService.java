@@ -27,7 +27,6 @@ public class OrderService {
 	@Transactional
 	public String createOrder(OrderDTO orderDTO) {
         // 1) 수주번호 생성 (ORD-yyyyMMdd-XXXX)
-        // DTO를 사용하므로 매퍼를 통해 이미 계산된 총 수량, 금액을 가져올 수 있습니다.
         int count = orderMapper.countOrders();
         int next = count + 1;
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -36,7 +35,7 @@ public class OrderService {
         orderDTO.setOrderId(orderId);
 
         // 2) orders insert
-        // DTO 객체를 직접 매퍼로 전달합니다.
+        // DTO 객체를 직접 매퍼로 전달
         orderMapper.insertOrder(orderDTO);
 
         // orders_detail insert
@@ -113,5 +112,6 @@ public class OrderService {
              }
         }
     }
+	
 	
 }

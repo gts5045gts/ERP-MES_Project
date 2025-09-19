@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const selectedItemsContainer = document.getElementById('selectedItemsContainer');
 	const totalPriceElement = document.getElementById('totalPrice');
 	const emptyMessage = document.getElementById('emptyMessage');
-	
+
 	// 오늘 날짜를 'YYYY-MM-DD' 형식으로 가져오는 코드
 	const today = new Date();
 	const year = today.getFullYear();
@@ -136,13 +136,13 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'red';
 								statusText = '취소';
 								break;
-							case 'PREPARING':
+							case 'INPRODUCTION':
 								color = 'green';
-								statusText = '납품 대기';
+								statusText = ' 생산중';
 								break;
-							default:
+							case 'COMPLETION':
 								color = 'black';
-								statusText = '납품 완료';
+								statusText = '출하완료';
 								break;
 						}
 						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;
@@ -184,7 +184,34 @@ document.addEventListener("DOMContentLoaded", () => {
 						}
 						return value.value;
 					}
+				},
+				{
+					header: '수주상태', name: 'orderDetailStatus', align: 'center',
+					formatter: function(value) {
+						let color = '';
+						let statusText = '';
+						switch (value.value) {
+							case 'RECEIVED':
+								color = 'blue';
+								statusText = '등록';
+								break;
+							case 'CANCELED':
+								color = 'red';
+								statusText = '취소';
+								break;
+							case 'INPRODUCTION':
+								color = 'green';
+								statusText = ' 생산중';
+								break;
+							case 'COMPLETION':
+								color = 'black';
+								statusText = '출하 완료';
+								break;
+						}
+						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;
+					}
 				}
+
 			],
 			data: []
 		});
@@ -194,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		orderGrid.on('click', async (ev) => {
 			const rowData = orderGrid.getRow(ev.rowKey);
-			rowHeaders: ['checkbox']
+
 			// rowData가 존재하지 않으면 아무 작업도 하지 않고 함수를 종료
 			if (!rowData) {
 				// 행이 선택되지 않은 경우 수정 버튼을 숨김
@@ -298,16 +325,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				// 수정 모드가 아닐 때만 필터링 조건을 적용
 				if (!isEditMode) {
-				    filteredClients = data.filter(client => 
-				    	client.clientType === '매출사' && client.clientStatus === '거래중'
-				    );
+					filteredClients = data.filter(client =>
+						client.clientType === '매출사' && client.clientStatus === '거래중'
+					);
 				}
-				
+
 				filteredClients.forEach(client => {
-				    const option = document.createElement("option");
-				    option.value = client.clientId;
-				    option.textContent = client.clientName;
-				    selectElement.appendChild(option);
+					const option = document.createElement("option");
+					option.value = client.clientId;
+					option.textContent = client.clientName;
+					selectElement.appendChild(option);
 				});
 			})
 			.catch(error => console.error("거래처 목록 불러오기 오류:", error));
@@ -353,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	orderAddModalElement.addEventListener('shown.bs.modal', async () => {
 		const deliveryDateInput = document.getElementById("deliveryDate");
 		if (deliveryDateInput) {
-		    deliveryDateInput.min = todayString;
+			deliveryDateInput.min = todayString;
 		}
 		// productListGrid가 아직 생성되지 않았다면 초기화
 		if (!productListGrid) {
@@ -608,18 +635,18 @@ document.addEventListener("DOMContentLoaded", () => {
 		renderSelectedItems();
 	};
 
-//	// 품목 검색 버튼 이벤트
-//	document.getElementById("searchProductBtn").addEventListener("click", () => {
-//		const keyword = document.getElementById("productSearch").value;
-//		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
-//			.then(response => response.json())
-//			.then(data => {
-//				if (productListGrid) {
-//					productListGrid.resetData(data);
-//				}
-//			})
-//			.catch(error => console.error("품목 검색 오류:", error));
-//	});
+	//	// 품목 검색 버튼 이벤트
+	//	document.getElementById("searchProductBtn").addEventListener("click", () => {
+	//		const keyword = document.getElementById("productSearch").value;
+	//		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
+	//			.then(response => response.json())
+	//			.then(data => {
+	//				if (productListGrid) {
+	//					productListGrid.resetData(data);
+	//				}
+	//			})
+	//			.catch(error => console.error("품목 검색 오류:", error));
+	//	});
 
 	// ----------------------------------------------------------------------------------------------
 
@@ -680,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			totalOrderPrice: totalOrderPrice, // DTO 필드명
 			items: items
 		};
-		
+
 		console.log("전송될 페이로드:", payload); // 이 부분을 추가하여 값 확인
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
@@ -718,11 +745,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 				orderAddModal.hide();
 				loadOrders();
-				
+
 				// 신규 등록 시에도 방금 등록된 주문의 상세 목록을 보여줄 수 있도록 orderId를 사용합니다.
 				const updatedOrderId = isEditMode ? editOrderId : j.orderId;
 				loadOrderDetails(updatedOrderId);
-				
+
 			} else {
 				const txt = await res.text();
 				console.error("서버 응답 에러:", res.status, txt);
@@ -737,7 +764,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 편집 모달 열기 (기존 수주 불러와서 채우기)
 	async function openEditModal(orderId, rowData) {
-		
+
 		try {
 			// 서버에서 해당 수주 정보(헤더 + 아이템)를 불러옴
 			const res = await fetch(`/business/api/orders/${orderId}`);
