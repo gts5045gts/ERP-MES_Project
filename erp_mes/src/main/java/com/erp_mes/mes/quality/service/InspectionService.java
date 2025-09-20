@@ -96,6 +96,16 @@ public class InspectionService {
         qualityMapper.insertItem(inspectionItemDTO);
     }
     
+    // 검사기준수정
+    public int updateInspectionFm(InspectionFMDTO inspectionFMDTO) {
+    	return qualityMapper.updateInspectionFm(inspectionFMDTO);
+    }
+    
+    // 상세기준수정
+    public int updateInspectionItem(InspectionItemDTO inspectionItemDTO) {
+    	return qualityMapper.updateInspectionItem(inspectionItemDTO);
+    }
+    
     // 검사기준삭제
     @Transactional
     public void deleteInspectionRecords(List<Long> inspectionFMIds) {
@@ -143,4 +153,5 @@ public class InspectionService {
         // 3. work_order 테이블 상태 업데이트
         workOrderMapper.updateWorkOrderStatus(workOrderId);
     }
+
 }

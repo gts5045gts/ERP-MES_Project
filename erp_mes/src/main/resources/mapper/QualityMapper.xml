@@ -48,6 +48,30 @@
 		FROM COMMON_DT_CODE
 		WHERE COM_ID = 'UNIT'
 	</select>
+	
+	    <update id="updateInspectionFm" parameterType="com.erp_mes.mes.quality.dto.InspectionFMDTO">
+        UPDATE INSPECTION_FM
+        SET
+            INSPECTION_TYPE = #{inspectionType},
+            ITEM_NAME = #{itemName},
+            METHOD_NAME = #{methodName}
+        WHERE
+            INSPECTION_FM_ID = #{inspectionFMId}
+    </update>
+
+    <update id="updateInspectionItem" parameterType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+        UPDATE INSPECTION_ITEM
+        SET
+            INSPECTION_FM_ID = #{inspectionFMId},
+            TOLERANCE_VALUE = #{toleranceValue},
+            UNIT = #{unit},
+            <if test="materialId != null">MATERIAL_ID = #{materialId},</if>
+            <if test="materialId == null">MATERIAL_ID = NULL,</if>
+            <if test="proId != null">PRO_ID = #{proId}</if>
+            <if test="proId == null">PRO_ID = NULL</if>
+        WHERE
+            ITEM_ID = #{itemId}
+    </update>
 
 	<delete id="deleteItems">
 		DELETE FROM INSPECTION_ITEM

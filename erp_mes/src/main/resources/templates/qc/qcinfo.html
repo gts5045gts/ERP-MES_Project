@@ -40,6 +40,7 @@
 								<div>
 									<button class="btn btn-success" type="button"
 										data-toggle="modal" data-target="#inspectionModal">등록</button>
+									<button class="btn btn-warning" type="button" id="editFmBtn">수정</button>
 									<button class="btn btn-danger" type="button" id="deleteFmBtn">삭제</button>
 								</div>
 							</div>
@@ -85,6 +86,7 @@
 								<div>
 									<button class="btn btn-success" type="button"
 										data-toggle="modal" data-target="#standardModal">등록</button>
+									<button class="btn btn-warning" type="button" id="editItemBtn">수정</button>
 									<button class="btn btn-danger" type="button" id="deleteItemBtn">삭제</button>
 								</div>
 							</div>
@@ -228,6 +230,7 @@
 									<option value="">선택</option>
 								</select>
 							</div>
+							<input type="hidden" id="itemId_hidden" name="itemId">
 						</form>
 					</div>
 					<div class="modal-footer">
@@ -247,7 +250,6 @@
 				materials : /*[[${materials}]]*/[],
 				inspectionFMs : /*[[${inspectionFMs}]]*/[],
 				units : /*[[${units}]]*/[],
-				products : /*[[${products}]]*/[],
 			};
 		</script>
 		<script th:src="@{/bootstrap/js/qc/qcInfo.js}"></script>

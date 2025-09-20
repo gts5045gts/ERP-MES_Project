@@ -1,5 +1,6 @@
 package com.erp_mes.mes.quality.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -84,8 +86,6 @@ public class InspectionController {
 	    // UNIT 공통 코드 데이터
 	    List<CommonDetailCode> units = commonCodeService.findByComId("UNIT");
 	    
-        // 제품 목록 데이터
-        List<ProductDTO> products = productBomService.getProductList();
         // 공정 목록 데이터
         List<ProcessDTO> processes = processService.getProcessList();
         // 자재 목록 데이터
@@ -95,7 +95,6 @@ public class InspectionController {
         model.addAttribute("inspectionItems", inspectionItems);
         model.addAttribute("qcTypes", qcTypes);
         model.addAttribute("units", units);
-        model.addAttribute("products", products);
         model.addAttribute("processes", processes);
         model.addAttribute("materials", materials);
 
@@ -145,6 +144,52 @@ public class InspectionController {
 			return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+    @PutMapping("/fm")
+    public ResponseEntity<Map<String, Object>> updateInspectionRecord(@RequestBody InspectionFMDTO inspectionFMDTO) {
+        Map<String, Object> result = new HashMap<>();
+        log.info("수정 요청된 FM DTO: " + inspectionFMDTO);
+        try {
+            int updatedRows = inspectionService.updateInspectionFm(inspectionFMDTO);
+            if (updatedRows > 0) {
+                result.put("success", true);
+                result.put("message", "검사 유형이 성공적으로 수정되었습니다.");
+                return new ResponseEntity<>(result, HttpStatus.OK);
+            } else {
+                result.put("success", false);
+                result.put("message", "수정할 항목을 찾을 수 없습니다.");
+                return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.error("Failed to update inspection record: {}", e.getMessage());
+            result.put("success", false);
+            result.put("message", "수정 실패: " + e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/item")
+    public ResponseEntity<Map<String, Object>> updateInspectionItem(@RequestBody InspectionItemDTO inspectionItemDTO) {
+        Map<String, Object> result = new HashMap<>();
+        log.info("수정 요청된 DTO: " + inspectionItemDTO);
+        try {
+            int updatedRows = inspectionService.updateInspectionItem(inspectionItemDTO);
+            if (updatedRows > 0) {
+                result.put("success", true);
+                result.put("message", "검사 항목이 성공적으로 수정되었습니다.");
+                return new ResponseEntity<>(result, HttpStatus.OK);
+            } else {
+                result.put("success", false);
+                result.put("message", "수정할 항목을 찾을 수 없습니다.");
+                return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.error("Failed to update inspection item: {}", e.getMessage());
+            result.put("success", false);
+            result.put("message", "수정 실패: " + e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 	
 	@DeleteMapping("/fm") // DELETE 요청 처리
 	public ResponseEntity<String> deleteInspectionRecords(@RequestBody List<Long> inspectionFMIds) {

@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.quality.dto.InspectionDTO;
+import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
 
@@ -25,9 +26,14 @@ public interface QualityMapper {
  // 공통코드
  List<CommonDetailCodeDTO> findUnits(); // 단위 공통코드를 위한 메서드 추가
  
+ // 기준정보 수정
+ int updateInspectionFm(InspectionFMDTO inspectionFMDTO);
+ int updateInspectionItem(InspectionItemDTO inspectionItemDTO);
+ 
  // 검사결과 등록
  void insertInspection(InspectionDTO inspectionDTO);
  void insertInspectionResult(InspectionResultDTO resultDTO);
+ 
  
  // 검사결과
  List<InspectionResultDTO> getInspectionResultList();
