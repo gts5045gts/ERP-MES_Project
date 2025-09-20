@@ -10,54 +10,57 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Builder
+@ToString
 public class LotDTO {
 
-	// lot_master 기반 입력 필드
 	@NotBlank
 	private String tableName; // 대상 테이블명 (예: MATERIAL, ORDER 등)
 	
 	@NotBlank
-	private String type; // RM, PR, FG, QA 등
+	private String type; // 입고는 RM(row material), 그외 PD(product)
 	
 	@NotBlank
 	private String materialCode; // 자재/품목 코드
 	
-	@Min(0)
-	private Integer qty; // LOT 수량(기본 0 가능)
-	
 	private String machineId; // 생산 LOT이면 설비/라인 ID, 원자재/출하는 null 가능
 	
-	// 다형 참조용: 운반은 String, 저장 시 DB 타입에 맞춰 변환
 	@NotBlank
 	private String targetId; // 각 테이블 PK(문자/숫자 모두 수용)
 	
-	// 시스템 채움 필드
+	@NotBlank
+	private String targetIdValue; // 각 테이블 PK의 값
+	
 	private String lotId; // 생성된 LOT ID(Prefix+날짜+[-machine]+-SEQ)
+	
+	private Long workOrderId;// 작업지시 Id
+	
 	private LocalDateTime createdAt; // 선택: 서비스에서 세팅
 	
 	// 선택 연관 입력
 	private List<MaterialUsageDTO> usages; // 자재 사용 내역(있을 때만 저장)
-	private List<ProcessHistoryDTO> processes; // 공정 이력(있을 때만 저장)
+//	private List<ProcessHistoryDTO> processes; // 공정 이력(있을 때만 저장) //작업지시 참조로 변경
 	
 	@Builder
-	public LotDTO(@NotBlank String tableName, @NotBlank String type, @NotBlank String materialCode, @Min(0) Integer qty,
-			String machineId, @NotBlank String targetId, String lotId, LocalDateTime createdAt,
+	public LotDTO(@NotBlank String tableName, @NotBlank String type, @NotBlank String materialCode,
+			String machineId, @NotBlank String targetId, @NotBlank String targetIdValue, String lotId, Long workOrderId, LocalDateTime createdAt,
 			List<MaterialUsageDTO> usages, List<ProcessHistoryDTO> processes) {
 		this.tableName = tableName;
 		this.type = type;
 		this.materialCode = materialCode;
-		this.qty = qty;
 		this.machineId = machineId;
 		this.targetId = targetId;
+		this.targetIdValue = targetIdValue;
 		this.lotId = lotId;
+		this.workOrderId = workOrderId;
 		this.createdAt = createdAt;
 		this.usages = usages;
-		this.processes = processes;
+//		this.processes = processes;
 	}
 	
 	

@@ -41,8 +41,6 @@ public class Process {
 	@Column(nullable = false, name = "TYPE_NM")
 	private String typeNm;
 
-
-	
 	
 	static public Process fromDTO(ProcessDTO proDTO, CommonDetailCodeRepository repo) {
 		Process pro = new Process();

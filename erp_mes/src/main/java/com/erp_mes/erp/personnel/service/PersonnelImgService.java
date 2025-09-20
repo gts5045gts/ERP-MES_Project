@@ -100,7 +100,7 @@ public class PersonnelImgService {
 		PersonnelImg perImg = personnelImgRepository.findByPersonnel_EmpId(emp.getEmpId())
 				.orElseThrow(() -> new EntityNotFoundException("해당 이미지가 존재하지 않습니다!"));
 		
-		log.info("이미지 정보 불러오기" + perImg.toString());
+//		log.info("이미지 정보 불러오기" + perImg.toString());
 		
 		ResponseEntity<Resource> responseEntity = fileUtils.showImg(PersonnelImgDTO.fromEntity(perImg));
 		return responseEntity;

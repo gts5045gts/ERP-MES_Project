@@ -7,16 +7,19 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
-import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
-import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
+import com.erp_mes.mes.plant.dto.ProcessRouteDTO;
 import com.erp_mes.mes.plant.entity.Equip;
 import com.erp_mes.mes.plant.entity.Process;
-import com.erp_mes.mes.plant.mapper.ProcessMapper;
+import com.erp_mes.mes.plant.mapper.ProcessRouteMapper;
 import com.erp_mes.mes.plant.repository.EquipRepository;
 import com.erp_mes.mes.plant.repository.ProcessRepository;
+import com.erp_mes.mes.pm.dto.ProductDTO;
+import com.erp_mes.mes.pm.mapper.ProductBomMapper;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -25,11 +28,77 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProcessRouteService {
 	
-	final private ProcessMapper proMapper;
+	final private ProcessRouteMapper routeMapper;
 	
 	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessRepository proRepository;
 	final private EquipRepository equipRepository;
+	final private ProductBomMapper productBomMapper;
+	
+	
+	
+	public List<Map<String, Object>> findAll() {
+		
+		List<ProcessRouteDTO> listRoute = routeMapper.findAll();
+		
+		
+		List<Map<String, Object>> routeList = listRoute.stream()
+				.map(dto ->{
+					Map<String, Object> map = new HashMap<>();
+					map.put("routeId", dto.getRouteId());
+					map.put("note", dto.getNote());
+					map.put("productNm", dto.getProductNm());
+					map.put("equipNm", dto.getEquipNm());
+					map.put("proNm", dto.getProNm());
+					return map;
+					})
+				.collect(Collectors.toList());
+				
+		return routeList;
+	}
+
+
+
+	public List<ProductDTO> productList() {
+		List<ProductDTO> productList = productBomMapper.getProductList();
+		log.info("제품 정보 전체조회"  + productList);
+		
+		return productList;
+	}
+
+
+
+	public List<Process> proList() {
+		List<Process> proList = proRepository.findAll();
+		log.info("공정 정보 전체조회"  + proList);
+		return proList;
+	}
+
+
+
+	public List<Equip> equipList() {
+		List<Equip> equipList = equipRepository.findAll();
+		log.info("설비 정보 전체조회"  + equipList);
+		
+		return equipList;
+	}
+
+	@TrackLot(tableName = "processs_routing", pkColumnName = "route_id")
+	public void saveRoute(ProcessRouteDTO routeDTO) {
+		List<ProcessRouteDTO> routeList = routeMapper.findByProductIdAll(routeDTO.getProductId());
+		
+		Long seq =(long)(routeList.size() + 1);
+		routeDTO.setProSeq(seq);
+		
+		
+//      *******로트 생성: pk value 를 넘겨주는 곳 모든 프로세스가 끝나고 입력하면됨**********
+		HttpSession session = SessionUtil.getSession();
+		session.setAttribute("targetIdValue", routeDTO.getRouteId()); //pk_id의 값 입력
+		
+		routeMapper.save(routeDTO);
+	
+
+	}
 	
 	
 	

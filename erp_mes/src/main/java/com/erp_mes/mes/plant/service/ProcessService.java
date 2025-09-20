@@ -16,6 +16,8 @@ import com.erp_mes.mes.plant.entity.Process;
 import com.erp_mes.mes.plant.mapper.ProcessMapper;
 import com.erp_mes.mes.plant.repository.EquipRepository;
 import com.erp_mes.mes.plant.repository.ProcessRepository;
+import com.erp_mes.mes.quality.entity.InspectionFM;
+import com.erp_mes.mes.quality.repository.InspectionFMRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +32,8 @@ public class ProcessService {
 	final private CommonDetailCodeRepository codeRepository;
 	final private ProcessRepository proRepository;
 	final private EquipRepository equipRepository;
+	final private InspectionFMRepository fmRepository;
+	
 	
 	
 	public List<Map<String, Object>> findAll() {
@@ -42,6 +46,7 @@ public class ProcessService {
 					map.put("proNm", dto.getProNm());
 					map.put("typeNm",dto.getTypeNm());
 					map.put("note",dto.getNote());
+					map.put("inspecNm",dto.getInspecNm());
 					return map;
 				})
 		    .collect(Collectors.toList());
@@ -66,12 +71,16 @@ public class ProcessService {
 
 	public void savePro(ProcessDTO proDTO) {
 		log.info("proService에 진입 savePro------------------------------");
+		Long inpecId = (long)4;
+		InspectionFM inspec = fmRepository.findById(inpecId)
+				.orElseThrow(() -> new IllegalArgumentException("해당하는 검사유형이 존재하지 않습니다!!--------------------------"));
 		
+		proDTO.setInspecId(inspec.getInspectionFMId());
 		Process pro = new Process();
 		pro = pro.fromDTO(proDTO, codeRepository);
-
-			proRepository.save(pro);
-			log.info("저장완료!!");
+		
+		proRepository.save(pro);
+		log.info("저장완료!!");
 		
 	}
 

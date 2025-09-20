@@ -19,13 +19,42 @@
 <body>
 <th:block layout:fragment="content">
     <div>
-  <h2 class="mb-4">공정 추가</h2>
+  <h2 class="mb-4">공정 라우팅 추가</h2>
   <!-- form -->
-  <form id="processForm">
+  <form id="routeFrom">
+  
     <div class="row mb-3">
       <div class="col-md-6">
-        <span class="form-label">공정명</span>
-        <input type="text" name="proNm" id="proNm" class="form-control" placeholder="공정명을 입력하세요">
+        <span class="form-label">제품 이름</span>
+        <select name="productId" class="form-select" id="productId">
+          <option value="">제품 이름을 선택하세요</option>
+          <th:block th:each="product :${product}">
+          	<option th:value="${product.productId}" th:text="${product.productName}"></option>
+          </th:block>
+        </select>
+      </div>
+    </div>
+   
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <span class="form-label">공정 이름</span>
+        <select name="proId" class="form-select" id="proId">
+          <option value="">공정 이름을 선택하세요</option>
+          <th:block th:each="proList :${proList}">
+          	<option th:value="${proList.proId}" th:text="${proList.proNm}"></option>
+          </th:block>
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <span class="form-label">필요 설비</span>
+        <select name="equipId" class="form-select" id="equipId">
+          <option value="">필요한 설비를 선택하세요</option>
+          <th:block th:each="equip :${equipList}">
+          	<option th:value="${equip.equipId}" th:text="${equip.equipNm}"></option>
+          </th:block>
+        </select>
       </div>
     </div>
 
@@ -36,21 +65,10 @@
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <span class="form-label">공정 유형</span>
-        <select name="typeNm" class="form-select" id="typeId">
-          <option value="">공정 유형</option>
-          <th:block th:each="comList :${comList}">
-          	<option th:value="${comList.comDtNm}" th:text="${comList.comDtNm}"></option>
-          </th:block>
-        </select>
-      </div>
-    </div>
     
 
     <div class="d-flex justify-content-end mt-4 gap-2">
-      <button type="button" class="btn btn-primary confirmAddBtn" onclick="addProcess()">추가</button>
+      <button type="button" class="btn btn-primary confirmAddBtn" onclick="addRoute()">추가</button>
       <button type="button" class="btn btn-secondary">닫기</button>
     </div>
   </form>
@@ -60,7 +78,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
-          공정을 추가하시겠습니까?
+          라우팅을 추가하시겠습니까?
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary confirmModalBtn" >확인</button>
@@ -90,6 +108,12 @@
 <th:block layout:fragment="script">
 <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
 <script>
+
+
+	document.addEventListener('DOMContentLoaded', function() {
+		alert("공정 순서에 맞게 생성해주세요");
+	});
+
 	document.addEventListener('DOMContentLoaded', function() {
 		const token = $("meta[name='_csrf']").attr("content");
 		const header = $("meta[name='_csrf_header']").attr("content");
@@ -103,27 +127,31 @@
 	
  
  		
- 	function addProcess(){
- 		const processName = document.getElementById('proNm').value;
- 		const processType = document.getElementById('typeId').value;
- 		const processNote = document.getElementById('note').value;
+ 	function addRoute(){
+ 		const product = document.getElementById('productId').value;
+ 		const process = document.getElementById('proId').value;
+ 		const equipment = document.getElementById('equipId').value;
+ 		const proNote = document.getElementById('note').value;
  		
- 		if(!processName){
- 			alert('공정명을 입력해주세요');
+ 		if(!product){
+ 			alert('제품이름 선택 해주세요');
  			return;
- 		}else if(!processNote){
- 			alert('공정설명을 적어주세요');
+ 		}else if(!process){
+ 			alert('공정명을 선택 해주세요');
  			return;
- 		}else if(!processType){
- 			alert('공정타입을 선택 해주세요');
+ 		}else if(!equipment){
+ 			alert('필요한 설비를 선택 해주세요');
+ 			return;
+ 		}else if(!proNote){
+ 			alert('공정 설명을 입력해주세요');
  			return;
  		}
  		
  		
- 		const formData = $('#processForm').serialize();
- 		$.post('/plant/processAdd', formData, function(response){
+ 		const formData = $('#routeFrom').serialize();
+ 		$.post('/plant/routeAdd', formData, function(response){
  			window.opener.location.reload();
- 			alert('공정 정보를 추가합니다');
+ 			alert('라우팅 정보를 추가합니다');
  			window.close();
  			
  		}).fail(function(){
