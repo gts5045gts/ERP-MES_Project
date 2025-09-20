@@ -12,6 +12,7 @@ public class InspectionItemDTO {
     private String materialId;
     private Long proId;
     private Long inspectionFMId; // INSPECTION_FM_ID 검사기준값
+    private String inspectionTypeName;
     private BigDecimal toleranceValue; // 허용 공차
     private String unit;
     

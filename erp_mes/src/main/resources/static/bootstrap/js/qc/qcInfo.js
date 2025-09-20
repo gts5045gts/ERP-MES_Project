@@ -270,14 +270,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // 검사 유형 드롭다운 채우기
-        if (inspectionFMs && inspectionFMs.length > 0) {
-            inspectionFMs.forEach(fm => {
-                const option = document.createElement('option');
-                option.value = fm.inspectionFMId;
-                option.textContent = `${fm.inspectionType} - ${fm.itemName}`;
-                inspectionFMDropdown.appendChild(option);
-            });
-        }
+		const uniqueFMs = new Set();
+		if (inspectionFMs && inspectionFMs.length > 0) {
+		    inspectionFMs.forEach(fm => {
+		        const key = fm.inspectionFMId;
+		        if (!uniqueFMs.has(key)) {
+		            const option = document.createElement('option');
+		            option.value = fm.inspectionFMId;
+		            // inspectionTypeName (이름)과 itemName을 조합하여 표시
+		            option.textContent = `${fm.inspectionTypeName} - ${fm.itemName}`;
+		            inspectionFMDropdown.appendChild(option);
+		            uniqueFMs.add(key);
+		        }
+		    });
+		}
 
         // 단위 드롭다운 채우기
         if (units && units.length > 0) {

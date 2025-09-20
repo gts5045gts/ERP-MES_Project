@@ -74,13 +74,14 @@ public class InspectionController {
 
 	    // 이미 변환된 inspectionFMs 목록을 사용하여 매핑 맵 생성
 	    Map<Long, String> inspectionFmNameMap = inspectionFMs.stream()
-	        .collect(Collectors.toMap(InspectionFMDTO::getInspectionFMId, InspectionFMDTO::getInspectionType));
+	    	    .collect(Collectors.toMap(InspectionFMDTO::getInspectionFMId, InspectionFMDTO::getInspectionTypeName));
+
 
 	    // inspectionItems의 inspectionFMId를 사용하여 이름 찾아와서 매핑
 	    inspectionItems.forEach(item -> {
 	        String typeName = inspectionFmNameMap.get(item.getInspectionFMId());
 	        if (typeName != null) {
-	            item.setInspectionType(typeName);
+	            item.setInspectionTypeName(typeName);
 	        }
 	    });
 	    // UNIT 공통 코드 데이터
