@@ -57,11 +57,12 @@
 									</thead>
 									<tbody>
 										<tr th:each="fm : ${inspectionFMs}"
-											th:data-id="${fm.inspectionFMId}">
-											<td th:text="${fm.inspectionFMId}"></td>
-											<td th:text="${fm.inspectionType}"></td>
+										    th:data-id="${fm.inspectionFMId}"
+										    th:data-type-id="${fm.inspectionType}">
+										    <td th:text="${fm.inspectionFMId}"></td>
+										    <td th:text="${fm.inspectionTypeName}"></td>
 											<td th:text="${fm.itemName}"></td>
-											<td th:text="${fm.methodName}"></td>
+										    <td th:text="${fm.methodName}"></td>
 										</tr>
 									</tbody>
 								</table>

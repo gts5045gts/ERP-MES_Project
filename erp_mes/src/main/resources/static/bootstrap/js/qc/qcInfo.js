@@ -110,21 +110,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 왼쪽 모달이 열릴 때 이벤트
-    $('#inspectionModal').on('show.bs.modal', function() {
-        document.getElementById('record-form').reset();
-        if (currentFmMode === 'update') {
-            inspectionModalLabel.textContent = '검사 유형별 기준 수정';
-            const selectedRow = document.querySelector('#dataTable1 tbody tr.selected');
-            if (selectedRow) {
-                const cells = selectedRow.querySelectorAll('td');
-                document.getElementById('inspectionTypeId').value = cells[1].textContent;
-                document.getElementById('itemName_record').value = cells[2].textContent;
-                document.getElementById('methodName').value = cells[3].textContent;
-            }
-        } else {
-            inspectionModalLabel.textContent = '검사 유형별 기준 등록';
-        }
-    });
+	$('#inspectionModal').on('show.bs.modal', function() {
+	    document.getElementById('record-form').reset();
+	    if (currentFmMode === 'update') {
+	        inspectionModalLabel.textContent = '검사 유형별 기준 수정';
+	        const selectedRow = document.querySelector('#dataTable1 tbody tr.selected');
+	        if (selectedRow) {
+	            // data-type-id 속성에서 ID값을 가져와서 사용
+	            const inspectionTypeId = selectedRow.dataset.typeId;
+	            const itemName = selectedRow.cells[2].textContent;
+	            const methodName = selectedRow.cells[3].textContent;
+
+	            // 폼 필드에 값 채우기
+	            document.getElementById('inspectionTypeId').value = inspectionTypeId;
+	            document.getElementById('itemName_record').value = itemName;
+	            document.getElementById('methodName').value = methodName;
+	        }
+	    } else {
+	        inspectionModalLabel.textContent = '검사 유형별 기준 등록';
+	    }
+	});
     
     // 왼쪽 모달 ('검사 유형별 기준 등록')의 '저장' 버튼 클릭 이벤트
     document.getElementById('saveRecordBtn').addEventListener('click', function() {

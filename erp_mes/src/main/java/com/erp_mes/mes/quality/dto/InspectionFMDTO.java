@@ -12,6 +12,7 @@ import lombok.Setter;
 public class InspectionFMDTO {
     private Long inspectionFMId;
     private String inspectionType;
+    private String inspectionTypeName;
     private String itemName;
     private String methodName;
     

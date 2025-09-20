@@ -65,7 +65,7 @@ public class InspectionController {
 	    inspectionFMs.forEach(fm -> {
 	        String typeName = qcTypeMap.get(fm.getInspectionType());
 	        if (typeName != null) {
-	            fm.setInspectionType(typeName);
+	            fm.setInspectionTypeName(typeName);
 	        }
 	    });
 	    
