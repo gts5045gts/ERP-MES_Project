@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
-				{ header: '수주 번호', name: 'orderId', align: 'center' },
+				{ header: '수주번호', name: 'orderId', align: 'center' },
 				{ header: '거래처 번호', name: 'clientId', align: 'center' },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
@@ -575,7 +575,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				selectedItemsContainer.appendChild(itemDiv);
 
 				// remove 버튼 이벤트
-				itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => {
+				itemDiv.querySelector('.remove-item-btn').addEventListener('click', (event) => {
+					event.preventDefault();
+					event.stopPropagation();
 					removeItem(item.productId);
 				});
 
@@ -623,10 +625,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	window.removeItem = (productId) => {
 		// TUI Grid에서 해당 체크박스 해제
 		if (productListGrid) {
-			const row = productListGrid.getData().find(item => item.productId === productId);
-			if (row) {
-				const rowKey = productListGrid.getIndexOfRow(row);
-				if (rowKey != null) productListGrid.uncheck(rowKey);
+			const gridData = productListGrid.getData();
+			const rowKey = gridData.findIndex(item => item.productId === productId);
+			if (rowKey !== -1) {
+				// TUI Grid의 이벤트 리스너가 다시 호출되지 않도록 `false`를 두 번째 인자로 전달합니다.
+			    productListGrid.uncheck(rowKey, false); 
 			}
 		}
 

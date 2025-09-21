@@ -36,20 +36,20 @@ public interface OrderMapper {
 	// 수주 상세 목록
 	List<OrderDetailDTO> getOrderDetailsByOrderId(@Param("orderId")String orderId);
 
+// 수주 상태 취소, update====
 	// 수주 상태 조회
 	String findOrderStatus(String orderId);
-
-	// 수주 상태 update
     void updateOrderStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
     void updateOrderDetailsStatus(@Param("orderId") String orderId, @Param("orderStatus") String orderStatus);
+ //==================   
     
+// 수주 수정 update =======    
     void updateOrder(OrderDTO orderDTO);  
-    
     void deleteOrderDetails(String orderId);
-    
     // 한번의 수행에 여러 건의 OrderDetailDTO insert 
     void insertOrderDetails(List<OrderDetailDTO> items);
-
+// ==================
+    
 	int updateOrderDetailStatus();
 
 	

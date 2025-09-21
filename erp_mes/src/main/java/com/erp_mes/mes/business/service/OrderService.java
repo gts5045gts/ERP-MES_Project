@@ -94,6 +94,7 @@ public class OrderService {
         orderMapper.updateOrderDetailsStatus(orderId, "CANCELED");
     }
 	
+	// 수주 수정
 	@Transactional
     public void updateOrder(OrderDTO orderDTO) {
 		
@@ -117,7 +118,7 @@ public class OrderService {
     }
 	
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	// 수주 목록의 상태를 '생산중'으로 업데이트 생산계획 서비스에서 호출 해줘야함.
+	// 수주 목록의 상태를 '생산중'으로 업데이트. 생산계획 서비스에서 호출 해줘야함.
     public void updateOrderStatusToInProduction(String orderId) {
         orderMapper.updateOrderStatus(orderId, "INPRODUCTION");
     }

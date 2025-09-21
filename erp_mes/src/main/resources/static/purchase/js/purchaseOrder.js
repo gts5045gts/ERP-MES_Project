@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						switch (value.value) {
 							case 'REQUEST':
 								color = 'blue';
-								statusText = '신청';
+								statusText = '요청';
 								break;
 							case 'CANCELED':
 								color = 'red';
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						switch (value.value) {
 							case 'REQUEST':
 								color = 'blue';
-								statusText = '신청';
+								statusText = '요청';
 								break;
 							case 'CANCELED':
 								color = 'red';
@@ -245,6 +245,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 						purchaseGrid.setValue(ev.rowKey, 'purchaseStatus', 'CANCELED');
 						alert("발주가 취소되었습니다.");
+						
+						loadPurchaseDetails(purchaseId);
 					} catch (err) {
 						console.error("발주 취소 실패:", err);
 						alert("발주 취소 실패: " + err.message);
@@ -330,14 +332,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 발주 등록 모달창 - 자재 리스트 불러오기
 	function loadMaterialsForModal() {
+		return new Promise((resolve, reject) => {
 		fetch("/purchase/api/materials")
 			.then(response => response.json())
 			.then(data => {
 				if (materialListGrid) {
 					materialListGrid.resetData(data);
+					// TUI Grid의 데이터 로딩이 완료된 후 resolve
+					resolve(data);
+				} else {
+				    reject(new Error("materialListGrid가 초기화되지 않았습니다."));
 				}
 			})
-			.catch(error => console.error("자재 목록 불러오기 오류:", error));
+			.catch(error => {
+				console.error("자재 목록 불러오기 오류:", error)
+				reject(error)
+			});
+		});
 	}
 
 	//--------------------------------------------------------------------------------------
@@ -421,29 +432,38 @@ document.addEventListener("DOMContentLoaded", () => {
 			try {
 				const gridData = materialListGrid.getData();
 				materialListGrid.uncheckAll();
+						
+				const initialSelectedMaterials = []; // 초기 선택 품목 배열을 별도로 만들어줌
 
-				const toCheckRowKeys = [];
+				// editMaterials를 순회하며 그리드에서 일치하는 품목을 찾고, 체크 및 배열에 추가
 				editMaterials.forEach(material => {
-					const idx = gridData.findIndex(r => r.materialId === material.materialId);
-					if (idx >= 0) {
-						toCheckRowKeys.push(idx);
+					const rowIndex = gridData.findIndex(r => r.materialId === material.materialId);
+					if (rowIndex !== -1) {
+						// TUI Grid의 이벤트 리스너를 트리거하지 않도록 `check` 함수를 바로 호출
+						// `false`를 두 번째 인자로 넘겨 이벤트 발생을 막을 수 잇음
+						materialListGrid.check(rowIndex, false);
+								
+						// 초기 선택 품목 배열에 데이터를 추가
+						const gridRow = materialListGrid.getRowAt(rowIndex);
+						initialSelectedMaterials.push({
+							...gridRow,
+							qty: material.purchaseQty, 
+							price: material.purchasePrice 
+						});
 					}
 				});
-
-				toCheckRowKeys.forEach(rk => materialListGrid.check(rk));
-
-				selectedMaterials = editMaterials.map(material => {
-					const gridMaterial = gridData.find(g => g.materialId === material.materialId);
-					return {
-						...gridMaterial,
-						qty: material.purchaseQty
-					};
-				});
+						
+				// 최종적으로 selectedMaterials를 초기 선택 품목 배열로 설정
+				selectedMaterials = initialSelectedMaterials;
+						
+				// 우측 목록 렌더링
 				renderSelectedMaterials();
+
 			} catch (err) {
-				console.error('발주 상세 조회 실패', err);
+				purchaseAddModal.hide();
+				alert("발주 수정 정보를 불러오는 데 실패했습니다.");
 			}
-		} else {
+		} else { // 신규 등록 모드인 경우
 			selectedMaterials = [];
 			renderSelectedMaterials();
 		}
@@ -541,8 +561,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				materialDiv.innerHTML = materialHtml;
 				selectedMaterialsContainer.appendChild(materialDiv);
 
-				materialDiv.querySelector('.remove-material-btn').addEventListener('click', () => {
-					removeMaterial(material.materialId);
+				materialDiv.querySelector('.remove-material-btn').addEventListener('click', (event) => {
+				    event.preventDefault();
+				    event.stopPropagation();
+				    // 해당 버튼에 연결된 materialId를 찾아 removeMaterial 함수에 전달
+				    removeMaterial(material.materialId); 
 				});
 
 				total += price * initialQty;
@@ -582,16 +605,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	window.removeMaterial = (materialId) => {
-		if (materialListGrid) {
-			const row = materialListGrid.getData().find(material => material.materialId === materialId);
-			if (row) {
-				const rowKey = materialListGrid.getIndexOfRow(row);
-				if (rowKey != null) materialListGrid.uncheck(rowKey);
-			}
-		}
+		if (!materialListGrid) return;
 
+    	// 1. materialListGrid에서 해당 품목의 rowKey를 찾고 uncheck
+    	// `getRowAt` 대신 `getData`와 `findIndex`를 사용하여 행을 찾도록 수정
+    	const gridData = materialListGrid.getData();
+    	const rowKey = gridData.findIndex(r => r.materialId === materialId);
+
+    	if (rowKey !== -1) {
+       		// TUI Grid의 이벤트 리스너가 다시 호출되지 않도록 `false`를 인자로 전달
+       	 	materialListGrid.uncheck(rowKey, false); 
+    	}
+		
+		// 2. selectedMaterials 배열에서 해당 품목 제거
 		selectedMaterials = selectedMaterials.filter(material => material.materialId !== materialId);
-
+		
+		// 3. 발주 자재 목록 렌더링
 		renderSelectedMaterials();
 	};
 
@@ -643,7 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		if (materials.length === 0) {
-			alert("하나 이상의 품목을 선택해주세요.");
+			alert("하나 이상의 자재를 선택해주세요.");
 			return;
 		}
 

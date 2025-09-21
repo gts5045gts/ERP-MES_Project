@@ -13,13 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
-import com.erp_mes.mes.business.dto.OrderDTO;
-import com.erp_mes.mes.business.dto.OrderDetailDTO;
-import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.purchase.service.PurchaseService;
@@ -37,7 +33,7 @@ public class PurchaseController {
 		this.purchaseService = purchaseService;
 	}
 
-	// 수주 화면
+	// 발주 화면
 	@GetMapping("purchaseOrder")
 	public String order() {
 
@@ -93,33 +89,47 @@ public class PurchaseController {
 		return purchaseService.getPurchaseDetailsByOrderId(purchaseId);
 	}
 	
-//	// 발주 단건 조회 -> 발주 수정 모달창에서 발주 등록 때 입력했던 데이터값 가져오기 위해
-//	@GetMapping("/api/purchase/{purchaseId}")
-//	@ResponseBody
-//	public ResponseEntity<?> getPurchase(@PathVariable("purchaseId") String purchaseId) {
-//		PurchaseDTO purchase = purchaseService.getPurchaseById(purchaseId);
-//		if (purchase == null) {
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//					.body("해당 발주를 찾을 수 없습니다.");
-//		}
-//		return ResponseEntity.ok(purchase);
-//	}
+	// 발주 단건 조회 -> 발주 수정 모달창에서 발주 등록 때 입력했던 데이터값 가져오기 위해
+	@GetMapping("/api/purchase/{purchaseId}")
+	@ResponseBody
+	public ResponseEntity<?> getPurchase(@PathVariable("purchaseId") String purchaseId) {
+		PurchaseDTO purchase = purchaseService.getPurchaseById(purchaseId);
+		if (purchase == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body("해당 발주를 찾을 수 없습니다.");
+		}
+		return ResponseEntity.ok(purchase);
+	}
 	
-//	// 발주 수정
-//	@PutMapping("/api/purchase/{purchaseId}")
-//    public ResponseEntity<?> updateOrder(@PathVariable("purchaseId") String purchaseId, @RequestBody PurchaseDTO purchaseDTO) {
-//    	log.info("updateOrder body: {}", purchaseDTO); 
-//    	purchaseDTO.setPurchaseId(purchaseId);
-//        
-//     // items 안에도 orderId 세팅
-//        if (purchaseDTO.getItems() != null) {
-//            orderDTO.getItems().forEach(item -> item.setOrderId(orderId));
-//        }
-//        
-//        orderService.updateOrder(orderDTO);
-//        
-//        return ResponseEntity.ok(Map.of("orderId", orderId, "message", "수주 수정이 완료되었습니다."));
-//
-//    }
+	// 발주 수정
+	@PutMapping("/api/purchase/{purchaseId}")
+    public ResponseEntity<?> updatePurchase(@PathVariable("purchaseId") String purchaseId, @RequestBody PurchaseDTO purchaseDTO) {
+    	log.info("updatePurchase body: {}", purchaseDTO); 
+    	purchaseDTO.setPurchaseId(purchaseId);
+        
+    	// materials 안에도 materialId 세팅
+        if (purchaseDTO.getMaterials() != null) {
+            purchaseDTO.getMaterials().forEach(material -> material.setPurchaseId(purchaseId));
+        }
+        
+        purchaseService.updatePurchase(purchaseDTO);
+        
+        return ResponseEntity.ok(Map.of("purchaseId", purchaseId, "message", "발주 수정이 완료되었습니다."));
+
+    }
+	
+	// 발주 취소 
+    @PutMapping("/api/purchase/{purchaseId}/cancel")
+    public ResponseEntity<?> cancelPurchase(@PathVariable("purchaseId") String purchaseId) {
+        try {
+        	purchaseService.cancelPurchase(purchaseId);
+            return ResponseEntity.ok(Map.of("purchaseId", purchaseId, "newStatus", "CANCELED"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("발주 취소 실패");
+        }
+    }
 	
 }

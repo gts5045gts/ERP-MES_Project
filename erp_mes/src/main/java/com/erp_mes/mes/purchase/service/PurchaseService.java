@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.purchase.mapper.PurchaseMapper;
@@ -68,9 +67,47 @@ public class PurchaseService {
 	}
 
 	// 발주 수정 모달창에서 기존 발주 데이터 조회
-//	public PurchaseDTO getPurchaseById(String purchaseId) {
-//		
-//		return purchaseMapper.getPurchaseById(purchaseId);
-//	}
+	public PurchaseDTO getPurchaseById(String purchaseId) {
+		
+		return purchaseMapper.getPurchaseById(purchaseId);
+	}
+	
+	// 발주 수정
+	@Transactional
+    public void updatePurchase(PurchaseDTO purchaseDTO) {
+		
+        // purchase 테이블 업데이트
+		purchaseMapper.updatePurchase(purchaseDTO);
+       
+        // 기존 purchase_detail 삭제 (전체 삭제 후 재등록)
+		purchaseMapper.deletePurchaseDetails(purchaseDTO.getPurchaseId());
+        
+        // 새로운 orders_detail 재등록
+        List<PurchaseDetailDTO> materials = purchaseDTO.getMaterials();
+        if (materials != null && !materials.isEmpty()) {
+             int seq = 1;
+             for (PurchaseDetailDTO material : materials) {
+            	 material.setPurchaseId(purchaseDTO.getPurchaseId());
+            	 material.setId(seq);
+                 purchaseMapper.insertPurchaseDetail(material);
+                 seq++;
+             }
+        }
+    }
+	
+	// 발주 취소 처리
+	@Transactional
+	public void cancelPurchase(String purchaseId) {
+	    String currentStatus = purchaseMapper.findPurchaseStatus(purchaseId);
 
+	    if ("CANCELED".equals(currentStatus)) {
+	        throw new IllegalArgumentException("이미 취소된 발주입니다.");
+	    }
+
+	    purchaseMapper.updatePurchaseStatus(purchaseId, "CANCELED");
+	        
+	    // 해당 수주에 속한 모든 수주 상세 목록(orders_detail)의 상태를 'CANCELED'로 업데이트
+	    purchaseMapper.updatePurchaseDetailsStatus(purchaseId, "CANCELED");
+	    }
+	
 }

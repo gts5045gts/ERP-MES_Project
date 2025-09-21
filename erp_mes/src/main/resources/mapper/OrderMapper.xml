@@ -4,29 +4,29 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.business.mapper.OrderMapper">
 
-<resultMap id="orderWithDetailsMap" type="com.erp_mes.mes.business.dto.OrderDTO">
-    <result property="orderId" column="order_id"/>
-    <result property="clientId" column="client_id"/>
-    <result property="clientName" column="client_name"/>
-    <result property="empId" column="emp_id"/>
-    <result property="empName" column="emp_name"/>
-    <result property="orderDate" column="order_date"/>
-    <result property="deliveryDate" column="delivery_date"/>
-    <result property="totalOrderQty" column="total_order_qty"/>
-    <result property="totalOrderPrice" column="total_order_price"/>
-    <result property="orderStatus" column="order_status"/>
+	<resultMap id="orderWithDetailsMap" type="com.erp_mes.mes.business.dto.OrderDTO">
+    	<result property="orderId" column="order_id"/>
+    	<result property="clientId" column="client_id"/>
+    	<result property="clientName" column="client_name"/>
+    	<result property="empId" column="emp_id"/>
+    	<result property="empName" column="emp_name"/>
+    	<result property="orderDate" column="order_date"/>
+    	<result property="deliveryDate" column="delivery_date"/>
+    	<result property="totalOrderQty" column="total_order_qty"/>
+    	<result property="totalOrderPrice" column="total_order_price"/>
+    	<result property="orderStatus" column="order_status"/>
 
     <!-- items 매핑 -->
-    <collection property="items" ofType="com.erp_mes.mes.business.dto.OrderDetailDTO">
-        <result property="orderId" column="order_id"/>
-        <result property="id" column="id"/>
-        <result property="productId" column="product_id"/>
-        <result property="productName" column="product_name"/>
-        <result property="unit" column="unit"/>
-        <result property="orderQty" column="order_qty"/>
-        <result property="orderPrice" column="order_price"/>
-    </collection>
-</resultMap>
+    	<collection property="items" ofType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+        	<result property="orderId" column="order_id"/>
+        	<result property="id" column="id"/>
+        	<result property="productId" column="product_id"/>
+        	<result property="productName" column="product_name"/>
+        	<result property="unit" column="unit"/>
+        	<result property="orderQty" column="order_qty"/>
+        	<result property="orderPrice" column="order_price"/>
+    	</collection>
+	</resultMap>
 
 <!--  	수주 수정 모달창에 기존 값 불러오기 -->
 	<select id="getOrderById" parameterType="string" resultMap="orderWithDetailsMap">
@@ -53,20 +53,20 @@
 	</select>
 
 <!-- 전체 orders 개수 가져오기 -->
-  <select id="countOrders" resultType="int">
+  	<select id="countOrders" resultType="int">
   		SELECT 
   			COUNT(*)
   		FROM 
   			orders
-  </select>
+  	</select>
   
 <!-- clientId 조회 (client_name 기준) -->
-  <select id="findClientIdByName" parameterType="string" resultType="string">
-    SELECT client_id FROM client WHERE client_name = #{clientName, jdbcType=VARCHAR}
-  </select>
+  	<select id="findClientIdByName" parameterType="string" resultType="string">
+    	SELECT client_id FROM client WHERE client_name = #{clientName, jdbcType=VARCHAR}
+  	</select>
 
 <!-- 주문(orders) insert -->
-  <insert id="insertOrder" parameterType="com.erp_mes.mes.business.dto.OrderDTO">
+  	<insert id="insertOrder" parameterType="com.erp_mes.mes.business.dto.OrderDTO">
   		INSERT INTO orders (
         	order_id, 
         	client_id, 
@@ -93,7 +93,7 @@
 	</insert>
 
 <!-- 수주 상세 (orders_detail) insert -->
-  <insert id="insertOrderDetail" parameterType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+  	<insert id="insertOrderDetail" parameterType="com.erp_mes.mes.business.dto.OrderDetailDTO">
     	INSERT INTO orders_detail (
     		order_id,
     		id,
@@ -115,7 +115,7 @@
     		SYSDATE,
     		SYSDATE
     )
-  </insert>
+  	</insert>
 
 <!-- 	수주 등록 모달창에 필요한 품목 리스트 -->
 	<select id="getAllProduct" resultType="com.erp_mes.mes.pm.dto.ProductDTO">
