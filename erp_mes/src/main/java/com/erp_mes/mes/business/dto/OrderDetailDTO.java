@@ -23,4 +23,6 @@ public class OrderDetailDTO {
 	private Integer totalPrice;			// 수주 상세 목록에서 총금액(= 수량*단가)
 	private LocalDateTime createAt;
 	private LocalDateTime updateAt;
+	
+	private Integer stockQty; // 출하에서 필요
 }
