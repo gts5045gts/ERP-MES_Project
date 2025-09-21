@@ -41,8 +41,8 @@ public class LotMaterialUsage {
 	@JoinColumn(name = "child_lot_id", referencedColumnName = "lot_id", nullable = false)
 	private LotMaster childLot;
 
-//	@Column(name = "qty_used", nullable = false)
-//	private Integer qtyUsed;
+	@Column(name = "qty_used", nullable = false)
+	private Integer qtyUsed;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)

@@ -11,15 +11,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.erp_mes.erp.config.util.SessionUtil;
-import com.erp_mes.erp.config.util.TableMetadataManager;
-import com.erp_mes.erp.config.util.TableMetadataManager.TableInfo;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
-import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -65,6 +61,8 @@ public class LotAOP {
 			
 			if (obj != null) {
 				
+				Boolean linkParent = false;
+				Boolean createLot = true;
 				Object materialType = null;
 				Object parentLotId = null;
 				String tableName = trackLot.tableName().toUpperCase();
@@ -80,12 +78,14 @@ public class LotAOP {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
 				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
-//				    		String key = entry.getKey();
 					        materialType = entry.getValue();	
 				    	}
 				    	if(entry.getKey().equals("LOT_ID")){
-//				    		String key = entry.getKey();
 					        parentLotId = entry.getValue();	
+				    	}
+				    	
+				    	if(entry.getKey().equals("ROUTE_ID")){
+				    		Object routeId = entry.getValue();	
 				    	}
 				    }
 				}
@@ -95,7 +95,11 @@ public class LotAOP {
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				
 				//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
+				//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
+				//input (입고) 테이블에서 입고완료된 자재의 pk 값을 저장할 필드가 추가로 필요함(김우성)
 				if (parentLotId != null) {
+					
+					linkParent = true;
 					
 					usages = new ArrayList<MaterialUsageDTO>();
 					MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
@@ -116,10 +120,12 @@ public class LotAOP {
 //				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
-			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, true, false);
+			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-			 	if(!tableName.equals("MATERIAL_TYPE")){
-			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
+			 	//일단 전부 다 넣음
+			 	lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
+			 	if(!tableName.equals("MATERIAL")){
+//			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
 		    	}
 			}
 			
