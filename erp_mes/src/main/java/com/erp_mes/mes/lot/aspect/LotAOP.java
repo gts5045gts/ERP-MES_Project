@@ -14,6 +14,7 @@ import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.service.LotService;
+import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
 import jakarta.servlet.http.HttpSession;
@@ -27,26 +28,9 @@ import lombok.extern.log4j.Log4j2;
 public class LotAOP {
 
 	private final LotService lotService;
-
-//	@AfterReturning(pointcut = "execution(* com.erp_mes.mes..service.*Service.*(com.erp_mes.mes.lot.dto.LotDTO))", returning = "targetId")
-	public void LotTraceAspect(JoinPoint joinPoint, Object targetId) throws Throwable {
-//		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
-//		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
-
-		Object arg = joinPoint.getArgs()[0]; // 첫번째 인자가 LotDTO 고정일 때
-
-		if (arg instanceof LotDTO lotDTO) {
-
-			if (targetId instanceof String) {
-				lotDTO.setTargetId((String) targetId); // targetId 세팅
-			}
-			// 비즈니스 처리(LOT 생성·연관 저장)는 서비스 메서드가 담당
-//			String lotId = lotService.createLotWithRelations(lotDTO);
-//			lotDTO.setLotId(lotId);// LOT ID 생성 및 저장
-		}
-	}
+	private final LotUsageService lotUsageService;
 	
-//	프로세스별 일관성이 없고 예외사항때문에 변경함
+//	프로세스별 예외사항이 많아서 db조회 방식으로 변경함
 	@Around("@annotation(trackLot)")
 	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
 		
@@ -68,6 +52,7 @@ public class LotAOP {
 				String tableName = trackLot.tableName().toUpperCase();
 				String targetId = trackLot.pkColumnName();
 				String targetIdValue = (String) obj;
+				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				
 				List<Map<String, Object>> tableInfo = lotService.getTargetInfo(tableName, targetId, targetIdValue);
 				
@@ -80,32 +65,34 @@ public class LotAOP {
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
 				    	}
-				    	if(entry.getKey().equals("LOT_ID")){
-					        parentLotId = entry.getValue();	
-				    	}
+//						기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
+//						기존 lot가져와서 parentLotId에 넣음
+//				    	if(entry.getKey().equals("LOT_ID")){
+//					        parentLotId = entry.getValue();	
+//				    	}
 				    	
 				    	if(entry.getKey().equals("ROUTE_ID")){
-				    		Object routeId = entry.getValue();	
+				    		Object routeId = entry.getValue();
+				    		
+				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
+							//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
+							//input (입고) 테이블에서 입고완료된 자재의 pk 값을 저장할 필드가 추가로 필요함(김우성)
+				    		
+				    		//work_order 테이블이 넘어오면 이걸하나의 공정으로 보고
+				    		//childLotId로 지정하고 lotId를 생성해서 work_order에 최초업데이트한다.
+				    		//process_routing또는 어떤값으로 실재 재고 테이블
+				    		//input 테이블에서 lot_id를 가져와서 parentId로 지정
+				    		
+				    		usages = lotUsageService.getMaterialLotsForWorkOrder(routeId); //가져오는 dto로 변경하면됨
+				    	    
+							MaterialUsageDTO usage = MaterialUsageDTO.builder()
+													.parentLotId((String) parentLotId) // 자재 lotID
+//													.qtyUsed(0)
+													.build();
+							usages.add(usage);
+							linkParent = true;
 				    	}
 				    }
-				}
-				
-//				log.info("materialType===="+ materialType);
-				
-				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
-				
-				//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
-				//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
-				//input (입고) 테이블에서 입고완료된 자재의 pk 값을 저장할 필드가 추가로 필요함(김우성)
-				if (parentLotId != null) {
-					
-					linkParent = true;
-					
-					usages = new ArrayList<MaterialUsageDTO>();
-					MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
-											.parentLotId((String) parentLotId) // 이전 기록 LOT ID
-											.build();
-					usages.add(usage1);	
 				}
 				
 				LotDTO lotDTO = LotDTO
@@ -123,9 +110,9 @@ public class LotAOP {
 			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
 			 	//일단 전부 다 넣음
-			 	lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
-			 	if(!tableName.equals("MATERIAL")){
-//			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
+//			 	if(!tableName.equals("MATERIAL")){
+		 		if(createLot){
+			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
 		    	}
 			}
 			

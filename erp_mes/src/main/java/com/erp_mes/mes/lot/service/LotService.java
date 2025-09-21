@@ -88,7 +88,7 @@ public class LotService {
 		            LotMaterialUsage usage = LotMaterialUsage.builder()
 		                .parentLot(parentLot)
 		                .childLot(childLot)
-		                .createdAt(LocalDateTime.now())
+//		                .createdAt(LocalDateTime.now())
 		                .build();
 		            usageRepository.save(usage);
 		        }
@@ -112,7 +112,7 @@ public class LotService {
 		    
 			
 		} catch (Exception e) {
-			log.error("traceLot 처리 중 예외 발생222222222222222", e);
+			log.error("lot생성 처리 중 예외 발생", e);
 			throw e;
 		}
 	    
@@ -135,12 +135,6 @@ public class LotService {
 	    } else {
 	        return String.format("%s%s-%03d", prefix, datePart, nextSeq);
 	    }
-	}
-
-	public String registWareHouse(LotDTO lotDTO) {
-
-//		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
-		return "PRD002";
 	}
 
 	//targetTable 조회
