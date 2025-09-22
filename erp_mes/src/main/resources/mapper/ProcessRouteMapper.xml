@@ -18,6 +18,7 @@
     <result property="proNm" column="pro_nm"/>
     <result property="equipId" column="equip_id"/>
     <result property="equipNm" column="equip_nm"/>
+    <result property="lineId" column="line_id"/>
 
 </resultMap>
 
@@ -53,33 +54,11 @@
 	</select>
 	<select id="findByProductIdAll" resultMap="ProcessRouteMap">
 		SELECT 
-			r.route_id,
-			r.pro_seq,
-			r.note,
-			
-			p.pro_id,
-			p.pro_nm,
-			e.equip_id,
-			e.equip_nm,
-			d.product_id,
-			d.product_name
-		FROM 
-			process_routing r
-		LEFT JOIN
-			process p 
-		ON 
-			r.pro_id = p.pro_id
-		LEFT JOIN 
-			equipment e
-		ON 
-			r.equip_id = e.equip_id
-		LEFT JOIN
-			product d
-		ON
-			r.product_id = d.product_id
-		ORDER BY 
-			r.pro_seq ASC
-			
+			*
+		FROM
+			process_routing
+		where 
+			product_id = #{productId}	 	
 	</select>
 	
 	
@@ -98,11 +77,11 @@
 	    
 	    insert into process_routing 
 	    (
-	        route_id, pro_seq, note, product_id, pro_id, equip_id
+	        route_id, pro_seq, note, product_id, pro_id, equip_id, line_id
 	    )
 	    values 
 	    (
-	        #{routeId}, #{proSeq}, #{note}, #{productId}, #{proId}, #{equipId}
+	        #{routeId}, #{proSeq}, #{note}, #{productId}, #{proId}, #{equipId}, #{lineId}
 	    )
 	</insert>
 	

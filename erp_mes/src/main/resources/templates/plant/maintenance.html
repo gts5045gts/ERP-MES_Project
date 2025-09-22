@@ -19,8 +19,81 @@
     <div class="container-fluid">
     	
     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
+    	<button id="openModalBtn" class="btn btn-primary btn-sm" style="float:right;">모달창</button>
 		<div id="grid"></div>
-	
+		
+		
+		<!-- 모달 -->
+		<div class="modal fade" id="dataModal" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      
+		      <!-- 모달 헤더 -->
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="dataModalLabel">설비 수리이력 등록</h5>
+		      </div>
+		      
+		      <!-- 모달 바디 -->
+		      <div class="modal-body">
+		        <form id="dataForm">
+		          <div class="mb-3">
+		            <label for="proNm" class="form-label">설비 선택</label>
+		            <select name="equipId" class="form-select" id="equipId">
+			        	<option value="">설비를 선택하세요</option>
+			        	<th:block th:each="equip :${equipList}">
+			          		<option th:value="${equip.equipId}" th:text="${equip.equipNm}"></option>
+			          	</th:block>
+			        </select>
+		          </div>
+		          <div class="row mb-3">
+			      	<div class="col-12">
+			        	<span class="form-label">수리 시작일</span>
+			        	<input type="date" name="startDt" class="form-control" id="startDt">
+			      	</div>
+			    </div>
+			    <div class="row mb-3">
+			      <div class="col-12">
+			        <span class="form-label">수리 종료일</span>
+			        <input type="date" name="endDt" class="form-control" id="endDt" />
+			      </div>
+			    </div>
+			    <div class="row mb-3">
+			      <div class="col-12">
+			        <span class="form-label">수리 사유</span>
+			        <textarea name="note" class="form-control" id="note"  rows="3"></textarea>
+			      </div>
+			    </div>
+		        </form>
+		      </div>
+		      
+		      <!-- 모달 푸터 -->
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" id="closeBtn">닫기</button>
+		        <button type="submit" id="saveBtn" class="btn btn-primary">저장</button>
+		      </div>
+		      
+		    </div>
+		  </div>
+		</div>
+		<!-- 모달 -->
+		<div class="modal fade" id="dataModal2" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      
+		      <!-- 모달 헤더 -->
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="dataModalLabel">수리 상세내역</h5>
+		      </div>
+		      
+		      <!-- 모달 바디 -->
+		      <div class="modal-body">
+		        <div id="grid2"></div>
+		      </div>
+		      
+		      
+		    </div>
+		  </div>
+		</div>
 
 
    
@@ -29,14 +102,22 @@
 </th:block>
 
 <th:block layout:fragment="script">
+<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+<!--  <script th:src="@{/bootstrap/js/plant/equip_fix.js}"></script>	 -->
+<!--  <script th:src="@{/bootstrap/js/plant/equip_fix_detail.js}"></script>	 -->
  <script>
- const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
- const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
- 
+ document.addEventListener('DOMContentLoaded', function() {
+		const token = $("meta[name='_csrf']").attr("content");
+		const header = $("meta[name='_csrf_header']").attr("content");
+		const equipList = /*[[${equipList}]]*/ [];
+		$(document).ajaxSend(function(e, xhr, options) {
+			if (token && header) {
+				xhr.setRequestHeader(header, token);
+			}
+		});
 	 
-	 document.addEventListener('DOMContentLoaded', function() {
         // 그리드 초기화
-      
+     
         const grid = new tui.Grid({
           el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
           scrollX: false,
@@ -69,24 +150,95 @@
             grid.resetData(data);
           })
           .catch(err => console.error('fetch error:', err));
-        });
         
-	 
-	 
-	 // 팝업으로 창 띄우기
-	 function addProcess(){
-		 var url = '/plant/fix_newForm';
-		 window.open(url, "popup", "width=830,height=450");
-	 }
+       
+        const grid2 = new tui.Grid({
+	   	     el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
+	   	     scrollX: false,
+	   	     scrollY: false,
+	   	     columns: [
+	   	       { header: '수리 시작일', name: 'startDt' },	
+	   	       { header: '수리 종료일', name: 'endDt' },	
+	   	       { header: '수리 사유', name: 'note' },
+	   	     ],
+	   		});
+        
+        
+        });
+ 
+ 
+//  모달창 제어 
+ $(document).ready(function(){
+	 	const form = $('#dataForm');
+		const modalEl = document.getElementById("dataModal");
+		const modalEl2 = document.getElementById("dataModal2");
+		const openBtn = document.getElementById("openModalBtn");
+		const myModal = new bootstrap.Modal(modalEl);
+		const myModal2 = new bootstrap.Modal(modalEl2);
+		
+		openBtn.addEventListener("click", function () {
+			myModal.show();
+		});
+		$("#saveBtn").on("click", function(e){
+			const equipId = $('#equipId');
+	 		const fixNote = $('#note');
+	 		const startDt = $('#startDt');
+	 		const endDt = $('#endDt')
+	 		
+	 		if(!equipId.val()){
+	 			alert('설비를 선택해 주세요 ');
+	 			equipId.focus();
+	 			return;
+	 		}else if(!startDt.val()){
+	 			alert('수리 시작일을 선택 해주세요');
+	 			startDt.focus();
+	 			return;
+	 		}else if(!endDt.val()){
+	 			alert('수리 종료일을 선택 해주세요');
+	 			endDt.focus();
+	 			return;
+	 		}else if(!fixNote.val()){
+	 			alert('수리 사유를 입력해주세요');
+	 			fixNote.focus();
+	 			return;
+	 		}
+	 		const formData = form.serialize();
+	 		$.post('/plant/fixAdd', formData, function(response){
+	 			 alert('저장이 완료되었습니다.');
+			      // 모달 닫기
+				 myModal.hide();
+			      // 폼 초기화
+			     location.reload()
+			     form.reset();
+	 		}).fail(function(){
+	 			alert('전송 오류가 발생 했습니다.');
+	 		});
+		});
+		
+		
 	 
 	 $(document).on('click', '#btnHistory', function() {
-		let btnVal = $(this).data('id');
-		let url = '/plant/fix_history?equipId=' + btnVal;
-		window.open(url, "popup", "width=830,height=450");
+		let equipId = $(this).data('id');
+		 myModal2.show();		
+		
+		$.get('/plant/fix_history', { equipId: equipId }, function(response){
+				grid2.resetData(response);
+				
+		}).fail(function(){
+			alert('전송 오류가 발생 했습니다.');
+		});
 
 		
 	 });
-        
+	 $("#closeBtn1").on("click", function(e){
+			e.preventDefault();
+			myModal.hide();
+	 });
+	 $("#closeBtn2").on("click", function(e){
+			e.preventDefault();
+			myModal.hide();
+	 });
+ });
     </script>
 </th:block>
 </body>

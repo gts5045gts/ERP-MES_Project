@@ -43,13 +43,18 @@ public class ProcessController {
 	
 	//공정 관리 페이지
 	@GetMapping("/process")
-	public String process() {
-		log.info("완성");
+	public String process(Model model) {
+		log.info("완성");	
+		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
+		
+		
+		
+		model.addAttribute("comList", comList);
 		
 		
 		return "/plant/process";
 	}
-	@GetMapping("/process_newForm")
+/*	@GetMapping("/process_newForm")		모달창으로 변경으로 인해 필요 없음
 	public String process_newFrom(Model model) {
 		
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
@@ -60,7 +65,7 @@ public class ProcessController {
 		
 		return "/plant/process_newForm";
 	}
-	
+	*/
 	
 	
 	//요청 부분
@@ -77,7 +82,7 @@ public class ProcessController {
 	@ResponseBody
 	@PostMapping("/processAdd")
 	public ResponseEntity<String> processAdd(ProcessDTO proDTO){
-		log.info("설비 데이터를 전송합니다." + proDTO);
+		log.info("공정 데이터를 전송합니다." + proDTO + "-------------------------------------------");
 		
 		proService.savePro(proDTO);
 		
@@ -87,15 +92,19 @@ public class ProcessController {
 	
 	//설비 및 이력 관리 페이지-------------------------------------------------------
 	@GetMapping("/equipment")
-	public String equipment() {
+	public String equipment(Model model) {
+		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
 		
+																																																																																																																							
+		
+		model.addAttribute("comList", comList);
 		
 		
 		
 		return "/plant/equipment";
 	}
 	
-	
+	/* 		모달창으로 변경
 	@GetMapping("/equip_newForm")
 	public String equip_newForm(Model model) {
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
@@ -106,15 +115,19 @@ public class ProcessController {
 		
 		return "/plant/equip_newForm";
 	}
-	
+	*/
 	@GetMapping("/maintenance")
 	public String equip_fix(Model model) {
+		List<Equip> equipList = proService.equipAll();
 		
+		
+		
+		model.addAttribute("equipList", equipList);
 		
 		
 		return "/plant/maintenance";
 	}
-	
+	/* 모달창으로 변경
 	@GetMapping("/fix_newForm")
 	public String equip_Fix(Model model) {
 		List<Equip> equipList = proService.equipAll();
@@ -124,18 +137,15 @@ public class ProcessController {
 		model.addAttribute("equipList", equipList);
 		
 		return "/plant/fix_newForm";
-	}
-	
+	}*/
+	@ResponseBody
 	@GetMapping("/fix_history")
-	public String fix_history(Model model,
+	public List<Map<String, Object>> fix_history(Model model,
 							@RequestParam("equipId")String equipId) {
 		
 		List<Map<String, Object>> equipList = equipService.findById(equipId);
 		
-		
-		model.addAttribute("equipList", equipList);
-		
-		return "/plant/fix_history";
+		return equipList;
 	}
 	
 	

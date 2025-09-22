@@ -95,6 +95,7 @@
 
 <th:block layout:fragment="script">
 <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+
 <script>
 	document.addEventListener('DOMContentLoaded', function() {
 		const token = $("meta[name='_csrf']").attr("content");
@@ -110,7 +111,6 @@
  
  		
  	function addFix(){
- 		alert("w");
  		const equipId = document.getElementById('equipId').value;
  		const fixNote = document.getElementById('note').value;
  		const startDt = document.getElementById('startDt').value;

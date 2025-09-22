@@ -90,7 +90,17 @@ public class ProcessRouteService {
 		Long seq =(long)(routeList.size() + 1);
 		routeDTO.setProSeq(seq);
 		
-		
+		//Line_id 생성------------------------------
+		String productId = routeDTO.getProductId();  
+
+	    // 끝 3자리 추출
+	    String lastThree = productId.substring(productId.length() - 3);
+
+	    // 라인 아이디 생성
+	    String lineId = "LINE" + lastThree;
+	    
+	    routeDTO.setLineId(lineId);
+	    
 //      *******로트 생성: pk value 를 넘겨주는 곳 모든 프로세스가 끝나고 입력하면됨**********
 		HttpSession session = SessionUtil.getSession();
 		session.setAttribute("targetIdValue", routeDTO.getRouteId()); //pk_id의 값 입력
