@@ -81,7 +81,7 @@ public class ProcessController {
 		
 		proService.savePro(proDTO);
 		
-		return ResponseEntity.ok("success");
+		return ResponseEntity.ok("success");		//리퀘스트 요청 후 성공 여부
 	}
 	
 	
