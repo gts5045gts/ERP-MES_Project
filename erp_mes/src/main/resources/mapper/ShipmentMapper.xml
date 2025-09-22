@@ -15,14 +15,16 @@
 		 	order_status = 'RECEIVED' OR order_status = 'INPRODUCTION'
 	</select>
 	
-	<select id="getOrderDetailWithStock" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+	<select id="getOrderDetailWithStockAndStatus" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
         SELECT
             od.order_id,
             od.product_id,
             od.product_name,
+            od.order_detail_status AS orderDetailStatus,
             COALESCE(wi.stockQty, 0) AS stockQty,	-- 서브쿼리에서 계산된 총 재고량 
             od.order_qty,
-            od.order_qty AS shipmentQty				-- 출하수량
+            (od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS remainingQty, -- 남은 출하 수량 계산
+    		(od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS shipmentQty -- 출하수량(남은 수량으로 초기화)
         FROM
             orders_detail od
         LEFT JOIN (
@@ -34,9 +36,37 @@
         	GROUP BY
         		product_id
         ) wi ON od.product_id = wi.product_id
+        LEFT JOIN (
+    		SELECT
+        		s.order_id,
+        		sd.product_id,
+        		SUM(sd.shipment_qty) AS total_shipped_qty
+    		FROM
+        		shipment_detail sd
+        	JOIN
+        		shipment s ON sd.shipment_id = s.shipment_id
+    		GROUP BY
+        		s.order_id, sd.product_id
+		) sd ON od.order_id = sd.order_id AND od.product_id = sd.product_id
         WHERE
-        	od.order_id = #{orderId}
+        	od.order_id = #{orderId} AND od.order_detail_status != 'COMPLETION'
     </select>
+    
+    <select id="getWarehouseItemsByProductId" resultType="com.erp_mes.mes.business.dto.WarehouseItemDTO">
+        SELECT *
+        FROM warehouse_item 
+        WHERE product_id = #{productId} 
+        ORDER BY item_amount DESC
+    </select>
+    
+    <update id="updateWarehouseItemAmount">
+        UPDATE 
+            warehouse_item 
+        SET 
+            item_amount = item_amount - #{amount} 
+        WHERE 
+            manage_id = #{manageId}
+    </update>
     
 <!-- 전체 shipment 개수 가져오기 -->
   	<select id="countShipment" resultType="int">

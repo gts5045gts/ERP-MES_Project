@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			columns: [
 				{ header: '출하번호', name: 'shipmentId', align: 'center' },
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center' },
+				{ header: '거래처 번호', name: 'clientId', align: 'center', width: 90},
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
@@ -235,52 +235,52 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// 모달창에서 수주 상세 목록 불러오기
-	//	function loadOrderDetailGrid(orderId) {
-	//		fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
-	//			.then(response => {
-	//				if (!response.ok) {
-	//					throw new Error('네트워크 응답이 올바르지 않습니다.');
-	//				}
-	//				return response.json();
-	//			})
-	//			.then(data => {
-	//				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
-	//				const gridData = data.map(item => ({
-	//					...item,
-	//					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
-	//					shipmentQty: item.orderQty
-	//				}));
-	//
-	//				if (orderDetailGrid) {
-	//					// 수정된 데이터 배열로 그리드를 업데이트
-	//					orderDetailGrid.resetData(gridData);
-	//				}
-	//			})
-	//			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
-	//	}
-
-	async function loadOrderDetailGrid(orderId, existingShipmentId = null) {
-		try {
-			let url = `/business/api/shipment/ordersDetailRemaining?orderId=${encodeURIComponent(orderId)}`;
-			if (existingShipmentId) {
-				url += `&shipmentId=${encodeURIComponent(existingShipmentId)}`;
-			}
-
-			const response = await fetch(url);
-			if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
-
-			const data = await response.json();
-			const gridData = data.map(item => ({
-				...item,
-				shipmentQty: item.orderQty // 초기 출하 수량 세팅
-			}));
-
-			if (orderDetailGrid) orderDetailGrid.resetData(gridData);
-
-		} catch (err) {
-			console.error("수주 상세 목록 불러오기 오류:", err);
+		function loadOrderDetailGrid(orderId) {
+			fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('네트워크 응답이 올바르지 않습니다.');
+					}
+					return response.json();
+				})
+				.then(data => {
+					// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
+					const gridData = data.map(item => ({
+						...item,
+						// 여기서 서버의 orderQty 값을 shipmentQty에 할당
+						shipmentQty: item.orderQty
+					}));
+	
+					if (orderDetailGrid) {
+						// 수정된 데이터 배열로 그리드를 업데이트
+						orderDetailGrid.resetData(gridData);
+					}
+				})
+				.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
 		}
-	}
+
+//	async function loadOrderDetailGrid(orderId, existingShipmentId = null) {
+//		try {
+//			let url = `/business/api/shipment/ordersDetailRemaining?orderId=${encodeURIComponent(orderId)}`;
+//			if (existingShipmentId) {
+//				url += `&shipmentId=${encodeURIComponent(existingShipmentId)}`;
+//			}
+//
+//			const response = await fetch(url);
+//			if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
+//
+//			const data = await response.json();
+//			const gridData = data.map(item => ({
+//				...item,
+//				shipmentQty: item.orderQty // 초기 출하 수량 세팅
+//			}));
+//
+//			if (orderDetailGrid) orderDetailGrid.resetData(gridData);
+//
+//		} catch (err) {
+//			console.error("수주 상세 목록 불러오기 오류:", err);
+//		}
+//	}
 
 
 	//--------------------------------------------------------------------------------------
@@ -314,10 +314,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				rowHeaders: ['checkbox'],
 				bodyHeight: 280,
 				columns: [
-					{ header: '수주번호', name: 'orderId', align: 'center', width: 145 },
-					{ header: '거래처', name: 'clientName', align: 'center', width: 170 },
+					{ header: '수주번호', name: 'orderId', align: 'center', width: 140 },
+					{ header: '거래처', name: 'clientName', align: 'center', width: 100 },
 					{
-						header: '수주일', name: 'orderDate', align: 'center', width: 140,
+						header: '수주일', name: 'orderDate', align: 'center', width: 100,
 						formatter: function(value) {
 							if (value.value) {
 								return value.value.split('T')[0]; // T 문자를 기준으로 날짜만 추출
@@ -325,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
 							return value.value;
 						}
 					},
-					{ header: '납품요청일', name: 'deliveryDate', align: 'center', width: 140 },
+					{ header: '납품요청일', name: 'deliveryDate', align: 'center', width: 100 },
 				],
 				columnOptions: {
 					resizable: true
@@ -378,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				rowHeaders: ['checkbox'],
 				columns: [
 					{ header: '수주번호', name: 'orderId', align: 'center', width: 140 },
-					{ header: '품목번호', name: 'productId', align: 'center' },
+//					{ header: '품목번호', name: 'productId', align: 'center' },
 					{ header: '품목명', name: 'productName', align: 'center' },
 					{ header: '재고량', name: 'stockQty', align: 'center' },
 					{ header: '수주수량', name: 'orderQty', align: 'center' },
@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				const gridData = data.map(item => ({
 					...item,
 					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
-					shipmentQty: item.orderQty
+					shipmentQty: item.remainingQty
 				}));
 
 				allDetails = allDetails.concat(gridData);
@@ -462,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 체크박스 상태 복원
 		orderDetailGrid.getData().forEach((row, idx) => {
-			if (prevCheckedMap[`${row.orderId}_${row.productName}`]) {
+			if (prevCheckedMap[`${row.orderId}_${row.id}`]) {
 				orderDetailGrid.check(idx);
 			}
 		});

@@ -25,4 +25,5 @@ public class OrderDetailDTO {
 	private LocalDateTime updateAt;
 	
 	private Integer stockQty; // 출하에서 필요
+	private int remainingQty;
 }

@@ -13,6 +13,7 @@ import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.business.dto.ShipmentDTO;
 import com.erp_mes.mes.business.dto.ShipmentDetailDTO;
+import com.erp_mes.mes.business.dto.WarehouseItemDTO;
 import com.erp_mes.mes.business.mapper.ShipmentMapper;
 
 import lombok.extern.log4j.Log4j2;
@@ -31,9 +32,9 @@ public class ShipmentService {
 		return shipmentMapper.getStatusOrder();
 	}
 	
-	public List<OrderDetailDTO> getOrderDetail(String orderId) {
-        // product_id로 product 테이블의 quantity값 가져오는 것도 포함
-        return shipmentMapper.getOrderDetailWithStock(orderId);
+	public List<OrderDetailDTO> getOrderDetailWithStockAndStatus(String orderId) {
+        // product_id로 product 테이블의 quantity값 가져오는 것도 포함 + order_detail_status가 COMPLETION이 아닌 것들만 목록 조회
+        return shipmentMapper.getOrderDetailWithStockAndStatus(orderId);
     }
 	
 	@Transactional
@@ -74,9 +75,9 @@ public class ShipmentService {
         int seq = 1;
         for (ShipmentDetailDTO detail : details) {
         	// 출하 수량이 수주 수량을 초과했는지 유효성 검사
-            if (detail.getShipmentQty() > detail.getOrderQty()) {
-                throw new IllegalArgumentException("출하수량이 수주수량을 초과했습니다: 품목 " + detail.getProductName());
-            }
+//            if (detail.getShipmentQty() > detail.getOrderQty()) {
+//                throw new IllegalArgumentException("출하수량이 수주수량을 초과했습니다: 품목 " + detail.getProductName());
+//            }
 
             detail.setShipmentId(shipmentDTO.getShipmentId());
             detail.setOrderId(shipmentDTO.getOrderId());
@@ -87,11 +88,16 @@ public class ShipmentService {
             if (detail.getShipmentQty() == 0) {
                 detail.setShipmentDetailStatus("NOTSHIPPED");
                 allItemsShipped = false;
-            } else if (detail.getShipmentQty() < detail.getOrderQty()) { 
-                detail.setShipmentDetailStatus("PARTIAL");
-                allItemsShipped = false;
             } else {
-                detail.setShipmentDetailStatus("COMPLETION");
+            	// 재고 차감 
+                deductStock(detail.getProductId(), detail.getShipmentQty());
+                
+                if (detail.getShipmentQty() < detail.getOrderQty()) { 
+                    detail.setShipmentDetailStatus("PARTIAL");
+                    allItemsShipped = false;
+                } else {
+                    detail.setShipmentDetailStatus("COMPLETION");
+                }
             }
 
             shipmentMapper.insertShipmentDetail(detail);
@@ -115,11 +121,44 @@ public class ShipmentService {
         return shipmentDTO.getShipmentId();
 	}
 
+	private void deductStock(String productId, int shipmentQty) {
+        // 재고가 많은 순서대로 재고 품목을 가져옴
+        List<WarehouseItemDTO> warehouseItems = shipmentMapper.getWarehouseItemsByProductId(productId);
+        
+        int remainingQtyToDeduct = shipmentQty;
+        
+        for (WarehouseItemDTO item : warehouseItems) {
+            if (remainingQtyToDeduct <= 0) {
+                break;
+            }
+            
+            int currentStock = item.getItemAmount();
+            int deductAmount;
+            
+            if (currentStock >= remainingQtyToDeduct) {
+                deductAmount = remainingQtyToDeduct;
+                remainingQtyToDeduct = 0;
+            } else {
+                deductAmount = currentStock;
+                remainingQtyToDeduct -= currentStock;
+            }
+            
+            // 재고 업데이트
+            shipmentMapper.updateWarehouseItemAmount(item.getManageId(), deductAmount);
+        }
+        
+        if (remainingQtyToDeduct > 0) {
+            throw new IllegalArgumentException("재고가 부족합니다. 출하하려는 수량만큼의 재고를 확보할 수 없습니다.");
+        }
+    }	
+	
+	// 모든 출하 목록
 	public List<ShipmentDTO> getAllShipment() {
 		
 		return shipmentMapper.getAllShipment();
 	}
-
+	
+	// 선택한 출하에 대한 상세 목록
 	public List<ShipmentDetailDTO> getShipmentDetailsByShipmentId(String shipmentId) {
 		
 		return shipmentMapper.getShipmentDetailsByShipmentId(shipmentId);
@@ -156,5 +195,6 @@ public class ShipmentService {
 
 	    return shipmentId;
 	}
+	
 	
 }

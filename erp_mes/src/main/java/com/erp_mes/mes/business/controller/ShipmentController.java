@@ -58,7 +58,7 @@ public class ShipmentController {
 	@GetMapping("/api/shipment/ordersDetail")
 	@ResponseBody
 	public List<OrderDetailDTO> getOrderDetail(@RequestParam("orderId") String orderId) {
-		return shipmentService.getOrderDetail(orderId);
+		return shipmentService.getOrderDetailWithStockAndStatus(orderId);
 	}
 
 	// 출하 등록
@@ -111,7 +111,6 @@ public class ShipmentController {
         String updatedShipmentId = shipmentService.addShipmentDetails(shipmentId, newDetails);
         return ResponseEntity.ok(updatedShipmentId);
     }
-	
 	
 	
 }
