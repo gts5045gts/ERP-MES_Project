@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.service.StockService;
 import com.erp_mes.mes.stock.service.WareService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -186,6 +189,7 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
+	@TrackLot(tableName = "WAREHOUSE_ID", pkColumnName = "MANAGE_ID")
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -197,6 +201,9 @@ public class WareController {
 	            item.put("empId", principal.getName());
 	            item.put("batchId", batchId);
 	            wareService.addInput(item);
+	            
+	            HttpSession session = SessionUtil.getSession();
+//	            session.setAttribute("targetIdValue", item); //pk_id의 값 입력
 	        }
 	        
 	        result.put("success", true);
@@ -206,6 +213,9 @@ public class WareController {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
+	    
+	    
+        
 	    return result;
 	}
 
