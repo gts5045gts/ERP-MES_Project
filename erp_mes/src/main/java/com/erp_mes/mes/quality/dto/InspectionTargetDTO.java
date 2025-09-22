@@ -19,11 +19,13 @@ public class InspectionTargetDTO {
     private String inspectionTypeName;  // 검사유형 이름 (예: '수입검사')
 
     // 출처를 구분하기 위한 필드
-    private String targetSource; // 'WorkOrder' 또는 'Receiving'
+    private String targetSource; // 'WorkOrder'
 
     // 검사 등록 시 필요한 추가 필드
     private String productId;   // WORK_ORDER에서 가져옴
     private Long processId;     // WORK_ORDER에서 가져옴
-    private String materialId;  // RECEIVING에서 가져옴
+    private String materialId;  // INPUT테이블
     private String empId;       // WORK_ORDER에서 가져옴
+    private String processName; 
+    private String equipName;  
 }
