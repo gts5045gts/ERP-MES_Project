@@ -3,6 +3,7 @@ package com.erp_mes.mes.lot.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
+import com.erp_mes.mes.lot.mapper.LotMapper;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
@@ -36,6 +38,8 @@ public class LotService {
 
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
+	private final LotMapper lotMapper;
+	
 	@PersistenceContext
     private EntityManager entityManager;
 
@@ -63,7 +67,6 @@ public class LotService {
 		            .tableName(lotDTO.getTableName())
 		            .type(prefix)
 		            .materialCode(lotDTO.getMaterialCode())
-//		            .qty(lotQty)
 		            .machineId(machineId)
 		            .createdAt(LocalDateTime.now())
 		            .build();
@@ -88,7 +91,7 @@ public class LotService {
 		            LotMaterialUsage usage = LotMaterialUsage.builder()
 		                .parentLot(parentLot)
 		                .childLot(childLot)
-		                .qtyUsed(0)
+		                .qtyUsed(usageDTO.getQtyUsed())
 		                .createdAt(LocalDateTime.now())
 		                .build();
 		            usageRepository.save(usage);
@@ -174,6 +177,17 @@ public class LotService {
         nativeQuery.setParameter("targetIdValue", targetIdValue);
         nativeQuery.setParameter("lot_id", LotId);
         nativeQuery.executeUpdate();
+	}
+
+	public List<LotDTO> getLotTrackingList(int page, int size) {
+		
+		int offset = page * size;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("offset", offset);
+        params.put("size", size);
+		
+		return lotMapper.lotListWithPaged(params);
 	}
 
 }

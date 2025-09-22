@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.erp_mes.mes.lot.mapper.LotMapper">
+  <select id="lotListWithPaged" resultType="com.erp_mes.mes.lot.dto.LotDTO">
+  	SELECT
+  		l.lot_id,
+	    w.result_id      	AS resultId,
+	    w.good_qty       	AS goodQty,
+	    w.defect_qty     	AS defectQty,
+	    w.updated_at     	AS updatedAt,
+	    w.created_at     	AS createdAt,
+	    
+	    b.quantity 			AS quantity,
+	    
+	    o.work_order_id  	AS workOrderId,
+	    o.work_order_status AS workOrderStatus,
+	    pr.equip_id         AS equipmentId,
+	    pr.pro_id     		AS processId,	
+	    
+	    e.equip_nm       	AS equipmentNm,
+
+	    p.pro_nm         	AS processNm
+	    
+	FROM lot_master l
+	LEFT JOIN work_result w ON l.lot_id = w.lot_id
+	LEFT JOIN work_order o ON w.work_order_id = o.work_order_id
+	LEFT JOIN bom b ON o.bom_id = b.bom_id
+    LEFT JOIN process_routing pr ON o.line_id = pr.line_id      
+    LEFT JOIN equipment e ON pr.equip_id = e.equip_id         
+    LEFT JOIN process p ON pr.pro_id = p.pro_id
+    where l.type = 'FG'
+	ORDER BY l.lot_id ASC
+	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
+  </select>
+  </mapper>
