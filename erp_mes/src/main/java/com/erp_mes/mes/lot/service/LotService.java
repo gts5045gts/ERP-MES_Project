@@ -88,7 +88,8 @@ public class LotService {
 		            LotMaterialUsage usage = LotMaterialUsage.builder()
 		                .parentLot(parentLot)
 		                .childLot(childLot)
-//		                .createdAt(LocalDateTime.now())
+		                .qtyUsed(0)
+		                .createdAt(LocalDateTime.now())
 		                .build();
 		            usageRepository.save(usage);
 		        }

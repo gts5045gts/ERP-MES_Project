@@ -32,11 +32,11 @@ public class LotController {
 
 	@GetMapping("/test")
 	@ResponseBody
-	@TrackLot(tableName = "work_order", pkColumnName = "work_order_id")
+	@TrackLot(tableName = "work_result", pkColumnName = "work_order_id")
 	public String testLotTrack() {
 		
 		HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", "3"); //pk_id의 값 입력
+        session.setAttribute("targetIdValue", "4"); //pk_id의 값 입력
 		return "ok";
 	}
 	

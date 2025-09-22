@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -49,8 +48,8 @@ public class LotAOP {
 				Boolean createLot = true;
 				Object materialType = null;
 				Object parentLotId = null;
-				String tableName = trackLot.tableName().toUpperCase();
-				String targetId = trackLot.pkColumnName();
+				String tableName = trackLot.tableName().trim().toUpperCase();
+				String targetId = trackLot.pkColumnName().trim();
 				String targetIdValue = (String) obj;
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				
@@ -71,8 +70,8 @@ public class LotAOP {
 //					        parentLotId = entry.getValue();	
 //				    	}
 				    	
-				    	if(entry.getKey().equals("ROUTE_ID")){
-				    		Object routeId = entry.getValue();
+				    	if(entry.getKey().equals("IN_ID")){
+				    		Object inId = entry.getValue();
 				    		
 				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
 							//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
@@ -82,12 +81,13 @@ public class LotAOP {
 				    		//childLotId로 지정하고 lotId를 생성해서 work_order에 최초업데이트한다.
 				    		//process_routing또는 어떤값으로 실재 재고 테이블
 				    		//input 테이블에서 lot_id를 가져와서 parentId로 지정
+				    		//중복으로 들어올경우?
 				    		
-				    		usages = lotUsageService.getMaterialLotsForWorkOrder(routeId); //가져오는 dto로 변경하면됨
+				    		parentLotId = lotUsageService.getInputLotId(inId);
 				    	    
 							MaterialUsageDTO usage = MaterialUsageDTO.builder()
 													.parentLotId((String) parentLotId) // 자재 lotID
-//													.qtyUsed(0)
+													.qtyUsed(0)
 													.build();
 							usages.add(usage);
 							linkParent = true;
@@ -109,7 +109,6 @@ public class LotAOP {
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
 			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-			 	//일단 전부 다 넣음
 //			 	if(!tableName.equals("MATERIAL")){
 		 		if(createLot){
 			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);

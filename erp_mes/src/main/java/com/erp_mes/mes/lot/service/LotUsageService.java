@@ -1,10 +1,7 @@
 package com.erp_mes.mes.lot.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
-import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 
 import jakarta.transaction.Transactional;
@@ -19,10 +16,14 @@ public class LotUsageService {
 
 	private final LotMaterialUsageRepository usageRepository;
 
-	public List<MaterialUsageDTO> getMaterialLotsForWorkOrder(Object routeId) {
+	public String getInputLotId(Object inId) {
 		
+		String lotId = usageRepository.findByLotId((String) inId);
+		if (lotId == null) {
+		       throw new IllegalArgumentException("lotId가 없습니다.");
+		}
 		
-		return null;
+		return lotId;
 	}
 	
 }
