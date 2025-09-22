@@ -48,6 +48,30 @@
 		FROM COMMON_DT_CODE
 		WHERE COM_ID = 'UNIT'
 	</select>
+	
+    <update id="updateInspectionFm" parameterType="com.erp_mes.mes.quality.dto.InspectionFMDTO">
+        UPDATE INSPECTION_FM
+        SET
+            INSPECTION_TYPE = #{inspectionType},
+            ITEM_NAME = #{itemName},
+            METHOD_NAME = #{methodName}
+        WHERE
+            INSPECTION_FM_ID = #{inspectionFMId}
+    </update>
+
+    <update id="updateInspectionItem" parameterType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+        UPDATE INSPECTION_ITEM
+        SET
+            INSPECTION_FM_ID = #{inspectionFMId},
+            TOLERANCE_VALUE = #{toleranceValue},
+            UNIT = #{unit},
+            <if test="materialId != null">MATERIAL_ID = #{materialId},</if>
+            <if test="materialId == null">MATERIAL_ID = NULL,</if>
+            <if test="proId != null">PRO_ID = #{proId}</if>
+            <if test="proId == null">PRO_ID = NULL</if>
+        WHERE
+            ITEM_ID = #{itemId}
+    </update>
 
 	<delete id="deleteItems">
 		DELETE FROM INSPECTION_ITEM
@@ -58,7 +82,6 @@
 		</foreach>
 	</delete>
 
-	<!-- 검사완료이력 리스트 -->
 	<select id="getInspectionResultList"
 		resultType="com.erp_mes.mes.quality.dto.InspectionResultDTO">
 		SELECT
@@ -91,53 +114,95 @@
 		ORDER BY T2.INSPECTION_DATE DESC
 	</select>
 
-	<!--검사 대기 목록 -->
-	<select id="getInspectionTargets"
-		resultType="com.erp_mes.mes.pm.dto.WorkOrderDTO">
-		SELECT
-		T1.WORK_ORDER_ID AS workOrderId,
-		T1.WORK_ORDER_STATUS AS workOrderStatus,
-		T1.LOT_ID AS lotId,
-		T1.EMP_ID AS empId,
-		T2.PLAN_QUANTITY AS planQuantity,
-		T3.PRO_ID AS processId,
-		T3.PRODUCT_ID AS productId,
-		T4.PRODUCT_NAME AS productName,
-		T5.PRO_NM AS processName,
-		T6.EMP_NAME AS empName,
-		T7.INSPECTION_TYPE AS inspectionType,
-		T8.COM_DT_NM AS inspectionTypeName
-		FROM WORK_ORDER T1
-		LEFT JOIN PRODUCT_PLAN T2 ON
-		T1.PLAN_ID = T2.PLAN_ID
-		LEFT JOIN PROCESS_ROUTING T3 ON T1.ROUTE_ID =
-		T3.ROUTE_ID
-		LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
-		LEFT
-		JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
-		LEFT JOIN EMPLOYEE T6 ON
-		T1.EMP_ID = T6.EMP_ID
-		LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID
-		= T7.INSPECTION_FM_ID
-		LEFT JOIN COMMON_DT_CODE T8 ON T7.INSPECTION_TYPE
-		= T8.COM_DT_ID AND T8.COM_ID = 'QC'
-		WHERE T1.WORK_ORDER_STATUS IN
-		('대기중', '검사대기')
-	</select>
+<select id="getIncomingInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+    SELECT
+        T1.IN_ID AS targetId,
+        T2.MATERIAL_NAME AS targetName,
+        T1.LOT_ID AS lotId,
+        T1.IN_COUNT AS quantity,
+        T3.INSPECTION_TYPE AS inspectionType,
+        'Incoming' AS targetSource,  T1.IN_STATUS AS remarks,
+        T2.MATERIAL_ID AS materialId
+    FROM INPUT T1
+    LEFT JOIN MATERIAL T2 ON T1.MATERIAL_ID = T2.MATERIAL_ID
+    LEFT JOIN INSPECTION_FM T3 ON T2.INSPECTION_FM_ID = T3.INSPECTION_FM_ID
+    WHERE T1.IN_STATUS = '입고대기' AND T1.MATERIAL_ID IS NOT NULL
+</select>
 
-	<!-- 검사기준 조회 -->
-	<select id="findInspectionItemsByProductId"
-		parameterType="String"
-		resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
-		SELECT
-		T1.TOLERANCE_VALUE,
-		T1.UNIT,
-		T2.ITEM_NAME,
-		T2.METHOD_NAME
-		FROM INSPECTION_ITEM T1
-		LEFT JOIN INSPECTION_FM T2 ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
-		WHERE T1.PRODUCT_ID = #{productId};
-	</select>
+<select id="getProcessInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+    SELECT
+        T1.WORK_ORDER_ID AS targetId,
+        T4.PRODUCT_NAME AS targetName,
+        T1.LOT_ID AS lotId,
+        T2.PLAN_QUANTITY AS quantity,
+        T7.INSPECTION_TYPE AS inspectionType,
+        'WorkOrder' AS targetSource,  T1.WORK_ORDER_STATUS AS remarks,
+        T3.PRODUCT_ID AS productId,
+        T3.PRO_ID AS processId,
+        T1.EMP_ID AS empId
+    FROM WORK_ORDER T1
+    LEFT JOIN PRODUCT_PLAN T2 ON T1.PLAN_ID = T2.PLAN_ID
+    LEFT JOIN PROCESS_ROUTING T3 ON T1.ROUTE_ID = T3.ROUTE_ID
+    LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
+    LEFT JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
+    LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID = T7.INSPECTION_FM_ID
+    WHERE T1.WORK_ORDER_STATUS = '검사대기'
+</select>
+
+<select id="getPackagingInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+    SELECT
+        T1.WORK_ORDER_ID AS targetId,
+        T4.PRODUCT_NAME AS targetName,
+        T1.LOT_ID AS lotId,
+        T2.PLAN_QUANTITY AS quantity,
+        T7.INSPECTION_TYPE AS inspectionType,
+        'WorkOrder' AS targetSource,  T1.WORK_ORDER_STATUS AS remarks,
+        T3.PRODUCT_ID AS productId,
+        T3.PRO_ID AS processId,
+        T1.EMP_ID AS empId
+    FROM WORK_ORDER T1
+    LEFT JOIN PRODUCT_PLAN T2 ON T1.PLAN_ID = T2.PLAN_ID
+    LEFT JOIN PROCESS_ROUTING T3 ON T1.ROUTE_ID = T3.ROUTE_ID
+    LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
+    LEFT JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
+    LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID = T7.INSPECTION_FM_ID
+    WHERE T1.WORK_ORDER_STATUS = '포장검사'
+</select>
+	
+<select id="findInspectionItemsByMaterialId"
+    parameterType="Long"
+    resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+    SELECT
+        T1.ITEM_ID,
+        T1.TOLERANCE_VALUE,
+        T1.UNIT,
+        T2.ITEM_NAME,
+        T2.METHOD_NAME,
+        T2.INSPECTION_TYPE AS inspectionType,
+        T3.SPEC AS standardValue 
+    FROM INSPECTION_ITEM T1
+    LEFT JOIN INSPECTION_FM T2 ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
+    LEFT JOIN MATERIAL T3 ON T1.MATERIAL_ID = T3.MATERIAL_ID
+    WHERE T1.MATERIAL_ID = #{materialId}
+</select>
+	
+<select id="findInspectionItemsByProcessId"
+    parameterType="Long"
+    resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
+    SELECT
+        T1.ITEM_ID,
+        T1.TOLERANCE_VALUE,
+        T1.UNIT,
+        T2.ITEM_NAME,
+        T2.METHOD_NAME,
+        T2.INSPECTION_TYPE AS inspectionType,
+        T4.SPEC AS standardValue
+    FROM INSPECTION_ITEM T1
+    LEFT JOIN INSPECTION_FM T2 ON T1.INSPECTION_FM_ID = T2.INSPECTION_FM_ID
+    LEFT JOIN PROCESS_ROUTING T3 ON T1.PRO_ID = T3.PRO_ID
+    LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
+    WHERE T1.PRO_ID = #{processId}
+</select>
 
 	<insert id="insertInspection"
 		parameterType="com.erp_mes.mes.quality.dto.InspectionDTO">
@@ -154,7 +219,6 @@
 		)
 	</insert>
 
-	<!-- 검사결과 저장 -->
 	<insert id="insertInspectionResult"
 		parameterType="com.erp_mes.mes.quality.dto.InspectionResultDTO">
 		INSERT INTO INSPECTION_RESULT (
@@ -169,8 +233,5 @@
 		SET work_order_status = '작업완료'
 		WHERE work_order_id = #{workOrderId}
 	</update>
-
-
-
 
 </mapper>
