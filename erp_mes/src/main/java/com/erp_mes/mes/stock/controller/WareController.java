@@ -201,9 +201,6 @@ public class WareController {
 	            item.put("batchId", batchId);
 	            
 	            String inId = wareService.addInput(item);
-	            // 이 부분 삭제! Service에서 이미 처리함
-	            // HttpSession session = SessionUtil.getSession();
-	            // session.setAttribute("targetIdValue", inId);
 	        }
 	        
 	        result.put("success", true);
