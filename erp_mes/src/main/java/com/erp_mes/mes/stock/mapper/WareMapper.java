@@ -197,6 +197,14 @@ public interface WareMapper {
 
 	 // 재고 포함 완제품 목록 조회  
 	 List<Map<String, Object>> selectProductsWithStock();
+	 
+	 List<Map<String, Object>> selectOutputBatches(@Param("date") String date);
+	 
+	// 배치별 출고 상세 목록 조회
+	 List<Map<String, Object>> selectOutputListByBatch(@Param("batchId") String batchId);
+
+	 // 배치 목록 조회 (파라미터 맵 방식)
+	 List<Map<String, Object>> selectOutputBatches(Map<String, Object> params);
     
     // ==================== 기초 데이터 조회 ====================
     

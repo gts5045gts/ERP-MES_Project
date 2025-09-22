@@ -412,19 +412,19 @@ public class WareService {
             item.put("outId", outId);
             item.put("batchId", batchId);
             item.put("empId", empId);
-            item.put("outType", "출고완료"); 
+            item.put("outType", "출고완료");
 
             String productId = (String) item.get("productId");
             Integer outCount = Integer.parseInt(item.get("outCount").toString());
 
-            // Material/Product 구분 처리
+            // Material/Product 구분 처리 수정
             boolean isMaterial = wareMapper.checkIsMaterial(productId);
             if(isMaterial) {
                 item.put("materialId", productId);
-                item.put("productId", "");
+                item.put("productId", null);  // 빈 문자열 대신 null
             } else {
                 item.put("productId", productId);
-                item.put("materialId", "");
+                item.put("materialId", null);  // 빈 문자열 대신 null
             }
 
             if(!checkStock(productId, outCount)) {
@@ -435,7 +435,7 @@ public class WareService {
             item.put("warehouseId", warehouseInfo.get("warehouseId"));
             item.put("manageId", warehouseInfo.get("manageId"));
 
-            // 출고 등록과 동시에 재고 차감 처리
+            // 재고 차감 처리
             if(isMaterial) {
                 reduceMaterialStock(productId, (String) warehouseInfo.get("warehouseId"), outCount);
             } else {
@@ -566,6 +566,21 @@ public class WareService {
     @Transactional
     public void cancelOutput(String outId) {
         wareMapper.deleteOutput(outId);
+    }
+    
+    // 배치별 출고 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOutputListByBatch(String batchId) {
+        return wareMapper.selectOutputListByBatch(batchId);
+    }
+
+    // 날짜별 배치 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOutputBatches(String date, String outType) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("date", date);
+        params.put("outType", outType);
+        return wareMapper.selectOutputBatches(params);
     }
     
     // ==================== 데이터 조회 ====================

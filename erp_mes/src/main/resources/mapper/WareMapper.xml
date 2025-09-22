@@ -523,13 +523,10 @@
 	</select>
 	
 	<!-- 오늘 배치 건수 -->
-	<select id="getTodayOutputBatchCount" resultType="java.lang.Integer">
-	    SELECT NVL(COUNT(*), 0) FROM (
-	        SELECT SUBSTR(out_id, 3, 6) as date_part 
-	        FROM output 
-	        WHERE out_id LIKE 'OUT' || #{today} || '%'
-	        GROUP BY SUBSTR(out_id, 3, 6)
-	    )
+	<select id="getTodayOutputBatchCount" resultType="integer">
+	    SELECT NVL(COUNT(DISTINCT batch_id), 0) 
+	    FROM output 
+	    WHERE batch_id LIKE 'OB' || #{today} || '%'
 	</select>
 	
 	<!-- 출고 등록 -->
@@ -538,8 +535,16 @@
 	        out_id, product_id, material_id, warehouse_id, out_count, 
 	        out_type, emp_id, batch_id, update_date, manage_id
 	    ) VALUES (
-	        #{outId}, #{productId}, #{materialId}, #{warehouseId}, #{outCount},
-	        #{outType}, #{empId}, #{batchId}, SYSDATE, #{manageId}
+	        #{outId}, 
+	        #{productId, jdbcType=VARCHAR}, 
+	        #{materialId, jdbcType=VARCHAR}, 
+	        #{warehouseId}, 
+	        #{outCount},
+	        #{outType}, 
+	        #{empId}, 
+	        #{batchId}, 
+	        SYSDATE, 
+	        #{manageId}
 	    )
 	</insert>
 	
@@ -563,6 +568,64 @@
 	        update_date = SYSDATE
 	    WHERE out_id = #{outId}
 	</update>
+	
+	<!-- 배치별 출고 목록 조회 -->
+	<select id="selectOutputListByBatch" resultType="map">
+	    SELECT 
+	        o.out_id as "outId",
+	        CASE 
+	            WHEN o.product_id IS NOT NULL THEN o.product_id
+	            WHEN o.material_id IS NOT NULL THEN o.material_id
+	            ELSE 'UNKNOWN'
+	        END as "productId",
+	        CASE 
+	            WHEN o.material_id IS NOT NULL THEN m.material_name
+	            WHEN o.product_id IS NOT NULL THEN p.product_name
+	            ELSE 'UNKNOWN'
+	        END as "productName",
+	        CASE 
+	            WHEN o.material_id IS NOT NULL THEN m.unit
+	            WHEN o.product_id IS NOT NULL THEN p.unit
+	            ELSE 'EA'
+	        END as "unit",
+	        o.out_count as "outCount",
+	        o.out_type as "outType",
+	        o.batch_id as "batchId",
+	        o.warehouse_id as "warehouseId",
+	        o.emp_id as "empId",
+	        e.emp_name as "empName",
+	        TO_CHAR(o.update_date, 'YYYY-MM-DD HH24:MI') as "outDate"
+	    FROM output o
+	    LEFT JOIN material m ON o.material_id = m.material_id
+	    LEFT JOIN product p ON o.product_id = p.product_id
+	    LEFT JOIN employee e ON o.emp_id = e.emp_id
+	    WHERE o.batch_id = #{batchId}
+	    ORDER BY o.out_id
+	</select>
+	
+	<!-- 날짜별 배치 목록 조회 -->
+	<select id="selectOutputBatches" resultType="map">
+	    SELECT 
+	        batch_id as "batchId",
+	        COUNT(*) as "itemCount",
+	        SUM(out_count) as "totalCount",
+	        TO_CHAR(MIN(update_date), 'YYYY-MM-DD') as "outDate",
+	        TO_CHAR(MIN(update_date), 'HH24:MI') as "outTime"
+	    FROM output
+	    WHERE 1=1
+	    <if test="outType != null and outType != ''">
+	        AND (
+	            <if test="outType == 'material'">
+	                material_id IS NOT NULL
+	            </if>
+	            <if test="outType == 'product'">
+	                product_id IS NOT NULL
+	            </if>
+	        )
+	    </if>
+	    GROUP BY batch_id, TO_CHAR(update_date, 'YYYY-MM-DD')
+	    ORDER BY MIN(update_date) DESC
+	</select>
 	
 	<!-- warehouse_item에서 manage_id 조회 -->
 	<select id="getManageIdByWarehouse" resultType="string">

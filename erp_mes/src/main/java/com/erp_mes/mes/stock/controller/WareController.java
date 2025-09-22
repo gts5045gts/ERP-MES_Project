@@ -290,6 +290,22 @@ public class WareController {
 	    }
 	    return result;
 	}
+	
+	// 배치별 출고 목록 조회 추가
+	@GetMapping("/api/outputs/batch/{batchId}")
+	@ResponseBody
+	public List<Map<String, Object>> getOutputListByBatch(@PathVariable("batchId") String batchId) {
+	    return wareService.getOutputListByBatch(batchId);
+	}
+
+	// 그룹화된 출고 목록 조회
+	@GetMapping("/api/outputs/grouped")
+	@ResponseBody
+	public List<Map<String, Object>> getGroupedOutputList(
+	    @RequestParam(name = "date", required = false) String date,
+	    @RequestParam(name = "outType", required = false) String outType) {
+	    return wareService.getOutputBatches(date, outType);
+	}
 
 	// ==================== 5. 데이터 조회 API ====================
 
