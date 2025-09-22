@@ -189,7 +189,7 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
-	@TrackLot(tableName = "WAREHOUSE_ID", pkColumnName = "MANAGE_ID")
+	@TrackLot(tableName = "warehouse_item", pkColumnName = "manage_id")
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
