@@ -108,6 +108,7 @@ let currentEditRow = null;
 $(document).ready(function() {
     loadWarehouses();
     getCurrentUser();
+    loadWarehouseTypes();
     
     $('#selectAll').on('change', function() {
         $('.item-check').prop('checked', $(this).is(':checked'));
@@ -446,6 +447,25 @@ function getTypeColor(type) {
 function formatDate(dateStr) {
     if(!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('ko-KR');
+}
+
+//창고 타입 옵션을 공통코드에서 가져오기
+function loadWarehouseTypes() {
+    $.ajax({
+        url: '/api/common-codes/warehouse-types',
+        type: 'GET',
+        success: function(data) {
+            // 검색 필터 select
+            const filterSelect = $('#warehouseType');
+            filterSelect.empty();
+            filterSelect.append('<option value="">창고유형 전체</option>');
+            
+            // 공통코드 매핑
+            filterSelect.append('<option value="원자재">원자재</option>'); 
+            filterSelect.append('<option value="반제품">반제품</option>');
+            filterSelect.append('<option value="완제품">완제품</option>');
+        }
+    });
 }
 </script>
 </th:block>
