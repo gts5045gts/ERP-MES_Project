@@ -114,6 +114,35 @@
 		ORDER BY T2.INSPECTION_DATE DESC
 	</select>
 
+<select id="findInCountByInId" parameterType="Long" resultType="Integer">
+    SELECT IN_COUNT FROM INPUT WHERE IN_ID = #{inId}
+</select>
+
+<update id="updateInputStatusByInId">
+    UPDATE INPUT
+    SET IN_STATUS = #{newStatus}
+    WHERE IN_ID = #{inId}
+</update>
+
+<insert id="insertInspection" parameterType="com.erp_mes.mes.quality.dto.InspectionDTO">
+    <selectKey keyProperty="inspectionId" resultType="long" order="BEFORE">
+        SELECT INSPECTION_SEQ.NEXTVAL FROM DUAL
+    </selectKey>
+    INSERT INTO INSPECTION (
+        INSPECTION_ID, INSPECTION_TYPE, INSPECTION_DATE, EMP_ID, LOT_ID
+    ) VALUES (
+        #{inspectionId}, #{inspectionType}, SYSDATE, #{empId}, #{lotId}
+    )
+</insert>
+
+<insert id="insertInspectionResult" parameterType="com.erp_mes.mes.quality.dto.InspectionResultDTO">
+    INSERT INTO INSPECTION_RESULT (
+        RESULT_ID, INSPECTION_ID, RESULT, REMARKS
+    ) VALUES (
+        INSPECTION_RESULT_SEQ.NEXTVAL, #{inspectionId}, #{result}, #{remarks}
+    )
+</insert>
+
 <select id="getIncomingInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
     SELECT
         T1.IN_ID AS targetId,
@@ -203,30 +232,6 @@
     LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
     WHERE T1.PRO_ID = #{processId}
 </select>
-
-	<insert id="insertInspection"
-		parameterType="com.erp_mes.mes.quality.dto.InspectionDTO">
-		<selectKey keyProperty="inspectionId" resultType="long"
-			order="BEFORE">
-			SELECT INSPECTION_SEQ.NEXTVAL FROM DUAL
-		</selectKey>
-		INSERT INTO INSPECTION (
-		INSPECTION_ID, INSPECTION_TYPE, PRODUCT_ID, PROCESS_ID,
-		INSPECTION_DATE, EMP_ID, LOT_ID
-		) VALUES (
-		#{inspectionId}, #{inspectionType}, #{productId}, #{processId},
-		SYSDATE, #{empId}, #{lotId}
-		)
-	</insert>
-
-	<insert id="insertInspectionResult"
-		parameterType="com.erp_mes.mes.quality.dto.InspectionResultDTO">
-		INSERT INTO INSPECTION_RESULT (
-		RESULT_ID, INSPECTION_ID, ITEM_ID, RESULT, REMARKS
-		) VALUES (
-		INSPECTION_RESULT_SEQ.NEXTVAL, #{inspectionId}, #{itemId}, #{result}, #{remarks}
-		)
-	</insert>
 
 	<update id="updateWorkOrderStatus" parameterType="String">
 		UPDATE work_order

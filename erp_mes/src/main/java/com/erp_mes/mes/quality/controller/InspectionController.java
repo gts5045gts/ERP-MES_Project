@@ -232,10 +232,29 @@ public class InspectionController {
 		}
 	}
 
-	@GetMapping("/api/inspection-item/material/{materialId}")
+	@PostMapping("/api/verify-incoming-count")
 	@ResponseBody
-	public List<InspectionItemDTO> getInspectionItemByMaterialId(@PathVariable("materialId") String materialId) {
-		return inspectionService.getInspectionItemByMaterialId(materialId);
+	public ResponseEntity<Map<String, Object>> verifyIncomingCount(@RequestBody Map<String, Object> request) {
+	    Map<String, Object> response = new HashMap<>();
+	    try {
+	        Long targetId = Long.parseLong(request.get("targetId").toString());
+	        Long acceptedCount = Long.parseLong(request.get("acceptedCount").toString());
+	        Long defectiveCount = Long.parseLong(request.get("defectiveCount").toString());
+	        String empId = request.get("empId").toString();
+	        String lotId = request.get("lotId").toString();
+	        String inspectionType = request.get("inspectionType").toString();
+
+	        inspectionService.verifyIncomingCount(targetId, acceptedCount, defectiveCount, empId, lotId, inspectionType);
+
+	        response.put("success", true);
+	        response.put("message", "수량 검사 및 입고 처리가 성공적으로 완료되었습니다.");
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        log.error("Failed to verify incoming count: {}", e.getMessage());
+	        response.put("success", false);
+	        response.put("message", "수량 검사 실패: " + e.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 
 	@GetMapping("/api/inspection-item/process/{processId}")

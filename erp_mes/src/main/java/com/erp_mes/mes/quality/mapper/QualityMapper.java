@@ -49,5 +49,7 @@ public interface QualityMapper {
  List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);
  List<InspectionItemDTO> findInspectionItemsByProcessId(Long processId);
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
+ void updateInputStatusByInId(@Param("inId") Long inId, @Param("newStatus") String newStatus);
+ Integer findInCountByInId(Long inId);
  
 }

@@ -114,6 +114,46 @@ public class InspectionService {
         return qualityMapper.getInspectionResultList();
     }
     
+    @Transactional
+    public void verifyIncomingCount(Long inId, Long acceptedCount, Long defectiveCount, String empId, String lotId, String inspectionType) {
+        // 1. INPUT 테이블에서 기존 in_count를 조회
+        Integer expectedCount = qualityMapper.findInCountByInId(inId);
+        
+        if (expectedCount == null) {
+            throw new IllegalArgumentException("입고 항목을 찾을 수 없습니다.");
+        }
+        
+        // 2. 검사 결과 판정
+        boolean isCountMatch = (expectedCount.equals(acceptedCount.intValue() + defectiveCount.intValue()));
+        String result = isCountMatch ? "합격" : "불합격";
+        String remarks = isCountMatch ? "합격: " + acceptedCount + "개, 불량: " + defectiveCount + "개" : "수량 불일치";
+
+        // 3. INSPECTION 및 INSPECTION_RESULT 테이블에 검사 이력 등록
+        InspectionDTO inspectionDTO = new InspectionDTO();
+        inspectionDTO.setInspectionType(inspectionType);
+        inspectionDTO.setEmpId(empId);
+        inspectionDTO.setLotId(lotId);
+        qualityMapper.insertInspection(inspectionDTO);
+        Long newInspectionId = inspectionDTO.getInspectionId();
+        
+        InspectionResultDTO resultDTO = new InspectionResultDTO();
+        resultDTO.setInspectionId(newInspectionId);
+        resultDTO.setItemId(null);
+        resultDTO.setResult(result);
+        resultDTO.setRemarks(remarks);
+        qualityMapper.insertInspectionResult(resultDTO);
+
+        // 4. INPUT 테이블의 상태 업데이트
+        // 총 수량이 일치하고 불량이 없으면 '입고완료'
+        // 총 수량이 일치하지만 불량이 있으면 '부분입고' 등으로 구분 가능
+        // 여기서는 단순화하여 합격 수량이 있으면 '입고완료' 처리
+        if (acceptedCount > 0) {
+            qualityMapper.updateInputStatusByInId(inId, "입고완료");
+        } else {
+            qualityMapper.updateInputStatusByInId(inId, "불량"); // 불량만 있으면 '불량' 상태로 변경
+        }
+    }
+    
     @Transactional(readOnly = true)
     public List<InspectionTargetDTO> getIncomingInspectionTargets() {
         List<InspectionTargetDTO> targets = qualityMapper.getIncomingInspectionTargets();

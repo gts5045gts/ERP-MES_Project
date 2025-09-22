@@ -147,38 +147,55 @@ document.addEventListener('DOMContentLoaded', function() {
 	            
 	            const criteriaFieldsContainer = document.getElementById('criteriaFields');
 	            criteriaFieldsContainer.innerHTML = '';
-
-	            let criteriaResponse;
+	            
 	            if (selectedTargetData.targetSource === 'Incoming') {
-	                criteriaResponse = await fetch(`/quality/api/inspection-item/material/${selectedTargetData.materialId}`);
-	            } else if (selectedTargetData.targetSource === 'WorkOrder') {
-	                criteriaResponse = await fetch(`/quality/api/inspection-item/process/${selectedTargetData.processId}`);
-	            }
+	                // 수입 검사 (in_count 확인)
+					const fieldDiv = document.createElement('div');
+					fieldDiv.className = 'form-group';
+					fieldDiv.innerHTML = `
+					    <label>총 입고 예정 수량: ${selectedTargetData.quantity}</label><br>
+					    <label>합격 수량</label>
+					    <input type="number" id="acceptedCount" class="form-control" placeholder="합격 수량 입력" required>
+					    <label>불량 수량</label>
+					    <input type="number" id="defectiveCount" class="form-control" placeholder="불량 수량 입력" required>
+					    <div id="countWarning" class="text-danger mt-2" style="display:none;">입력된 수량의 합이 총 입고 예정 수량과 일치하지 않습니다.</div>
+					`;
+					criteriaFieldsContainer.appendChild(fieldDiv);
 
-	            if (!criteriaResponse.ok) { throw new Error('검사 기준 로드 실패'); }
-	            const criteriaList = await criteriaResponse.json();
-	            
-				if (criteriaList && criteriaList.length > 0) {
-				    criteriaList.forEach(criteria => {
-				        const fieldDiv = document.createElement('div');
-				        fieldDiv.className = 'form-group';
-				        fieldDiv.innerHTML = `
-				            <label>${criteria.itemName} (${criteria.methodName})</label>
-				            <input type="number" step="0.01" class="form-control measurement-input" 
-				                   data-item-id="${criteria.itemId}" data-tolerance="${criteria.toleranceValue}" data-standard="${criteria.standardValue}" data-unit="${criteria.unit}" 
-				                   placeholder="실측값" required> <small class="form-text text-muted">기준값: ${criteria.standardValue} ${criteria.unit}, 허용 공차: ${criteria.toleranceValue} ${criteria.unit}</small>
-				            <input type="text" class="form-control result-input" readonly placeholder="결과">
-				        `;
-				        criteriaFieldsContainer.appendChild(fieldDiv);
-				    });
-	            } else {
-	                criteriaFieldsContainer.innerHTML = `<p class="text-danger">해당 검사 기준이 없습니다.</p>`;
+	            } else if (selectedTargetData.targetSource === 'WorkOrder') {
+	                // 공정 검사 & 포장 검사 (치수 및 육안 검사)
+	                let criteriaResponse;
+	                
+	                // processId 또는 materialId를 사용하여 검사 항목을 가져옵니다.
+	                // materialId는 입고 검사에서만 사용하므로, 여기서는 processId를 사용합니다.
+	                const processId = selectedTargetData.processId;
+	                criteriaResponse = await fetch(`/quality/api/inspection-item/process/${processId}`);
+	                
+	                if (!criteriaResponse.ok) { throw new Error('검사 기준 로드 실패'); }
+	                const criteriaList = await criteriaResponse.json();
+	                
+	                if (criteriaList && criteriaList.length > 0) {
+	                    criteriaList.forEach(criteria => {
+	                        const fieldDiv = document.createElement('div');
+	                        fieldDiv.className = 'form-group';
+	                        fieldDiv.innerHTML = `
+	                            <label>${criteria.itemName} (${criteria.methodName})</label>
+	                            <input type="number" step="0.01" class="form-control measurement-input" 
+	                                   data-item-id="${criteria.itemId}" data-tolerance="${criteria.toleranceValue}" data-standard="${criteria.standardValue}" data-unit="${criteria.unit}" 
+	                                   placeholder="실측값" required> <small class="form-text text-muted">기준값: ${criteria.standardValue} ${criteria.unit}, 허용 공차: ${criteria.toleranceValue} ${criteria.unit}</small>
+	                            <input type="text" class="form-control result-input" readonly placeholder="결과">
+	                        `;
+	                        criteriaFieldsContainer.appendChild(fieldDiv);
+	                    });
+	                    
+	                    // 동적으로 생성된 input 필드에 이벤트 리스너 추가
+	                    document.querySelectorAll('.measurement-input').forEach(input => {
+	                        input.addEventListener('input', updateResult);
+	                    });
+	                } else {
+	                    criteriaFieldsContainer.innerHTML = `<p class="text-danger">해당 검사 기준이 없습니다.</p>`;
+	                }
 	            }
-	            
-	            // 동적으로 생성된 input 필드에 이벤트 리스너 추가
-	            document.querySelectorAll('.measurement-input').forEach(input => {
-	                input.addEventListener('input', updateResult);
-	            });
 	            
 	            $('#inspectionModal').modal('show');
 	        }
@@ -225,53 +242,85 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	document.getElementById('registerBtn').addEventListener('click', async () => {
-	    const measurementInputs = document.querySelectorAll('.measurement-input');
-	    const results = [];
-	    let allPassed = true;
+	    let registrationData = {};
+	    let apiUrl = '';
+	    
+	    if (selectedTargetData.targetSource === 'Incoming') {
+	        // 수입 검사 (in_count 로직)
+			const expectedCount = selectedTargetData.quantity;
+			const acceptedCount = parseInt(document.getElementById('acceptedCount').value) || 0;
+			const defectiveCount = parseInt(document.getElementById('defectiveCount').value) || 0;
+			const totalActualCount = acceptedCount + defectiveCount;
 
-	    measurementInputs.forEach(input => {
-	        const itemId = input.dataset.itemId;
-	        const resultInput = input.closest('.form-group').querySelector('.result-input');
-	        const measurement = parseFloat(input.value);
+			if (totalActualCount !== expectedCount) {
+			    document.getElementById('countWarning').style.display = 'block';
+			    return;
+			} else {
+			    document.getElementById('countWarning').style.display = 'none';
+			}
 
-	        if (isNaN(measurement)) {
-	            allPassed = false;
-	            alert('실측값을 입력해주세요.');
+			registrationData = {
+			    targetId: selectedTargetData.targetId,
+			    acceptedCount: acceptedCount, // 합격 수량
+			    defectiveCount: defectiveCount, // 불량 수량
+			    empId: '현재 로그인한 직원 ID',
+			    lotId: selectedTargetData.lotId,
+			    inspectionType: selectedTargetData.inspectionType // 검사 유형
+			};
+			apiUrl = '/quality/api/verify-incoming-count';
+
+	    } else if (selectedTargetData.targetSource === 'WorkOrder') {
+	        // 공정 검사 (기존 로직)
+	        const measurementInputs = document.querySelectorAll('.measurement-input');
+	        const results = [];
+	        let allValid = true;
+
+	        measurementInputs.forEach(input => {
+	            const measurement = parseFloat(input.value);
+	            const resultInput = input.closest('.form-group').querySelector('.result-input');
+
+	            if (isNaN(measurement)) {
+	                allValid = false;
+	                return;
+	            }
+	            
+	            const resultValue = (resultInput.value === '합격') ? 'Y' : 'N';
+
+	            results.push({
+	                itemId: input.dataset.itemId,
+	                measurement: measurement,
+	                result: resultValue
+	            });
+	        });
+
+	        if (!allValid) {
+	            alert('모든 실측값을 올바르게 입력해주세요.');
 	            return;
 	        }
 
-	        const resultValue = (resultInput.value === '합격') ? 'Y' : 'N';
-	        if (resultValue === 'N') allPassed = false;
+	        registrationData = {
+	            targetSource: selectedTargetData.targetSource,
+	            targetId: selectedTargetData.targetId,
+	            lotId: selectedTargetData.lotId,
+	            inspectionType: selectedTargetData.inspectionType,
+	            empId: '현재 로그인한 직원 ID',
+	            remarks: document.getElementById('modalRemarks').value,
+	            
+	            productId: selectedTargetData.productId,
+	            processId: selectedTargetData.processId,
 
-	        results.push({
-	            itemId: itemId,
-	            measurement: measurement,
-	            result: resultValue
-	        });
-	    });
+	            inspectionResults: results
+	        };
+	        apiUrl = '/quality/api/register-inspection-result';
 
-	    if (!allPassed) {
-	        alert('모든 실측값이 유효하지 않습니다.');
+	    } else {
+	        alert('유효하지 않은 검사 유형입니다.');
 	        return;
 	    }
 
-	    const registrationData = {
-	        targetSource: selectedTargetData.targetSource,
-	        targetId: selectedTargetData.targetId,
-	        lotId: selectedTargetData.lotId,
-	        inspectionType: selectedTargetData.inspectionType,
-	        empId: '현재 로그인한 직원 ID',
-	        remarks: document.getElementById('modalRemarks').value,
-	        
-	        productId: selectedTargetData.productId,
-	        processId: selectedTargetData.processId,
-	        materialId: selectedTargetData.materialId,
-
-	        inspectionResults: results
-	    };
-
+	    // 공통된 API 호출 로직
 	    try {
-	        const response = await fetch('/quality/api/register-inspection-result', {
+	        const response = await fetch(apiUrl, {
 	            method: 'POST',
 	            headers: { 
 	                'Content-Type': 'application/json',
@@ -281,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	        });
 	        const result = await response.json();
 	        if (result.success) {
-	            alert('검사 등록 성공!');
+	            alert(result.message);
 	            $('#inspectionModal').modal('hide');
 	            loadHistoryData();
 	            loadTargetData();
