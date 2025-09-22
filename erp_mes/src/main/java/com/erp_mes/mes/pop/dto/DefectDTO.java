@@ -1,9 +1,6 @@
 package com.erp_mes.mes.pop.dto;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import groovy.transform.ToString;
 import lombok.Getter;
@@ -16,7 +13,14 @@ import lombok.Setter;
 @ToString
 public class DefectDTO {
 	
-	private Long defectItemId;	// 불량 ID
+    private Long defectItemId;
+    private String defectType;
+    private String defectReason;
+    private Long defectQty;
+    private String productName; // 불량품명
+    private String employeeId; // 작업자ID
+    private Integer defectLocation; // 불량위치 1:pop 2:QC/QA
+    private LocalDateTime defectDate;
 	
 	
 

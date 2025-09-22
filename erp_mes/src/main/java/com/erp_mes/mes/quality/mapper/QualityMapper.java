@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
+import com.erp_mes.mes.pop.dto.DefectDTO;
 import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
@@ -49,7 +50,8 @@ public interface QualityMapper {
  List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);
  List<InspectionItemDTO> findInspectionItemsByProcessId(Long processId);
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
- void updateInputStatusByInId(@Param("inId") Long inId, @Param("newStatus") String newStatus);
- Integer findInCountByInId(Long inId);
- 
+ void updateInputStatusByInId(@Param("inId") String inId, @Param("newStatus") String newStatus);
+ Integer findInCountByInId(String inId);
+ String findTargetNameByInId(String inId);
+ void insertDefectItem(DefectDTO defectDTO);
 }
