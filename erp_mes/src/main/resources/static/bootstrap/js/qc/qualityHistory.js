@@ -79,62 +79,76 @@ document.addEventListener('DOMContentLoaded', function() {
     let incomingGrid, processGrid, packagingGrid;
     let selectedTargetData = null;
     
-    async function loadTargetData() {
-        try {
-            const incomingResponse = await fetch('/quality/api/incoming-targets');
-            const processResponse = await fetch('/quality/api/process-targets');
-            const packagingResponse = await fetch('/quality/api/packaging-targets');
+	async function loadTargetData() {
+	    try {
+	        const incomingResponse = await fetch('/quality/api/incoming-targets');
+	        const processResponse = await fetch('/quality/api/process-targets');
+	        const packagingResponse = await fetch('/quality/api/packaging-targets');
 
-            const incomingData = await incomingResponse.json();
-            const processData = await processResponse.json();
-            const packagingData = await packagingResponse.json();
-            
-            incomingGrid = new tui.Grid({
-                el: document.getElementById('incomingGrid'),
-                data: incomingData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '자재명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
+	        const incomingData = await incomingResponse.json();
+	        const processData = await processResponse.json();
+	        const packagingData = await packagingResponse.json();
+	        
+	        // Grid 인스턴스가 없을 때만 생성합니다.
+	        if (!incomingGrid) {
+	            incomingGrid = new tui.Grid({
+	                el: document.getElementById('incomingGrid'),
+	                data: incomingData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '자재명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            // 이벤트 리스너도 여기서 한 번만 추가합니다.
+	            addGridClickListener(incomingGrid);
+	        } else {
+	            // 인스턴스가 이미 있으면 데이터를 덮어씁니다.
+	            incomingGrid.resetData(incomingData);
+	        }
+	        
+	        if (!processGrid) {
+	            processGrid = new tui.Grid({
+	                el: document.getElementById('processGrid'),
+	                data: processData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '제품명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            addGridClickListener(processGrid);
+	        } else {
+	            processGrid.resetData(processData);
+	        }
 
-            processGrid = new tui.Grid({
-                el: document.getElementById('processGrid'),
-                data: processData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '제품명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
-
-            packagingGrid = new tui.Grid({
-                el: document.getElementById('packagingGrid'),
-                data: packagingData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '제품명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
-            
-            addGridClickListener(incomingGrid);
-            addGridClickListener(processGrid);
-            addGridClickListener(packagingGrid);
-        } catch (error) {
-            console.error('Fetch error:', error);
-        }
-    }
+	        if (!packagingGrid) {
+	            packagingGrid = new tui.Grid({
+	                el: document.getElementById('packagingGrid'),
+	                data: packagingData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '제품명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            addGridClickListener(packagingGrid);
+	        } else {
+	            packagingGrid.resetData(packagingData);
+	        }
+	    } catch (error) {
+	        console.error('Fetch error:', error);
+	    }
+	}
 
 	function addGridClickListener(grid) {
 	    grid.on('click', async (ev) => {
