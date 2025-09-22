@@ -50,11 +50,15 @@ public class LotAOP {
 				
 				Boolean linkParent = false;
 				Boolean createLot = true;
+				
 				Object materialType = null;
 				Object parentLotId = null;
+				
 				String tableName = trackLot.tableName().trim().toUpperCase();
 				String targetId = trackLot.pkColumnName().trim();
 				String targetIdValue = (String) obj;
+				String domain = tableName;
+				
 				int qtyUsed = 0;
 				
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
@@ -72,6 +76,13 @@ public class LotAOP {
 //				    	if(entry.getKey().equals("LOT_ID")){
 //					        parentLotId = entry.getValue();	
 //				    	}
+				    	
+				    	if(tableName.equals("INPUT")){
+				    		Object productId = entry.getValue();
+				    		if (productId != null) {
+								domain = "finished";
+							}
+						}
 				    	
 				    	if(entry.getKey().equals("IN_ID") && tableName.equals("WORK_RESULT")){
 				    		Object inId = entry.getValue();
@@ -113,10 +124,12 @@ public class LotAOP {
 								.usages(usages)
 								.build();
 				
+				
+				
 //				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
-			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, createLot, linkParent);
+			 	String lotId = lotService.createLotWithRelations(lotDTO, domain, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
 //			 	if(!tableName.equals("MATERIAL")){
 		 		if(createLot){
