@@ -65,6 +65,8 @@ public interface WareMapper {
 	// 입고 위치 정보 업데이트
 	int updateInputLocation(@Param("inId") String inId, @Param("locationId") String locationId);
 	
+	// 반려 사유 코드 조회
+	List<Map<String, Object>> selectRejectReasons();
 	// ==================== 재고 처리 ====================
 	
 	// 재고 증가 처리 (구버전)

@@ -59,7 +59,7 @@
     
     <!-- 상세 내역 모달 -->
     <div class="modal fade" id="detailModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="detailModalTitle">입고 상세 내역</h5>
@@ -112,6 +112,21 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                	<div class="row mb-3">
+				        <div class="col-md-12">
+				            <label>입고 유형</label>
+				            <input type="text" class="form-control" id="new_inReason" 
+				                   placeholder="입고 유형를 입력하세요">
+				        </div>
+				    </div>
+				    <div class="row mb-3">
+				        <div class="col-md-12">
+				            <label>비고</label>
+				            <textarea class="form-control" id="new_inRemark" rows="2" 
+				                      placeholder="추가 설명이 필요한 경우 입력하세요"></textarea>
+				        </div>
+				    </div>
+				    
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>입고담당자</label>
@@ -257,6 +272,8 @@ let currentBatchId = '';
 let currentInType = '';
 let currentUser = {};
 let productsData = [];
+loadRejectReasons();
+let rejectReasonsData = [];
 
 //탭 클릭 이벤트 직접 등록
 $(document).ready(function() {
@@ -824,8 +841,24 @@ function loadGroupedInputList() {
     });
 }
 
+//반려 사유 로드 함수
+function loadRejectReasons() {
+    $.ajax({
+        url: '/inventory/api/reject-reasons',
+        type: 'GET',
+        success: function(data) {
+            rejectReasonsData = data;
+            console.log("반려사유 로드:", data);
+        },
+        error: function(xhr) {
+            console.error("반려사유 로드 실패:", xhr);
+            rejectReasonsData = [];
+        }
+    });
+}
+
+// 탭 구조의 material-content 안에 테이블 추가
 function renderGroupedTable(data) {
-    // 탭 구조의 material-content 안에 테이블 추가
     const container = $('#material-content .table-responsive');
     
     let html = `
@@ -918,9 +951,7 @@ function showDetail(batchId, type) {
     $.ajax({
         url: '/inventory/api/inputs',
         type: 'GET',
-        data: {
-            batchId: batchId
-        },
+        data: { batchId: batchId },
         success: function(data) {
             $('#detailModalTitle').text(`${type} 상세 내역`);
             
@@ -928,52 +959,161 @@ function showDetail(batchId, type) {
             tbody.empty();
             
             data.forEach(item => {
-                const statusBadge = item.inStatus === '입고완료' ? 
-                    '<span class="badge badge-success">완료</span>' : 
-                    '<span class="badge badge-warning">대기</span>';
-                
-                // 생산완료(완제품)인 경우 검사버튼 없음
-                const inspectBtn = type === '생산완료' ? 
-                    '<span class="text-success">✓</span>' :
-                    (item.inStatus === '입고대기' ? 
-                        `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
-                        '<span class="text-success">✓</span>');
-                
-                // 제품명 표시 - 완제품이면 productName, 부품이면 materialName
-                const itemName = item.productName || item.materialName || '-';
-                
-                // 구분 표시
-                let itemType = '';
-                if(item.productName) {
-                    itemType = '<span class="badge badge-success">완제품</span>';
-                } else if(item.materialType === '부품') {
-                    itemType = '<span class="badge badge-info">부품</span>';
-                } else if(item.materialType === '반제품') {
-                    itemType = '<span class="badge badge-warning">반제품</span>';
+                console.log("아이템 상태:", item.inId, item.inStatus);
+                let statusBadge = '';
+                if(item.inStatus === '입고완료') {
+                    statusBadge = '<span class="badge badge-success">완료</span>';
+                } else if(item.inStatus === '입고반려') {
+                    statusBadge = '<span class="badge badge-danger">반려</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-warning">대기</span>';
                 }
                 
-                const locationDisplay = item.inStatus === '입고완료' && item.locationId ? 
-                    `<span class="badge badge-primary">${item.locationId.substring(0, 6)}</span>` :
-                    '<span class="text-muted">미정</span>';
+                let actionButtons = '';
+                if(type !== '생산완료') {
+                    if(item.inStatus === '입고대기') {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">
+                                검사완료
+                            </button>
+                            <button class="btn btn-sm btn-danger ml-1" onclick="openRejectModal('${item.inId}')">
+                                반려
+                            </button>
+                        `;
+                    } else if(item.inStatus === '입고반려') {
+                        actionButtons = `<span class="text-danger" title="${item.inReason || '반려됨'}">반려</span>`;
+                    } else if(item.inStatus === '입고완료') {
+                        actionButtons = '<span class="text-success">✓ 완료</span>';
+                    }
+                } else {
+                    actionButtons = '-';
+                }
+                
+                let locationDisplay = '-';
+                if(item.inStatus === '입고완료' && item.locationId) {
+                    locationDisplay = `<span class="badge badge-primary">${item.locationId.substring(0, 6)}</span>`;
+                }
                 
                 tbody.append(`
                     <tr>
                         <td>${item.inId || '-'}</td>
                         <td>${item.clientName || '-'}</td>
-                        <td>${itemName}</td>
-                        <td>${itemType}</td>
+                        <td>${item.materialName || item.productName || '-'}</td>
+                        <td>${item.materialType === '부품' ? 
+                            '<span class="badge badge-info">부품</span>' : 
+                            item.materialType === '반제품' ?
+                            '<span class="badge badge-warning">반제품</span>' :
+                            '<span class="badge badge-success">완제품</span>'}</td>
                         <td>${item.inCount || 0}개</td>
-                        <td class="location-col">${locationDisplay}</td>
-                        <td>${item.empName || item.empId || '-'}</td>
-                        <td class="status-col">${statusBadge}</td>
-                        <td class="inspect-col">${inspectBtn}</td>
-                        <td class="complete-time" style="display:none;">${item.completeTime || '-'}</td>
+                        <td>${locationDisplay}</td>
+                        <td>${item.empName || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButtons}</td>
                     </tr>
                 `);
             });
             $('#detailModal').modal('show');
         }
     });
+}
+
+//반려 모달 열기
+function openRejectModal(inId) {
+    let optionsHtml = '<option value="">선택하세요</option>';
+    
+    // DB에서 가져온 데이터만 사용
+    if(rejectReasonsData && rejectReasonsData.length > 0) {
+        rejectReasonsData.forEach(reason => {
+            optionsHtml += `<option value="${reason.name}">${reason.name}</option>`;
+        });
+    }
+    
+    const modalHtml = `
+        <div class="modal fade" id="rejectModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">입고 반려</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            반려된 품목은 재입고 처리가 필요합니다.
+                        </div>
+                        <div class="form-group">
+                            <label>반려 사유 <span class="text-danger">*</span></label>
+                            <select class="form-control" id="rejectReasonSelect">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>상세 설명</label>
+                            <textarea class="form-control" id="rejectDetail" rows="3" 
+                                      placeholder="구체적인 반려 사유를 입력하세요"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmReject('${inId}')">
+                            <i class="fas fa-ban"></i> 입고 반려
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    $('#rejectModal').remove();
+    $('body').append(modalHtml);
+    $('#rejectModal').modal('show');
+}
+
+//반려 확정
+function confirmReject(inId) {
+    const reason = $('#rejectReasonSelect').val();
+    const detail = $('#rejectDetail').val();
+    
+    if(!reason) {
+        alert('반려 사유를 선택하세요.');
+        return;
+    }
+    
+    const fullReason = detail ? `${reason}: ${detail}` : reason;
+    
+    if(confirm('정말 입고를 반려하시겠습니까?\n\n' + 
+               '반려 사유: ' + fullReason + '\n\n' +
+               '반려된 항목은 재입고 처리가 필요합니다.')) {
+        
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/reject`,
+            type: 'PUT',
+            data: { reason: fullReason },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('입고가 반려되었습니다.');
+                    $('#rejectModal').modal('hide');
+                    
+                    // 상세 모달을 완전히 다시 로드
+                    $('#detailModal').modal('hide');
+                    setTimeout(function() {
+                        showDetail(currentBatchId, currentInType);
+                    }, 500);
+                    
+                    loadGroupedInputList();
+                } else {
+                    alert('반려 처리 실패: ' + result.message);
+                }
+            },
+            error: function(xhr) {
+                alert('오류가 발생했습니다.');
+            }
+        });
+    }
 }
 
 //완제품 배치 저장
@@ -1165,6 +1305,8 @@ function showAddModal() {
 // 입고 저장 (부품/반제품만)
 function saveInput() {
     const items = [];
+    const inReason = $('#new_inReason').val() || $('#new_inType').val();
+    const inRemark = $('#new_inRemark').val();
     
     $('.material-item').each(function() {
         const materialId = $(this).find('.material-select').val();
@@ -1173,10 +1315,12 @@ function saveInput() {
         if(materialId && qty) {
             items.push({
                 inType: $('#new_inType').val(),
-                productId: materialId,  // material_id를 product_id로 사용
+                productId: materialId,
                 clientId: $('#new_clientId').val(),
                 inCount: qty,
-                warehouseId: $('#new_warehouseId').val()
+                warehouseId: $('#new_warehouseId').val(),
+                inReason: inReason,
+                inRemark: inRemark
             });
         }
     });
@@ -1191,7 +1335,6 @@ function saveInput() {
         return;
     }
     
-    // 배치로 한번에 전송
     $.ajax({
         url: '/inventory/api/inputs/batch',
         type: 'POST',
@@ -1206,8 +1349,6 @@ function saveInput() {
                 $('#addInputModal').modal('hide');
                 resetInputForm();
                 loadGroupedInputList();
-            } else {
-                alert('등록 실패: ' + result.message);
             }
         }
     });
@@ -1248,21 +1389,21 @@ function inspectOne(inId) {
             },
             success: function(result) {
                 if(result.success) {
-                    // 성공 메시지
                     alert('검사 완료! 재고가 반영되었습니다.');
-                    
-                    // 모달 내용만 다시 로드 (모달 닫지 않음)
                     refreshDetailModal();
-                    
-                    // 메인 리스트도 새로고침
                     loadGroupedInputList();
                 } else {
                     alert('처리 실패: ' + (result.message || '알 수 없는 오류'));
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('Ajax 오류:', status, error);
-                alert('서버 오류가 발생했습니다.');
+            error: function(xhr) {
+                // 서버에서 보낸 에러 메시지 표시
+                const response = xhr.responseJSON;
+                if(response && response.message) {
+                    alert('입고 실패: ' + response.message);
+                } else {
+                    alert('창고에 저장 공간이 부족합니다.\n창고 관리자에게 문의하세요.');
+                }
             }
         });
     }
