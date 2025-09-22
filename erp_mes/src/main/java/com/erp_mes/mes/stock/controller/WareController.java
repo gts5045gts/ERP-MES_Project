@@ -189,7 +189,7 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
-	@TrackLot(tableName = "warehouse_item", pkColumnName = "manage_id")
+	@TrackLot(tableName = "input", pkColumnName = "in_id")
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -200,10 +200,12 @@ public class WareController {
 	        for(Map<String, Object> item : items) {
 	            item.put("empId", principal.getName());
 	            item.put("batchId", batchId);
-	            wareService.addInput(item);
 	            
+	            String inId = wareService.addInput(item);
+	            
+	            // LOT 추적용 세션 설정
 	            HttpSession session = SessionUtil.getSession();
-//	            session.setAttribute("targetIdValue", item); //pk_id의 값 입력
+	            session.setAttribute("targetIdValue", inId);
 	        }
 	        
 	        result.put("success", true);
@@ -213,9 +215,6 @@ public class WareController {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
-	    
-	    
-        
 	    return result;
 	}
 
@@ -249,11 +248,11 @@ public class WareController {
 	    return wareService.getOutputList(outType, outStatus, startDate, endDate);
 	}
 
-	// 배치 출고 등록
+	// 배치(batchId) 출고 등록
 	@PostMapping("/api/outputs/batch")
 	@ResponseBody
 	public Map<String, Object> addOutputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
-	    log.info("출고 배치 등록 요청: {}", items); // 로그 추가
+	    log.info("출고 배치 등록 요청: {}", items);
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -261,9 +260,9 @@ public class WareController {
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 출고 등록 완료");
-	        log.info("출고 배치 등록 성공: {}", batchId); // 로그 추가
+	        log.info("출고 배치 등록 성공: {}", batchId);
 	    } catch(Exception e) {
-	        log.error("출고 배치 등록 실패: ", e); // 로그 추가
+	        log.error("출고 배치 등록 실패: ", e); 
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }

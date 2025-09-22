@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
 import com.erp_mes.mes.plant.service.ProcessService;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
@@ -231,20 +233,37 @@ public class InspectionController {
 			return new ResponseEntity<>(errorJson, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	// 불량 코드 가져오기
+	@GetMapping("/api/defect-codes")
+	@ResponseBody
+	public List<CommonDetailCode> getDefectCodes() {
+	    return commonCodeService.findByComId("DEFECT");
+	}
+	
+	@GetMapping("/api/defect-reasons/{defectType}")
+	@ResponseBody
+	public List<CommonDetailCode> getDefectReasons(@PathVariable("defectType") String defectType) {
+	    // 불량 유형에 맞는 사유 코드를 필터링하여 반환
+	    return commonCodeService.findByComId(defectType);
+	}
 
 	@PostMapping("/api/verify-incoming-count")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> verifyIncomingCount(@RequestBody Map<String, Object> request) {
+	public ResponseEntity<Map<String, Object>> verifyIncomingCount(@RequestBody Map<String, Object> request, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
 	    Map<String, Object> response = new HashMap<>();
 	    try {
-	        Long targetId = Long.parseLong(request.get("targetId").toString());
+	        String targetId = request.get("targetId").toString();
 	        Long acceptedCount = Long.parseLong(request.get("acceptedCount").toString());
 	        Long defectiveCount = Long.parseLong(request.get("defectiveCount").toString());
-	        String empId = request.get("empId").toString();
+	        String empId = personnelLoginDTO.getEmpId();
 	        String lotId = request.get("lotId").toString();
 	        String inspectionType = request.get("inspectionType").toString();
+	        String defectType = (String) request.get("defectType");
+	        String remarks = (String) request.get("remarks");
+	        String materialId = (String) request.get("materialId");
 
-	        inspectionService.verifyIncomingCount(targetId, acceptedCount, defectiveCount, empId, lotId, inspectionType);
+	        inspectionService.verifyIncomingCount(targetId, acceptedCount, defectiveCount, empId, lotId, inspectionType, defectType, remarks, materialId);
 
 	        response.put("success", true);
 	        response.put("message", "수량 검사 및 입고 처리가 성공적으로 완료되었습니다.");
