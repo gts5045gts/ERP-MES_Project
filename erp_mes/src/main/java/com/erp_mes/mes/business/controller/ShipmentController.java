@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -99,4 +100,18 @@ public class ShipmentController {
 		
 		return shipmentService.getShipmentDetailsByShipmentId(shipmentId);
 	}
+	
+	@PostMapping("/api/shipment/{shipmentId}/add-details")
+    public ResponseEntity<String> addShipmentDetails(@PathVariable String shipmentId, @RequestBody List<ShipmentDetailDTO> newDetails) {
+
+        if (newDetails == null || newDetails.isEmpty()) {
+            return ResponseEntity.badRequest().body("추가할 출하 품목이 없습니다.");
+        }
+
+        String updatedShipmentId = shipmentService.addShipmentDetails(shipmentId, newDetails);
+        return ResponseEntity.ok(updatedShipmentId);
+    }
+	
+	
+	
 }

@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								break;
 							case 'COMPLETION':
 								color = 'black';
-								statusText = '출하 완료';
+								statusText = '출하완료';
 								break;
 						}
 						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;

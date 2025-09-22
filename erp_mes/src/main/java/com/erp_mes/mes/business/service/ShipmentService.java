@@ -105,6 +105,12 @@ public class ShipmentService {
 
         // 4) shipment insert
         shipmentMapper.insertShipment(shipmentDTO);
+        
+        // 5) 출하 상세 상태 COMPLETION에 따라 수주 상세 상태 자동 갱신
+        shipmentMapper.updateOrderDetailStatusFromShipment(shipmentId);
+        
+        // 2) 해당 수주의 모든 수주 상세 상태가 COMPLETION이면, 수주 상태도 COMPLETION으로 갱신
+        shipmentMapper.updateOrderStatusIfAllDetailsCompleted(shipmentDTO.getOrderId());
 
         return shipmentDTO.getShipmentId();
 	}
@@ -119,6 +125,36 @@ public class ShipmentService {
 		return shipmentMapper.getShipmentDetailsByShipmentId(shipmentId);
 	}
 	
+	// 수주별 남은 출하 대상 품목만 조회
+	public List<ShipmentDetailDTO> getPendingShipmentDetails(String orderId) {
+	    return shipmentMapper.getPendingShipmentDetails(orderId);
+	}
 	
+	@Transactional
+	public String addShipmentDetails(String shipmentId, List<ShipmentDetailDTO> newDetails) {
+	    int seq = shipmentMapper.getNextDetailId(shipmentId); // 기존 shipment_detail max(id) + 1
+	    
+	    for (ShipmentDetailDTO detail : newDetails) {
+	        detail.setShipmentId(shipmentId);
+	        detail.setId(seq++);
+	        
+	        // 상태 계산
+	        if (detail.getShipmentQty() == 0) {
+	            detail.setShipmentDetailStatus("NOTSHIPPED");
+	        } else if (detail.getShipmentQty() < detail.getOrderQty()) {
+	            detail.setShipmentDetailStatus("PARTIAL");
+	        } else {
+	            detail.setShipmentDetailStatus("COMPLETION");
+	        }
+
+	        shipmentMapper.insertShipmentDetail(detail);
+	    }
+
+	    // 출하 상세 완료 상태 반영
+	    shipmentMapper.updateOrderDetailStatusFromShipment(shipmentId);
+	    shipmentMapper.updateOrderStatusIfAllDetailsCompleted(newDetails.get(0).getOrderId());
+
+	    return shipmentId;
+	}
 	
 }

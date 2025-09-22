@@ -183,13 +183,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			// 그 외 클릭: 상세 로드 및 수정 버튼 표시
 			loadShipmentDetails(rowData.shipmentId);
 
-//			if (rowData.shipmentStatus === 'PARTIAL') {
-//				editBtn.style.display = "inline-block";
-//				editBtn.dataset.shipmentId = rowData.shipmentId;
-//			} else {
-//				editBtn.style.display = "none";
-//				editBtn.removeAttribute('data-shipment-id');
-//			}
+			//			if (rowData.shipmentStatus === 'PARTIAL') {
+			//				editBtn.style.display = "inline-block";
+			//				editBtn.dataset.shipmentId = rowData.shipmentId;
+			//			} else {
+			//				editBtn.style.display = "none";
+			//				editBtn.removeAttribute('data-shipment-id');
+			//			}
 		});
 	};
 
@@ -235,28 +235,51 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// 모달창에서 수주 상세 목록 불러오기
-	function loadOrderDetailGrid(orderId) {
-		fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('네트워크 응답이 올바르지 않습니다.');
-				}
-				return response.json();
-			})
-			.then(data => {
-				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
-				const gridData = data.map(item => ({
-					...item,
-					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
-					shipmentQty: item.orderQty
-				}));
+	//	function loadOrderDetailGrid(orderId) {
+	//		fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
+	//			.then(response => {
+	//				if (!response.ok) {
+	//					throw new Error('네트워크 응답이 올바르지 않습니다.');
+	//				}
+	//				return response.json();
+	//			})
+	//			.then(data => {
+	//				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
+	//				const gridData = data.map(item => ({
+	//					...item,
+	//					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
+	//					shipmentQty: item.orderQty
+	//				}));
+	//
+	//				if (orderDetailGrid) {
+	//					// 수정된 데이터 배열로 그리드를 업데이트
+	//					orderDetailGrid.resetData(gridData);
+	//				}
+	//			})
+	//			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
+	//	}
 
-				if (orderDetailGrid) {
-					// 수정된 데이터 배열로 그리드를 업데이트
-					orderDetailGrid.resetData(gridData);
-				}
-			})
-			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
+	async function loadOrderDetailGrid(orderId, existingShipmentId = null) {
+		try {
+			let url = `/business/api/shipment/ordersDetailRemaining?orderId=${encodeURIComponent(orderId)}`;
+			if (existingShipmentId) {
+				url += `&shipmentId=${encodeURIComponent(existingShipmentId)}`;
+			}
+
+			const response = await fetch(url);
+			if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
+
+			const data = await response.json();
+			const gridData = data.map(item => ({
+				...item,
+				shipmentQty: item.orderQty // 초기 출하 수량 세팅
+			}));
+
+			if (orderDetailGrid) orderDetailGrid.resetData(gridData);
+
+		} catch (err) {
+			console.error("수주 상세 목록 불러오기 오류:", err);
+		}
 	}
 
 
@@ -313,24 +336,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 수주 리스트 그리드 클릭 이벤트
 			orderListGrid.on('click', (ev) => {
+				//				if (!ev || ev.rowKey == null) return;
+				//
+				//				const rowKey = ev.rowKey;
+				//
+				//				if (ev.columnName === '_checked') {
+				//					// 체크박스 클릭 시 → 그리드 기본 동작(check/uncheck)에 맡기고 상세 갱신만 실행
+				//					setTimeout(() => updateSelectedItems(), 0);
+				//				} else {
+				//					// 셀 클릭 시 → 체크박스 토글 + 상세 갱신
+				//					const row = orderListGrid.getRow(rowKey);
+				//					const isChecked = row && row._attributes.checked;
+				//					if (isChecked) {
+				//						orderListGrid.uncheck(rowKey);
+				//					} else {
+				//						orderListGrid.check(rowKey);
+				//					}
+				//					updateSelectedItems();
+				//				}
 				if (!ev || ev.rowKey == null) return;
-
-				const rowKey = ev.rowKey;
-
-				if (ev.columnName === '_checked') {
-					// 체크박스 클릭 시 → 그리드 기본 동작(check/uncheck)에 맡기고 상세 갱신만 실행
-					setTimeout(() => updateSelectedItems(), 0);
-				} else {
-					// 셀 클릭 시 → 체크박스 토글 + 상세 갱신
-					const row = orderListGrid.getRow(rowKey);
-					const isChecked = row && row._attributes.checked;
-					if (isChecked) {
-						orderListGrid.uncheck(rowKey);
-					} else {
-						orderListGrid.check(rowKey);
-					}
-					updateSelectedItems();
-				}
+				const row = orderListGrid.getRow(ev.rowKey);
+				const isChecked = row && row._attributes.checked;
+				if (isChecked) orderListGrid.uncheck(ev.rowKey);
+				else orderListGrid.check(ev.rowKey);
+				updateSelectedItems(); // 체크 시마다 상세 갱신
 			});
 
 			orderListGrid.on('checkAll', () => updateSelectedItems());
@@ -445,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 수정: 상세 목록 그리드에서 체크된 행만 가져옴
 		const checkedDetails = orderDetailGrid.getCheckedRows();
-		
+
 		if (checkedDetails.length === 0) {
 			alert("하나 이상의 품목을 선택하고 출하 수량을 입력해주세요.");
 			return;
@@ -455,7 +484,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		const shipmentsByOrderId = {};
 		checkedDetails.forEach(item => {
 			const orderId = item.orderId;
-			console.log(item.productId);
 			// 해당 수주 건의 정보를 가져옴
 			const orderData = orderListGrid.getData().find(row => row.orderId === orderId);
 
@@ -510,13 +538,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				let res;
 				if (isEditMode && editShipmentId) {
-					res = await fetch(`/shipment/api/shipments/${editShipmentId}`, {
+					res = await fetch(`/business/api/shipments/${editShipmentId}/add-details`, {
 						method: "PUT",
 						headers: {
 							"Content-Type": "application/json",
 							[csrfHeader]: csrfToken
 						},
-						body: JSON.stringify(payload)
+						body: JSON.stringify(payload.items)
 					});
 				} else {
 					res = await fetch("/business/api/shipment/submit", {
@@ -565,7 +593,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			document.getElementById('shipmentModalTitle').textContent = '출하 수정';
 			document.getElementById('shipmentSubmitBtn').textContent = '수정';
 
-			editItems = shipment.items || [];
+			// 기존 출하에서 아직 출하되지 않은 품목만 불러오기
+			if (shipment.items && shipment.items.length > 0) {
+				const orderId = shipment.items[0].orderId;
+				await loadOrderDetailGrid(orderId, shipmentId);
+			}
+
+//			editItems = shipment.items || [];
 
 			shipmentAddModal.show();
 

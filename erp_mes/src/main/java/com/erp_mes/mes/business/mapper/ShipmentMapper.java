@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
@@ -30,11 +32,19 @@ public interface ShipmentMapper {
 	// orderId로 주문 정보(clientId, deliveryDate) 조회
 	OrderDTO getOrderInfoByOrderId(@Param("orderId") String orderId);
     
-    // orderId와 productName으로 제품 정보(productId, orderQty) 조회
-//    Map<String, Object> getProductInfoByOrderIdAndProductName(@Param("orderId") String orderId, @Param("productName") String productName);
-    
     List<ShipmentDTO> getAllShipment();
     
     List<ShipmentDetailDTO> getShipmentDetailsByShipmentId(@Param("shipmentId")String shipmentId);
-	
+    
+    
+    
+ // 출하 상세 상태가 COMPLETION인 품목에 대해 수주 상세 상태를 업데이트
+    void updateOrderDetailStatusFromShipment(@Param("shipmentId") String shipmentId);
+    
+    // 수주 상세 상태가 모두 COMPLETION이면, 수주 상태도 COMPLETION으로 업데이트
+    void updateOrderStatusIfAllDetailsCompleted(@Param("orderId") String orderId);
+
+	List<ShipmentDetailDTO> getPendingShipmentDetails(String orderId);
+
+	int getNextDetailId(String shipmentId);
 }
