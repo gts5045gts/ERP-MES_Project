@@ -202,12 +202,11 @@
 	        <if test="materialId != null">
 	            material_id,
 	        </if>
-	        client_id, 
-	        in_count, 
-	        emp_id, 
-	        in_status,
+	        client_id, in_count, emp_id, in_status,
 	        in_type,
 	        batch_id,
+	        in_reason,
+	        in_remark,
 	        in_complete
 	    ) VALUES (
 	        #{inId}, 
@@ -224,6 +223,8 @@
 	        #{inStatus},
 	        #{inType, jdbcType=VARCHAR},
 	        #{batchId, jdbcType=VARCHAR},
+	        #{inReason, jdbcType=VARCHAR},
+	        #{inRemark, jdbcType=VARCHAR},
 	        SYSDATE
 	    )
 	</insert>

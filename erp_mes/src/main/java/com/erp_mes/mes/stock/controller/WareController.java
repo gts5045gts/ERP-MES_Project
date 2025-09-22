@@ -239,11 +239,11 @@ public class WareController {
 	    return wareService.getOutputList(outType, outStatus, startDate, endDate);
 	}
 
-	// 배치 출고 등록
+	// 배치(batchId) 출고 등록
 	@PostMapping("/api/outputs/batch")
 	@ResponseBody
 	public Map<String, Object> addOutputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
-	    log.info("출고 배치 등록 요청: {}", items); // 로그 추가
+	    log.info("출고 배치 등록 요청: {}", items);
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -251,9 +251,9 @@ public class WareController {
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 출고 등록 완료");
-	        log.info("출고 배치 등록 성공: {}", batchId); // 로그 추가
+	        log.info("출고 배치 등록 성공: {}", batchId);
 	    } catch(Exception e) {
-	        log.error("출고 배치 등록 실패: ", e); // 로그 추가
+	        log.error("출고 배치 등록 실패: ", e); 
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
