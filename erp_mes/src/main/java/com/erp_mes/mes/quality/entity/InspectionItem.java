@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class InspectionItem {
-
 	
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq_gen")

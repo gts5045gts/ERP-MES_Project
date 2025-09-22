@@ -374,6 +374,215 @@ public class WareService {
         return locationId.substring(0, 6);
     }
     
+	 // ==================== 출고 관리 ====================
+	
+    // 출고 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOutputList(String outType, String outStatus, String startDate, String endDate) {
+        return wareMapper.selectOutputList(outType, outStatus, startDate, endDate);
+    }
+
+    // 재고가 포함된 자재 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMaterialsWithStock() {
+        return wareMapper.selectMaterialsWithStock();
+    }
+
+    // 재고가 포함된 완제품 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getProductsWithStock() {
+        return wareMapper.selectProductsWithStock();
+    }
+    
+    // 배치 출고 등록 (통합 버전)
+    @Transactional
+    public String addOutputBatch(List<Map<String, Object>> items, String empId) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+
+        String batchId = "OB" + today + String.format("%03d", batchCount + 1);
+
+        for(Map<String, Object> item : items) {
+            Integer outputCount = wareMapper.getTodayOutputCount(today);
+            if(outputCount == null) outputCount = 0;
+
+            String outId = "OUT" + today + String.format("%04d", outputCount + 1);
+
+            item.put("outId", outId);
+            item.put("batchId", batchId);
+            item.put("empId", empId);
+            item.put("outType", "출고완료");
+
+            String productId = (String) item.get("productId");
+            Integer outCount = Integer.parseInt(item.get("outCount").toString());
+
+            // Material/Product 구분 처리 수정
+            boolean isMaterial = wareMapper.checkIsMaterial(productId);
+            if(isMaterial) {
+                item.put("materialId", productId);
+                item.put("productId", null);  // 빈 문자열 대신 null
+            } else {
+                item.put("productId", productId);
+                item.put("materialId", null);  // 빈 문자열 대신 null
+            }
+
+            if(!checkStock(productId, outCount)) {
+                throw new RuntimeException(productId + " 재고가 부족합니다.");
+            }
+
+            Map<String, Object> warehouseInfo = findAvailableWarehouseWithManage(productId);
+            item.put("warehouseId", warehouseInfo.get("warehouseId"));
+            item.put("manageId", warehouseInfo.get("manageId"));
+
+            // 재고 차감 처리
+            if(isMaterial) {
+                reduceMaterialStock(productId, (String) warehouseInfo.get("warehouseId"), outCount);
+            } else {
+                reduceProductStock(productId, (String) warehouseInfo.get("warehouseId"), outCount);
+            }
+
+            wareMapper.insertOutput(item);
+        }
+
+        return batchId;
+    }
+
+    // 새로 추가할 메서드
+    private Map<String, Object> findAvailableWarehouseWithManage(String productId) {
+        List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
+        if(warehouses.isEmpty()) {
+            throw new RuntimeException("재고가 있는 창고를 찾을 수 없습니다.");
+        }
+        
+        String warehouseId = (String) warehouses.get(0).get("warehouseId");
+        String manageId = wareMapper.getManageIdByWarehouse(productId, warehouseId);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("warehouseId", warehouseId);
+        result.put("manageId", manageId);
+        
+        return result;
+    }
+
+    // 출고 완료 처리
+    @Transactional
+    public void completeOutput(String outId, String empId) {
+        Map<String, Object> output = wareMapper.selectOutputById(outId);
+        
+        if(output == null) {
+            throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
+        }
+        
+        String currentType = (String) output.get("OUT_TYPE");  // OUT_STATUS → OUT_TYPE 변경
+        if("출고완료".equals(currentType)) {
+            log.info("이미 출고완료된 건입니다: {}", outId);
+            return;
+        }
+        
+        String productId = (String) output.get("PRODUCT_ID");
+        String materialId = (String) output.get("MATERIAL_ID");  
+        String warehouseId = (String) output.get("WAREHOUSE_ID");
+        Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
+        
+        // 재고 차감 처리
+        if(productId != null && !productId.isEmpty()) {  // 빈 문자열 체크 추가
+            reduceProductStock(productId, warehouseId, outCount);
+        } else if(materialId != null && !materialId.isEmpty()) {  // 빈 문자열 체크 추가
+            reduceMaterialStock(materialId, warehouseId, outCount);
+        }
+        
+        // 출고 상태 변경
+        wareMapper.updateOutputType(outId, "출고완료");  
+        
+        log.info("출고 완료: {} - 수량: {}", outId, outCount);
+    }
+
+    // 재고 확인
+    private boolean checkStock(String productId, Integer requiredQty) {
+        boolean isMaterial = wareMapper.checkIsMaterial(productId);
+        
+        if(isMaterial) {
+            Integer stock = wareMapper.getMaterialTotalStock(productId);
+            return stock != null && stock >= requiredQty;
+        } else {
+            Integer stock = wareMapper.getProductTotalStock(productId);
+            return stock != null && stock >= requiredQty;
+        }
+    }
+
+    // 가용 창고 찾기
+    private String findAvailableWarehouse(String productId) {
+        List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
+        if(warehouses.isEmpty()) {
+            throw new RuntimeException("재고가 있는 창고를 찾을 수 없습니다.");
+        }
+        return (String) warehouses.get(0).get("warehouseId");
+    }
+    
+    
+
+    // Product 재고 차감
+    private void reduceProductStock(String productId, String warehouseId, Integer qty) {
+        List<Map<String, Object>> locations = wareMapper.getProductStockLocations(productId, warehouseId);
+        
+        int remaining = qty;
+        for(Map<String, Object> loc : locations) {
+            if(remaining <= 0) break;
+            
+            String locationId = (String) loc.get("locationId");
+            int currentQty = ((Number) loc.get("itemAmount")).intValue();
+            
+            int reduceQty = Math.min(remaining, currentQty);
+            wareMapper.reduceWarehouseItemStock(productId, warehouseId, locationId, reduceQty);
+            
+            remaining -= reduceQty;
+        }
+        
+        wareMapper.reduceProductQuantity(productId, qty);
+    }
+
+    // Material 재고 차감
+    private void reduceMaterialStock(String materialId, String warehouseId, Integer qty) {
+        List<Map<String, Object>> locations = wareMapper.getMaterialStockLocations(materialId, warehouseId);
+        
+        int remaining = qty;
+        for(Map<String, Object> loc : locations) {
+            if(remaining <= 0) break;
+            
+            String locationId = (String) loc.get("locationId");
+            int currentQty = ((Number) loc.get("itemAmount")).intValue();
+            
+            int reduceQty = Math.min(remaining, currentQty);
+            wareMapper.reduceMaterialWarehouseStock(materialId, warehouseId, locationId, reduceQty);
+            
+            remaining -= reduceQty;
+        }
+        
+        wareMapper.reduceMaterialQuantity(materialId, qty);
+    }
+
+    // 출고 취소
+    @Transactional
+    public void cancelOutput(String outId) {
+        wareMapper.deleteOutput(outId);
+    }
+    
+    // 배치별 출고 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOutputListByBatch(String batchId) {
+        return wareMapper.selectOutputListByBatch(batchId);
+    }
+
+    // 날짜별 배치 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOutputBatches(String date, String outType) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("date", date);
+        params.put("outType", outType);
+        return wareMapper.selectOutputBatches(params);
+    }
+    
     // ==================== 데이터 조회 ====================
 
     // 부품 목록 조회 (구버전)

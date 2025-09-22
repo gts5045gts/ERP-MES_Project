@@ -11,37 +11,45 @@ import com.erp_mes.mes.quality.dto.InspectionDTO;
 import com.erp_mes.mes.quality.dto.InspectionFMDTO;
 import com.erp_mes.mes.quality.dto.InspectionItemDTO;
 import com.erp_mes.mes.quality.dto.InspectionResultDTO;
+import com.erp_mes.mes.quality.dto.InspectionTargetDTO;
 
 @Mapper
 public interface QualityMapper {
 
  // Inspection_ITEM 테이블 관련 메서드
- // 등록
  void insertItem(InspectionItemDTO inspectionItemDTO);
- // 조회: 조인을 통해 inspection_fm 정보도 함께 가져와야 함
  List<InspectionItemDTO> findAllItems();
- // 삭제
  void deleteItems(@Param("itemIds") List<Long> itemIds);
 
  // 공통코드
- List<CommonDetailCodeDTO> findUnits(); // 단위 공통코드를 위한 메서드 추가
+ List<CommonDetailCodeDTO> findUnits();
  
  // 기준정보 수정
  int updateInspectionFm(InspectionFMDTO inspectionFMDTO);
  int updateInspectionItem(InspectionItemDTO inspectionItemDTO);
  
- // 검사결과 등록
- void insertInspection(InspectionDTO inspectionDTO);
- void insertInspectionResult(InspectionResultDTO resultDTO);
+ // 검사결과 등록 (DB에 저장되는 데이터 형식)
+ int insertInspection(InspectionDTO inspectionDTO);
+ int insertInspectionResult(InspectionResultDTO resultDTO);
  
  
- // 검사결과
+ // 검사 이력 조회
  List<InspectionResultDTO> getInspectionResultList();
  
- // 검사 대기 목록 조회
- List<WorkOrderDTO> getInspectionTargets();
+ // 검사 대기 목록 조회 (InspectionTargetDTO 사용)
+ List<InspectionTargetDTO> getIncomingInspectionTargets();
+ List<InspectionTargetDTO> getProcessInspectionTargets();
+ List<InspectionTargetDTO> getPackagingInspectionTargets();
  
- // 검사 항목 및 허용 공차 조회
+ // 검사 완료 후 상태 업데이트
+ int updateWorkOrderStatus(String workOrderId);
+ int updateInputStatus(String inputId);
+ 
+ // 검사 항목 및 허용 공차 조회 
+ List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);
+ List<InspectionItemDTO> findInspectionItemsByProcessId(Long processId);
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
+ void updateInputStatusByInId(@Param("inId") Long inId, @Param("newStatus") String newStatus);
+ Integer findInCountByInId(Long inId);
  
 }

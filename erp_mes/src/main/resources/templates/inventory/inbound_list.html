@@ -14,7 +14,7 @@
 <body>
 <th:block layout:fragment="content">
     <div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800" th:text="${pageTitle}">입고 관리</h1>
+    <h1 class="h3 mb-4 text-gray-800">입고 관리</h1>
 	    <div class="card shadow mb-4">
 	        <div class="card-header py-3">
 	            <ul class="nav nav-tabs card-header-tabs">
@@ -36,26 +36,22 @@
 	            <div class="tab-content">
 	                <!-- 부품/반제품 탭 -->
 	                <div class="tab-pane fade show active" id="material-content">
-	                    <!-- 기존 그룹화된 입고 목록 테이블을 여기로 이동 -->
 	                    <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addInputModal">
 	                        <i class="fas fa-plus"></i> 신규 입고
 	                    </button>
 	                    
 	                    <div class="table-responsive">
-	                        <!-- 기존 테이블 내용 -->
 	                    </div>
 	                </div>
 	                
 	                <!-- 완제품 탭 -->
 	                <div class="tab-pane fade" id="product-content">
-	                    <h5>완제품 입고 관리</h5>
-	                    <button class="btn btn-success mb-3" onclick="openProductInputModal()">
-	                        <i class="fas fa-plus"></i> 완제품 입고 등록
-	                    </button>
-	                    <div id="product-input-list">
-	                        <!-- 완제품 입고 목록 테이블 -->
-	                    </div>
-	                </div>
+					    <button class="btn btn-success mb-3" onclick="openProductInputModal()">
+					        <i class="fas fa-plus"></i> 완제품 입고 등록
+					    </button>
+					    <div class="table-responsive">
+					    </div>
+					</div>
 	            </div>
 	        </div>
 	    </div>
@@ -189,7 +185,7 @@
         </div>
     </div>
     
-    <!-- 완제품 입고 모달 (신규입고 모달 아래에 추가) -->
+    <!-- 완제품 입고 모달 -->
 	<div class="modal fade" id="productInputModal" tabindex="-1">
 	    <div class="modal-dialog modal-lg">
 	        <div class="modal-content">
@@ -206,37 +202,48 @@
 	                        <input type="text" class="form-control" id="product_emp_info" readonly>
 	                    </div>
 	                    <div class="col-md-6">
-	                        <label>입고타입</label>
-	                        <input type="text" class="form-control" value="생산완료" readonly>
-	                    </div>
-	                </div>
-	                
-	                <div class="row mb-3">
-	                    <div class="col-md-6">
-	                        <label>완제품 선택</label>
-	                        <select class="form-control" id="product_select">
-	                            <option value="">선택하세요</option>
-	                        </select>
-	                    </div>
-	                    <div class="col-md-3">
-	                        <label>수량</label>
-	                        <input type="number" class="form-control" id="product_qty" min="1" placeholder="수량">
-	                    </div>
-	                    <div class="col-md-3">
 	                        <label>완제품 창고</label>
 	                        <select class="form-control" id="product_warehouse">
-	                            <!-- 완제품 창고만 표시 -->
 	                        </select>
 	                    </div>
 	                </div>
 	                
-	                <div class="alert alert-info">
-	                    생산 완료된 완제품을 창고에 입고합니다.
+	                <hr>
+	                
+	                <div class="d-flex justify-content-between align-items-center mb-3">
+	                    <h6>완제품 목록</h6>
+	                    <button type="button" class="btn btn-sm btn-info" onclick="addProductRow()">
+	                        <i class="fas fa-plus"></i> 제품 추가
+	                    </button>
+	                </div>
+	                
+	                <div id="productsList">
+	                    <div class="product-item mb-2">
+	                        <div class="row">
+	                            <div class="col-md-7">
+	                                <select class="form-control product-select">
+	                                    <option value="">선택하세요</option>
+	                                </select>
+	                            </div>
+	                            <div class="col-md-3">
+	                                <input type="number" class="form-control product-qty" placeholder="수량" min="1">
+	                            </div>
+	                            <div class="col-md-2">
+	                                <button class="btn btn-danger btn-sm remove-product" onclick="removeProductRow(this)" style="display:none;">
+	                                    <i class="fas fa-trash"></i>
+	                                </button>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                
+	                <div class="alert alert-info mt-3">
+	                    선택한 완제품: <span id="selectedProductCount">0</span>종
 	                </div>
 	            </div>
 	            <div class="modal-footer">
 	                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-	                <button type="button" class="btn btn-success" onclick="saveProductInput()">입고 등록</button>
+	                <button type="button" class="btn btn-success" onclick="saveProductBatch()">입고 등록</button>
 	            </div>
 	        </div>
 	    </div>
@@ -249,30 +256,161 @@ let materialsData = [];
 let currentBatchId = '';
 let currentInType = '';
 let currentUser = {};
+let productsData = [];
 
+//탭 클릭 이벤트 직접 등록
 $(document).ready(function() {
     getCurrentUser();
     loadGroupedInputList();
     loadMaterials();
     loadClients();
+    
+    // 부트스트랩 탭 이벤트 리스너
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const target = $(e.target).attr("href");
+        
+        if(target === "#product-content") {
+            // 완제품 탭 활성화되면 데이터 로드
+            $.ajax({
+                url: '/inventory/api/inputs/grouped',
+                type: 'GET',
+                success: function(data) {
+                    const productData = data.filter(item => item.inType === '생산완료');
+                    
+                    let html = `
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>입고 내역</th>
+                                    <th>구분</th>
+                                    <th>수량</th>
+                                    <th>담당자</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    if(productData.length === 0) {
+                        html += `<tr><td colspan="5" class="text-center">완제품 입고 내역이 없습니다.</td></tr>`;
+                    } else {
+                        productData.forEach(group => {
+                            html += `
+                                <tr>
+                                    <td>${group.inDate} ${group.inTime} 생산완료</td>
+                                    <td><span class="badge badge-success">생산완료</span></td>
+                                    <td>${group.totalCount}건 (총 ${group.totalQty}개)</td>
+                                    <td>${group.empName}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" 
+                                                onclick="showDetail('${group.batchId}', '생산완료')">
+                                            내역확인
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    
+                    html += '</tbody></table>';
+                    $('#product-content .table-responsive').html(html);
+                }
+            });
+        }
+    });
 });
 
-//탭 전환 시 데이터 로드
+//탭 전환 시 데이터 로드 부분 확인
 $('#material-tab').on('shown.bs.tab', function (e) {
-    loadMaterialInputList();
+    loadGroupedInputList();  // 부품/반제품 그룹화된 목록
 });
 
 $('#product-tab').on('shown.bs.tab', function (e) {
-    loadProductInputList();
+    loadProductInputList();  // 완제품 목록
 });
+
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    const target = $(e.target).attr("href");
+    console.log("탭 전환됨:", target);
+    
+    if(target === "#product-content") {
+        console.log("완제품 탭 활성화!");
+        
+        // 바로 API 호출
+        $.ajax({
+            url: '/inventory/api/inputs/grouped',
+            type: 'GET',
+            success: function(data) {
+                console.log("API 응답:", data);
+                
+                // 생산완료만 필터
+                const productData = data.filter(item => item.inType === '생산완료');
+                console.log("생산완료 데이터:", productData);
+                
+                // HTML 생성
+                let html = '<table class="table"><thead><tr><th>테스트</th></tr></thead><tbody>';
+                if(productData.length > 0) {
+                    html += '<tr><td>생산완료 데이터 ' + productData.length + '건 있음</td></tr>';
+                } else {
+                    html += '<tr><td>생산완료 데이터 없음</td></tr>';
+                }
+                html += '</tbody></table>';
+                
+                $('#product-content .table-responsive').html(html);
+            },
+            error: function(xhr) {
+                console.error("API 에러:", xhr);
+            }
+        });
+    }
+});
+
 
 //완제품 입고 모달 열기
 function openProductInputModal() {
-	
-	$('#product_emp_info').val(currentUser.empId + ' - ' + currentUser.empName);
-    loadProducts();
+    $('#product_emp_info').val(currentUser.empId + ' - ' + currentUser.empName);
+    loadProducts();  
     loadProductWarehouses();
     $('#productInputModal').modal('show');
+}
+
+//모든 product select 업데이트
+function updateAllProductSelects() {
+    $('.product-select').each(function() {
+        const currentValue = $(this).val();
+        $(this).empty();
+        $(this).append('<option value="">선택하세요</option>');
+        
+        productsData.forEach(item => {
+            $(this).append(`<option value="${item.productId}">${item.productName}</option>`);
+        });
+        
+        if(currentValue) {
+            $(this).val(currentValue);
+        }
+    });
+    updateSelectedProductCount();
+}
+
+//완제품 행 삭제
+function removeProductRow(btn) {
+    $(btn).closest('.product-item').remove();
+    
+    if($('.product-item').length === 1) {
+        $('.remove-product').hide();
+    }
+    updateSelectedProductCount();
+}
+
+// 선택한 완제품 수 업데이트
+function updateSelectedProductCount() {
+    let count = 0;
+    $('.product-select').each(function() {
+        if($(this).val()) {
+            count++;
+        }
+    });
+    $('#selectedProductCount').text(count);
 }
 
 //부품/반제품 입고 목록 로드
@@ -308,6 +446,78 @@ function loadProductWarehouses() {
                     select.append(`<option value="${warehouse.warehouseId}">${warehouse.warehouseName}</option>`);
                 });
             }
+        }
+    });
+}
+
+//완제품 그룹 목록만 로드하는 새 함수
+function loadProductGroupedList() {
+    $.ajax({
+        url: '/inventory/api/inputs/grouped',
+        type: 'GET',
+        success: function(data) {
+            console.log("받은 데이터:", data);
+            
+            // 생산완료 타입 필터링
+            const productData = data.filter(item => item.inType === '생산완료');
+            console.log("생산완료 데이터:", productData);
+            
+            // 완제품 탭의 table-responsive에 테이블 생성
+            let html = `
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>입고 내역</th>
+                            <th>구분</th>
+                            <th>수량</th>
+                            <th>담당자</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            if(productData.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            완제품 입고 내역이 없습니다.<br>
+                            <small class="text-muted">위 버튼으로 완제품을 입고하세요.</small>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                productData.forEach(group => {
+                    const dateStr = group.inDate || '';
+                    const timeStr = group.inTime || '';
+                    
+                    html += `
+                        <tr>
+                            <td>${dateStr} ${timeStr} 생산완료 입고</td>
+                            <td><span class="badge badge-success">생산완료</span></td>
+                            <td>${group.totalCount}건 (총 ${group.totalQty || 0}개)</td>
+                            <td>${group.empName || group.empId || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" 
+                                        onclick="showDetail('${group.batchId}', '생산완료')">
+                                    내역확인
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += '</tbody></table>';
+            
+            // 완제품 탭의 table-responsive에 삽입
+            $('#product-content .table-responsive').html(html);
+        },
+        error: function(xhr) {
+            console.error("데이터 로드 실패:", xhr);
+            $('#product-content .table-responsive').html(
+                '<div class="alert alert-danger">데이터 로드 실패</div>'
+            );
         }
     });
 }
@@ -372,16 +582,14 @@ function renderMaterialTable(data) {
 //완제품 목록 로드
 function loadProducts() {
     $.ajax({
-        url: '/inventory/api/products-for-input',
+        url: '/inventory/api/products-for-input',  
         type: 'GET',
         success: function(data) {
-            const select = $('#product_select');
-            select.empty();
-            select.append('<option value="">선택하세요</option>');
-            
-            data.forEach(item => {
-                select.append(`<option value="${item.productId}">${item.productName}</option>`);
-            });
+            productsData = data;  // 전역 변수에 저장
+            updateAllProductSelects();  // select 업데이트
+        },
+        error: function(xhr) {
+            console.error("완제품 목록 로드 실패:", xhr);
         }
     });
 }
@@ -430,6 +638,39 @@ function saveProductInput() {
             }
         }
     });
+}
+
+//완제품 행 추가
+function addProductRow() {
+    const newRow = `
+        <div class="product-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control product-select" onchange="updateSelectedProductCount()">
+                        <option value="">선택하세요</option>
+                        ${productsData.map(item => 
+                            `<option value="${item.productId}">${item.productName}</option>`
+                        ).join('')}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control product-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-product" onclick="removeProductRow(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('#productsList').append(newRow);
+    
+    if($('.product-item').length > 1) {
+        $('.remove-product').first().show();
+    }
+    updateSelectedProductCount();
 }
 
 // 완제품 테이블 렌더링 
@@ -497,13 +738,62 @@ function renderProductTable(data) {
 //완제품 입고 목록 로드
 function loadProductInputList() {
     $.ajax({
-        url: '/inventory/api/inputs',  // itemType 파라미터 제거
+        url: '/inventory/api/inputs/grouped',  
         type: 'GET',
         success: function(data) {
-            console.log("완제품 데이터:", data);
-            renderProductTable(data);
+            console.log("완제품 그룹 데이터:", data);
+            const productGroups = data.filter(item => item.inType === '생산완료');
+            renderProductGroupedTable(productGroups);
         }
     });
+}
+
+//완제품 그룹 테이블 렌더링 함수 추가
+function renderProductGroupedTable(data) {
+    const container = $('#product-content .table-responsive');
+    
+    // 테이블 컨테이너가 없으면 생성
+    if(container.length === 0) {
+        $('#product-input-list').html('<div class="table-responsive"></div>');
+    }
+    
+    let html = `
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>입고 내역</th>
+                    <th>구분</th>
+                    <th>수량</th>
+                    <th>담당자</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    if(data.length === 0) {
+        html += '<tr><td colspan="5" class="text-center">완제품 입고 내역이 없습니다.</td></tr>';
+    } else {
+        data.forEach(group => {
+            html += `
+                <tr>
+                    <td>${group.inDate} ${group.inTime} 생산완료 입고</td>
+                    <td><span class="badge badge-success">생산완료</span></td>
+                    <td>${group.totalCount}건 (총 ${group.totalQty || 0}개)</td>
+                    <td>${group.empName || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" 
+                                onclick="showDetail('${group.batchId}', '${group.inType}')">
+                            내역확인
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+    
+    html += '</tbody></table>';
+    $('#product-input-list').html(html);  
 }
 
 //페이지 로드 시 초기화
@@ -632,11 +922,6 @@ function showDetail(batchId, type) {
             batchId: batchId
         },
         success: function(data) {
-            if(!data || data.length === 0) {
-                alert('상세 내역이 없습니다.');
-                return;
-            }
-            
             $('#detailModalTitle').text(`${type} 상세 내역`);
             
             const tbody = $('#detailTableBody');
@@ -647,25 +932,36 @@ function showDetail(batchId, type) {
                     '<span class="badge badge-success">완료</span>' : 
                     '<span class="badge badge-warning">대기</span>';
                 
-                const inspectBtn = item.inStatus === '입고대기' ? 
-                    `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
-                    '<span class="text-success">✔</span>';
+                // 생산완료(완제품)인 경우 검사버튼 없음
+                const inspectBtn = type === '생산완료' ? 
+                    '<span class="text-success">✓</span>' :
+                    (item.inStatus === '입고대기' ? 
+                        `<button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">검사완료</button>` :
+                        '<span class="text-success">✓</span>');
                 
-                const materialType = item.materialType === '부품' ? 
-                    '<span class="badge badge-info">부품</span>' : 
-                    '<span class="badge badge-warning">반제품</span>';
+                // 제품명 표시 - 완제품이면 productName, 부품이면 materialName
+                const itemName = item.productName || item.materialName || '-';
                 
-                // 위치 표시 - 입고완료면 구역 표시, 대기중이면 미정
+                // 구분 표시
+                let itemType = '';
+                if(item.productName) {
+                    itemType = '<span class="badge badge-success">완제품</span>';
+                } else if(item.materialType === '부품') {
+                    itemType = '<span class="badge badge-info">부품</span>';
+                } else if(item.materialType === '반제품') {
+                    itemType = '<span class="badge badge-warning">반제품</span>';
+                }
+                
                 const locationDisplay = item.inStatus === '입고완료' && item.locationId ? 
-    				`<span class="badge badge-primary">${item.locationId.substring(0, 6)}</span>` :  // 6자리만 표시
-    				'<span class="text-muted">미정</span>';
+                    `<span class="badge badge-primary">${item.locationId.substring(0, 6)}</span>` :
+                    '<span class="text-muted">미정</span>';
                 
                 tbody.append(`
                     <tr>
                         <td>${item.inId || '-'}</td>
                         <td>${item.clientName || '-'}</td>
-                        <td>${item.materialName || '-'}</td>
-                        <td>${materialType}</td>
+                        <td>${itemName}</td>
+                        <td>${itemType}</td>
                         <td>${item.inCount || 0}개</td>
                         <td class="location-col">${locationDisplay}</td>
                         <td>${item.empName || item.empId || '-'}</td>
@@ -678,6 +974,85 @@ function showDetail(batchId, type) {
             $('#detailModal').modal('show');
         }
     });
+}
+
+//완제품 배치 저장
+function saveProductBatch() {
+    const items = [];
+    const warehouseId = $('#product_warehouse').val();
+    
+    if(!warehouseId) {
+        alert('완제품 창고를 선택하세요.');
+        return;
+    }
+    
+    $('.product-item').each(function() {
+        const productId = $(this).find('.product-select').val();
+        const qty = $(this).find('.product-qty').val();
+        
+        if(productId && qty) {
+            items.push({
+                itemType: 'product',
+                productId: productId,
+                inCount: qty,
+                warehouseId: warehouseId,
+                clientId: 'SELF',
+                inType: '생산완료'
+            });
+        }
+    });
+    
+    if(items.length === 0) {
+        alert('최소 하나의 완제품을 선택하세요.');
+        return;
+    }
+    
+    // 배치로 전송
+    $.ajax({
+        url: '/inventory/api/inputs/batch',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(items),
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+        },
+        success: function(result) {
+            if(result.success) {
+                alert('완제품 ' + items.length + '종 입고 완료! 창고에 즉시 반영되었습니다.');
+                $('#productInputModal').modal('hide');
+                resetProductForm();
+                loadGroupedInputList();
+                loadProductInputList();
+            }
+        },
+        error: function(xhr) {
+            alert('입고 등록 실패: ' + xhr.responseText);
+        }
+    });
+}
+
+//완제품 폼 초기화
+function resetProductForm() {
+    $('#productsList').html(`
+        <div class="product-item mb-2">
+            <div class="row">
+                <div class="col-md-7">
+                    <select class="form-control product-select" onchange="updateSelectedProductCount()">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control product-qty" placeholder="수량" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-danger btn-sm remove-product" onclick="removeProductRow(this)" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `);
+    updateAllProductSelects();
 }
 
 // 자재(부품/반제품) 목록 로드
@@ -952,6 +1327,55 @@ function exportDetailPDF() {
             $(this).find('.inspect-col').show();
             $(this).find('.complete-time').hide();
         });
+    });
+}
+
+//완제품 탭 클릭 시
+$('#product-tab').on('shown.bs.tab', function (e) {
+    loadProductSimpleList();
+});
+
+// 완제품 심플 리스트
+function loadProductSimpleList() {
+    $.ajax({
+        url: '/api/inventory/products',
+        type: 'GET',
+        success: function(data) {
+            let html = `
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="20%">제품코드</th>
+                            <th width="40%">제품명</th>
+                            <th width="20%">재고</th>
+                            <th width="20%">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            if(data.length === 0) {
+                html += '<tr><td colspan="4" class="text-center">완제품이 없습니다.</td></tr>';
+            } else {
+                data.forEach(product => {
+                    html += `
+                        <tr>
+                            <td>${product.productId}</td>
+                            <td><strong>${product.productName}</strong></td>
+                            <td>${product.quantity || 0}개</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewProductDetail('${product.productId}')">
+                                    상세
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += '</tbody></table>';
+            $('#product-content .table-responsive').html(html);
+        }
     });
 }
 
