@@ -12,6 +12,7 @@ public class InspectionDTO {
     private Long inspectionId;
     private String inspectionType;
     private String productId;
+    private String materialId;
     private Long processId;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime inspectionDate;
