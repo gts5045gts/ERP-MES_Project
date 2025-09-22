@@ -201,16 +201,16 @@ public class WareController {
 	            item.put("batchId", batchId);
 	            
 	            String inId = wareService.addInput(item);
-	            
-	            // LOT 추적용 세션 설정
-	            HttpSession session = SessionUtil.getSession();
-	            session.setAttribute("targetIdValue", inId);
+	            // 이 부분 삭제! Service에서 이미 처리함
+	            // HttpSession session = SessionUtil.getSession();
+	            // session.setAttribute("targetIdValue", inId);
 	        }
 	        
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 입고 등록 완료");
 	    } catch(Exception e) {
+	        log.error("입고 배치 등록 오류:", e);
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }

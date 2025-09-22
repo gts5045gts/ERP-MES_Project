@@ -118,7 +118,7 @@ public class WareService {
 
     // 개별 입고 등록
     @Transactional
-    @TrackLot(tableName = "INPUT", pkColumnName = "IN_ID")
+    @TrackLot(tableName = "INPUT", pkColumnName = "IN_ID") 
     public String addInput(Map<String, Object> params) {
         String itemType = (String) params.get("itemType");
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
@@ -175,7 +175,7 @@ public class WareService {
         // 로트 추적을 위한 세션 설정
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", inId);
-
+        
         return inId;
     }
     

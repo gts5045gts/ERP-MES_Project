@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
         columns: [
             { header: '검사ID', name: 'inspectionId' },
             { header: '검사유형', name: 'inspectionTypeName' },
-            { header: '제품명', name: 'productName' },
-            { header: '공정명', name: 'processName' },
+            { header: '자재명/제품명', name: 'displayTargetName' },
+            { header: '공정명', name: 'displayProcessName' },
             { header: '검사일자', name: 'inspectionDate' },
             { header: '검사자', name: 'empName' },
             { header: '로트번호', name: 'lotId' },
@@ -79,62 +79,76 @@ document.addEventListener('DOMContentLoaded', function() {
     let incomingGrid, processGrid, packagingGrid;
     let selectedTargetData = null;
     
-    async function loadTargetData() {
-        try {
-            const incomingResponse = await fetch('/quality/api/incoming-targets');
-            const processResponse = await fetch('/quality/api/process-targets');
-            const packagingResponse = await fetch('/quality/api/packaging-targets');
+	async function loadTargetData() {
+	    try {
+	        const incomingResponse = await fetch('/quality/api/incoming-targets');
+	        const processResponse = await fetch('/quality/api/process-targets');
+	        const packagingResponse = await fetch('/quality/api/packaging-targets');
 
-            const incomingData = await incomingResponse.json();
-            const processData = await processResponse.json();
-            const packagingData = await packagingResponse.json();
-            
-            incomingGrid = new tui.Grid({
-                el: document.getElementById('incomingGrid'),
-                data: incomingData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '자재명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
+	        const incomingData = await incomingResponse.json();
+	        const processData = await processResponse.json();
+	        const packagingData = await packagingResponse.json();
+	        
+	        // Grid 인스턴스가 없을 때만 생성합니다.
+	        if (!incomingGrid) {
+	            incomingGrid = new tui.Grid({
+	                el: document.getElementById('incomingGrid'),
+	                data: incomingData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '자재명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            // 이벤트 리스너도 여기서 한 번만 추가합니다.
+	            addGridClickListener(incomingGrid);
+	        } else {
+	            // 인스턴스가 이미 있으면 데이터를 덮어씁니다.
+	            incomingGrid.resetData(incomingData);
+	        }
+	        
+	        if (!processGrid) {
+	            processGrid = new tui.Grid({
+	                el: document.getElementById('processGrid'),
+	                data: processData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '제품명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            addGridClickListener(processGrid);
+	        } else {
+	            processGrid.resetData(processData);
+	        }
 
-            processGrid = new tui.Grid({
-                el: document.getElementById('processGrid'),
-                data: processData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '제품명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
-
-            packagingGrid = new tui.Grid({
-                el: document.getElementById('packagingGrid'),
-                data: packagingData,
-                columns: [
-                    { header: 'ID', name: 'targetId' },
-                    { header: '제품명', name: 'targetName' },
-                    { header: '로트번호', name: 'lotId' },
-                    { header: '수량', name: 'quantity' },
-                    { header: '검사유형', name: 'inspectionTypeName' },
-                    { header: '출처', name: 'targetSource', hidden: true }
-                ]
-            });
-            
-            addGridClickListener(incomingGrid);
-            addGridClickListener(processGrid);
-            addGridClickListener(packagingGrid);
-        } catch (error) {
-            console.error('Fetch error:', error);
-        }
-    }
+	        if (!packagingGrid) {
+	            packagingGrid = new tui.Grid({
+	                el: document.getElementById('packagingGrid'),
+	                data: packagingData,
+	                columns: [
+	                    { header: 'ID', name: 'targetId' },
+	                    { header: '제품명', name: 'targetName' },
+	                    { header: '로트번호', name: 'lotId' },
+	                    { header: '수량', name: 'quantity' },
+	                    { header: '검사유형', name: 'inspectionTypeName' },
+	                    { header: '출처', name: 'targetSource', hidden: true }
+	                ]
+	            });
+	            addGridClickListener(packagingGrid);
+	        } else {
+	            packagingGrid.resetData(packagingData);
+	        }
+	    } catch (error) {
+	        console.error('Fetch error:', error);
+	    }
+	}
 
 	function addGridClickListener(grid) {
 	    grid.on('click', async (ev) => {
@@ -149,19 +163,46 @@ document.addEventListener('DOMContentLoaded', function() {
 	            criteriaFieldsContainer.innerHTML = '';
 	            
 	            if (selectedTargetData.targetSource === 'Incoming') {
-	                // 수입 검사 (in_count 확인)
-					const fieldDiv = document.createElement('div');
-					fieldDiv.className = 'form-group';
-					fieldDiv.innerHTML = `
-					    <label>총 입고 예정 수량: ${selectedTargetData.quantity}</label><br>
-					    <label>합격 수량</label>
-					    <input type="number" id="acceptedCount" class="form-control" placeholder="합격 수량 입력" required>
-					    <label>불량 수량</label>
-					    <input type="number" id="defectiveCount" class="form-control" placeholder="불량 수량 입력" required>
-					    <div id="countWarning" class="text-danger mt-2" style="display:none;">입력된 수량의 합이 총 입고 예정 수량과 일치하지 않습니다.</div>
-					`;
-					criteriaFieldsContainer.appendChild(fieldDiv);
+	                const fieldDiv = document.createElement('div');
+	                fieldDiv.className = 'form-group';
+	                fieldDiv.innerHTML = `
+	                    <label>총 입고 예정 수량: ${selectedTargetData.quantity}</label><br>
+	                    <label>합격 수량</label>
+	                    <input type="number" id="acceptedCount" class="form-control" placeholder="합격 수량 입력" required>
+	                    <label>불량 수량</label>
+	                    <input type="number" id="defectiveCount" class="form-control" placeholder="불량 수량 입력" required>
+	                    <div id="countWarning" class="text-danger mt-2" style="display:none;">입력된 수량의 합이 총 입고 예정 수량과 일치하지 않습니다.</div>
+	                `;
+	                criteriaFieldsContainer.appendChild(fieldDiv);
 
+	                // 불량 수량 입력 필드에 이벤트 리스너 추가
+	                document.getElementById('defectiveCount').addEventListener('input', async (e) => {
+	                    const defectiveCount = parseInt(e.target.value) || 0;
+	                    const defectFields = document.getElementById('defectFields');
+
+	                    if (defectiveCount > 0 && !defectFields) {
+	                        // 불량 유형과 사유를 모두 가져오는 API 호출
+	                        const defectCodeResponse = await fetch('/quality/api/defect-codes');
+	                        const defectCodes = await defectCodeResponse.json();
+
+	                        const defectDiv = document.createElement('div');
+	                        defectDiv.id = 'defectFields';
+	                        defectDiv.innerHTML = `
+	                            <hr>
+	                            <h6>불량 정보</h6>
+	                            <div class="form-group">
+	                                <label for="defectType">불량 사유</label>
+	                                <select id="defectType" class="form-control">
+	                                    <option value="">선택</option>
+	                                    ${defectCodes.map(code => `<option value="${code.comDtId}">${code.comDtNm}</option>`).join('')}
+	                                </select>
+	                            </div>
+	                        `;
+	                        criteriaFieldsContainer.appendChild(defectDiv);
+	                    } else if (defectiveCount === 0 && defectFields) {
+	                        criteriaFieldsContainer.removeChild(defectFields);
+	                    }
+	                });
 	            } else if (selectedTargetData.targetSource === 'WorkOrder') {
 	                // 공정 검사 & 포장 검사 (치수 및 육안 검사)
 	                let criteriaResponse;
@@ -263,10 +304,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			    targetId: selectedTargetData.targetId,
 			    acceptedCount: acceptedCount, // 합격 수량
 			    defectiveCount: defectiveCount, // 불량 수량
-			    empId: '현재 로그인한 직원 ID',
-			    lotId: selectedTargetData.lotId,
-			    inspectionType: selectedTargetData.inspectionType // 검사 유형
+			    lotId: selectedTargetData.lotId || '',
+			    inspectionType: selectedTargetData.inspectionType, // 검사 유형
+				remarks: document.getElementById('modalRemarks').value,
+				materialId: selectedTargetData.materialId
 			};
+			
+			// 불량 수량이 있을 경우, 선택된 불량 유형과 비고를 데이터에 추가
+			if (defectiveCount > 0) {
+			    const defectType = document.getElementById('defectType').value;
+			    registrationData.defectType = defectType;
+			}
 			apiUrl = '/quality/api/verify-incoming-count';
 
 	    } else if (selectedTargetData.targetSource === 'WorkOrder') {
@@ -301,9 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	        registrationData = {
 	            targetSource: selectedTargetData.targetSource,
 	            targetId: selectedTargetData.targetId,
-	            lotId: selectedTargetData.lotId,
+	            lotId: selectedTargetData.lotId || '',
 	            inspectionType: selectedTargetData.inspectionType,
-	            empId: '현재 로그인한 직원 ID',
 	            remarks: document.getElementById('modalRemarks').value,
 	            
 	            productId: selectedTargetData.productId,
