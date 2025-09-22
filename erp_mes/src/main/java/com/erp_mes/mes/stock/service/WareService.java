@@ -118,6 +118,7 @@ public class WareService {
 
     // 개별 입고 등록
     @Transactional
+    @TrackLot(tableName = "INPUT", pkColumnName = "IN_ID")
     public String addInput(Map<String, Object> params) {
         String itemType = (String) params.get("itemType");
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
@@ -165,7 +166,8 @@ public class WareService {
             wareMapper.insertInput(params);
             log.info("부품/반제품 입고 대기: {}", inId);
         }
-        
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", inId);
         return inId;
     }
     
@@ -175,9 +177,9 @@ public class WareService {
         return count != null ? count : 0;
     }
 
-    // 입고 검사 완료 처리
+    // 입고 검사 완료 처리 (로트 처리)
     @Transactional
-    @TrackLot(tableName = "input", pkColumnName = "IN_ID") // ******로트 관련 어노테이션****** 
+    @TrackLot(tableName = "input", pkColumnName = "IN_ID") 
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
@@ -220,7 +222,7 @@ public class WareService {
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
         
-//		*******로트 생성: pk 값을 넘겨주는 곳**********
+        //	*******로트 생성: pk 값을 넘겨주는 곳**********
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", (String) input.get("IN_ID"));
     }
@@ -366,15 +368,7 @@ public class WareService {
         return firstLocation;
     }
     
-    // 구역 추출 유틸리티 (DD02Z1R1L2C1 -> DD02Z1)
-    private String extractZone(String locationId) {
-        if(locationId == null || locationId.length() < 6) {
-            return locationId;
-        }
-        return locationId.substring(0, 6);
-    }
-    
-	 // ==================== 출고 관리 ====================
+	// ==================== 출고 관리 ====================
 	
     // 출고 목록 조회
     @Transactional(readOnly = true)
@@ -448,7 +442,7 @@ public class WareService {
         return batchId;
     }
 
-    // 새로 추가할 메서드
+    // 해당 품목의 재고가 있는 창고 정보(warehouseId, manageId) 조회
     private Map<String, Object> findAvailableWarehouseWithManage(String productId) {
         List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
         if(warehouses.isEmpty()) {
@@ -511,18 +505,7 @@ public class WareService {
         }
     }
 
-    // 가용 창고 찾기
-    private String findAvailableWarehouse(String productId) {
-        List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
-        if(warehouses.isEmpty()) {
-            throw new RuntimeException("재고가 있는 창고를 찾을 수 없습니다.");
-        }
-        return (String) warehouses.get(0).get("warehouseId");
-    }
-    
-    
-
-    // Product 재고 차감
+    // Product 재고 차감 (warehouse_item 차감 후 product 차감)
     private void reduceProductStock(String productId, String warehouseId, Integer qty) {
         List<Map<String, Object>> locations = wareMapper.getProductStockLocations(productId, warehouseId);
         
@@ -542,7 +525,7 @@ public class WareService {
         wareMapper.reduceProductQuantity(productId, qty);
     }
 
-    // Material 재고 차감
+    // Material 재고 차감 (warehouse_item 차감 후 material 차감)
     private void reduceMaterialStock(String materialId, String warehouseId, Integer qty) {
         List<Map<String, Object>> locations = wareMapper.getMaterialStockLocations(materialId, warehouseId);
         
