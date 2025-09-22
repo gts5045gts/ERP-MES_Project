@@ -1,5 +1,6 @@
 package com.erp_mes.mes.lot.aspect;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
+import com.erp_mes.mes.pop.dto.WorkResultDTO;
+import com.erp_mes.mes.pop.mapper.WorkResultMapper;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +31,9 @@ public class LotAOP {
 
 	private final LotService lotService;
 	private final LotUsageService lotUsageService;
+	private final WorkResultMapper workResultMapper;
 	
-//	프로세스별 예외사항이 많아서 db조회 방식으로 변경함
+//	프로세스별 예외사항 때문에 db조회 방식으로 변경함
 	@Around("@annotation(trackLot)")
 	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
 		
@@ -51,12 +55,11 @@ public class LotAOP {
 				String tableName = trackLot.tableName().trim().toUpperCase();
 				String targetId = trackLot.pkColumnName().trim();
 				String targetIdValue = (String) obj;
+				int qtyUsed = 0;
+				
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				
 				List<Map<String, Object>> tableInfo = lotService.getTargetInfo(tableName, targetId, targetIdValue);
-				
-//				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+obj);
-				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>레코드 정보는 : "+tableInfo);
 				
 				for (Map<String, Object> row : tableInfo) {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
@@ -70,7 +73,7 @@ public class LotAOP {
 //					        parentLotId = entry.getValue();	
 //				    	}
 				    	
-				    	if(entry.getKey().equals("IN_ID")){
+				    	if(entry.getKey().equals("IN_ID") && tableName.equals("WORK_RESULT")){
 				    		Object inId = entry.getValue();
 				    		
 				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
@@ -84,10 +87,16 @@ public class LotAOP {
 				    		//중복으로 들어올경우?
 				    		
 				    		parentLotId = lotUsageService.getInputLotId(inId);
-				    	    
+				    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
+				    		
+				    		for (WorkResultDTO dto : workOrderList) {
+				    			 BigDecimal qty = dto.getQuantity();
+				    			 qtyUsed = qty.intValue();
+				    		}
+				    		
 							MaterialUsageDTO usage = MaterialUsageDTO.builder()
 													.parentLotId((String) parentLotId) // 자재 lotID
-													.qtyUsed(0)
+													.qtyUsed(qtyUsed)
 													.build();
 							usages.add(usage);
 							linkParent = true;

@@ -1,0 +1,16 @@
+package com.erp_mes.mes.lot.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.erp_mes.mes.lot.dto.LotDTO;
+
+@Mapper
+public interface LotMapper {
+
+	//로트 추적 페이지 전체 리스트
+	List<LotDTO> lotListWithPaged(Map<String, Object> params);
+
+}
