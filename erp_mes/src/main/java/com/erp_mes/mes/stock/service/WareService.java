@@ -118,6 +118,7 @@ public class WareService {
 
     // 개별 입고 등록
     @Transactional
+    @TrackLot(tableName = "INPUT", pkColumnName = "IN_ID")
     public String addInput(Map<String, Object> params) {
         String itemType = (String) params.get("itemType");
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
@@ -165,7 +166,8 @@ public class WareService {
             wareMapper.insertInput(params);
             log.info("부품/반제품 입고 대기: {}", inId);
         }
-        
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", inId);
         return inId;
     }
     
@@ -175,9 +177,9 @@ public class WareService {
         return count != null ? count : 0;
     }
 
-    // 입고 검사 완료 처리
+    // 입고 검사 완료 처리 (로트 처리)
     @Transactional
-    @TrackLot(tableName = "input", pkColumnName = "IN_ID") // ******로트 관련 어노테이션****** 
+    @TrackLot(tableName = "input", pkColumnName = "IN_ID") 
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
@@ -220,7 +222,7 @@ public class WareService {
         
         log.info("입고 완료: {} - 수량: {}", inId, inCount);
         
-//		*******로트 생성: pk 값을 넘겨주는 곳**********
+        //	*******로트 생성: pk 값을 넘겨주는 곳**********
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", (String) input.get("IN_ID"));
     }

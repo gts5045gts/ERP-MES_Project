@@ -189,7 +189,6 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
-	@TrackLot(tableName = "WAREHOUSE_ID", pkColumnName = "MANAGE_ID")
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -200,10 +199,12 @@ public class WareController {
 	        for(Map<String, Object> item : items) {
 	            item.put("empId", principal.getName());
 	            item.put("batchId", batchId);
-	            wareService.addInput(item);
 	            
+	            String inId = wareService.addInput(item);
+	            
+	            // LOT 추적용 세션 설정
 	            HttpSession session = SessionUtil.getSession();
-//	            session.setAttribute("targetIdValue", item); //pk_id의 값 입력
+	            session.setAttribute("targetIdValue", inId);
 	        }
 	        
 	        result.put("success", true);
@@ -213,9 +214,6 @@ public class WareController {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
-	    
-	    
-        
 	    return result;
 	}
 
