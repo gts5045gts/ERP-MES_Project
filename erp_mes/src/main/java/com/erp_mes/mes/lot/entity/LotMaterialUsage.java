@@ -3,6 +3,7 @@ package com.erp_mes.mes.lot.entity;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,10 +42,10 @@ public class LotMaterialUsage {
 	@JoinColumn(name = "child_lot_id", referencedColumnName = "lot_id", nullable = false)
 	private LotMaster childLot;
 
-//	@Column(name = "qty_used", nullable = false)
-//	private Integer qtyUsed;
+	@Column(name = "qty_used", nullable = false)
+	private Integer qtyUsed;
 
-	@CreationTimestamp
+	@CreatedDate
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 }

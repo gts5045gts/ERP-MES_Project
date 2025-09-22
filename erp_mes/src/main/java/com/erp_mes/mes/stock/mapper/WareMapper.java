@@ -81,6 +81,15 @@ public interface WareMapper {
     int updateMaterialQuantity(@Param("materialId") String materialId, 
                               @Param("inCount") Integer inCount);
     
+    // Product 관련 warehouse_item 메서드 추가
+    List<Map<String, Object>> getPartiallyFilledLocationsProduct(@Param("warehouseId") String warehouseId,
+                                                                 @Param("productId") String productId,
+                                                                 @Param("maxAmount") Integer maxAmount);
+    
+    int updateWarehouseItemAmountProduct(Map<String, Object> params);
+
+    int insertWarehouseItemProduct(Map<String, Object> params);
+
     // ==================== 창고 위치 관리 ====================
     
     // 창고 내 빈 위치 조회
@@ -116,6 +125,87 @@ public interface WareMapper {
     // 기존 Material 위치 업데이트 (중복 방지)
     int updateExistingMaterialLocation(Map<String, Object> params);
     
+	 // ==================== 출고 관리 ====================
+	
+	 // 출고 목록 조회
+	 List<Map<String, Object>> selectOutputList(@Param("outType") String outType,
+	                                            @Param("outStatus") String outStatus,
+	                                            @Param("startDate") String startDate,
+	                                            @Param("endDate") String endDate);
+	
+	 // 오늘 출고 건수
+	 Integer getTodayOutputCount(@Param("today") String today);
+	
+	 // 오늘 출고 배치 건수
+	 Integer getTodayOutputBatchCount(@Param("today") String today);
+	
+	 // 출고 등록
+	 int insertOutput(Map<String, Object> params);
+	
+	 // 출고 정보 조회
+	 Map<String, Object> selectOutputById(@Param("outId") String outId);
+	
+	 // 출고 상태 변경
+	 int updateOutputType(@Param("outId") String outId, @Param("type") String type);
+	
+	 // Material인지 확인
+	 boolean checkIsMaterial(@Param("productId") String productId);
+	
+	 // Material 전체 재고
+	 Integer getMaterialTotalStock(@Param("materialId") String materialId);
+	
+	 // Product 전체 재고
+	 Integer getProductTotalStock(@Param("productId") String productId);
+	
+	 // 재고가 있는 창고 조회
+	 List<Map<String, Object>> getWarehousesWithStock(@Param("productId") String productId);
+	
+	 // Product 재고 위치 조회
+	 List<Map<String, Object>> getProductStockLocations(@Param("productId") String productId,
+	                                                    @Param("warehouseId") String warehouseId);
+	
+	 // Material 재고 위치 조회
+	 List<Map<String, Object>> getMaterialStockLocations(@Param("materialId") String materialId,
+	                                                     @Param("warehouseId") String warehouseId);
+	
+	 // warehouse_item 재고 차감
+	 int reduceWarehouseItemStock(@Param("productId") String productId,
+	                              @Param("warehouseId") String warehouseId,
+	                              @Param("locationId") String locationId,
+	                              @Param("qty") Integer qty);
+	
+	 // Material warehouse_item 재고 차감
+	 int reduceMaterialWarehouseStock(@Param("materialId") String materialId,
+	                                  @Param("warehouseId") String warehouseId,
+	                                  @Param("locationId") String locationId,
+	                                  @Param("qty") Integer qty);
+	 
+	 String getManageIdByWarehouse(@Param("productId") String productId, 
+             					   @Param("warehouseId") String warehouseId);
+	
+	 // Product 수량 감소
+	 int reduceProductQuantity(@Param("productId") String productId, @Param("qty") Integer qty);
+	
+	 // Material 수량 감소
+	 int reduceMaterialQuantity(@Param("materialId") String materialId, @Param("qty") Integer qty);
+	
+	 // 출고 삭제
+	 int deleteOutput(@Param("outId") String outId);
+    
+	 // 재고 포함 자재 목록 조회
+	 List<Map<String, Object>> selectMaterialsWithStock();
+
+	 // 재고 포함 완제품 목록 조회  
+	 List<Map<String, Object>> selectProductsWithStock();
+	 
+	 List<Map<String, Object>> selectOutputBatches(@Param("date") String date);
+	 
+	// 배치별 출고 상세 목록 조회
+	 List<Map<String, Object>> selectOutputListByBatch(@Param("batchId") String batchId);
+
+	 // 배치 목록 조회 (파라미터 맵 방식)
+	 List<Map<String, Object>> selectOutputBatches(Map<String, Object> params);
+    
     // ==================== 기초 데이터 조회 ====================
     
     // 부품 목록 조회 (구버전)
@@ -126,4 +216,7 @@ public interface WareMapper {
     
     // 거래처 목록 조회
     List<Map<String, Object>> selectClientsList();
+    
+    // 생산후 입고 가능한 Product 목록 조회 (완제품)
+    List<Map<String, Object>> selectProductsForInput();
 }
