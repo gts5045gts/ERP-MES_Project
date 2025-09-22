@@ -19,13 +19,6 @@ import com.erp_mes.mes.stock.service.WareService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-/**
- * 재고 관리 컨트롤러
- * - 재고 현황 조회/수정
- * - 자재(부품/반제품) 관리
- * - 제품(완제품) 관리
- * - 입출고 관리
- */
 @Log4j2  
 @Controller
 @RequiredArgsConstructor

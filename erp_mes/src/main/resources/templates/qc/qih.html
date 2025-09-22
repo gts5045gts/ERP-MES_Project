@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<title>품질검사 관리</title>
+<link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+<style>
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+</style>
+</head>
+
+<body>
+	<th:block layout:fragment="content">
+		<div class="container-fluid">
+			<h2 class="mb-4">품질검사 이력</h2>
+			<div class="card shadow mb-4">
+				<div class="card-body py-2">
+					<div class="d-flex justify-content-end align-items-center flex-wrap">
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="historyFilterType" class="text-nowrap me-2">검사 유형</label>
+							<select class="form-control form-control-sm" id="historyFilterType">
+								<option value="ALL">전체</option>
+								<option value="QC001">수입검사</option>
+								<option value="QC002">공정검사</option>
+								<option value="QC003">포장검사</option>
+							</select>
+						</div>
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="historyFilterProduct" class="text-nowrap me-2">제품명</label>
+							<input type="text" class="form-control form-control-sm" id="historyFilterProduct" placeholder="제품명 입력">
+						</div>
+						<div class="form-group d-flex align-items-center mb-0 me-3">
+							<label for="historyFilterLotId" class="text-nowrap me-2">로트번호</label>
+							<input type="text" class="form-control form-control-sm" id="historyFilterLotId" placeholder="로트번호 입력">
+						</div>
+						<div class="form-group mb-0">
+							<button class="btn btn-primary btn-sm" id="historySearchBtn">검색</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="historyGrid"></div>
+			
+			<div class="card shadow mb-4">
+			    <div class="card-body py-2">
+			        <div class="d-flex align-items-center">
+			            <h2 class="h5 mb-0 me-3">검사 대기 목록</h2><hr>
+			            <div class="form-check form-check-inline">
+			                <input class="form-check-input" type="radio" name="inspectionTypeRadio" id="radioIncoming" value="incoming" checked>
+			                <label class="form-check-label" for="radioIncoming">수입검사</label>
+			            </div>
+			            <div class="form-check form-check-inline">
+			                <input class="form-check-input" type="radio" name="inspectionTypeRadio" id="radioProcess" value="process">
+			                <label class="form-check-label" for="radioProcess">공정검사</label>
+			            </div>
+			            <div class="form-check form-check-inline">
+			                <input class="form-check-input" type="radio" name="inspectionTypeRadio" id="radioPackaging" value="packaging">
+			                <label class="form-check-label" for="radioPackaging">포장검사</label>
+			            </div>
+			        </div>
+			    </div>
+			</div>
+
+			<div class="inspection-grid-container" id="incomingGridContainer">
+			    <div id="incomingGrid"></div>
+			</div>
+
+			<div class="inspection-grid-container" id="processGridContainer" style="display: none;">
+			    <div id="processGrid"></div>
+			</div>
+
+			<div class="inspection-grid-container" id="packagingGridContainer" style="display: none;">
+			    <div id="packagingGrid"></div>
+			</div>
+
+		<div class="modal fade" id="inspectionModal" tabindex="-1" role="dialog" aria-labelledby="inspectionModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="inspectionModalLabel">품질검사 등록</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="inspectionRegistrationForm">
+							<div class="form-group">
+								<label>제품명</label>
+								<input type="text" class="form-control" id="modalProductName" readonly>
+							</div>
+							<div class="form-group">
+								<label>로트번호</label>
+								<input type="text" class="form-control" id="modalLotId" readonly>
+							</div>
+							<div class="form-group">
+								<label>검사유형</label>
+								<input type="text" class="form-control" id="modalInspectionType" readonly>
+							</div>
+							<div id="criteriaFields">
+								</div>
+							<div class="form-group">
+								<label>비고</label>
+								<textarea class="form-control" id="modalRemarks" rows="2"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+						<button type="button" class="btn btn-primary" id="registerBtn">등록</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+	<th:block layout:fragment="script">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+	<script src="https://kit.fontawesome.com/60c9dd1eea.js" crossorigin="anonymous"></script>
+	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+
+	<script src="/bootstrap/js/qc/qualityHistory.js"></script>
+	</th-block>
+</body>
+</html>

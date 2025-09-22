@@ -9,15 +9,19 @@ import lombok.Setter;
 @Setter
 public class InspectionItemDTO {
     private Long itemId;
-    private String productId; // 제품번호
+    private String materialId;
+    private Long proId;
     private Long inspectionFMId; // INSPECTION_FM_ID 검사기준값
+    private String inspectionTypeName;
     private BigDecimal toleranceValue; // 허용 공차
+    private BigDecimal standardValue;
     private String unit;
     
     // FM테이블에서 참조
     private String inspectionType;
     private String itemName;
     private String methodName;
-    // product테이블 참조
-    private String productName;
+    // 자재,공정 테이블 참조
+    private String proNm;
+    private String materialName;
 }

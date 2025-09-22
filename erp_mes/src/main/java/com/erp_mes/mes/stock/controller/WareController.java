@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
+import com.erp_mes.mes.stock.service.StockService;
 import com.erp_mes.mes.stock.service.WareService;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.extern.log4j.Log4j2;
 public class WareController {
 	
 	private final WareService wareService;
+    private final StockService stockService;
 	
 	// ==================== 1. 페이지 라우팅 ====================
 	
@@ -140,10 +142,12 @@ public class WareController {
 	@GetMapping("/api/inputs")
 	@ResponseBody
 	public List<Map<String, Object>> getInputList(
+	        @RequestParam(name = "itemType", required = false) String itemType,  // itemType 파라미터 추가
 	        @RequestParam(name = "batchId", required = false) String batchId,
 	        @RequestParam(name = "inType", required = false) String inType,
 	        @RequestParam(name = "inStatus", required = false) String inStatus) {
 	    
+	    // itemType으로 분기 처리 필요할 수도
 	    if(batchId != null && !batchId.isEmpty()) {
 	        return wareService.getInputListByBatch(batchId);
 	    }
@@ -235,5 +239,18 @@ public class WareController {
 	@ResponseBody
 	public List<Map<String, Object>> getClientsList() {
 	    return wareService.getClientsList();
+	}
+	
+	// 창고 타입 공통코드 조회
+	@GetMapping("/api/common-codes/warehouse-types")
+	@ResponseBody
+	public List<Map<String, String>> getWarehouseTypes() {
+	    return stockService.getMaterialTypes(); // 이미 있는 메서드 활용
+	}
+	
+	@GetMapping("/api/products-for-input")
+	@ResponseBody
+	public List<Map<String, Object>> getProductsForInput() {
+	    return wareService.getProductsForInput();
 	}
 }
