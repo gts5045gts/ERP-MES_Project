@@ -276,26 +276,28 @@ public class InspectionController {
 	    }
 	}
 
-	@GetMapping("/api/inspection-item/process/{processId}")
+	@GetMapping("/api/inspection-item/process/{processId}/seq/{proSeq}")
 	@ResponseBody
-	public List<InspectionItemDTO> getInspectionItemByProcessId(@PathVariable("processId") Long processId) {
-		return inspectionService.getInspectionItemByProcessId(processId);
+	public List<InspectionItemDTO> getInspectionItemByProcessIdAndSeq(@PathVariable("processId") Long processId, @PathVariable("proSeq") String proSeq) {
+	    return inspectionService.findInspectionItemsByProcessIdAndSeq(processId, proSeq);
 	}
 
 	@PostMapping("/api/register-inspection-result")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> registerInspection(@RequestBody InspectionRegistrationRequestDTO requestDTO) {
-		Map<String, Object> response = new HashMap<>();
-		try {
-			inspectionService.registerInspection(requestDTO);
-			response.put("success", true);
-			response.put("message", "검사 등록이 성공적으로 완료되었습니다.");
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("Failed to register inspection: {}", e.getMessage());
-			response.put("success", false);
-			response.put("message", "등록 실패: " + e.getMessage());
-			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public ResponseEntity<Map<String, Object>> registerInspection(@RequestBody InspectionRegistrationRequestDTO requestDTO, @AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
+	    Map<String, Object> response = new HashMap<>();
+	    try {
+	        requestDTO.setEmpId(personnelLoginDTO.getEmpId());
+	        
+	        inspectionService.registerInspection(requestDTO);
+	        response.put("success", true);
+	        response.put("message", "검사 등록이 성공적으로 완료되었습니다.");
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        log.error("Failed to register inspection: {}", e.getMessage());
+	        response.put("success", false);
+	        response.put("message", "등록 실패: " + e.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 }

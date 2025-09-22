@@ -28,4 +28,5 @@ public class InspectionTargetDTO {
     private String empId;       // WORK_ORDER에서 가져옴
     private String processName; 
     private String equipName;  
+    private String proSeq;
 }

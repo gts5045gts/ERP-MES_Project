@@ -48,8 +48,8 @@ public interface QualityMapper {
  
  // 검사 항목 및 허용 공차 조회 
  List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);
- List<InspectionItemDTO> findInspectionItemsByProcessId(Long processId);
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
+ List<InspectionItemDTO> findInspectionItemsByProcessIdAndSeq(@Param("processId") Long processId,@Param("proSeq") String proSeq);
  void updateInputStatusByInId(@Param("inId") String inId, @Param("newStatus") String newStatus);
  Integer findInCountByInId(String inId);
  String findTargetNameByInId(String inId);

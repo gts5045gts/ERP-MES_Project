@@ -204,8 +204,8 @@ public class InspectionService {
     }
 
     @Transactional(readOnly = true)
-    public List<InspectionItemDTO> getInspectionItemByProcessId(Long processId) {
-        return qualityMapper.findInspectionItemsByProcessId(processId);
+    public List<InspectionItemDTO> findInspectionItemsByProcessIdAndSeq(Long processId, String proSeq) {
+        return qualityMapper.findInspectionItemsByProcessIdAndSeq(processId, proSeq);
     }
     
     @Transactional
@@ -241,6 +241,10 @@ public class InspectionService {
             resultDTO.setInspectionType(requestDTO.getInspectionType()); // 💡 DTO에서 inspectionType 가져와 설정
             resultDTO.setResult(resultData.getResult());
             resultDTO.setRemarks(resultData.getRemarks());
+            
+            String remarks = (resultData.getRemarks() != null) ? resultData.getRemarks() : "";
+            resultDTO.setRemarks(remarks);
+            
             qualityMapper.insertInspectionResult(resultDTO);
         }
 

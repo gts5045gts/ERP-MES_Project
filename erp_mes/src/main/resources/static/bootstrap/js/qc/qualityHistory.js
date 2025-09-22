@@ -206,13 +206,15 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					});
 				} else if (selectedTargetData.targetSource === 'WorkOrder') {
-					// 공정 검사 & 포장 검사 (치수 및 육안 검사)
+					// 공정 검사 로직
 					const processId = selectedTargetData.processId;
+					const proSeq = selectedTargetData.proSeq; 
 
-					if (processId) { 
+					if (processId && proSeq) { 
 						let criteriaResponse;
 						try {
-							criteriaResponse = await fetch(`/quality/api/inspection-item/process/${processId}`);
+							// processId와 proSeq를 함께 API에 전달
+							criteriaResponse = await fetch(`/quality/api/inspection-item/process/${processId}/seq/${proSeq}`);
 							if (!criteriaResponse.ok) {
 								throw new Error('검사 기준 로드 실패');
 							}
@@ -223,13 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
 									const fieldDiv = document.createElement('div');
 									fieldDiv.className = 'form-group';
 									fieldDiv.innerHTML = `
-					                                    <label>${criteria.itemName} (${criteria.methodName})</label>
-					                                    <input type="number" step="0.01" class="form-control measurement-input" 
-					                                        data-item-id="${criteria.itemId}" data-tolerance="${criteria.toleranceValue}" data-standard="${criteria.standardValue}" data-unit="${criteria.unit}" 
-					                                        placeholder="실측값" required>
-					                                    <small class="form-text text-muted">기준값: ${criteria.standardValue} ${criteria.unit}, 허용 공차: ${criteria.toleranceValue} ${criteria.unit}</small>
-					                                    <input type="text" class="form-control result-input" readonly placeholder="결과">
-					                                `;
+				                                    <label>${criteria.itemName} (${criteria.methodName})</label>
+				                                    <input type="number" step="0.01" class="form-control measurement-input" 
+				                                        data-item-id="${criteria.itemId}" data-tolerance="${criteria.toleranceValue}" data-standard="${criteria.standardValue}" data-unit="${criteria.unit}" 
+				                                        placeholder="실측값" required>
+				                                    <small class="form-text text-muted">기준값: ${criteria.standardValue} ${criteria.unit}, 허용 공차: ${criteria.toleranceValue} ${criteria.unit}</small>
+				                                    <input type="text" class="form-control result-input" readonly placeholder="결과">
+				                                `;
 									criteriaFieldsContainer.appendChild(fieldDiv);
 								});
 								document.querySelectorAll('.measurement-input').forEach(input => {
@@ -243,10 +245,9 @@ document.addEventListener('DOMContentLoaded', function() {
 							criteriaFieldsContainer.innerHTML = `<p class="text-danger">검사 기준을 불러오는 중 오류가 발생했습니다.</p>`;
 						}
 					} else {
-						criteriaFieldsContainer.innerHTML = `<p class="text-danger">유효한 공정 ID가 없습니다.</p>`;
+						criteriaFieldsContainer.innerHTML = `<p class="text-danger">유효한 공정 ID 또는 공정 순서가 없습니다.</p>`;
 					}
 				}
-
 				$('#inspectionModal').modal('show');
 			}
 		});
@@ -341,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					return;
 				}
 
-				const resultValue = (resultInput.value === '합격') ? 'Y' : 'N';
+				const resultValue = (resultInput.value === '합격') ? '합격' : '불합격';
 
 				results.push({
 					itemId: input.dataset.itemId,
