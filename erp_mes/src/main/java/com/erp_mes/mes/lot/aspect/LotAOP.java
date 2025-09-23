@@ -103,6 +103,8 @@ public class LotAOP {
 				    		for (WorkResultDTO dto : workOrderList) {
 				    			 BigDecimal qty = dto.getQuantity();
 				    			 qtyUsed = qty.intValue();
+				    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
+				    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
 				    		}
 				    		
 							MaterialUsageDTO usage = MaterialUsageDTO.builder()
