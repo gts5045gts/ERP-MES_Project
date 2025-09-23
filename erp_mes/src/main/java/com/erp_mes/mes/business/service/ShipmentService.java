@@ -164,6 +164,9 @@ public class ShipmentService {
 	        shipmentMapper.updateOrderStatus(shipmentDTO.getOrderId(), "INSHIPMENT"); // 수주 상태를 '출하진행중'으로 업데이트
 	    }
 	    
+	    // 모든 품목의 출하 수량이 0이면(즉, 미출하(NOTSHIPPED) 상태이면), 출하 상태를 출하대기(READY)로 변경
+	    shipmentMapper.updateShipmentStatusToReadyIfAllNotShipped(shipmentId);
+	    
 	    return shipmentId;
 	}
 	

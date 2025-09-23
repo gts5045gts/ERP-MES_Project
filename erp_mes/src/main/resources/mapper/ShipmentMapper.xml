@@ -331,4 +331,20 @@
     	WHERE shipment_detail_status = 'DELAY'
 	</select>
 	
+<!-- 	출하 등록시 출하수량을 전부 0으로 등록했을 경우(=미출하) 해당 출하의 상태를 출하대기로 update -->
+	<update id="updateShipmentStatusToReadyIfAllNotShipped">
+    	UPDATE shipment
+    	SET
+        	shipment_status = 'READY'
+    	WHERE
+        	shipment_id = #{shipmentId}
+        	AND NOT EXISTS (
+            	SELECT 1
+            	FROM shipment_detail
+            	WHERE
+                	shipment_id = #{shipmentId}
+                	AND shipment_detail_status != 'NOTSHIPPED'
+        	)
+	</update>
+	
 </mapper>

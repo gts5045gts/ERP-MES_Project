@@ -29,7 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	let editMaterials = []; // 서버에서 불러온 편집 대상 품목들
 
 	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
-	const addBtn = document.getElementById("addBtn");
+	const workOrderAddBtn = document.getElementById("WorkOrderAddBtn"); // 작업지시발주 버튼
+	const normalAddBtn = document.getElementById("NormalAddBtn"); // 일반발주 버튼
+	
 	let editBtn = document.getElementById("editBtn");
 	if (!editBtn) {
 		editBtn = document.createElement("button");
@@ -39,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		editBtn.textContent = "수정";
 		editBtn.style.display = "none"; // 기본 숨김
 		// addBtn이 있는 곳의 부모에 추가 (존재하지 않으면 body에 append)
-		if (addBtn && addBtn.parentNode) {
-			addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
+		if (normalAddBtn && normalAddBtn.parentNode) {
+			normalAddBtn.parentNode.insertBefore(editBtn, normalAddBtn.nextSibling);
 		} else {
 			document.body.appendChild(editBtn);
 		}
@@ -355,8 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 모달/품목 선택 UI 관련
 	// ----------------------------------------------------------------------------------
-	if (addBtn) {
-		addBtn.addEventListener("click", async () => {
+	// 일반발주 버튼 클릭시 모달창
+	if (normalAddBtn) {
+		normalAddBtn.addEventListener("click", async () => {
 			isEditMode = false;
 			editPurchaseId = null;
 			editMaterials = [];

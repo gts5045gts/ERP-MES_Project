@@ -73,13 +73,17 @@ document.addEventListener("DOMContentLoaded", () => {
 						let color = '';
 						let statusText = '';
 						switch (value.value) {
-							case 'PARTIAL':
-								color = 'green';
-								statusText = '부분출하';
+							case 'READY':
+								color = 'blue';
+								statusText = '출하대기';
 								break;
 							case 'DELAY':
 								color = 'red';
 								statusText = '날짜지연';
+								break;
+							case 'PARTIAL':
+								color = 'green';
+								statusText = '부분출하';
 								break;
 							case 'COMPLETION':
 								color = 'black';
