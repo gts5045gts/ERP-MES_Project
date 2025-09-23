@@ -22,11 +22,23 @@ public class WebController {
 	}
 
 	@RequestMapping("/")
-	public String login(@CookieValue(value = "remember-id", required = false) String rememberId, Model model) {
-		// 쿠키값 Model 객체에 추가
-		model.addAttribute("rememberId", rememberId);
-		model.addAttribute("rememberChecked", true);
-		return "login";
+	public String login(@CookieValue(value = "remember-id", required = false) String rememberId, Model model,
+			@AuthenticationPrincipal PersonnelLoginDTO loginDTO) {
+		
+		
+		
+		//로그인 화면 진입시 로그인 정보가 존재할경우 메인으로 리다이렉트
+		if(loginDTO != null) {
+			// 쿠키값 Model 객체에 추가
+			return "redirect:main";
+		}else {
+			
+			model.addAttribute("rememberId", rememberId);
+			model.addAttribute("rememberChecked", true);
+			return "login";
+		}
+				
+		
 	}
 
 	@RequestMapping("main")

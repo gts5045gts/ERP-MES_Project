@@ -15,7 +15,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@Builder
+//@Builder		한 파일에 빌더가 두개가 존재해서 오류 발생으로 인한 주석처리
 @ToString
 public class LotDTO {
 

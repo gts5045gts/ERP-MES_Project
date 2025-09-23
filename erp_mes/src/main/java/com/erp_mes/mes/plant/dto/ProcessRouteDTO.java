@@ -30,6 +30,7 @@ public class ProcessRouteDTO {
 	private String equipId;			//설비 아이디
 	private String equipNm;			//설비 이름
 	
+	private String lineId;			//라인 아이디 값
 	
 	
 	
