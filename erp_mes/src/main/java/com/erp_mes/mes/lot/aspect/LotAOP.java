@@ -84,7 +84,7 @@ public class LotAOP {
 							}
 						}
 				    	
-				    	if(entry.getKey().equals("IN_ID") && tableName.equals("WORK_RESULT")){
+				    	if(entry.getKey().equals("OUT_ID") && tableName.equals("OUTPUT")){
 				    		Object inId = entry.getValue();
 				    		
 				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
@@ -120,10 +120,6 @@ public class LotAOP {
 								.materialCode((String) materialType)
 								.usages(usages)
 								.build();
-				
-				
-				
-//				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
 			 	String lotId = lotService.createLotWithRelations(lotDTO, domain, createLot, linkParent);
