@@ -24,41 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 선택한 품목 정보를 저장할 배열
 	let selectedProducts = [];
 
-	// 편집 모드 관련
-	let isEditMode = false;
-	let editShipmentId = null;
-	let editItems = []; // 서버에서 불러온 편집 대상 품목들
-
-	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
-	const addBtn = document.getElementById("addBtn");
-	let editBtn = document.getElementById("editBtn");
-	if (!editBtn) {
-		editBtn = document.createElement("button");
-		editBtn.id = "editBtn";
-		editBtn.type = "button";
-		editBtn.className = "btn btn-secondary ms-2";
-		editBtn.textContent = "수정";
-		editBtn.style.display = "none"; // 기본 숨김
-		// addBtn이 있는 곳의 부모에 추가
-		if (addBtn && addBtn.parentNode) {
-			addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
-		} else {
-			document.body.appendChild(editBtn);
-		}
-	}
-
-	// 수정 버튼 클릭 이벤트
-	editBtn.addEventListener('click', () => {
-		const focused = shipmentGrid.getFocusedCell();
-		if (!focused) {
-			alert("수정할 행을 선택해주세요.");
-			return;
-		}
-
-		const rowData = shipmentGrid.getRow(focused.rowKey);
-		openEditModal(rowData.shipmentId, rowData);
-	});
-
 	// TUI Grid 인스턴스들을 초기화하고 데이터를 불러오는 함수
 	const initializePage = () => {
 		// 출하 목록 그리드 초기화
@@ -73,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			columns: [
 				{ header: '출하번호', name: 'shipmentId', align: 'center' },
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center', width: 90},
+				{ header: '거래처 번호', name: 'clientId', align: 'center', width: 90 },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
@@ -109,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						let statusText = '';
 						switch (value.value) {
 							case 'PARTIAL':
-								color = 'blue';
+								color = 'green';
 								statusText = '부분출하';
 								break;
 							case 'DELAY':
@@ -117,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								statusText = '날짜지연';
 								break;
 							case 'COMPLETION':
-								color = 'green';
+								color = 'black';
 								statusText = '출하완료';
 								break;
 						}
@@ -157,8 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'red';
 								statusText = '날짜지연';
 								break;
-							case 'COMPLETION':
+							case 'PARTIAL':
 								color = 'green';
+								statusText = '부분출하';
+								break;
+							case 'COMPLETION':
+								color = 'black';
 								statusText = '출하완료';
 								break;
 						}
@@ -182,14 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 그 외 클릭: 상세 로드 및 수정 버튼 표시
 			loadShipmentDetails(rowData.shipmentId);
-
-			//			if (rowData.shipmentStatus === 'PARTIAL') {
-			//				editBtn.style.display = "inline-block";
-			//				editBtn.dataset.shipmentId = rowData.shipmentId;
-			//			} else {
-			//				editBtn.style.display = "none";
-			//				editBtn.removeAttribute('data-shipment-id');
-			//			}
 		});
 	};
 
@@ -235,53 +196,29 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	// 모달창에서 수주 상세 목록 불러오기
-		function loadOrderDetailGrid(orderId) {
-			fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('네트워크 응답이 올바르지 않습니다.');
-					}
-					return response.json();
-				})
-				.then(data => {
-					// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
-					const gridData = data.map(item => ({
-						...item,
-						// 여기서 서버의 orderQty 값을 shipmentQty에 할당
-						shipmentQty: item.orderQty
-					}));
-	
-					if (orderDetailGrid) {
-						// 수정된 데이터 배열로 그리드를 업데이트
-						orderDetailGrid.resetData(gridData);
-					}
-				})
-				.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
-		}
+	function loadOrderDetailGrid(orderId) {
+		fetch(`/business/api/shipment/ordersDetail?orderId=${encodeURIComponent(orderId)}`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('네트워크 응답이 올바르지 않습니다.');
+				}
+				return response.json();
+			})
+			.then(data => {
+				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
+				const gridData = data.map(item => ({
+					...item,
+					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
+					shipmentQty: item.orderQty
+				}));
 
-//	async function loadOrderDetailGrid(orderId, existingShipmentId = null) {
-//		try {
-//			let url = `/business/api/shipment/ordersDetailRemaining?orderId=${encodeURIComponent(orderId)}`;
-//			if (existingShipmentId) {
-//				url += `&shipmentId=${encodeURIComponent(existingShipmentId)}`;
-//			}
-//
-//			const response = await fetch(url);
-//			if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
-//
-//			const data = await response.json();
-//			const gridData = data.map(item => ({
-//				...item,
-//				shipmentQty: item.orderQty // 초기 출하 수량 세팅
-//			}));
-//
-//			if (orderDetailGrid) orderDetailGrid.resetData(gridData);
-//
-//		} catch (err) {
-//			console.error("수주 상세 목록 불러오기 오류:", err);
-//		}
-//	}
-
+				if (orderDetailGrid) {
+					// 수정된 데이터 배열로 그리드를 업데이트
+					orderDetailGrid.resetData(gridData);
+				}
+			})
+			.catch(error => console.error("수주 상세 목록 불러오기 오류:", error));
+	}
 
 	//--------------------------------------------------------------------------------------
 
@@ -336,24 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			// 수주 리스트 그리드 클릭 이벤트
 			orderListGrid.on('click', (ev) => {
-				//				if (!ev || ev.rowKey == null) return;
-				//
-				//				const rowKey = ev.rowKey;
-				//
-				//				if (ev.columnName === '_checked') {
-				//					// 체크박스 클릭 시 → 그리드 기본 동작(check/uncheck)에 맡기고 상세 갱신만 실행
-				//					setTimeout(() => updateSelectedItems(), 0);
-				//				} else {
-				//					// 셀 클릭 시 → 체크박스 토글 + 상세 갱신
-				//					const row = orderListGrid.getRow(rowKey);
-				//					const isChecked = row && row._attributes.checked;
-				//					if (isChecked) {
-				//						orderListGrid.uncheck(rowKey);
-				//					} else {
-				//						orderListGrid.check(rowKey);
-				//					}
-				//					updateSelectedItems();
-				//				}
 				if (!ev || ev.rowKey == null) return;
 				const row = orderListGrid.getRow(ev.rowKey);
 				const isChecked = row && row._attributes.checked;
@@ -378,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				rowHeaders: ['checkbox'],
 				columns: [
 					{ header: '수주번호', name: 'orderId', align: 'center', width: 140 },
-//					{ header: '품목번호', name: 'productId', align: 'center' },
 					{ header: '품목명', name: 'productName', align: 'center' },
 					{ header: '재고량', name: 'stockQty', align: 'center' },
 					{ header: '수주수량', name: 'orderQty', align: 'center' },
@@ -460,6 +378,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 병합된 모든 상세 목록 데이터로 그리드를 업데이트
 		orderDetailGrid.resetData(allDetails);
 
+		// 수주가 체크되면 해당 상세 목록 전체를 자동으로 체크
+		if (orderDetailGrid.getData().length > 0) {
+			orderDetailGrid.checkAll();
+		}
+
 		// 체크박스 상태 복원
 		orderDetailGrid.getData().forEach((row, idx) => {
 			if (prevCheckedMap[`${row.orderId}_${row.id}`]) {
@@ -474,11 +397,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// 수정: 상세 목록 그리드에서 체크된 행만 가져옴
 		const checkedDetails = orderDetailGrid.getCheckedRows();
+		const allDetails = orderDetailGrid.getData();
 
-		if (checkedDetails.length === 0) {
-			alert("하나 이상의 품목을 선택하고 출하 수량을 입력해주세요.");
+		if (checkedDetails.length !== allDetails.length) {
+			alert("해당 수주의 모든 상세 품목을 선택해야 출하 등록이 가능합니다.");
 			return;
 		}
+		//		if (checkedDetails.length === 0) {
+		//			alert("하나 이상의 품목을 선택하고 출하 수량을 입력해주세요.");
+		//			return;
+		//		}
 
 		// 수주 건별로 데이터를 그룹화
 		const shipmentsByOrderId = {};
@@ -536,26 +464,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			for (const payload of shipmentPayloads) {
 				console.log("전송될 페이로드:", payload);
 
-				let res;
-				if (isEditMode && editShipmentId) {
-					res = await fetch(`/business/api/shipments/${editShipmentId}/add-details`, {
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json",
-							[csrfHeader]: csrfToken
-						},
-						body: JSON.stringify(payload.items)
-					});
-				} else {
-					res = await fetch("/business/api/shipment/submit", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							[csrfHeader]: csrfToken
-						},
-						body: JSON.stringify(payload)
-					});
-				}
+				const res = await fetch("/business/api/shipment/submit", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						[csrfHeader]: csrfToken
+					},
+					body: JSON.stringify(payload)
+				});
 
 				if (!res.ok) {
 					allSuccess = false;
@@ -578,51 +494,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	// 편집 모달 열기 (기존 출하 불러와서 채우기)
-	async function openEditModal(shipmentId) {
-		try {
-			const res = await fetch(`/business/api/shipments/${shipmentId}`);
-			if (!res.ok) {
-				throw new Error("출하 정보를 불러오지 못했습니다.");
-			}
-			const shipment = await res.json();
-
-			isEditMode = true;
-			editShipmentId = shipmentId;
-
-			document.getElementById('shipmentModalTitle').textContent = '출하 수정';
-			document.getElementById('shipmentSubmitBtn').textContent = '수정';
-
-			// 기존 출하에서 아직 출하되지 않은 품목만 불러오기
-			if (shipment.items && shipment.items.length > 0) {
-				const orderId = shipment.items[0].orderId;
-				await loadOrderDetailGrid(orderId, shipmentId);
-			}
-
-//			editItems = shipment.items || [];
-
-			shipmentAddModal.show();
-
-		} catch (err) {
-			console.error("편집 모달 오픈 실패:", err);
-			alert("편집 모달을 열 수 없습니다: " + err.message);
-		}
-	}
-
-	// 검색 버튼 클릭 이벤트
-	document.getElementById("searchBtn").addEventListener("click", () => {
-		const status = document.getElementById("shipmentStatus").value;
-		const keyword = document.getElementById("cliSearch").value;
-
-		let url = `/business/api/shipments/search?shipmentStatus=${status}&clientName=${encodeURIComponent(keyword)}`;
-
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				shipmentGrid.resetData(data);
-				shipmentDetailGrid.resetData([]); // 검색 시 상세 그리드 초기화
-			})
-			.catch(error => console.error("출하 목록 검색 오류:", error));
-	});
+	// 검색 버튼 클릭 이벤트 -- 아직 미구현
+	//	document.getElementById("searchBtn").addEventListener("click", () => {
+	//		const status = document.getElementById("shipmentStatus").value;
+	//		const keyword = document.getElementById("cliSearch").value;
+	//
+	//		let url = `/business/api/shipments/search?shipmentStatus=${status}&clientName=${encodeURIComponent(keyword)}`;
+	//
+	//		fetch(url)
+	//			.then(response => response.json())
+	//			.then(data => {
+	//				shipmentGrid.resetData(data);
+	//				shipmentDetailGrid.resetData([]); // 검색 시 상세 그리드 초기화
+	//			})
+	//			.catch(error => console.error("출하 목록 검색 오류:", error));
+	//	});
 
 });

@@ -140,6 +140,10 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'green';
 								statusText = ' 생산중';
 								break;
+							case 'INSHIPMENT':
+								color = 'brown';
+								statusText = '출하진행중';
+								break;
 							case 'COMPLETION':
 								color = 'black';
 								statusText = '출하완료';
@@ -203,6 +207,10 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'green';
 								statusText = ' 생산중';
 								break;
+							case 'INSHIPMENT':
+								color = 'brown';
+								statusText = '출하진행중';
+								break;
 							case 'COMPLETION':
 								color = 'black';
 								statusText = '출하완료';
@@ -236,35 +244,40 @@ document.addEventListener("DOMContentLoaded", () => {
 					alert("이미 취소된 수주입니다.");
 					return;
 				}
+				if (rowData.orderStatus === 'RECEIVED') {
+					editBtn.style.display = "none";
 
-				editBtn.style.display = "none";
+					if (confirm("수주를 취소하시겠습니까?")) {
+						const orderId = rowData.orderId;
+						try {
+							const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+							const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
-				if (confirm("수주를 취소하시겠습니까?")) {
-					const orderId = rowData.orderId;
-					try {
-						const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-						const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+							const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
+								method: "PUT",
+								headers: {
+									"Content-Type": "application/json",
+									[csrfHeader]: csrfToken
+								}
+							});
 
-						const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
-							method: "PUT",
-							headers: {
-								"Content-Type": "application/json",
-								[csrfHeader]: csrfToken
+							if (!res.ok) {
+								throw new Error(await res.text());
 							}
-						});
 
-						if (!res.ok) {
-							throw new Error(await res.text());
+							orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+							alert("수주가 취소되었습니다.");
+
+							loadOrderDetails(orderId);
+						} catch (err) {
+							console.error("수주 취소 실패:", err);
+							alert("수주 취소 실패: " + err.message);
 						}
-
-						orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
-						alert("수주가 취소되었습니다.");
-						
-						loadOrderDetails(orderId);
-					} catch (err) {
-						console.error("수주 취소 실패:", err);
-						alert("수주 취소 실패: " + err.message);
 					}
+				} else {
+					// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
+					alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");
+					return;
 				}
 				return;
 			}
@@ -629,7 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const rowKey = gridData.findIndex(item => item.productId === productId);
 			if (rowKey !== -1) {
 				// TUI Grid의 이벤트 리스너가 다시 호출되지 않도록 `false`를 두 번째 인자로 전달합니다.
-			    productListGrid.uncheck(rowKey, false); 
+				productListGrid.uncheck(rowKey, false);
 			}
 		}
 

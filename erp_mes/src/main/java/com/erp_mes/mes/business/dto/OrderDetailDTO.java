@@ -26,4 +26,5 @@ public class OrderDetailDTO {
 	
 	private Integer stockQty; // 출하에서 필요
 	private int remainingQty;
+	private boolean isDelayed; // 날짜 지연 여부(출하 제한을 위해 추가)
 }

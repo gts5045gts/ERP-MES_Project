@@ -32,11 +32,9 @@ import lombok.extern.log4j.Log4j2;
 public class ShipmentController {
 
 	private final ShipmentService shipmentService;
-	private final ShipmentMapper shipmentMapper;
 
-	public ShipmentController(ShipmentService shipmentService, ShipmentMapper shipmentMapper) {
+	public ShipmentController(ShipmentService shipmentService) {
 		this.shipmentService = shipmentService;
-		this.shipmentMapper = shipmentMapper;
 	}
 
 	@GetMapping("/shipment")
@@ -61,7 +59,7 @@ public class ShipmentController {
 		return shipmentService.getOrderDetailWithStockAndStatus(orderId);
 	}
 
-	// 출하 등록
+	// 출하 등록 + 수정 
 	@PostMapping("api/shipment/submit")
 	public ResponseEntity<?> submitOrder(@RequestBody ShipmentDTO shipmentDTO, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
 		try {
@@ -100,17 +98,5 @@ public class ShipmentController {
 		
 		return shipmentService.getShipmentDetailsByShipmentId(shipmentId);
 	}
-	
-	@PostMapping("/api/shipment/{shipmentId}/add-details")
-    public ResponseEntity<String> addShipmentDetails(@PathVariable String shipmentId, @RequestBody List<ShipmentDetailDTO> newDetails) {
-
-        if (newDetails == null || newDetails.isEmpty()) {
-            return ResponseEntity.badRequest().body("추가할 출하 품목이 없습니다.");
-        }
-
-        String updatedShipmentId = shipmentService.addShipmentDetails(shipmentId, newDetails);
-        return ResponseEntity.ok(updatedShipmentId);
-    }
-	
 	
 }

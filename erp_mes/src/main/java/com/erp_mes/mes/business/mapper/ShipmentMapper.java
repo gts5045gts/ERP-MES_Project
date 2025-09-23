@@ -17,7 +17,7 @@ import com.erp_mes.mes.business.dto.WarehouseItemDTO;
 @Mapper
 public interface ShipmentMapper {
 	
-	// 등록, 생산중인 수주 목록 조회
+	// 등록, 생산중, 출하진행중(=부분출하)인 수주 목록 조회
 	List<OrderDTO> getStatusOrder();
 
 	// 출하 등록 모달창 -> 수주 목록에서 선택 -> 선택한 수주 id를 orders_detail 테이블에서 참조 -> product 테이블과 조인해서 재고량 가져옴
@@ -34,7 +34,7 @@ public interface ShipmentMapper {
 
 	void insertShipment(ShipmentDTO shipmentDTO);
 
-	void insertShipmentDetail(ShipmentDetailDTO order);
+	void insertShipmentDetail(ShipmentDetailDTO detail);
 
 	// orderId로 주문 정보(clientId, deliveryDate) 조회
 	OrderDTO getOrderInfoByOrderId(@Param("orderId") String orderId);
@@ -43,15 +43,39 @@ public interface ShipmentMapper {
     
     List<ShipmentDetailDTO> getShipmentDetailsByShipmentId(@Param("shipmentId")String shipmentId);
     
-    
-    
- // 출하 상세 상태가 COMPLETION인 품목에 대해 수주 상세 상태를 업데이트
-    void updateOrderDetailStatusFromShipment(@Param("shipmentId") String shipmentId);
-    
-    // 수주 상세 상태가 모두 COMPLETION이면, 수주 상태도 COMPLETION으로 업데이트
-    void updateOrderStatusIfAllDetailsCompleted(@Param("orderId") String orderId);
 
 	List<ShipmentDetailDTO> getPendingShipmentDetails(String orderId);
 
-	int getNextDetailId(String shipmentId);
+	int getNextDetailId(@Param("shipmentId")String shipmentId);
+	
+	
+	// orderId를 사용하여 기존 shipmentId를 찾는 메서드
+	String findExistingShipmentIdByOrderId(@Param("orderId") String orderId);
+
+	// 출하번호(shipmentId)와 품목번호(productId)로 상세 품목을 찾는 메서드
+	ShipmentDetailDTO getShipmentDetailByShipmentAndProduct(@Param("shipmentId") String shipmentId, @Param("productId") String productId);
+
+	// 기존 shipment_detail 업데이트
+	void updateShipmentDetail(ShipmentDetailDTO detail);
+
+	// 출하 건의 전체 상태를 'COMPLETION'으로 업데이트
+	void updateShipmentStatus(@Param("shipmentId") String shipmentId);
+
+	// 출하 건의 전체 상태를 'PARTIAL'로 업데이트
+	void updateShipmentStatusPartial(@Param("shipmentId") String shipmentId);
+	
+	// 특정 수주 상세의 상태를 업데이트
+    void updateOrderDetailStatus(@Param("orderId") String orderId, @Param("productId") String productId, @Param("status") String status);
+    
+    // 수주 전체의 상태를 업데이트
+    void updateOrderStatus(@Param("orderId") String orderId, @Param("status") String status);
+    
+    // 날짜 지연 상태로 출하를 업데이트하는 메서드
+    void updateShipmentStatusToDelay();
+
+    // 날짜 지연된 출하의 상세 상태를 업데이트하는 메서드
+    void updateShipmentDetailStatusToDelay();
+    
+    // 지연된 품목 ID 목록을 조회하는 메서드
+    List<String> getDelayedProductIds();
 }

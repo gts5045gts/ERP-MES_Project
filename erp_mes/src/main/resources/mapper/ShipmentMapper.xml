@@ -3,6 +3,7 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.erp_mes.mes.business.mapper.ShipmentMapper">
+<!-- 	출하 등록 모달창에서 출하할 수주리스트 불러올 때 수주상태가 '등록', '생산중', '출하진행중'인 수주만 불러옴 -->
 	<select id="getStatusOrder" resultType="com.erp_mes.mes.business.dto.OrderDTO">
 		SELECT 
 			order_id,
@@ -12,7 +13,7 @@
 		FROM 
 		 	orders
 		 WHERE
-		 	order_status = 'RECEIVED' OR order_status = 'INPRODUCTION'
+		 	order_status IN ('RECEIVED', 'INPRODUCTION', 'INSHIPMENT') -- 등록, 생산중, 출하진행중
 	</select>
 	
 	<select id="getOrderDetailWithStockAndStatus" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
@@ -30,7 +31,7 @@
         LEFT JOIN (
         	SELECT 
         		product_id,
-        		SUM(item_amount) AS stockQty -- 같은 제품이지만 위치가 다를 수 있기 때문에(=product_id = 'PRD001'인 컬럼이 여러개) 재고량 더하기
+        		SUM(item_amount) AS stockQty -- 같은 제품이지만 위치가 다를 수 있기 때문에(ex: product_id = 'PRD001'인 컬럼이 여러개) 재고량 더하기
         	FROM
         		warehouse_item
         	GROUP BY
@@ -115,6 +116,7 @@
     	INSERT INTO shipment_detail (
     		id,
     		shipment_id,
+    		order_id,
     		product_id,
     		order_qty,
 			shipment_qty,
@@ -124,6 +126,7 @@
     	) VALUES (
     		#{id},
     		#{shipmentId},
+    		#{orderId},
     		#{productId},
     		#{orderQty},
 			#{shipmentQty},
@@ -186,19 +189,6 @@
     	WHERE sd.shipment_id = #{shipmentId} AND sd.id = #{id}
 	</select>
 	
-<!-- 출하 상세 상태에 따른 수주 상세 상태 갱신 -->
-	<update id="updateOrderDetailStatusFromShipment" parameterType="string">
-    	UPDATE orders_detail od
-    	SET od.order_detail_status = 'COMPLETION'
-    	WHERE EXISTS (
-        	SELECT 1
-        	FROM shipment_detail sd
-        	WHERE sd.product_id = od.product_id
-          	AND sd.shipment_detail_status = 'COMPLETION'
-          	AND sd.shipment_id = #{shipmentId}
-    	)
-	</update>
-	
 <!-- 수주 상세가 모두 COMPLETION이면 수주 상태도 COMPLETION으로 갱신 -->
 	<update id="updateOrderStatusIfAllDetailsCompleted" parameterType="string">
     	UPDATE orders o
@@ -237,5 +227,108 @@
 	</select>
 	
 	
+	
+	<select id="findExistingShipmentIdByOrderId" resultType="String">
+        SELECT shipment_id
+    	FROM (
+        	SELECT shipment_id
+        	FROM shipment
+        	WHERE order_id = #{orderId}
+    	)
+    	WHERE ROWNUM = 1
+    </select>
+
+    <select id="getShipmentDetailByShipmentAndProduct" resultType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+        SELECT
+        	id, 
+            shipment_id, 
+            product_id, 
+            shipment_qty
+        FROM 
+            shipment_detail
+        WHERE 
+            shipment_id = #{shipmentId}
+            AND product_id = #{productId}
+    </select>
+    
+    <update id="updateShipmentDetail" parameterType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+        UPDATE shipment_detail
+        SET 
+            shipment_qty = #{shipmentQty},
+            shipment_detail_status = #{shipmentDetailStatus},
+            update_at = SYSDATE
+        WHERE 
+            shipment_id = #{shipmentId}
+            AND id = #{id}
+    </update>
+
+    <update id="updateShipmentStatus">
+        UPDATE shipment s
+        SET
+            s.shipment_status = 'COMPLETION',
+            s.update_at = SYSDATE
+        WHERE
+            s.shipment_id = #{shipmentId}
+    </update>
+
+    <update id="updateShipmentStatusPartial">
+        UPDATE shipment s
+        SET
+            s.shipment_status = 'PARTIAL',
+            s.update_at = SYSDATE
+        WHERE
+            s.shipment_id = #{shipmentId}
+    </update>
+	
+	<update id="updateOrderDetailStatus">
+        UPDATE orders_detail
+        SET 
+        	order_detail_status = #{status},
+            update_at = SYSDATE
+        WHERE 
+        	order_id = #{orderId}
+          	AND product_id = #{productId}
+    </update>
+
+    <update id="updateOrderStatus">
+        UPDATE orders
+        SET 
+        	order_status = #{status},
+            update_at = SYSDATE
+        WHERE
+        	order_id = #{orderId}
+    </update>
+    
+<!--     부분출하일 때 현재날짜(SYSDATE)가 납기예정일(delivery_date)보다 지났을 경우 상태를 날짜지연으로 변경 -->
+    <update id="updateShipmentStatusToDelay">
+    	UPDATE shipment
+    	SET 
+    		shipment_status = 'DELAY',
+        	update_at = SYSDATE
+    	WHERE 
+    		shipment_status = 'PARTIAL'
+      		AND delivery_date &lt; TRUNC(SYSDATE)
+	</update>
+	
+	<update id="updateShipmentDetailStatusToDelay">
+    	UPDATE shipment_detail
+    	SET 
+    		shipment_detail_status = 'DELAY',
+        	update_at = SYSDATE
+    	WHERE 
+    		shipment_id IN (
+        		SELECT shipment_id
+        		FROM shipment
+        		WHERE shipment_status = 'DELAY'
+          		AND delivery_date &lt; TRUNC(SYSDATE)
+    		)
+	</update>
+	
+<!-- 	날짜지연된 품목의 id 조회 -> 다른 수주를 출하할 때 해당품목의 출하를 막기위해-->
+	<select id="getDelayedProductIds" resultType="string">
+    	SELECT DISTINCT product_id
+    	FROM shipment_detail
+    	WHERE shipment_detail_status = 'DELAY'
+	</select>
 	
 </mapper>
