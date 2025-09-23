@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+        <!--        <link rel="stylesheet" th:href="@{/css/item_main.css}" />-->
+    </th:block>
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    
+    
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+    	<button id="linkBtn" class="btn btn-primary btn-sm" style="float:right;">추가하러가기</button>
+    	<h1 class="h3 mb-2 text-gray-900">설비 현황</h1>
+<!-- 		모달창 버튼으로 변경 -->
+		<div id="grid"></div>
+
+
+
+   
+    </div>
+
+</th:block>
+<!-- 	js 분리 -->
+<th:block layout:fragment="script">
+<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+<script th:src="@{/bootstrap/js/plant/equip_list.js}"></script>	
+</th:block>
+</body>
+</html>

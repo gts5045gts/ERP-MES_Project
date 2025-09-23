@@ -54,18 +54,12 @@ public class ProcessController {
 		
 		return "/plant/process";
 	}
-/*	@GetMapping("/process_newForm")		모달창으로 변경으로 인해 필요 없음
-	public String process_newFrom(Model model) {
+	@GetMapping("/process_list")		//공정 현황 페이지로 변경
+	public String process_list() {
+		log.info("공정 현황 페이지");
 		
-		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
-		
-		
-		
-		model.addAttribute("comList", comList);
-		
-		return "/plant/process_newForm";
+		return "/plant/process_list";
 	}
-	*/
 	
 	
 	//요청 부분
@@ -104,18 +98,13 @@ public class ProcessController {
 		return "/plant/equipment";
 	}
 	
-	/* 		모달창으로 변경
-	@GetMapping("/equip_newForm")
-	public String equip_newForm(Model model) {
-		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
+	@GetMapping("/equipment_list")
+	public String equipment_list() {
+		log.info("설비 현황 페이지");
+
 		
-																																																																																																																							
-		
-		model.addAttribute("comList", comList);
-		
-		return "/plant/equip_newForm";
+		return "/plant/equipment_list";
 	}
-	*/
 	@GetMapping("/maintenance")
 	public String equip_fix(Model model) {
 		List<Equip> equipList = proService.equipAll();
