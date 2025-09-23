@@ -50,11 +50,15 @@ public class LotAOP {
 				
 				Boolean linkParent = false;
 				Boolean createLot = true;
+				
 				Object materialType = null;
 				Object parentLotId = null;
+				
 				String tableName = trackLot.tableName().trim().toUpperCase();
 				String targetId = trackLot.pkColumnName().trim();
 				String targetIdValue = (String) obj;
+				String domain = tableName;
+				
 				int qtyUsed = 0;
 				
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
@@ -73,18 +77,20 @@ public class LotAOP {
 //					        parentLotId = entry.getValue();	
 //				    	}
 				    	
-				    	if(entry.getKey().equals("IN_ID") && tableName.equals("WORK_RESULT")){
+				    	if(tableName.equals("INPUT")){
+				    		Object productId = entry.getValue();
+				    		if (productId != null) {
+								domain = "finished";
+							}
+						}
+				    	
+				    	if(entry.getKey().equals("OUT_ID") && tableName.equals("OUTPUT")){
 				    		Object inId = entry.getValue();
 				    		
-				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
-							//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
-							//input (입고) 테이블에서 입고완료된 자재의 pk 값을 저장할 필드가 추가로 필요함(김우성)
-				    		
-				    		//work_order 테이블이 넘어오면 이걸하나의 공정으로 보고
-				    		//childLotId로 지정하고 lotId를 생성해서 work_order에 최초업데이트한다.
-				    		//process_routing또는 어떤값으로 실재 재고 테이블
-				    		//input 테이블에서 lot_id를 가져와서 parentId로 지정
-				    		//중복으로 들어올경우?
+				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
+				    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
+							
+				    		//중복으로 들어올경우 처리?
 				    		
 				    		parentLotId = lotUsageService.getInputLotId(inId);
 				    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
@@ -92,6 +98,8 @@ public class LotAOP {
 				    		for (WorkResultDTO dto : workOrderList) {
 				    			 BigDecimal qty = dto.getQuantity();
 				    			 qtyUsed = qty.intValue();
+				    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
+				    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
 				    		}
 				    		
 							MaterialUsageDTO usage = MaterialUsageDTO.builder()
@@ -112,11 +120,9 @@ public class LotAOP {
 								.materialCode((String) materialType)
 								.usages(usages)
 								.build();
-				
-//				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
-			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, createLot, linkParent);
+			 	String lotId = lotService.createLotWithRelations(lotDTO, domain, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
 //			 	if(!tableName.equals("MATERIAL")){
 		 		if(createLot){

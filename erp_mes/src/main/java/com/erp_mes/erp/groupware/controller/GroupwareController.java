@@ -55,7 +55,7 @@ public class GroupwareController {
 		return "/gw/document";
 	}
 	
-	//공통 문서 작성 & 수정
+	//공통 문서 작성 & 수정 화면
 	@GetMapping("/docWrite")
 	public String docWrite(@RequestParam(name = "docId", required = false) Long docId, Model model) {
 		
@@ -99,6 +99,8 @@ public class GroupwareController {
 	//공통문서 상세페이지
 	@GetMapping("/docView/{docId}")
 	public String docView(@PathVariable("docId") Long docId, Model model) {
+		
+		log.info(">>>>>>>>>>>>>>>>>>>innnnnnnnn");
 		
 		DocumentDTO documentDTO = documentService.getDocument(docId);
 		
