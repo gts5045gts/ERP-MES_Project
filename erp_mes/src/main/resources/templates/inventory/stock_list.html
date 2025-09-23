@@ -79,10 +79,9 @@
 		                    <table class="table table-sm table-bordered">
 		                        <thead>
 		                            <tr>
-		                                <th width="15%">선택</th>
-		                                <th width="35%">창고명</th>
-		                                <th width="25%">위치</th>
-		                                <th width="25%">재고수량</th>
+		                                <th width="20%">선택</th>
+		                                <th width="50%">창고명</th>
+		                                <th width="30%">총 재고수량</th>
 		                            </tr>
 		                        </thead>
 		                        <tbody id="warehouseStockList">
@@ -149,7 +148,7 @@ $(document).ready(function() {
     });
     
     // Material 투입수량 입력 시 이벤트
-    $('#material_reduceQty').on('input', function() {
+    $('#material_reduceQty').off('input').on('input', function() {
         updateMaterialAfterQty();
     });
 });
@@ -237,15 +236,11 @@ function openMaterialModal(materialId, materialName, currentQty) {
     $('#material_reduceQty').val('');
     $('#material_afterQty').val('');
     $('#material_reason').val('');
-    
-    // 창고별 재고 조회
-    loadWarehouseStock(materialId);
-    
     $('#materialAdjustModal').modal('show');
 }
 
-//창고별 재고 조회
-function loadWarehouseStock(materialId) {
+
+function loadWarehouseStockSummary(materialId) {
     $.ajax({
         url: `/api/inventory/material-warehouse-stock/${materialId}`,
         type: 'GET',
@@ -253,33 +248,44 @@ function loadWarehouseStock(materialId) {
             const tbody = $('#warehouseStockList');
             tbody.empty();
             
-            if(data.length === 0) {
-                tbody.append('<tr><td colspan="4" class="text-center">재고가 없습니다.</td></tr>');
+            // 창고별로 그룹핑
+            const warehouseMap = {};
+            data.forEach(item => {
+                if(item.itemAmount > 0) {
+                    if(!warehouseMap[item.warehouseId]) {
+                        warehouseMap[item.warehouseId] = {
+                            warehouseId: item.warehouseId,
+                            warehouseName: item.warehouseName,
+                            totalAmount: 0
+                        };
+                    }
+                    warehouseMap[item.warehouseId].totalAmount += item.itemAmount;
+                }
+            });
+            
+            // 테이블에 표시
+            if(Object.keys(warehouseMap).length === 0) {
+                tbody.append('<tr><td colspan="3" class="text-center">재고가 없습니다.</td></tr>');
                 return;
             }
             
             let totalStock = 0;
-            data.forEach((item, index) => {
-                if(item.itemAmount > 0) {
-                    totalStock += item.itemAmount;
-                    tbody.append(`
-                        <tr>
-                            <td class="text-center">
-                                <input type="radio" name="warehouseSelect" 
-                                       value="${item.warehouseId}" 
-                                       data-location="${item.locationId}"
-                                       data-amount="${item.itemAmount}"
-                                       onchange="selectWarehouse(this)">
-                            </td>
-                            <td>${item.warehouseName}</td>
-                            <td>${item.locationId ? item.locationId.substring(0, 6) : '-'}</td>
-                            <td class="text-right">${item.itemAmount}개</td>
-                        </tr>
-                    `);
-                }
+            Object.values(warehouseMap).forEach(warehouse => {
+                totalStock += warehouse.totalAmount;
+                tbody.append(`
+                    <tr>
+                        <td class="text-center">
+                            <input type="radio" name="warehouseSelect" 
+                                   value="${warehouse.warehouseId}" 
+                                   data-amount="${warehouse.totalAmount}"
+                                   onchange="selectWarehouse(this)">
+                        </td>
+                        <td>${warehouse.warehouseName}</td>
+                        <td class="text-right">${warehouse.totalAmount}개</td>
+                    </tr>
+                `);
             });
             
-            // 총 재고 업데이트
             currentMaterialQty = totalStock;
             $('#material_totalQty').val(totalStock);
         },
@@ -289,29 +295,14 @@ function loadWarehouseStock(materialId) {
     });
 }
 
-//창고 선택 시
-function selectWarehouse(radio) {
-    const maxQty = $(radio).data('amount');
-    $('#material_reduceQty').attr('max', maxQty);
-    $('#material_reduceQty').val('');
-    $('#material_afterQty').val('');
-}
 
 // 투입수량 입력 시
 $('#material_reduceQty').on('input', function() {
-    const selectedRadio = $('input[name="warehouseSelect"]:checked');
-    if(!selectedRadio.length) {
-        alert('창고를 먼저 선택하세요.');
-        $(this).val('');
-        return;
-    }
-    
-    const warehouseStock = selectedRadio.data('amount');
     const reduceQty = parseInt($(this).val()) || 0;
     
-    if(reduceQty > warehouseStock) {
-        alert('투입수량이 창고 재고보다 많습니다!');
-        $(this).val(warehouseStock);
+    if(reduceQty > currentMaterialQty) {
+        alert('투입수량이 현재고보다 많습니다!');
+        $(this).val(currentMaterialQty);
         $('#material_afterQty').val('0');
     } else {
         $('#material_afterQty').val(currentMaterialQty - reduceQty);
@@ -334,19 +325,16 @@ function updateMaterialAfterQty() {
 
 // Material 재고 차감 저장
 function saveMaterialReduce() {
-    const selectedRadio = $('input[name="warehouseSelect"]:checked');
-    if(!selectedRadio.length) {
-        alert('창고를 선택하세요.');
-        return;
-    }
-    
-    const warehouseId = selectedRadio.val();
-    const locationId = selectedRadio.data('location');
     const reduceQty = parseInt($('#material_reduceQty').val()) || 0;
     const reason = $('#material_reason').val();
     
     if(reduceQty <= 0) {
         alert('투입수량을 입력하세요.');
+        return;
+    }
+    
+    if(reduceQty > currentMaterialQty) {
+        alert('투입수량이 현재고보다 많습니다!');
         return;
     }
     
@@ -357,7 +345,6 @@ function saveMaterialReduce() {
     
     if(confirm('재고를 투입하시겠습니까?\n\n' +
                '품목: ' + currentMaterialId + '\n' +
-               '창고: ' + warehouseId + '\n' +
                '투입수량: ' + reduceQty + '\n' +
                '투입 후 재고: ' + (currentMaterialQty - reduceQty))) {
         
@@ -366,8 +353,8 @@ function saveMaterialReduce() {
             type: 'POST',
             data: {
                 materialId: currentMaterialId,
-                warehouseId: warehouseId,
-                locationId: locationId,
+                warehouseId: 'ALL',  // 전체 창고
+                locationId: 'AUTO',  // 자동 선택
                 reduceQty: reduceQty,
                 reason: reason
             },
@@ -390,6 +377,19 @@ function saveMaterialReduce() {
         });
     }
 }
+
+//Material 투입수량 입력 시
+$('#material_reduceQty').on('input', function() {
+    const reduceQty = parseInt($(this).val()) || 0;
+    
+    if(reduceQty > currentMaterialQty) {
+        alert('투입수량이 현재고보다 많습니다!');
+        $(this).val(currentMaterialQty);
+        $('#material_afterQty').val('0');
+    } else {
+        $('#material_afterQty').val(currentMaterialQty - reduceQty);
+    }
+});
 </script>
 </th:block>
 </body>

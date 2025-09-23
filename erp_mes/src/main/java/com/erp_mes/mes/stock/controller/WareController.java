@@ -340,6 +340,22 @@ public class WareController {
 	    @RequestParam(name = "outType", required = false) String outType) {
 	    return wareService.getOutputBatches(date, outType);
 	}
+	
+	// 0923 출고내역 삭제
+	@DeleteMapping("/api/outputs")
+	@ResponseBody
+	public Map<String, Object> deleteOutputs(@RequestBody List<String> outIds) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        int deleteCount = wareService.deleteOutputs(outIds);
+	        result.put("success", true);
+	        result.put("message", deleteCount + "건 삭제 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
 
 	// ==================== 5. 데이터 조회 API ====================
 

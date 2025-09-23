@@ -624,6 +624,7 @@
 	            ELSE 'EA'
 	        END as "unit",
 	        o.out_count as "outCount",
+	        o.out_remark as "outRemark",
 	        o.out_type as "outType",
 	        o.batch_id as "batchId",
 	        o.warehouse_id as "warehouseId",
@@ -645,20 +646,23 @@
 	        COUNT(*) as "itemCount",
 	        SUM(out_count) as "totalCount",
 	        TO_CHAR(MIN(update_date), 'YYYY-MM-DD') as "outDate",
-	        TO_CHAR(MIN(update_date), 'HH24:MI') as "outTime"
+	        TO_CHAR(MIN(update_date), 'HH24:MI') as "outTime",
+	        MAX(out_reason) as "outReason"
 	    FROM output
 	    WHERE 1=1
 	    <if test="outType != null and outType != ''">
-	        AND (
-	            <if test="outType == 'material'">
-	                material_id IS NOT NULL
-	            </if>
-	            <if test="outType == 'product'">
-	                product_id IS NOT NULL
-	            </if>
-	        )
+	        <choose>
+	            <when test="outType == 'material'">
+	                AND material_id IS NOT NULL
+	                AND product_id IS NULL
+	            </when>
+	            <when test="outType == 'product'">
+	                AND product_id IS NOT NULL
+	                AND material_id IS NULL
+	            </when>
+	        </choose>
 	    </if>
-	    GROUP BY batch_id, TO_CHAR(update_date, 'YYYY-MM-DD')
+	    GROUP BY batch_id
 	    ORDER BY MIN(update_date) DESC
 	</select>
 	
@@ -797,6 +801,60 @@
 	    AND wi.use_yn = 'Y'
 	    GROUP BY w.warehouse_id, w.warehouse_name
 	    ORDER BY SUM(wi.item_amount) DESC
+	</select>
+	
+	<!-- 0923 Material 재고 조회 -->
+	<select id="getMtlStockQty" resultType="int">
+	    SELECT NVL(item_amount, 0)
+	    FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	    AND use_yn = 'Y'
+	</select>
+	
+	<!-- Material warehouse_item 업데이트 -->
+	<update id="updateMtlStock">
+	    UPDATE warehouse_item
+	    SET item_amount = #{newQty},
+	        update_date = SYSDATE
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</update>
+	
+	<!-- Material warehouse_item 삭제 -->
+	<delete id="deleteMtlStock">
+	    DELETE FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	    AND warehouse_id = #{warehouseId}
+	    AND location_id = #{locationId}
+	</delete>
+	
+	<!-- Material 테이블 동기화 -->
+	<update id="syncMaterialQty">
+	    UPDATE material m
+	    SET m.quantity = (
+	        SELECT NVL(SUM(wi.item_amount), 0)
+	        FROM warehouse_item wi
+	        WHERE wi.material_id = m.material_id
+	        AND wi.use_yn = 'Y'
+	    )
+	    WHERE m.material_id = #{materialId}
+	</update>
+	
+	<!-- 모든 창고의 Material 재고 위치 조회 -->
+	<select id="getAllMaterialLocations" resultType="map">
+	    SELECT 
+	        warehouse_id as "warehouseId",
+	        location_id as "locationId",
+	        item_amount as "itemAmount",
+	        manage_id as "manageId"
+	    FROM warehouse_item
+	    WHERE material_id = #{materialId}
+	    AND item_amount > 0
+	    AND use_yn = 'Y'
+	    ORDER BY item_amount ASC
 	</select>
 	
 </mapper>

@@ -21,7 +21,7 @@
 			    <ul class="nav nav-tabs card-header-tabs">
 			        <li class="nav-item">
 			            <a class="nav-link" id="material-out-tab" data-toggle="tab" href="#material-out-content">
-			                자재 출고 (공장 투입용)
+			                자재 긴급 출고 (공장 투입용)
 			            </a>
 			        </li>
 			        <li class="nav-item">
@@ -547,7 +547,7 @@ function resetProductOutForm() {
     updateAllProductOutSelects();
 }
 
-// ============ 출고 목록 관련 (배치별) ============
+// ============ 출고 목록 관련 (batch별) ============
 
 // 자재 출고 배치 목록 로드
 function loadMaterialOutputList() {
@@ -555,7 +555,11 @@ function loadMaterialOutputList() {
         url: '/inventory/api/outputs/grouped?outType=material',
         type: 'GET',
         success: function(data) {
-            renderMaterialOutputBatches(data);
+            // material_id가 있는 출고만 필터
+            const materialOutputs = data.filter(item => 
+                item.batchId && (item.batchId.startsWith('OB') || item.batchId.startsWith('MI'))
+            );
+            renderMaterialOutputBatches(materialOutputs);
         },
         error: function(xhr) {
             console.error("자재 출고 배치 목록 로드 실패:", xhr);
@@ -569,7 +573,7 @@ function loadProductOutputList() {
         url: '/inventory/api/outputs/grouped?outType=product',
         type: 'GET',
         success: function(data) {
-            renderProductOutputBatches(data);
+            renderProductOutputBatches(data); 
         },
         error: function(xhr) {
             console.error("완제품 출고 배치 목록 로드 실패:", xhr);
@@ -580,11 +584,22 @@ function loadProductOutputList() {
 // 자재 출고 배치 목록 렌더링
 function renderMaterialOutputBatches(data) {
     let html = `
+        <div class="d-flex justify-content-between mb-3">
+            <h6>자재 출고 목록</h6>
+            <button class="btn btn-danger btn-sm" onclick="deleteSelected('material')" 
+                    style="display:none;" id="deleteMaterialBtn">
+                <i class="fas fa-trash"></i> 선택 삭제
+            </button>
+        </div>
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th width="5%">
+                        <input type="checkbox" id="checkAllMaterial" onchange="checkAll('material')">
+                    </th>
                     <th>배치번호</th>
                     <th>출고일시</th>
+                    <th>출고유형</th>
                     <th>품목수</th>
                     <th>총수량</th>
                     <th>상세보기</th>
@@ -594,13 +609,25 @@ function renderMaterialOutputBatches(data) {
     `;
     
     if(data.length === 0) {
-        html += '<tr><td colspan="5" class="text-center">데이터가 없습니다.</td></tr>';
+        html += '<tr><td colspan="7" class="text-center">데이터가 없습니다.</td></tr>';
     } else {
         data.forEach(batch => {
+            let typeLabel = '';
+            if(batch.batchId && batch.batchId.startsWith('MI')) {
+                typeLabel = '<span class="badge badge-warning">재고투입</span>';
+            } else {
+                typeLabel = '<span class="badge badge-info">생산투입</span>';
+            }
+            
             html += `
                 <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="batch-check material-check" 
+                               value="${batch.batchId}" onchange="updateDeleteBtn('material')">
+                    </td>
                     <td><strong>${batch.batchId}</strong></td>
                     <td>${batch.outDate} ${batch.outTime}</td>
+                    <td>${typeLabel}</td>
                     <td>${batch.itemCount}건</td>
                     <td>${batch.totalCount}개</td>
                     <td>
@@ -617,12 +644,99 @@ function renderMaterialOutputBatches(data) {
     $('#material-out-content .table-responsive').html(html);
 }
 
+//전체 선택
+function checkAll(type) {
+    const isChecked = $(`#checkAll${type.charAt(0).toUpperCase() + type.slice(1)}`).prop('checked');
+    $(`.${type}-check`).prop('checked', isChecked);
+    updateDeleteBtn(type);
+}
+
+// 삭제 버튼 표시/숨김
+function updateDeleteBtn(type) {
+    const checkedCount = $(`.${type}-check:checked`).length;
+    if(checkedCount > 0) {
+        $(`#delete${type.charAt(0).toUpperCase() + type.slice(1)}Btn`).show();
+    } else {
+        $(`#delete${type.charAt(0).toUpperCase() + type.slice(1)}Btn`).hide();
+    }
+}
+
+// 선택 삭제
+function deleteSelected(type) {
+    const selectedBatches = [];
+    $(`.${type}-check:checked`).each(function() {
+        selectedBatches.push($(this).val());
+    });
+    
+    if(selectedBatches.length === 0) {
+        alert('삭제할 항목을 선택하세요.');
+        return;
+    }
+    
+    if(!confirm(`선택한 ${selectedBatches.length}건을 삭제하시겠습니까?\n\n` +
+                '⚠️ 주의: 출고 이력이 완전히 삭제됩니다.\n' +
+                '재고 수량은 변경되지 않습니다.')) {
+        return;
+    }
+    
+    // 배치의 모든 출고 건 조회 후 삭제
+    const outIds = [];
+    
+    Promise.all(selectedBatches.map(batchId => 
+        $.ajax({
+            url: `/inventory/api/outputs/batch/${batchId}`,
+            type: 'GET'
+        })
+    )).then(results => {
+        results.forEach(items => {
+            items.forEach(item => {
+                outIds.push(item.outId);
+            });
+        });
+        
+        // 삭제 처리
+        $.ajax({
+            url: '/inventory/api/outputs',
+            type: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify(outIds),
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert(result.message);
+                    // 화면 새로고침
+                    if(type === 'material') {
+                        loadMaterialOutputList();
+                    } else {
+                        loadProductOutputList();
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert('삭제 실패: ' + xhr.responseText);
+            }
+        });
+    });
+}
+
 // 완제품 출고 배치 목록 렌더링
 function renderProductOutputBatches(data) {
     let html = `
+        <div class="d-flex justify-content-between mb-3">
+            <h6>완제품 출고 목록</h6>
+            <button class="btn btn-danger btn-sm" onclick="deleteSelected('product')" 
+                    style="display:none;" id="deleteProductBtn">
+                <i class="fas fa-trash"></i> 선택 삭제
+            </button>
+        </div>
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th width="5%">
+                        <input type="checkbox" id="checkAllProduct" onchange="checkAll('product')">
+                    </th>
                     <th>배치번호</th>
                     <th>출고일시</th>
                     <th>품목수</th>
@@ -634,11 +748,15 @@ function renderProductOutputBatches(data) {
     `;
     
     if(data.length === 0) {
-        html += '<tr><td colspan="5" class="text-center">데이터가 없습니다.</td></tr>';
+        html += '<tr><td colspan="6" class="text-center">데이터가 없습니다.</td></tr>';
     } else {
         data.forEach(batch => {
             html += `
                 <tr>
+                    <td class="text-center">
+                        <input type="checkbox" class="batch-check product-check" 
+                               value="${batch.batchId}" onchange="updateDeleteBtn('product')">
+                    </td>
                     <td><strong>${batch.batchId}</strong></td>
                     <td>${batch.outDate} ${batch.outTime}</td>
                     <td>${batch.itemCount}건</td>
@@ -678,7 +796,10 @@ function showBatchDetailModal(data, batchId) {
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">출고 배치 상세: ${batchId}</h5>
+                        <h5 class="modal-title">
+                            출고 배치 상세: ${batchId}
+                            ${batchId.startsWith('MI') ? '<span class="badge badge-warning ml-2">재고투입</span>' : ''}
+                        </h5>
                         <button type="button" class="close" data-dismiss="modal">
                             <span>&times;</span>
                         </button>
@@ -696,6 +817,7 @@ function showBatchDetailModal(data, batchId) {
                                     <th>수량</th>
                                     <th>단위</th>
                                     <th>출고담당자</th>
+                                    <th>출고사유</th>
                                     <th>출고일시</th>
                                 </tr>
                             </thead>
@@ -703,21 +825,24 @@ function showBatchDetailModal(data, batchId) {
     `;
     
     if(data.length === 0) {
-        html += '<tr><td colspan="7" class="text-center">데이터가 없습니다.</td></tr>';
+        html += '<tr><td colspan="8" class="text-center">데이터가 없습니다.</td></tr>';
     } else {
         data.forEach(item => {
             const productName = item.productName || 'Unknown';
-            const productId = item.productId || 'Unknown';
+            const productId = item.productId || item.materialId || 'Unknown';
             const unit = item.unit || 'EA';
             const empInfo = item.empName ? `${item.empId} - ${item.empName}` : (item.empId || 'Unknown');
+            const outReason = item.outRemark || '-';
+            
             html += `
                 <tr>
                     <td>${item.outId}</td>
                     <td>${productId}</td>
                     <td>${productName}</td>
-                    <td>${item.outCount}</td>
+                    <td class="text-right">${item.outCount}</td>
                     <td>${unit}</td>
                     <td>${empInfo}</td>
+                    <td>${outReason}</td>
                     <td>${item.outDate || '-'}</td>
                 </tr>
             `;
@@ -736,7 +861,6 @@ function showBatchDetailModal(data, batchId) {
         </div>
     `;
     
-    // 기존 모달 제거 후 새로 추가
     $('#batchDetailModal').remove();
     $('body').append(html);
     $('#batchDetailModal').modal('show');

@@ -615,6 +615,89 @@ public class WareService {
         return wareMapper.selectOutputBatches(params);
     }
     
+    // Material 재고 차감 (warehouse_item 기반)
+    @Transactional
+    public boolean reduceMtlStock(String materialId, String warehouseId, 
+            String locationId, Integer reduceQty, String reason, String empId) {
+        
+        // 전체 창고에서 차감
+        List<Map<String, Object>> allLocations = wareMapper.getAllMaterialLocations(materialId);
+        
+        if(allLocations.isEmpty()) {
+            throw new RuntimeException("재고가 없습니다.");
+        }
+        
+        int remaining = reduceQty;
+        String firstWarehouseId = null;
+        String firstManageId = null;  
+        
+        for(Map<String, Object> loc : allLocations) {
+            if(remaining <= 0) break;
+            
+            String whId = (String) loc.get("warehouseId");
+            String locId = (String) loc.get("locationId");
+            String manageId = (String) loc.get("manageId"); 
+            int currentQty = ((Number) loc.get("itemAmount")).intValue();
+            
+            if(firstWarehouseId == null) {
+                firstWarehouseId = whId;
+                firstManageId = manageId; 
+            }
+            
+            int reduceAmt = Math.min(remaining, currentQty);
+            
+            if(reduceAmt == currentQty) {
+                wareMapper.deleteMtlStock(materialId, whId, locId);
+            } else {
+                wareMapper.updateMtlStock(materialId, whId, locId, currentQty - reduceAmt);
+            }
+            
+            remaining -= reduceAmt;
+        }
+        
+        if(remaining > 0) {
+            throw new RuntimeException("재고 부족");
+        }
+        
+        // material 테이블 동기화
+        wareMapper.syncMaterialQty(materialId);
+        
+        // 출고 기록 생성
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer count = wareMapper.getTodayOutputCount(today);
+        if(count == null) count = 0;
+        
+        String outId = "OUT" + today + String.format("%04d", count + 1);
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("outId", outId);
+        params.put("materialId", materialId);
+        params.put("warehouseId", firstWarehouseId);
+        params.put("locationId", "AUTO");
+        params.put("manageId", firstManageId);
+        params.put("outCount", reduceQty);
+        params.put("outType", "출고완료");
+        params.put("empId", empId);
+        params.put("batchId", "MI" + today + String.format("%03d", count + 1));
+        params.put("outRemark", reason);
+        
+        wareMapper.insertOutput(params);
+        
+        return true;
+    }
+    
+    // 출고 내역 삭제
+    @Transactional
+    public int deleteOutputs(List<String> outIds) {
+        int count = 0;
+        for(String outId : outIds) {
+            wareMapper.deleteOutput(outId);
+            count++;
+        }
+        log.info("출고 내역 삭제: {}건", count);
+        return count;
+    }
+    
     // ==================== 데이터 조회 ====================
 
     // 부품 목록 조회 (구버전)
