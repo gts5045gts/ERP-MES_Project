@@ -162,9 +162,9 @@ public class InspectionService {
         
         // 4. INPUT 테이블의 상태 업데이트
         if (acceptedCount > 0) {
-            qualityMapper.updateInputStatusByInId(inId, "입고완료");
+            qualityMapper.updateInputStatusByInId(inId, "입고완료", acceptedCount);
         } else {
-            qualityMapper.updateInputStatusByInId(inId, "불량"); // 불량만 있으면 '불량' 상태로 변경
+            qualityMapper.updateInputStatusByInId(inId, "불량", 0L); // 불량만 있으면 '불량' 상태로 변경
         }
     }
     
@@ -176,20 +176,24 @@ public class InspectionService {
         return targets;
     }
 
+    // WORK_ORDER_ID별로 그룹화된 데이터를 가져오는 메서드
     @Transactional(readOnly = true)
-    public List<InspectionTargetDTO> getProcessInspectionTargets() {
-        List<InspectionTargetDTO> targets = qualityMapper.getProcessInspectionTargets();
-        Map<String, String> qcTypeMap = getQcTypeMap();
-        targets.forEach(target -> target.setInspectionTypeName(qcTypeMap.get(target.getInspectionType())));
-        return targets;
+    public List<InspectionTargetDTO> getProcessInspectionTargetsGrouped() {
+        return qualityMapper.getProcessInspectionTargetsGrouped();
     }
-
+    
+    // ⭐ 특정 WORK_ORDER의 공정 상세 이력을 가져오는 메서드
     @Transactional(readOnly = true)
-    public List<InspectionTargetDTO> getPackagingInspectionTargets() {
-        List<InspectionTargetDTO> targets = qualityMapper.getPackagingInspectionTargets();
-        Map<String, String> qcTypeMap = getQcTypeMap();
-        targets.forEach(target -> target.setInspectionTypeName(qcTypeMap.get(target.getInspectionType())));
-        return targets;
+    public List<InspectionTargetDTO> getProcessDetails(String workOrderId) {
+        List<InspectionTargetDTO> details = qualityMapper.getProcessDetails(workOrderId);
+        
+        // 공통 코드 이름 매핑
+        Map<String, String> qcTypeMap = commonCodeService.findByComId("QC").stream()
+            .collect(Collectors.toMap(CommonDetailCode::getComDtId, CommonDetailCode::getComDtNm));
+            
+        details.forEach(target -> target.setInspectionTypeName(qcTypeMap.get(target.getInspectionType())));
+        
+        return details;
     }
 
     private Map<String, String> getQcTypeMap() {
@@ -220,43 +224,34 @@ public class InspectionService {
         if ("WorkOrder".equals(requestDTO.getTargetSource())) {
             inspectionDTO.setProductId(requestDTO.getProductId());
             inspectionDTO.setProcessId(requestDTO.getProcessId());
-            // materialId는 공정 검사에는 해당되지 않으므로 null로 둡니다.
             inspectionDTO.setMaterialId(null);
         } else if ("Receiving".equals(requestDTO.getTargetSource())) {
-            // 입고 검사일 경우 materialId를 설정하고 productId, processId는 null로 둡니다.
             inspectionDTO.setMaterialId(requestDTO.getMaterialId());
             inspectionDTO.setProductId(null);
             inspectionDTO.setProcessId(null);
         }
         
-        // 이 시점에서 inspectionDTO에 검사 대상(product, process, material) 중 하나만 값이 채워지도록 보장합니다.
         qualityMapper.insertInspection(inspectionDTO);
         Long newInspectionId = inspectionDTO.getInspectionId();
 
         // 2. INSPECTION_RESULT 테이블에 데이터 삽입
-        // 이전에 `inspectionType`을 `resultDTO`에 설정하는 부분이 누락되어 있었으므로 추가합니다.
         for (InspectionResultDataDTO resultData : requestDTO.getInspectionResults()) {
             InspectionResultDTO resultDTO = new InspectionResultDTO();
             resultDTO.setInspectionId(newInspectionId);
-            resultDTO.setInspectionType(requestDTO.getInspectionType()); // 💡 DTO에서 inspectionType 가져와 설정
+            resultDTO.setInspectionType(requestDTO.getInspectionType());
             resultDTO.setResult(resultData.getResult());
-            resultDTO.setRemarks(resultData.getRemarks());
             
+            // 비고 처리 로직 수정
             String remarks = (resultData.getRemarks() != null) ? resultData.getRemarks() : "";
             resultDTO.setRemarks(remarks);
             
             qualityMapper.insertInspectionResult(resultDTO);
         }
-
+        
         // 3. 원본 테이블 상태 업데이트
         if ("WorkOrder".equals(requestDTO.getTargetSource())) {
             // 공정 검사 완료 후 작업지시 상태 업데이트
             qualityMapper.updateWorkOrderStatus(requestDTO.getTargetId());
-        } else if ("Receiving".equals(requestDTO.getTargetSource())) {
-            // 입고 검사 완료 후 입고 상태 업데이트
-            // 이 메서드는 `verifyIncomingCount`에서 사용되므로 여기서는 제거하거나 필요에 따라 남겨둡니다.
-            // 현재 시나리오에서는 `verifyIncomingCount`가 이 역할을 하므로 이 코드는 필요하지 않을 수 있습니다.
-            // qualityMapper.updateInputStatus(requestDTO.getTargetId());
         }
     }
 }

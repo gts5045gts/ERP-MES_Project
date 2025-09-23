@@ -39,8 +39,8 @@ public interface QualityMapper {
  
  // 검사 대기 목록 조회 (InspectionTargetDTO 사용)
  List<InspectionTargetDTO> getIncomingInspectionTargets();
- List<InspectionTargetDTO> getProcessInspectionTargets();
- List<InspectionTargetDTO> getPackagingInspectionTargets();
+ List<InspectionTargetDTO> getProcessInspectionTargetsGrouped();
+ List<InspectionTargetDTO> getProcessDetails(String workOrderId);
  
  // 검사 완료 후 상태 업데이트
  int updateWorkOrderStatus(String workOrderId);
@@ -50,7 +50,7 @@ public interface QualityMapper {
  List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);
  List<InspectionItemDTO> findInspectionItemsByProductId(String productId);
  List<InspectionItemDTO> findInspectionItemsByProcessIdAndSeq(@Param("processId") Long processId,@Param("proSeq") String proSeq);
- void updateInputStatusByInId(@Param("inId") String inId, @Param("newStatus") String newStatus);
+ void updateInputStatusByInId(@Param("inId") String inId, @Param("newStatus") String newStatus, @Param("acceptedCount") Long acceptedCount);
  Integer findInCountByInId(String inId);
  String findTargetNameByInId(String inId);
  void insertDefectItem(DefectDTO defectDTO);

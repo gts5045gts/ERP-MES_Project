@@ -11,6 +11,11 @@
     display: flex;
     align-items: center;
     min-height: calc(100% - 1rem);
+    
+}
+#incomingGrid {
+    height: 300px; /* 원하는 높이로 설정 */
+    overflow-y: auto; /* 스크롤바가 생기도록 설정 */
 }
 </style>
 </head>
@@ -28,7 +33,6 @@
 								<option value="ALL">전체</option>
 								<option value="QC001">수입검사</option>
 								<option value="QC002">공정검사</option>
-								<option value="QC003">포장검사</option>
 							</select>
 						</div>
 						<div class="form-group d-flex align-items-center mb-0 me-3">
@@ -59,10 +63,6 @@
 			                <input class="form-check-input" type="radio" name="inspectionTypeRadio" id="radioProcess" value="process">
 			                <label class="form-check-label" for="radioProcess">공정검사</label>
 			            </div>
-			            <div class="form-check form-check-inline">
-			                <input class="form-check-input" type="radio" name="inspectionTypeRadio" id="radioPackaging" value="packaging">
-			                <label class="form-check-label" for="radioPackaging">포장검사</label>
-			            </div>
 			        </div>
 			    </div>
 			</div>
@@ -73,10 +73,6 @@
 
 			<div class="inspection-grid-container" id="processGridContainer" style="display: none;">
 			    <div id="processGrid"></div>
-			</div>
-
-			<div class="inspection-grid-container" id="packagingGridContainer" style="display: none;">
-			    <div id="packagingGrid"></div>
 			</div>
 
 		<div class="modal fade" id="inspectionModal" tabindex="-1" role="dialog" aria-labelledby="inspectionModalLabel" aria-hidden="true">

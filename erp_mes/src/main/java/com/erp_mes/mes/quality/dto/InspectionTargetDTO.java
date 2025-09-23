@@ -29,4 +29,6 @@ public class InspectionTargetDTO {
     private String processName; 
     private String equipName;  
     private String proSeq;
+    private Long goodQty;
+    private Long defectQty;
 }
