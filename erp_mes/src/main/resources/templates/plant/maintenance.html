@@ -156,18 +156,38 @@
         
        //그리드 2 수리내역 보기 부분-------------------------------------------------
        
-		
+        const grid2 = new tui.Grid({
+    	    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
+    	    scrollX: false,
+    	    scrollY: false,
+    	    bodyHeight: 200,
+    	    columns: [
+    	      { header: '수리 시작일', name: 'startDt' },	
+    	      { header: '수리 종료일', name: 'endDt' },	
+    	      { header: '수리 사유', name: 'note' },
+    	    ],
+      	});
         
      
+        /*
         
         
         
-        
-   
+   */
         
         });//DOMContentLoaded
        
- 
+        $(document).ready(function(){
+       		$(document).on('#btnHistory', 'click', function() {
+       			alert("asd");
+// 				var equipId = $(this).data('id');
+// 			  	const url ='/plant/fix_history?equipId=' + equipId;
+// 			  	window.open(url, "popup", "width=830,height=450");
+			  
+			});	
+        });	
+
+       
 //  모달창 제어 
  $(document).ready(function(){
 	 	const form = $('#dataForm');
@@ -229,24 +249,14 @@
 	
  });	//jquery 준비 끝 부분
  
-		//수리 상세내역 보기 제어 부분-------------------------------------------
-		
+ 		
+		//수리 상세내역 보기 제어 부분------------------------------------------- 좀 더 수정 해야함
+		/*
 		$(document).ready(function(){
 			
 		
 		const modalEl2 = document.getElementById("dataModal2");	//모달 2 상세보기 페이지 부분
 		const myModal2 = new bootstrap.Modal(modalEl2);
-		const grid2 = new tui.Grid({
-    	    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
-    	    scrollX: false,
-    	    scrollY: false,
-    	    bodyHeight: 200,
-    	    columns: [
-    	      { header: '수리 시작일', name: 'startDt' },	
-    	      { header: '수리 종료일', name: 'endDt' },	
-    	      { header: '수리 사유', name: 'note' },
-    	    ],
-      	});
 		
 		
 		
@@ -258,7 +268,7 @@
 			  
 		});	
 			
-			// tui-grid 레이아웃 다시 계산
+			//tui-grid 레이아웃 다시 계산
 		modalEl2.addEventListener('shown.bs.modal', function () {
 			
 			const equipId = modalEl2.dataset.equipId;
@@ -270,7 +280,7 @@
 		});
 			
 	
-		});	
+		});	*/
  
     </script>
 </th:block>
