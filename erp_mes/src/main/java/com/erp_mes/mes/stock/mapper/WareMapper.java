@@ -209,6 +209,27 @@ public interface WareMapper {
 	
 	// 배치 목록 조회 (파라미터 맵 방식)
 	List<Map<String, Object>> selectOutputBatches(Map<String, Object> params);
+	
+	// 0923 Material 재고 조회
+	int getMtlStockQty(@Param("materialId") String materialId,
+	                   @Param("warehouseId") String warehouseId,
+	                   @Param("locationId") String locationId);
+
+	// Material warehouse_item 업데이트
+	int updateMtlStock(@Param("materialId") String materialId,
+	                   @Param("warehouseId") String warehouseId,
+	                   @Param("locationId") String locationId,
+	                   @Param("newQty") Integer newQty);
+
+	// Material warehouse_item 삭제
+	int deleteMtlStock(@Param("materialId") String materialId,
+	                   @Param("warehouseId") String warehouseId,
+	                   @Param("locationId") String locationId);
+
+	// Material 테이블 수량 동기화
+	int syncMaterialQty(@Param("materialId") String materialId);
+	
+	List<Map<String, Object>> getAllMaterialLocations(@Param("materialId") String materialId);
     
     // ==================== 기초 데이터 조회 ====================
     
