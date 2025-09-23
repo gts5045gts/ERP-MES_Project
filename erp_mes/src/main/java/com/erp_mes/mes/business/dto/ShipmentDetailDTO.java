@@ -25,5 +25,4 @@ public class ShipmentDetailDTO {
 	
 	private String productName;
 	private Integer stockQty; 	// warehouse_item 재고량
-//	private int remainingQty; 	// 남은 수주 수량 저잘할 필드
 }

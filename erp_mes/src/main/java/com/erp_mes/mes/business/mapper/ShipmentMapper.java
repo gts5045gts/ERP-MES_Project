@@ -1,18 +1,15 @@
 package com.erp_mes.mes.business.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
 import com.erp_mes.mes.business.dto.ShipmentDTO;
 import com.erp_mes.mes.business.dto.ShipmentDetailDTO;
-import com.erp_mes.mes.business.dto.WarehouseItemDTO;
+import com.erp_mes.mes.stock.dto.WarehouseItemDTO;
 
 @Mapper
 public interface ShipmentMapper {

@@ -53,7 +53,7 @@
         	od.order_id = #{orderId} AND od.order_detail_status != 'COMPLETION'
     </select>
     
-    <select id="getWarehouseItemsByProductId" resultType="com.erp_mes.mes.business.dto.WarehouseItemDTO">
+    <select id="getWarehouseItemsByProductId" resultType="com.erp_mes.mes.stock.dto.WarehouseItemDTO">
         SELECT *
         FROM warehouse_item 
         WHERE product_id = #{productId} 

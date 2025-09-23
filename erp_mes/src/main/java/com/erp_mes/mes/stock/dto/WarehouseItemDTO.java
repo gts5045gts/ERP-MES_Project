@@ -1,4 +1,4 @@
-package com.erp_mes.mes.business.dto;
+package com.erp_mes.mes.stock.dto;
 
 import java.sql.Timestamp;
 
