@@ -28,10 +28,13 @@ public class Inspection {
 	private String inspectionType; // 검사유형
 
 	@Column(name = "PRODUCT_ID")
-	private Long productId; // 제품ID
+	private String productId; // 제품ID
 
 	@Column(name = "PROCESS_ID")
 	private Long processId; // 공정ID
+	
+	@Column(name = "MATERAIL_ID")
+	private String materailId;
 
 	@Column(name = "INSPECTION_DATE")
 	private LocalDateTime inspectionDate; // 검사일자

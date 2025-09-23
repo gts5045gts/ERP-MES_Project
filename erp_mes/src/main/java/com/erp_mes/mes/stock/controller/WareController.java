@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
 import com.erp_mes.mes.stock.service.StockService;
 import com.erp_mes.mes.stock.service.WareService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -196,13 +199,15 @@ public class WareController {
 	        for(Map<String, Object> item : items) {
 	            item.put("empId", principal.getName());
 	            item.put("batchId", batchId);
-	            wareService.addInput(item);
+	            
+	            String inId = wareService.addInput(item);
 	        }
 	        
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 입고 등록 완료");
 	    } catch(Exception e) {
+	        log.error("입고 배치 등록 오류:", e);
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
@@ -225,7 +230,118 @@ public class WareController {
 	    return result;
 	}
 	
-	// ==================== 4. 데이터 조회 API ====================
+	// 입고 반려
+	@PutMapping("/api/inputs/{inId}/reject")
+	@ResponseBody
+	public Map<String, Object> rejectInput(
+	        @PathVariable("inId") String inId,
+	        @RequestParam("reason") String reason,
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.rejectInput(inId, reason, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고가 반려되었습니다.");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 반려 사유 코드 조회
+	@GetMapping("/api/reject-reasons")
+	@ResponseBody
+	public List<Map<String, Object>> getRejectReasons() {
+	    return wareService.getRejectReasons();
+	}
+	// ==================== 4. 출고 관리 API ====================
+
+	// 출고 목록 조회
+	@GetMapping("/api/outputs")
+	@ResponseBody
+	public List<Map<String, Object>> getOutputList(
+	        @RequestParam(name = "outType", required = false) String outType,
+	        @RequestParam(name = "outStatus", required = false) String outStatus,
+	        @RequestParam(name = "startDate", required = false) String startDate,
+	        @RequestParam(name = "endDate", required = false) String endDate) {
+	    
+	    return wareService.getOutputList(outType, outStatus, startDate, endDate);
+	}
+
+	// 배치(batchId) 출고 등록
+	@PostMapping("/api/outputs/batch")
+	@ResponseBody
+	public Map<String, Object> addOutputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
+	    log.info("출고 배치 등록 요청: {}", items);
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        // 첫 번째 아이템에서 사유 추출
+	        String outReason = items.get(0).get("outReason") != null ? 
+	                          (String) items.get(0).get("outReason") : "정상출고";
+	                          
+	        String batchId = wareService.addOutputBatch(items, principal.getName());
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 출고 등록 완료");
+	    } catch(Exception e) {
+	        log.error("출고 배치 등록 실패: ", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 출고 완료 처리
+	@PutMapping("/api/outputs/{outId}/complete")
+	@ResponseBody
+	public Map<String, Object> completeOutput(@PathVariable("outId") String outId, Principal principal) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.completeOutput(outId, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "출고 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 출고 취소
+	@DeleteMapping("/api/outputs/{outId}")
+	@ResponseBody
+	public Map<String, Object> cancelOutput(@PathVariable("outId") String outId) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.cancelOutput(outId);
+	        result.put("success", true);
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 배치별 출고 목록 조회 추가
+	@GetMapping("/api/outputs/batch/{batchId}")
+	@ResponseBody
+	public List<Map<String, Object>> getOutputListByBatch(@PathVariable("batchId") String batchId) {
+	    return wareService.getOutputListByBatch(batchId);
+	}
+
+	// 그룹화된 출고 목록 조회
+	@GetMapping("/api/outputs/grouped")
+	@ResponseBody
+	public List<Map<String, Object>> getGroupedOutputList(
+	    @RequestParam(name = "date", required = false) String date,
+	    @RequestParam(name = "outType", required = false) String outType) {
+	    return wareService.getOutputBatches(date, outType);
+	}
+
+	// ==================== 5. 데이터 조회 API ====================
 
 	// 입고 가능한 자재 목록 조회
 	@GetMapping("/api/materials-for-input")
@@ -240,17 +356,31 @@ public class WareController {
 	public List<Map<String, Object>> getClientsList() {
 	    return wareService.getClientsList();
 	}
-	
+
 	// 창고 타입 공통코드 조회
 	@GetMapping("/api/common-codes/warehouse-types")
 	@ResponseBody
 	public List<Map<String, String>> getWarehouseTypes() {
-	    return stockService.getMaterialTypes(); // 이미 있는 메서드 활용
+	    return stockService.getMaterialTypes();
 	}
-	
+
 	@GetMapping("/api/products-for-input")
 	@ResponseBody
 	public List<Map<String, Object>> getProductsForInput() {
 	    return wareService.getProductsForInput();
+	}
+
+	// 출고용 자재 목록 조회 (warehouse_item 재고 합산)
+	@GetMapping("/api/materials-with-stock")
+	@ResponseBody
+	public List<Map<String, Object>> getMaterialsWithStock() {
+	    return wareService.getMaterialsWithStock();
+	}
+
+	// 출고용 완제품 목록 조회 (warehouse_item 재고 합산)
+	@GetMapping("/api/products-with-stock")
+	@ResponseBody
+	public List<Map<String, Object>> getProductsWithStock() {
+	    return wareService.getProductsWithStock();
 	}
 }

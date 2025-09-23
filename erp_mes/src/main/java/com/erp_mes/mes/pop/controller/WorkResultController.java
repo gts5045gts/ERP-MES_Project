@@ -66,7 +66,7 @@ public class WorkResultController {
 	// 작업시작 체크박스 클릭시 작업현황 업데이트
 	@PostMapping("/workList") 
 	@ResponseBody
-	@TrackLot(tableName = "work_order", pkColumnName = "work_order_id") // ******로트 관련 어노테이션 //테이블명, pk_id 입력******
+	@TrackLot(tableName = "work_result", pkColumnName = "work_order_id") // ******로트 관련 어노테이션 //테이블명, pk_id 입력******
 	public List<WorkResultDTO> workList(@RequestBody List<Long> workOrderIds) {
 		
 		if (workOrderIds == null || workOrderIds.isEmpty()) {
