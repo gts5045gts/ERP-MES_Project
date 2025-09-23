@@ -18,8 +18,8 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
-    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
-    	<button id="openModalBtn" class="btn btn-primary btn-sm" style="float:right;">모달창</button>
+<!--     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button> -->
+    	<button id="openModalBtn" class="btn btn-primary btn-sm" style="float:right;">추가</button>
 		<div id="grid"></div>
 		
 		
@@ -68,15 +68,15 @@
 		      
 		      <!-- 모달 푸터 -->
 		      <div class="modal-footer">
-		        <button type="button" class="btn btn-secondary" id="closeBtn">닫기</button>
+		        <button type="button" class="btn btn-secondary" id="closeBtn1">닫기</button>
 		        <button type="submit" id="saveBtn" class="btn btn-primary">저장</button>
 		      </div>
 		      
 		    </div>
 		  </div>
 		</div>
-		<!-- 모달 -->
-		<div class="modal fade" id="dataModal2" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+		<!-- 모달2 -->
+		<div class="modal fade" id="dataModal2" tabindex="-1" aria-labelledby="dataModalLabel2" aria-hidden="true">
 		  <div class="modal-dialog">
 		    <div class="modal-content">
 		      
@@ -87,7 +87,7 @@
 		      
 		      <!-- 모달 바디 -->
 		      <div class="modal-body">
-		        <div id="grid2"></div>
+		        <div id="grid2" style="height:300px;"></div>
 		      </div>
 		      
 		      
@@ -151,30 +151,38 @@
           })
           .catch(err => console.error('fetch error:', err));
         
+       //그리드 2 수리내역 보기 부분-------------------------------------------------
        
-        const grid2 = new tui.Grid({
-	   	     el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
-	   	     scrollX: false,
-	   	     scrollY: false,
-	   	     columns: [
-	   	       { header: '수리 시작일', name: 'startDt' },	
-	   	       { header: '수리 종료일', name: 'endDt' },	
-	   	       { header: '수리 사유', name: 'note' },
-	   	     ],
-	   		});
+		const grid2 = new tui.Grid({
+		    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
+		    scrollX: false,
+		    scrollY: false,
+		    bodyHeight: 200,
+		    columns: [
+		      { header: '수리 시작일', name: 'startDt' },	
+		      { header: '수리 종료일', name: 'endDt' },	
+		      { header: '수리 사유', name: 'note' },
+		    ],
+		});
+       
         
         
-        });
+        
+        
+   
+        
+        });//DOMContentLoaded
  
  
 //  모달창 제어 
  $(document).ready(function(){
 	 	const form = $('#dataForm');
-		const modalEl = document.getElementById("dataModal");
-		const modalEl2 = document.getElementById("dataModal2");
 		const openBtn = document.getElementById("openModalBtn");
+		
+	 	const modalEl = document.getElementById("dataModal");	//모달 1 데이터 생성 부분
 		const myModal = new bootstrap.Modal(modalEl);
-		const myModal2 = new bootstrap.Modal(modalEl2);
+
+		
 		
 		openBtn.addEventListener("click", function () {
 			myModal.show();
@@ -214,31 +222,42 @@
 	 			alert('전송 오류가 발생 했습니다.');
 	 		});
 		});
+		//모달 창 닫기 
+		 $("#closeBtn1").on("click", function(e){
+				e.preventDefault();
+				myModal.hide();
+		 });
 		
 		
-	 
-	 $(document).on('click', '#btnHistory', function() {
-		let equipId = $(this).data('id');
-		 myModal2.show();		
 		
-		$.get('/plant/fix_history', { equipId: equipId }, function(response){
-				grid2.resetData(response);
-				
-		}).fail(function(){
-			alert('전송 오류가 발생 했습니다.');
-		});
 
+	
+	
+ });	//jquery 준비 끝 부분
+ 
+		//수리 상세내역 보기 제어 부분-------------------------------------------
 		
-	 });
-	 $("#closeBtn1").on("click", function(e){
-			e.preventDefault();
-			myModal.hide();
-	 });
-	 $("#closeBtn2").on("click", function(e){
-			e.preventDefault();
-			myModal.hide();
-	 });
- });
+		
+		const modalEl2 = document.getElementById("dataModal2");	//모달 2 상세보기 페이지 부분
+		const myModal2 = new bootstrap.Modal(modalEl2);
+			
+			// tui-grid 레이아웃 다시 계산
+		modalEl2.addEventListener('shown.bs.modal', function () {
+			const equipId = modalEl2.dataset.equipId;
+			$.get('/plant/fix_history', {equipId : equipId}, function(response){
+				grid2.resetData(response);
+				window.dispatchEvent(new Event('resize'));
+			});
+				
+		});
+			
+		$(document).on('click', '#btnHistory', function () {
+			  const equipId = $(this).data('id');
+			  modalEl2.dataset.equipId = equipId; // 모달에 저장
+			  myModal2.show(); // 모달 열기s
+		});	
+			
+ 
     </script>
 </th:block>
 </body>
