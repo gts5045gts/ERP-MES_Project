@@ -87,15 +87,10 @@ public class LotAOP {
 				    	if(entry.getKey().equals("IN_ID") && tableName.equals("WORK_RESULT")){
 				    		Object inId = entry.getValue();
 				    		
-				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
-							//bom 또는 route 테이블에 실재 입고 된 자재 번호가 필요함
-							//input (입고) 테이블에서 입고완료된 자재의 pk 값을 저장할 필드가 추가로 필요함(김우성)
-				    		
-				    		//work_order 테이블이 넘어오면 이걸하나의 공정으로 보고
-				    		//childLotId로 지정하고 lotId를 생성해서 work_order에 최초업데이트한다.
-				    		//process_routing또는 어떤값으로 실재 재고 테이블
-				    		//input 테이블에서 lot_id를 가져와서 parentId로 지정
-				    		//중복으로 들어올경우?
+				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
+				    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
+							
+				    		//중복으로 들어올경우 처리?
 				    		
 				    		parentLotId = lotUsageService.getInputLotId(inId);
 				    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
