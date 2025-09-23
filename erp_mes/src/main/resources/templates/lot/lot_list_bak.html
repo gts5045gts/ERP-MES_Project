@@ -29,13 +29,12 @@
               </div>
             </div>
             <div class="card-body" style="height:56vh; overflow:auto;">
-              <ul th:each="lotDTO : ${lotDTOList}" th:object="${lotDTO}" class="list-group list-group-flush" id="lotTree">
+              <ul class="list-group list-group-flush" id="lotTree">
                 <!-- 1뎁스 -->
                 <li class="list-group-item p-2">
                     <a data-toggle="collapse" href="#lotA" class="d-flex align-items-center" aria-expanded="true" aria-controls="lotA">
                      <span class="mr-2 caret"></span>
-                     <span th:text="*{lotId}"></span><!-- 
-LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중) -->
+                     <span>LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중)</span>
                    </a>
                    <ul class="collapse show pl-4 mt-2" id="lotA" data-parent="#lotTree">
                          <!-- 공정 토글 -->
@@ -87,7 +86,7 @@ LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중) -->
                 </li>
 
                 <!-- 더미 2건 -->
-                <!-- <li class="list-group-item p-2">
+                <li class="list-group-item p-2">
                   <a data-toggle="collapse" href="#lot-20240715" class="d-flex align-items-center collapsed" aria-expanded="false">
                     <span class="mr-2 caret"></span>
                     <span class="text-truncate">LOT-20240715-NKAF-270-검정-001 스니커즈 (완료)</span>
@@ -109,7 +108,7 @@ LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중) -->
                       <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20230621-JILL-235-검정-002","empNo":"20220930","itemName":"Dress Shoes","itemCode":"JILL","itemType":"구두","size":235,"color":"검정","heel":4,"status":"완료","planQty":80,"startDate":"2023-06-21"}'>공정</a>
                     </li>
                   </ul>
-                </li> -->
+                </li>
               </ul>
             </div>
           </div>

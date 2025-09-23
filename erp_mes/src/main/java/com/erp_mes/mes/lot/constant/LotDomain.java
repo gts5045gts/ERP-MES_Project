@@ -6,7 +6,7 @@ public enum LotDomain {
 	// 1️⃣ 자재(Material)
 	  MATERIAL("material", "RM"), // 원자재
 	  PROCESS("process", "PR"), // 반제품
-	  FINISHED("finished", "FG"), // 완제품
+	  FINISHED("warehouse_item", "FG"), // 완제품
 	  QUALITY("quality", "QA"), // 품질검사
 	  PRODUCT("product", "PD"), // POP 
 	  EQUIPMENT("equipment", "EQ"), // 설비
@@ -14,6 +14,7 @@ public enum LotDomain {
 	  
 	  // 2️⃣ 공정(Process / 작업 공정)
 	  INPUT("input", "IN"), // 입고
+	  POP("work_result", "POP"), // 입고
 	  CUTTING("cutting", "CUT"), // 절단 
 	  MACHINING("machining", "MCH"), // 성형/가공
 	  ASSEMBLY("assembly", "AS"), // 조립 

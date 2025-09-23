@@ -19,23 +19,14 @@ import com.erp_mes.mes.stock.service.WareService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-/**
- * 재고 관리 컨트롤러
- * - 재고 현황 조회/수정
- * - 자재(부품/반제품) 관리
- * - 제품(완제품) 관리
- * - 입출고 관리
- */
 @Log4j2  
 @Controller
 @RequiredArgsConstructor
 public class InvController {
     
-    private final WareService wareService;
     private final StockService stockService;
     
     // ==================== 1. 페이지 라우팅 ====================
-    
     
      //재고 현황 페이지
     @GetMapping("/inventory/stock")
@@ -45,7 +36,6 @@ public class InvController {
         model.addAttribute("warehouseList", warehouseList);
         return "inventory/stock_list";
     }
-    
     
     //입고 관리 페이지
     @GetMapping("/purchase/goods")
@@ -61,14 +51,12 @@ public class InvController {
         return "inventory/outbound_list";
     }
     
-    
      //자재(부품/반제품) 관리 페이지
     @GetMapping("/inventory/material")
     public String materialList(Model model) {
         log.info("자재 관리 페이지 접속");
         return "inventory/material_list";
     }
-    
     
     // 제품(완제품) 관리 페이지 (프로젝트에선 구현X - 담당자 따로있음.)
     @GetMapping("/inventory/item")
@@ -78,7 +66,6 @@ public class InvController {
     }
     
     // ==================== 2. 재고 현황 관리 API ====================
-    
    
     //전체 재고 목록 조회 (완제품, 반제품, 부품)
     @GetMapping("/api/inventory/all-stock")

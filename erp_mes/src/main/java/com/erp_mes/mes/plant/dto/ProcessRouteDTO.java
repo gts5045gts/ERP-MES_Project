@@ -21,7 +21,7 @@ public class ProcessRouteDTO {
 	private Long routeId; 			//라우트 아이디 기본키 
 	private Long proSeq;			//공정 순서 
 	private String note;			//설명  
-	
+	private String lotID;
 	//조인받을 곳 타입
 	private Long proId;				//공정 아이디 
 	private String proNm;			//공정 이름
