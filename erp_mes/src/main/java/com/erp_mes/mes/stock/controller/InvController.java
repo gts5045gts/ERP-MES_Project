@@ -25,6 +25,7 @@ import lombok.extern.log4j.Log4j2;
 public class InvController {
     
     private final StockService stockService;
+    private final WareService wareService;
     
     // ==================== 1. 페이지 라우팅 ====================
     
@@ -202,16 +203,17 @@ public class InvController {
             @RequestParam("reason") String reason,
             Principal principal) {
         
-        log.info("자재 재고 차감 - 자재: {}, 창고: {}, 수량: {}", 
+        log.info("재고 투입 - materialId: {}, warehouseId: {}, 수량: {}", 
                  materialId, warehouseId, reduceQty);
         
         Map<String, Object> result = new HashMap<>();
         try {
-            boolean success = stockService.reduceMaterialStockFromWarehouse(
+            // StockService 대신 WareService 호출
+            boolean success = wareService.reduceMtlStock(
                 materialId, warehouseId, locationId, reduceQty, reason, principal.getName()
             );
             result.put("success", success);
-            result.put("message", success ? "재고 차감 완료" : "재고 차감 실패");
+            result.put("message", success ? "재고 투입 완료" : "재고 투입 실패");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -225,7 +227,7 @@ public class InvController {
     public List<Map<String, Object>> getMaterialWarehouseStock(@PathVariable("materialId") String materialId) {
         return stockService.getMaterialWarehouseStock(materialId);
     }
-    
+
     // ==================== 4. 완제품(Product) 관리 API -- 담당자가 따로있어 개인용 포폴용 ====================
     
     // 완제품 목록 조회
