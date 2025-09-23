@@ -123,45 +123,50 @@ public class WareService {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer todayCount = wareMapper.getTodayInputCount(today);
         if(todayCount == null) todayCount = 0;
-        
+
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
-        
+
         params.put("inId", inId);
-        
+
+        // 사유가 없으면 입고타입으로 설정
+        if(params.get("inReason") == null || "".equals(params.get("inReason"))) {
+            params.put("inReason", params.get("inType"));
+        }
+
         // 완제품/부품 구분 처리
         if("product".equals(itemType)) {
             // 완제품은 바로 입고완료 상태로
             params.put("inStatus", "입고완료");
             params.put("productId", params.get("productId"));
-            
+
             // 입고 등록
             wareMapper.insertInput(params);
-            
+
             // 바로 재고 처리
             String productId = (String) params.get("productId");
             String warehouseId = (String) params.get("warehouseId");
             Integer inCount = Integer.parseInt(params.get("inCount").toString());
             String empId = (String) params.get("empId");
-            
+
             // product 테이블 수량 증가
             wareMapper.updateProductQuantity(productId, inCount);
-            
+
             // warehouse_item 분산 저장
             String firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
-            
+
             if(firstLocation != null) {
                 wareMapper.updateInputLocation(inId, firstLocation);
             }
-            
+
             log.info("완제품 입고 즉시 완료: {} ({}개)", inId, inCount);
-            
+
         } else {
             // 부품/반제품은 기존대로 입고대기
             params.put("inStatus", "입고대기");
             String materialId = (String) params.get("productId");
             params.put("materialId", materialId);
             params.remove("productId");
-            
+
             wareMapper.insertInput(params);
             log.info("부품/반제품 입고 대기: {}", inId);
         }
@@ -197,32 +202,40 @@ public class WareService {
         String warehouseId = (String) input.get("WAREHOUSE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
-        // 입고 상태 변경
-        wareMapper.updateInputStatus(inId, "입고완료");
+        // 위치 할당 먼저 시도
+        String firstLocation = null;
         
         if(productId != null) {
             // 완제품 처리
-            wareMapper.updateProductQuantity(productId, inCount);
-            String firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
-            
-            if(firstLocation != null) {
-                wareMapper.updateInputLocation(inId, firstLocation);
-            }
+            firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
         } else if(materialId != null) {
-            // 부품/반제품 처리 (기존 코드)
-            wareMapper.updateMaterialQuantity(materialId, inCount);
-            String firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
-            
-            if(firstLocation != null) {
-                wareMapper.updateInputLocation(inId, firstLocation);
-            }
+            // 부품/반제품 처리
+            firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
         }
         
-        log.info("입고 완료: {} - 수량: {}", inId, inCount);
+        // 위치 할당 실패 시 에러 처리
+        if(firstLocation == null) {
+            throw new RuntimeException(
+                String.format("창고 %s에 충분한 저장 공간이 없습니다. 입고 수량: %d개", 
+                             warehouseId, inCount)
+            );
+        }
         
-        //	*******로트 생성: pk 값을 넘겨주는 곳**********
+        // 위치 할당 성공한 경우에만 입고 완료 처리
+        wareMapper.updateInputStatus(inId, "입고완료");
+        
+        if(productId != null) {
+            wareMapper.updateProductQuantity(productId, inCount);
+        } else if(materialId != null) {
+            wareMapper.updateMaterialQuantity(materialId, inCount);
+        }
+        
+        wareMapper.updateInputLocation(inId, firstLocation);
+        
+        log.info("입고 완료: {} - 수량: {}, 첫 위치: {}", inId, inCount, firstLocation);
+        
         HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", (String) input.get("IN_ID"));
+        session.setAttribute("targetIdValue", inId);
     }
     
     // Material 재고 분산 저장 (내부 메서드)
@@ -263,8 +276,18 @@ public class WareService {
             List<String> emptyLocations = wareMapper.getEmptyLocations(warehouseId);
             
             if(emptyLocations.isEmpty()) {
-                log.warn("창고 {}에 빈 위치가 없습니다. 남은 수량: {}", warehouseId, remaining);
-                break;
+                log.error("창고 {}에 빈 위치가 없습니다. 처리되지 않은 수량: {}", warehouseId, remaining);
+                
+                // 위치가 부족하면 실패 처리
+                if(firstLocation == null) {
+                    return null;  
+                } else {
+                    // 일부만 저장된 경우 - 롤백을 위해 예외 발생
+                    throw new RuntimeException(
+                        String.format("창고 %s에 저장 공간이 부족합니다. %d개 중 %d개만 저장 가능", 
+                                     warehouseId, totalCount, totalCount - remaining)
+                    );
+                }
             }
             
             String locationId = emptyLocations.get(0);
@@ -364,6 +387,34 @@ public class WareService {
         }
         
         return firstLocation;
+    }
+    
+    // 입고 반려 처리
+    @Transactional
+    public void rejectInput(String inId, String reason, String empId) {
+        Map<String, Object> input = wareMapper.selectInputById(inId);
+        
+        if(input == null) {
+            throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
+        }
+        
+        String status = (String) input.get("IN_STATUS");
+        
+        // 입고대기 상태만 반려 가능
+        if(!"입고대기".equals(status)) {
+            throw new RuntimeException("입고대기 상태에서만 반려할 수 있습니다.");
+        }
+        
+        // 입고 상태를 입고반려로 변경
+        wareMapper.updateInputStatusWithReason(inId, "입고반려", reason);
+        
+        log.info("입고 반려 처리: {} (사유: {}, 처리자: {})", inId, reason, empId);
+    }
+    
+    // 반려 사유 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getRejectReasons() {
+        return wareMapper.selectRejectReasons();
     }
     
 	// ==================== 출고 관리 ====================

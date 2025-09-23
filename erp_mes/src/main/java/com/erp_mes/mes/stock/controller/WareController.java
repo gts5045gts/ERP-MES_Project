@@ -189,7 +189,6 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
-	@TrackLot(tableName = "input", pkColumnName = "in_id")
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -202,16 +201,13 @@ public class WareController {
 	            item.put("batchId", batchId);
 	            
 	            String inId = wareService.addInput(item);
-	            
-	            // LOT 추적용 세션 설정
-	            HttpSession session = SessionUtil.getSession();
-	            session.setAttribute("targetIdValue", inId);
 	        }
 	        
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 입고 등록 완료");
 	    } catch(Exception e) {
+	        log.error("입고 배치 등록 오류:", e);
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
@@ -234,6 +230,32 @@ public class WareController {
 	    return result;
 	}
 	
+	// 입고 반려
+	@PutMapping("/api/inputs/{inId}/reject")
+	@ResponseBody
+	public Map<String, Object> rejectInput(
+	        @PathVariable("inId") String inId,
+	        @RequestParam("reason") String reason,
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.rejectInput(inId, reason, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고가 반려되었습니다.");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 반려 사유 코드 조회
+	@GetMapping("/api/reject-reasons")
+	@ResponseBody
+	public List<Map<String, Object>> getRejectReasons() {
+	    return wareService.getRejectReasons();
+	}
 	// ==================== 4. 출고 관리 API ====================
 
 	// 출고 목록 조회
@@ -256,13 +278,16 @@ public class WareController {
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    try {
+	        // 첫 번째 아이템에서 사유 추출
+	        String outReason = items.get(0).get("outReason") != null ? 
+	                          (String) items.get(0).get("outReason") : "정상출고";
+	                          
 	        String batchId = wareService.addOutputBatch(items, principal.getName());
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 출고 등록 완료");
-	        log.info("출고 배치 등록 성공: {}", batchId);
 	    } catch(Exception e) {
-	        log.error("출고 배치 등록 실패: ", e); 
+	        log.error("출고 배치 등록 실패: ", e);
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
