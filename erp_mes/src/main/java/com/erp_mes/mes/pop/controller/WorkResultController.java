@@ -66,7 +66,6 @@ public class WorkResultController {
 	// 작업시작 체크박스 클릭시 작업현황 업데이트
 	@PostMapping("/workList") 
 	@ResponseBody
-	@TrackLot(tableName = "work_result", pkColumnName = "work_order_id") // ******로트 관련 어노테이션 //테이블명, pk_id 입력******
 	public List<WorkResultDTO> workList(@RequestBody List<Long> workOrderIds) {
 		
 		if (workOrderIds == null || workOrderIds.isEmpty()) {
@@ -75,10 +74,6 @@ public class WorkResultController {
 		
 		// 상태 업데이트
 		workResultMapper.updateWorkOrderStatus(workOrderIds);
-		
-//		*******로트 생성: pk value 를 넘겨주는 곳**********
-        HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", workOrderIds); //pk_id의 값 입력
 		
 		// 생산실적 테이블
 		workResultService.workResultList(workOrderIds);
