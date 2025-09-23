@@ -41,7 +41,7 @@ public class SecurityConfig {
                 // 관리자 근태관리 URL 접근 제한
                 .requestMatchers("/attendance/adminCommute/**", "/attendance/adminCommuteLog/**")
                 .hasAnyRole("AUT001","AUT002")
-                
+                .requestMatchers("/dev-login/**").permitAll() // 개발용 로그인 엔드포인트 허용
                 .requestMatchers("/personnel/**").authenticated()
                 .requestMatchers("/groupware/**").authenticated()
                 .requestMatchers("/notice/**").authenticated()

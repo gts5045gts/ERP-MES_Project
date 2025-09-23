@@ -106,6 +106,9 @@
 <!--  <script th:src="@{/bootstrap/js/plant/equip_fix.js}"></script>	 -->
 <!--  <script th:src="@{/bootstrap/js/plant/equip_fix_detail.js}"></script>	 -->
  <script>
+
+ 
+ 
  document.addEventListener('DOMContentLoaded', function() {
 		const token = $("meta[name='_csrf']").attr("content");
 		const header = $("meta[name='_csrf_header']").attr("content");
@@ -153,18 +156,9 @@
         
        //그리드 2 수리내역 보기 부분-------------------------------------------------
        
-		const grid2 = new tui.Grid({
-		    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
-		    scrollX: false,
-		    scrollY: false,
-		    bodyHeight: 200,
-		    columns: [
-		      { header: '수리 시작일', name: 'startDt' },	
-		      { header: '수리 종료일', name: 'endDt' },	
-		      { header: '수리 사유', name: 'note' },
-		    ],
-		});
-       
+		
+        
+     
         
         
         
@@ -172,7 +166,7 @@
    
         
         });//DOMContentLoaded
- 
+       
  
 //  모달창 제어 
  $(document).ready(function(){
@@ -237,12 +231,36 @@
  
 		//수리 상세내역 보기 제어 부분-------------------------------------------
 		
+		$(document).ready(function(){
+			
 		
 		const modalEl2 = document.getElementById("dataModal2");	//모달 2 상세보기 페이지 부분
 		const myModal2 = new bootstrap.Modal(modalEl2);
+		const grid2 = new tui.Grid({
+    	    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
+    	    scrollX: false,
+    	    scrollY: false,
+    	    bodyHeight: 200,
+    	    columns: [
+    	      { header: '수리 시작일', name: 'startDt' },	
+    	      { header: '수리 종료일', name: 'endDt' },	
+    	      { header: '수리 사유', name: 'note' },
+    	    ],
+      	});
+		
+		
+		
+		$('#btnHistory').on('click', function () {
+			  const equipId = $(this).data('id');
+			  modalEl2.dataset.equipId = equipId; // 모달에 저장
+			  myModal2.show(); // 모달 열기s
+			  
+			  
+		});	
 			
 			// tui-grid 레이아웃 다시 계산
 		modalEl2.addEventListener('shown.bs.modal', function () {
+			
 			const equipId = modalEl2.dataset.equipId;
 			$.get('/plant/fix_history', {equipId : equipId}, function(response){
 				grid2.resetData(response);
@@ -251,12 +269,8 @@
 				
 		});
 			
-		$(document).on('click', '#btnHistory', function () {
-			  const equipId = $(this).data('id');
-			  modalEl2.dataset.equipId = equipId; // 모달에 저장
-			  myModal2.show(); // 모달 열기s
+	
 		});	
-			
  
     </script>
 </th:block>
