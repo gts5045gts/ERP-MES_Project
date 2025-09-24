@@ -131,6 +131,10 @@ public interface WareMapper {
 	// 기존 Material 위치 업데이트 (중복 방지)
 	int updateExistingMaterialLocation(Map<String, Object> params);
 	
+	// 0924 input 테이블 manage_id 업데이트
+    int updateInputManageId(@Param("inId") String inId, 
+                           @Param("manageId") String manageId);
+	
 	// ==================== 출고 관리 ====================
 	
 	// 출고 목록 조회
@@ -249,6 +253,14 @@ public interface WareMapper {
 
 	// work_result in_id 업데이트
 	int updateWorkResultInId(@Param("resultId") String resultId, @Param("inId") String inId);
+	
+	List<Map<String, Object>> getMaterialStockGroupByManageId(@Param("materialId") String materialId);
+	
+	// manage_id로 재고 수량 조회
+	Integer getMaterialStockByManageId(@Param("manageId") String manageId);
+	
+	// LOT 마스터 등록
+	int insertLotMaster(Map<String, Object> params);
     
     // ==================== 기초 데이터 조회 ====================
     

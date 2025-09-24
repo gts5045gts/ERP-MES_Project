@@ -191,14 +191,16 @@ let productsData = [];
 
 $(document).ready(function() {
     getCurrentUser();
-    loadProductOutputList(); 
+    loadProductOutputList();  
     
     // 탭 전환 이벤트
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         const target = $(e.target).attr("href");
         if(target === "#product-out-content") {
+            console.log("완제품 출고 탭 활성화");
             loadProductOutputList();
         } else {
+            console.log("자재 출고 탭 활성화");
             loadMaterialOutputList();
         }
     });
@@ -227,18 +229,127 @@ function openMaterialOutModal() {
 
 // 자재 목록 로드 (warehouse_item 재고 포함)
 function loadMaterialsForOut() {
-    $.ajax({
+	$.ajax({
         url: '/inventory/api/materials-with-stock',
         type: 'GET',
         success: function(data) {
-            console.log("자재 재고:", data);
             materialsData = data;
-            updateAllMaterialOutSelects();
-        },
-        error: function(xhr) {
-            console.error("자재 로드 실패:", xhr);
+            
+            materialsData.forEach(material => {
+                $.ajax({
+                    url: `/inventory/api/material-stock-by-manage/${material.materialId}`, 
+                    type: 'GET',
+                    async: false,
+                    success: function(stockData) {
+                        material.manageStocks = stockData;
+                    }
+                });
+            });
+            
+            updateMaterialOutModal();
         }
     });
+}
+
+//부품 선택 시 manage_id 선택 가능하도록
+function updateMaterialOutModal() {
+    let html = `
+        <div class="material-out-item mb-3 border p-3">
+            <div class="row mb-2">
+                <div class="col-md-12">
+                    <select class="form-control material-select" onchange="showManageIdOptions(this)">
+                        <option value="">부품 선택</option>
+                        ${materialsData.map(m => 
+                            `<option value="${m.materialId}">${m.materialName} (총 ${m.quantity}개)</option>`
+                        ).join('')}
+                    </select>
+                </div>
+            </div>
+            <div class="manage-id-section" style="display:none;">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>선택</th>
+                            <th>Manage ID</th>
+                            <th>창고</th>
+                            <th>위치</th>
+                            <th>재고</th>
+                            <th>출고수량</th>
+                        </tr>
+                    </thead>
+                    <tbody class="manage-list"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    $('#materialOutList').html(html);
+}
+
+//manage_id별 재고 조회 함수
+function showManageIdOptions(select) {
+    const materialId = $(select).val();
+    const container = $(select).closest('.material-out-item');
+    const manageSection = container.find('.manage-id-section');
+    const manageList = container.find('.manage-list');
+    
+    if(!materialId) {
+        manageSection.hide();
+        return;
+    }
+    
+    const material = materialsData.find(m => m.materialId === materialId);
+    
+    let html = '';
+    if(material.manageStocks) {
+        material.manageStocks.forEach((stock, index) => {
+            html += `
+                <tr>
+                    <td>
+                        <input type="checkbox" class="manage-check" 
+                               data-manage="${stock.manageId}"
+                               data-warehouse="${stock.warehouseId}"
+                               data-location="${stock.locationId}"
+                               data-stock="${stock.itemAmount}">
+                    </td>
+                    <td>${stock.manageId}</td>
+                    <td>${stock.warehouseName}</td>
+                    <td>${stock.locationId}</td>
+                    <td>${stock.itemAmount}개</td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm out-qty" 
+                               min="1" max="${stock.itemAmount}" disabled>
+                    </td>
+                    <td class="text-muted small">${stock.createDate}</td> 
+                </tr>
+            `;
+        });
+    }
+    
+    manageList.html(html);
+    manageSection.show();
+    
+    // 체크박스 이벤트
+    $('.manage-check').on('change', function() {
+        const qtyInput = $(this).closest('tr').find('.out-qty');
+        if($(this).is(':checked')) {
+            qtyInput.prop('disabled', false);
+            qtyInput.val(1);
+        } else {
+            qtyInput.prop('disabled', true);
+            qtyInput.val('');
+        }
+        updateSelectedCount(); // 여기서도 호출
+    });
+}
+
+//선택한 자재 수 업데이트 함수
+function updateSelectedCount() {
+    let count = 0;
+    $('.manage-check:checked').each(function() {
+        count++;
+    });
+    $('#selectedMaterialOutCount').text(count);
 }
 
 // 자재 select 업데이트
@@ -316,25 +427,25 @@ function saveMaterialOut() {
     const items = [];
     
     $('.material-out-item').each(function() {
-        const materialId = $(this).find('.material-out-select').val();
-        const qty = $(this).find('.material-out-qty').val();
-        const stock = $(this).find('.material-out-select option:selected').data('stock');
+        const materialId = $(this).find('.material-select').val();
         
-        if(materialId && qty) {
-            if(parseInt(qty) > parseInt(stock)) {
-                alert('재고가 부족합니다!');
-                return false;
+        $(this).find('.manage-check:checked').each(function() {
+            const qty = $(this).closest('tr').find('.out-qty').val();
+            
+            if(qty && parseInt(qty) > 0) {
+                items.push({
+                    productId: materialId,
+                    manageId: $(this).data('manage'),
+                    warehouseId: $(this).data('warehouse'),
+                    locationId: $(this).data('location'),
+                    outCount: qty
+                });
             }
-            items.push({
-                productId: materialId,
-                outCount: qty,
-                outType: $('#material_out_purpose').val()
-            });
-        }
+        });
     });
     
     if(items.length === 0) {
-        alert('최소 하나의 자재를 선택하세요.');
+        alert('출고할 항목을 선택하세요.');
         return;
     }
     
@@ -348,12 +459,9 @@ function saveMaterialOut() {
         },
         success: function(result) {
             if(result.success) {
-                alert(result.message);
+                alert(`출고 완료!\n배치번호: ${result.batchId}`);
                 $('#materialOutModal').modal('hide');
-                resetMaterialOutForm();
                 loadMaterialOutputList();
-            } else {
-                alert('출고 등록 실패: ' + result.message);
             }
         }
     });
@@ -549,20 +657,24 @@ function resetProductOutForm() {
 
 // ============ 출고 목록 관련 (batch별) ============
 
-// 자재 출고 배치 목록 로드
+// 자재 출고 목록 로드 함수 확인
 function loadMaterialOutputList() {
     $.ajax({
         url: '/inventory/api/outputs/grouped?outType=material',
         type: 'GET',
         success: function(data) {
-            // material_id가 있는 출고만 필터
+            console.log("자재 출고 배치 데이터:", data);  // 디버깅
+            
+            // MOB로 시작하는 배치만 필터
             const materialOutputs = data.filter(item => 
-                item.batchId && (item.batchId.startsWith('OB') || item.batchId.startsWith('MI'))
+                item.batchId && item.batchId.startsWith('MOB')
             );
+            
+            console.log("필터링된 데이터:", materialOutputs);
             renderMaterialOutputBatches(materialOutputs);
         },
         error: function(xhr) {
-            console.error("자재 출고 배치 목록 로드 실패:", xhr);
+            console.error("자재 출고 목록 로드 실패:", xhr);
         }
     });
 }
@@ -573,6 +685,7 @@ function loadProductOutputList() {
         url: '/inventory/api/outputs/grouped?outType=product',
         type: 'GET',
         success: function(data) {
+            console.log("출고 목록 데이터:", data); 
             renderProductOutputBatches(data); 
         },
         error: function(xhr) {
