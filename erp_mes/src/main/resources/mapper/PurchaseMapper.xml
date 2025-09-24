@@ -56,6 +56,7 @@
     		input_date,
     		emp_id,
     		purchase_status,
+    		purchase_type,
     		update_at
    		) VALUES (
         	#{purchaseId},
@@ -65,7 +66,8 @@
         	SYSDATE,
         	#{inputDate, jdbcType=DATE},
         	#{empId},
-        	'REQUEST', 
+        	'REQUEST',
+        	#{purchaseType}, 
         	SYSDATE
     )
 	</insert>
@@ -109,7 +111,8 @@
 			p.input_date AS inputDate,
 			p.emp_id AS empId,
 			e.emp_name AS empName,
-			c.client_name AS clientName
+			c.client_name AS clientName,
+			p.purchase_type AS purchaseType
 		FROM purchase p
 		LEFT JOIN employee e ON p.emp_id = e.emp_id
 		LEFT JOIN client c ON p.client_id = c.client_id
@@ -236,13 +239,16 @@
     
 	<select id="getWorkOrderShortages" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
         SELECT
-            work_order_id,
-            material_id,
-            require_qty
+            wos.work_order_id,
+            wos.material_id,
+            wos.require_qty,
+            wo.start_date AS startDate
         FROM
-            work_order_shortage
+            work_order_shortage wos
+        JOIN
+        	work_order wo ON wos.work_order_id = wo.work_order_id
         WHERE
-            status = '요청'
+            wos.status = '요청'
     </select>
 
     <select id="getWorkOrderDetailsForPurchase" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
@@ -252,6 +258,7 @@
             wos.require_qty,
             m.material_name,
             m.price,
+            m.unit, 	-- 발주 상세 테이블에 insert할 때 unit 값 필요.
             (wos.require_qty * m.price) AS totalPrice
         FROM
             work_order_shortage wos

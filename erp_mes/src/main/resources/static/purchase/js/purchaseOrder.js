@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					header: '발주금액', name: 'totalPurchasePrice', align: 'center',
 					formatter: (value) => value.value ? value.value.toLocaleString() : ''
 				},
+				{ header: '발주구분', name: 'purchaseType', align: 'center' },
 				{
 					header: '발주상태', name: 'purchaseStatus', align: 'center',
 					formatter: (value) => {
@@ -202,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 			loadPurchaseDetails(rowData.purchaseId);
-			if (rowData.purchaseStatus === 'REQUEST') {
+			if (rowData.purchaseStatus === 'REQUEST' && rowData.purchaseType === '일반발주') {
 				editBtn.style.display = "inline-block";
 				editBtn.dataset.purchaseId = rowData.purchaseId;
 			} else {
@@ -275,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				if (!acc[item.workOrderId]) {
 					acc[item.workOrderId] = {
 						workOrderId: item.workOrderId,
+						startDate: item.startDate,
 						materials: []
 					};
 				}
@@ -283,7 +285,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			}, {});
 			const gridData = Object.values(groupedData).map(workOrder => {
 				const totalQty = workOrder.materials.reduce((sum, mat) => sum + mat.requireQty, 0);
-				return { workOrderId: workOrder.workOrderId, materialCount: workOrder.materials.length, totalQty: totalQty };
+				return { 
+					workOrderId: workOrder.workOrderId, 
+					materialCount: workOrder.materials.length, 
+					totalQty: totalQty,
+					startDate: workOrder.startDate
+				 };
 			});
 			workOrderGrid.resetData(gridData);
 		}).catch(error => console.error("작업지시 목록 불러오기 오류:", error));
@@ -391,7 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const totalPurchaseQty = materials.reduce((sum, m) => sum + m.purchaseQty, 0);
 		const totalPurchasePrice = materials.reduce((sum, m) => sum + m.totalPrice, 0);
 		const payload = {
-			clientId, clientName, inputDate, totalPurchaseQty, totalPurchasePrice, materials
+			clientId, clientName, inputDate, totalPurchaseQty, totalPurchasePrice, materials, purchaseType: "일반발주"
 		};
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
@@ -515,12 +522,19 @@ document.addEventListener("DOMContentLoaded", () => {
 				el: document.getElementById('workOrderListGrid'),
 				scrollX: false,
 				scrollY: true,
-				rowHeaders: ['checkbox'],
+				rowHeaders: [{
+					type: 'checkbox',
+					header: ' '
+				}],
 				bodyHeight: 280,
 				columns: [
 					{ header: '작업지시 ID', name: 'workOrderId', align: 'center' },
 					{ header: '자재 종류', name: 'materialCount', align: 'center' },
 					{ header: '총 필요 수량', name: 'totalQty', align: 'center' },
+					{ 
+					  header: '작업시작일', name: 'startDate', align: 'center',
+					  formatter: (value) => value.value ? value.value.split('T')[0] : ''
+					},
 				],
 				columnOptions: { resizable: true }
 			});
@@ -528,7 +542,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			workOrderGrid.on('click', (ev) => {
 				if (ev.rowKey != null) {
 					const row = workOrderGrid.getRow(ev.rowKey);
-					console.log(row)
+					// 이미 체크된 행이라면 체크를 해제하고, 아니면 체크합니다.
+					if (workOrderGrid.getCheckedRowKeys().includes(ev.rowKey)) {
+					    workOrderGrid.uncheck(ev.rowKey);
+					} else {
+					    // 다른 행의 체크를 모두 해제하고, 현재 클릭한 행만 체크합니다.
+					    // 단일 선택만 가능하도록 변경
+					    workOrderGrid.uncheckAll();
+					    workOrderGrid.check(ev.rowKey);
+					}
 					updateWorkOrderSelectedItems(row.workOrderId);
 				}
 			});
@@ -554,7 +576,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				materialId: item.materialId,
 				materialName: item.materialName,
 				price: item.price,
-				qty: item.requireQty
+				qty: item.requireQty,
+				unit: item.unit
 			}));
 			renderWorkOrderMaterials();
 		} catch (error) {
@@ -614,6 +637,19 @@ document.addEventListener("DOMContentLoaded", () => {
 			alert("입고예정일을 선택해주세요.");
 			return;
 		}
+		
+		// 선택된 작업지시의 작업시작일 가져오기
+		const selectedWorkOrderData = workOrderGrid.getRow(workOrderId);
+		const workOrderStartDate = selectedWorkOrderData.startDate; // 그리드에서 작업시작일 값을 가져옴
+
+		// 날짜 비교
+		const inputDateObj = new Date(inputDate);
+		const workOrderStartDateObj = new Date(workOrderStartDate);
+
+		if (inputDateObj > workOrderStartDateObj) {
+		    alert("입고요청일은 작업지시의 작업시작일 이전이어야 합니다.");
+		    return;
+		}
 
 		const materials = workOrderSelectedMaterials.map(material => ({
 			materialId: material.materialId,
@@ -621,6 +657,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			purchaseQty: material.qty,
 			purchasePrice: material.price,
 			totalPrice: material.qty * material.price,
+			unit: material.unit
 		}));
 		if (materials.length === 0) {
 			alert("하나 이상의 자재를 선택해주세요.");
@@ -630,7 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		const totalPurchaseQty = materials.reduce((sum, m) => sum + m.purchaseQty, 0);
 		const totalPurchasePrice = materials.reduce((sum, m) => sum + m.totalPrice, 0);
 		const payload = {
-			clientId, clientName, inputDate, totalPurchaseQty, totalPurchasePrice, materials, workOrderId
+			clientId, clientName, inputDate, totalPurchaseQty, totalPurchasePrice, materials, workOrderId, purchaseType: "작업지시발주"
 		};
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
@@ -658,6 +695,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 
 	async function openEditModal(purchaseId, rowData) {
+		// 발주 유형이 '작업지시발주'인 경우, 바로 경고 메시지를 띄우고 종료
+		if (rowData.purchaseType === '작업지시발주') {
+		    alert("작업지시 발주는 수정할 수 없습니다.");
+		    return;
+		}
 		try {
 			const res = await fetch(`/purchase/api/purchase/${purchaseId}`);
 			if (!res.ok) throw new Error("발주 정보를 불러오지 못했습니다.");
@@ -665,7 +707,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			isEditMode = true;
 			editPurchaseId = purchaseId;
-			editMaterials = purchase.materials || [];
+			
+			const clientIdSelect = normalForm.querySelector("#clientId");
+			        clientIdSelect.value = purchase.clientId; // 거래처 설정
+			        clientIdSelect.disabled = true; // 수정 불가하도록 비활성화
+
+			        const inputDateInput = normalForm.querySelector("#inputDate");
+			        inputDateInput.value = purchase.inputDate ? purchase.inputDate.split('T')[0] : ''; // 입고요청일 설정
+			
+					editMaterials = purchase.materials.map(material => ({
+					            ...material,
+					            clientId: purchase.clientId,
+					            inputDate: purchase.inputDate
+					        }));
 
 			document.getElementById('NormalPurchaseModalTitle').textContent = '발주 수정';
 			document.getElementById('purchaseSubmitBtn').textContent = '수정';

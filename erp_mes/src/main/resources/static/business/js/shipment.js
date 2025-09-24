@@ -367,6 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
 				const gridData = data.map(item => ({
 					...item,
+					remainingQty: item.remainingQty, // 출하등록시 수주수량 > 출하수량일 경우 출하실패하도록 하기위한 필드
 					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
 					shipmentQty: item.remainingQty
 				}));
@@ -406,6 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		for (const item of checkedDetails) {
 			const shipmentQty = parseInt(item.shipmentQty);
 			const orderQty = parseInt(item.orderQty);
+			const remainingQty = parseInt(item.remainingQty);
 
 			// 'orderQty'와 'remainingQty'를 비교하여 '부분출하' 상태를 판단
 			const isPartialShipment = (orderQty > item.remainingQty) && (item.remainingQty > 0);
@@ -416,6 +418,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					return; // 유효성 검사 실패 시 함수 실행 중단
 				}
 			}
+			
+			if (shipmentQty > remainingQty) {
+			            alert(`"${item.productName}" 품목의 출하 수량(${shipmentQty})이 잔여 수량(${remainingQty})보다 많습니다.`);
+			            return;
+			        }
 		}
 
 		if (checkedDetails.length !== allDetails.length) {
