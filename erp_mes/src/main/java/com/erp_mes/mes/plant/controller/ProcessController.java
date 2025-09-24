@@ -127,16 +127,25 @@ public class ProcessController {
 		
 		return "/plant/fix_newForm";
 	}*/
-	@ResponseBody
 	@GetMapping("/fix_history")
-	public List<Map<String, Object>> fix_history(Model model,
+	public String fix_history(Model model,
 							@RequestParam("equipId")String equipId) {
-		
 		List<Map<String, Object>> equipList = equipService.findById(equipId);
 		
-		return equipList;
+		model.addAttribute("equipList",equipList);
+		
+		return "/plant/fix_history";
 	}
-	
+	@ResponseBody
+	@GetMapping("/fixHistoryGrid")
+	public String fixHistoryGrid(Model model,
+							@RequestParam("equipId")String equipId) {
+		List<Map<String, Object>> equipList = equipService.findById(equipId);
+		
+		model.addAttribute("equipList",equipList);
+		
+		return "/plant/fix_history";
+	}
 	
 	
 	//요청 부분
@@ -190,14 +199,21 @@ public class ProcessController {
 	//공정 라우팅 페이지 관련 
 	
 	@GetMapping("/process_route")
-	public String processRoute() {
+	public String processRoute(Model model) {
+		List<ProductDTO> productList = proRouteService.productList();
+		List<Process> proList = proRouteService.proList();
+		List<Equip> equipList = proRouteService.equipList();
 		
+		
+		model.addAttribute("product", productList);
+		model.addAttribute("proList", proList);
+		model.addAttribute("equipList", equipList);
 		
 		
 		
 		return "/plant/process_route";
 	}
-
+/*	모달 창으로 변경
 	@GetMapping("/route_newForm")
 	public String routeNewForm(Model model) {
 		List<ProductDTO> productList = proRouteService.productList();
@@ -212,7 +228,7 @@ public class ProcessController {
 		
 		return "/plant/route_newForm";
 	}
-	
+	*/
 	
 	@ResponseBody
 	@PostMapping("/routeAdd")
