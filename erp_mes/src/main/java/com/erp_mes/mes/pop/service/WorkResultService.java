@@ -1,15 +1,26 @@
 package com.erp_mes.mes.pop.service;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp_mes.erp.commonCode.dto.CommonCodeDTO;
+import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
+import com.erp_mes.erp.commonCode.repository.CommonCodeRepository;
+import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.pm.dto.BomDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.entity.WorkResult;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
@@ -23,22 +34,25 @@ public class WorkResultService {
 	
 	private final WorkResultRepository workResultRepository;
 	private final WorkResultMapper workResultMapper;
+	private final CommonDetailCodeRepository comDtRepository;
 	
 // ==============================================================================
-	
-	// 작업시작 체크박스 선택시 작업현황에 업데이트
-	@Transactional
-	public void workResultList(List<Long> workOrderIds) {
-		List<WorkResult> results = workOrderIds.stream()
-			.map(id -> {
-			    WorkResult wr = new WorkResult();
-			    wr.setWorkOrderId(id); // workOrderId만 세팅
-			    return wr;
-			})
-			.collect(Collectors.toList());
 
-			workResultRepository.saveAll(results);
+	// bom 조회
+	public List<WorkResultDTO> workOrderWithBom(String productId) {
+	    return workResultMapper.workOrderWithBom(productId);
 	}
+	
+	
+	// 작업시작 클릭시 작업현황에 업데이트
+	@Transactional
+	public List<WorkResultDTO> startWork(Long workOrderId) {
+		workResultMapper.updateWorkOrderStatus(workOrderId);
+		
+		return workResultMapper.updateWorkResult(workOrderId);
+	}
+
+
 
 	// 무한 스크롤
 	public List<WorkResultDTO> getPagedWorkResults(int page, int size) {
@@ -64,6 +78,21 @@ public class WorkResultService {
         }
         return 0;
     }
+
+	// 불량 사유
+	public List<CommonDetailCodeDTO> getDefectReason() {
+		return comDtRepository.findByComId_ComId("DEFECT")
+				.stream()
+                .map(code -> new CommonDetailCodeDTO(code.getComId().getComId(), code.getComDtNm()))
+                .collect(Collectors.toList());
+	}
+
+
+	// 불량 아이디 저장
+	public void updateDefect(Long resultId, Long defectItemId) {
+		workResultMapper.updateDefectItemId(resultId, defectItemId);
+
+	}
 
 
 

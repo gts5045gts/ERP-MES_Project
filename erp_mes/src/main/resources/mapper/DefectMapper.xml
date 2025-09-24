@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.erp_mes.mes.pop.mapper.DefectMapper">
+
+
+<!-- 불량 테이블 업데이트 -->
+<insert id="saveDefect" useGeneratedKeys="true" keyProperty="defectItemId">
+	INSERT INTO defect_table
+		(defect_type, defect_reason, defect_qty, product_name, employee_id, defect_location, defect_date)
+    VALUES
+		(#{defectType}, #{defectReason}, #{defectQty}, #{productNm}, #{empId}, #{defectLocation}, #{defectDate})
+</insert>
+
+
+
+    
+</mapper>

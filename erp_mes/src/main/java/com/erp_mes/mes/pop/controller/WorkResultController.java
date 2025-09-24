@@ -2,6 +2,7 @@ package com.erp_mes.mes.pop.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -14,10 +15,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.commonCode.dto.CommonCodeDTO;
+import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
+import com.erp_mes.mes.pop.dto.DefectDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.entity.WorkResult;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
+import com.erp_mes.mes.pop.service.DefectService;
 import com.erp_mes.mes.pop.service.WorkResultService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +36,7 @@ public class WorkResultController {
 	
 	private final WorkResultMapper workResultMapper;
 	private final WorkResultService workResultService;
-	
+	private final DefectService defectService;
 	
 // ===================================================================
 	
@@ -53,29 +58,18 @@ public class WorkResultController {
 	}
 	
 	// 작업지시 클릭시 해당 bom 조회
-	@GetMapping("/bom/{workOrderId}")
+	@GetMapping("/bom/{productId}")
 	@ResponseBody
-	public List<WorkResultDTO> getBom(@PathVariable("workOrderId") Long workOrderId) {
-		List<WorkResultDTO> list = workResultMapper.workOrderWithBom(workOrderId);
-		return list;
+	public List<WorkResultDTO> getBom(@PathVariable("productId") String productId) {
+		return workResultService.workOrderWithBom(productId);
 	}
 	
-	// 작업시작 체크박스 클릭시 작업현황 업데이트
-	@PostMapping("/workList") 
+	// 작업시작 클릭시 작업현황 업데이트
+	@PostMapping("/startWork") 
 	@ResponseBody
-	public List<WorkResultDTO> workList(@RequestBody List<Long> workOrderIds) {
+	public List<WorkResultDTO> startWork(@RequestBody WorkResultDTO work) {
 		
-		if (workOrderIds == null || workOrderIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		// 상태 업데이트
-		workResultMapper.updateWorkOrderStatus(workOrderIds);
-		
-		// 생산실적 테이블
-		workResultService.workResultList(workOrderIds);
-		
-		return workResultMapper.workResultWithBom(workOrderIds);
+		return workResultService.startWork(work.getWorkOrderId());
 	}
 	
 	// 작업현황 전체 조회(무한스크롤)
@@ -103,14 +97,34 @@ public class WorkResultController {
 		}
 	        
     }
+
+	 // 불량 사유 버튼 
+	@GetMapping("/defectReason")
+	@ResponseBody
+	public List<CommonDetailCodeDTO> getDefectReason() {
+
+		return workResultService.getDefectReason();  
+	}
 	
+	// 작업완료 버튼 클릭시 불량 테이블에 추가
+	@PostMapping("/saveDefect")
+	@ResponseBody
+	public void saveDefect(Authentication authentication, @RequestBody Map<String, Object> map) {
+		Long resultId = Long.valueOf(map.get("resultId").toString());
+		String empId = authentication.getName();
+		
+		// Map -> DefectDTO 변환
+		ObjectMapper mapper = new ObjectMapper();
+		DefectDTO defectDTO = mapper.convertValue(map.get("defectDTO"), DefectDTO.class);
+		
+		defectDTO.setEmpId(empId);
+		defectDTO.setDefectLocation(1L);
+		
+		defectService.saveDefect(resultId, defectDTO);
+		
+		workResultService.updateDefect(resultId, defectDTO.getDefectItemId());
+	}
 	
-	// 불량 사유
-//	@GetMapping("/defectReason")
-//	@ResponseBody
-//	public List<CommonCodeDTO> getDefectReason() {
-//		return workResultService.getDefectReason();  
-//	}
 
 	
 	

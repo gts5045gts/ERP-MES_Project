@@ -223,6 +223,7 @@ function updateEquipmentChart() {
 	  	.attr("y", d => y(d.quantity))
 	  	.attr("width", x.bandwidth() * 0.6) 
 		.attr("height", d => height - y(Math.min(d.quantity, 100)))
+		.attr("fill", "#ed7e31");
 
 	// 값 표시
 	g.selectAll(".label")

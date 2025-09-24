@@ -2,10 +2,15 @@ package com.erp_mes.mes.pop.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.pm.dto.BomDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import groovy.transform.ToString;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,7 +33,7 @@ public class WorkResultDTO {
 	
 	// ========================================
 	
-	private Long bomId;
+	private String bomId;
 	private Long processId;	// 공정 id
     private String equipmentId;	// 설비 id
     private String empId;
@@ -45,8 +50,6 @@ public class WorkResultDTO {
     private String productId;	// 제품
     private String materialId;	// 자재
     private BigDecimal quantity;// 수량
-    private String unit;		// 단위
-    private String revisionNo;	// 차수 
 
     // 설비
     private String equipmentNm;	// 설비명
@@ -62,5 +65,17 @@ public class WorkResultDTO {
     
     // 제품
     private String productNm; 	// 제품명
+    
+    // 라우팅
+    private Long routeId;		// 라우트
+    private Long proSeq;		// 공정순서
+    
+    //생산계획
+    private Long planQty;		// 목표 수량
+    
+    //불량
+
+
+
 
 }

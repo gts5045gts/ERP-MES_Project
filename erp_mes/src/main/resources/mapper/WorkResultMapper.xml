@@ -11,11 +11,8 @@
 		w.good_qty 			AS goodQty, 
 		w.defect_qty 		AS defectQty,
         o.work_order_id 	AS workOrderId,
-        pr.route_id         AS routingId,
-        p.pro_nm	        AS processNm,
-        pr.equip_id         AS equipmentId,
+        pr.product_id       AS productId,
         prod.product_name	AS productNm,
-        e.equip_nm 			AS equipmentNm,
         o.emp_id 			AS empId,
         emp.emp_name 		AS empNm,
         o.start_date 		AS startDate,
@@ -24,112 +21,90 @@
 	FROM work_order o
 	LEFT JOIN work_result w ON w.work_order_id = o.work_order_id
 	LEFT JOIN employee emp ON emp.emp_id = o.emp_id
-	LEFT JOIN process_routing pr ON o.route_id = pr.route_id
-    LEFT JOIN process p ON pr.pro_id = p.pro_id
+	LEFT JOIN process_routing pr ON o.bom_id = pr.bom_id
     LEFT JOIN product prod ON pr.product_id = prod.product_id
-    LEFT JOIN equipment e ON pr.equip_id = e.equip_id
  	WHERE o.emp_id = #{empId}
 </select>
 
-
-<!-- 상세작업지시 모달을 위한 작업지시, BOM, 설비, 공정 조인 -->
+<!-- 상세작업지시 모달을 위한 조인 -->
 <select id="workOrderWithBom" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
 	SELECT
-		o.work_order_id 	AS workOrderId,
-		o.bom_id 			AS bomId,
-		o.work_order_status AS workOrderStatus,
-		
-		b.product_id 		AS productId,
-		b.material_id 		AS materialId,
-		b.quantity 			AS quantity,
-		m.material_name  	AS materialNm,
-		
-		pr.equip_id         AS equipmentId,
-		e.equip_nm 			AS equipmentNm,
-		
-		pr.pro_id 			AS processId,
-		p.pro_nm	        AS processNm
-
-	FROM work_order o
-	LEFT JOIN bom b ON o.bom_id = b.bom_id
-	LEFT JOIN material m ON b.material_id = m.material_id
-	LEFT JOIN process_routing pr ON o.route_id = pr.route_id
-	LEFT JOIN equipment e ON pr.equip_id = e.equip_id
+		pr.product_id   AS productId,
+        pr.pro_id		AS processId,
+        pr.route_id		AS routeId,
+        pr.pro_seq		AS proSeq,
+        p.pro_nm      	AS processNm,
+        pr.equip_id   	AS equipmentId,
+        e.equip_nm    	AS equipmentNm,
+        pr.bom_id     	AS bomId,
+        pr.material_id  AS materialId,
+        m.material_name AS materialNm,
+        (SELECT quantity
+         FROM bom b
+         WHERE 
+            b.bom_id = pr.bom_id
+            AND b.material_id = pr.material_id        
+		 ) AS quantity
+    FROM process_routing pr
     LEFT JOIN process p ON pr.pro_id = p.pro_id
-
-	WHERE o.work_order_id = #{workOrderId}
+    LEFT JOIN equipment e ON pr.equip_id = e.equip_id
+    LEFT JOIN material m ON pr.material_id = m.material_id
+    WHERE pr.product_id = #{productId}
+    ORDER BY pr.pro_seq ASC
 </select>
 
-<!-- 작업현황을 위한 조인테이블(생산실적, 공정, 설비, 작업지시) -->
-<select id="workResultWithBom" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
-	SELECT
-		w.result_id 		AS resultId,
-        w.good_qty 			AS goodQty,
-        w.defect_qty 		AS defectQty,
-        w.updated_at		AS updatedAt,
-        
-		o.work_order_id 	AS workOrderId,
-		o.bom_id 			AS bomId,
-		o.work_order_status AS workOrderStatus,
-		
-		b.quantity 			AS quantity,
-		
-		pr.equip_id         AS equipmentId,
-		e.equip_nm 			AS equipmentNm,
-		
-		o.pro_id 			AS routingId,
-		p.pro_nm 			AS processNm
 
-	FROM work_order o
-	LEFT JOIN bom b ON o.bom_id = b.bom_id
-    LEFT JOIN process_routing pr ON o.route_id = pr.route_id      
-    LEFT JOIN equipment e ON pr.equip_id = e.equip_id         
-    LEFT JOIN process p ON pr.pro_id = p.pro_id
-    LEFT JOIN work_result w ON w.work_order_id = o.work_order_id
-	
-	WHERE o.work_order_id IN
-	<foreach item="id" collection="list" open="(" separator="," close=")">
-        #{id}
-    </foreach>
-</select>
-
-<!-- 작업시작 체크박스 클릭시 상태변경 -->
-<update id="updateWorkOrderStatus">
+<!-- 작업시작시 작업지시서의 상태변경 -->
+<update id="updateWorkOrderStatus" parameterType="long">
 	UPDATE work_order
 	SET work_order_status = '진행중'
-	WHERE work_order_id IN
-	<foreach item="id" collection="list" open="(" separator="," close=")">
-	    #{id}
-	</foreach>
+	WHERE work_order_id = #{workOrderId}
 </update>
+
+<!-- 작업현황을 위한 조인테이블(생산실적, 공정, 설비, 작업지시) -->
+<select id="updateWorkResult" parameterType="long" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+	SELECT
+		w.result_id       	AS resultId,
+        w.good_qty        	AS goodQty,
+        w.defect_qty      	AS defectQty,
+        w.updated_at      	AS updatedAt,
+        
+        o.work_order_id   	AS workOrderId,
+        o.bom_id          	AS bomId,
+        o.work_order_status AS workOrderStatus,
+        pr.product_id		AS productId,
+        pr.plan_quantity    AS planQty
+
+ 
+    FROM work_order o
+    LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
+    LEFT JOIN product_plan pr 	 ON o.plan_id = pr.plan_id
+
+    
+    WHERE o.work_order_id = #{workOrderId}
+</select>
 
 <!-- 작업현황 무한스크롤 -->
 <select id="workResultWithPaged" parameterType="map" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
 	SELECT
-	    w.result_id      	AS resultId,
-	    w.good_qty       	AS goodQty,
-	    w.defect_qty     	AS defectQty,
-	    w.updated_at     	AS updatedAt,
-	    w.created_at     	AS createdAt,
-	    
-	    b.quantity 			AS quantity,
-	    
-	    o.work_order_id  	AS workOrderId,
-	    o.work_order_status AS workOrderStatus,
-	    pr.equip_id         AS equipmentId,
-	    pr.pro_id     		AS processId,	
-	    
-	    e.equip_nm       	AS equipmentNm,
+		w.result_id       	AS resultId,
+        w.good_qty        	AS goodQty,
+        w.defect_qty      	AS defectQty,
+        w.updated_at      	AS updatedAt,
+        
+        o.work_order_id   	AS workOrderId,
+        o.bom_id          	AS bomId,
+        o.work_order_status AS workOrderStatus,
+        pp.product_id		AS productId,
+        pp.plan_quantity    AS planQty,
+        prod.product_name	AS productNm
+        
+    FROM work_order o
+    LEFT JOIN product_plan pp 	 ON o.plan_id = pp.plan_id
+    LEFT JOIN product prod 	 	 ON pp.product_id = prod.product_id
+    LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
 
-	    p.pro_nm         	AS processNm
-	    
-	FROM work_order o
-	LEFT JOIN work_result w ON o.work_order_id = w.work_order_id
-	LEFT JOIN bom b ON o.bom_id = b.bom_id
-    LEFT JOIN process_routing pr ON o.route_id = pr.route_id      
-    LEFT JOIN equipment e ON pr.equip_id = e.equip_id         
-    LEFT JOIN process p ON pr.pro_id = p.pro_id
-	WHERE o.work_order_status IN ('진행중', '검사대기')
+	WHERE o.work_order_status = '진행중'
 	ORDER BY w.created_at ASC
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
 </select>
@@ -141,6 +116,12 @@
 	WHERE work_order_id = #{_parameter}
 </update>
 
+<!-- 불량아이디 업데이트 -->
+<update id="updateDefectItemId">
+	UPDATE work_result
+    SET defect_item_id = #{defectItemId}
+    WHERE result_id = #{resultId}
+</update>
 
 
 
