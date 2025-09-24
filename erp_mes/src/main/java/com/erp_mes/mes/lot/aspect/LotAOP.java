@@ -53,6 +53,7 @@ public class LotAOP {
 				
 				Object materialType = null;
 				Object parentLotId = null;
+				Object workOrderId = null;
 				
 				String tableName = trackLot.tableName().trim().toUpperCase();
 				String targetId = trackLot.pkColumnName().trim();
@@ -70,6 +71,10 @@ public class LotAOP {
 				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
+				    	}
+				    	
+				    	if(entry.getKey().equals("work_order_id")){
+				    		workOrderId = entry.getValue();
 				    	}
 				    	
 				    	if(tableName.equals("INPUT")){
@@ -92,9 +97,10 @@ public class LotAOP {
 //				    		parentLotId = lotUsageService.getInputLotId(inId);
 				    		parentLotId = entry.getValue();
 				    		
-				    		if (parentLotId != null) {
 				    		
-					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
+				    		if (parentLotId != null && workOrderId != null) {
+				    		
+					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(String.valueOf(workOrderId)));
 					    		
 					    		for (WorkResultDTO dto : workOrderList) {
 					    			 BigDecimal qty = dto.getQuantity();
@@ -109,7 +115,7 @@ public class LotAOP {
 														.build();
 								usages.add(usage);
 								linkParent = true;
-								createLot=false;
+//								createLot=false;
 				    		}
 				    	}
 				    }
