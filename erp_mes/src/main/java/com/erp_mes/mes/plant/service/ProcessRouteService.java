@@ -16,6 +16,7 @@ import com.erp_mes.mes.plant.entity.Process;
 import com.erp_mes.mes.plant.mapper.ProcessRouteMapper;
 import com.erp_mes.mes.plant.repository.EquipRepository;
 import com.erp_mes.mes.plant.repository.ProcessRepository;
+import com.erp_mes.mes.pm.dto.BomDTO;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.mapper.ProductBomMapper;
 
@@ -108,6 +109,24 @@ public class ProcessRouteService {
 		routeMapper.save(routeDTO);
 	
 
+	}
+
+
+
+	public List<Map<String, Object>> findMaterialByProductId(String productId) {
+		List<BomDTO> bomDTO = productBomMapper.getBomListRoute(productId);
+		
+		List<Map<String, Object>> bom = bomDTO.stream()
+				.map(dto ->{
+					Map<String, Object> map = new HashMap<>();
+					map.put("bomId", dto.getBomId());
+					map.put("materialId", dto.getMaterialId());
+					map.put("materialNm", dto.getMaterialName());
+					return map;
+					})
+				.collect(Collectors.toList());
+		
+		return bom;
 	}
 	
 	

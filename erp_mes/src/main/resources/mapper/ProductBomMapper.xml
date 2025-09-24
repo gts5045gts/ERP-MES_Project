@@ -55,6 +55,16 @@
 		ON b.unit = c.com_dt_id
 		WHERE b.product_id = #{productId}
 	</select>
+	
+	<select id="getBomListRoute" resultType="com.erp_mes.mes.pm.dto.BomDTO">
+		SELECT b.bom_id, b.product_id ,  b.material_id, m.material_name, b.quantity, c.com_dt_nm AS unit, b.revision_no, b.created_at
+		FROM bom b
+		JOIN common_dt_code c
+		ON b.unit = c.com_dt_id
+		JOIN material m
+		on b.material_id = m.material_id
+		WHERE b.product_id = #{productId}
+	</select>
 </mapper>
 
 

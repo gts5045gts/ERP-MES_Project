@@ -26,6 +26,8 @@ public interface ProductBomMapper {
 
 	// bom 리스트
 	List<BomDTO> getBomList(String productId);
+
+	List<BomDTO> getBomListRoute(String productId);
 	
 
 }

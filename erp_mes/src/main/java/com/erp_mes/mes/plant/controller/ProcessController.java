@@ -251,4 +251,17 @@ public class ProcessController {
 		return routeList;
 	}
 	
+	@ResponseBody
+	@GetMapping("/materialInfo")
+	public List<Map<String, Object>> materialInfo(@RequestParam("productId") String productId){
+		
+		log.info("Grid 데이터 요청 받음");
+		
+		List<Map<String, Object>> material = proRouteService.findMaterialByProductId(productId);
+		
+		log.info("-------------------------------------------------------" + material);
+		return material;
+	}
+	
+	
 }

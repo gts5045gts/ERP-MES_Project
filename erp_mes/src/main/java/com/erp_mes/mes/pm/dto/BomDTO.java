@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class BomDTO {
-	private Long bomId;
+	private String bomId;
 	private String productId;
 	private String materialId;
 	private String materialName;

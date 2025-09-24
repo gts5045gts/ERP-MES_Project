@@ -105,7 +105,41 @@ document.addEventListener("DOMContentLoaded", function () {
 	
 	});
 		
-
-	
-	
+	$(document).on( "change", "#productId", function(){
+		let bomSet = new Set();
+		let productId = $(this).val();
+		if(productId == "") { $("#hideSelect").css("display", "none"); 	return; }
+		$("#hideSelect").css("display", "block");
+		
+		$.get('/plant/materialInfo', {productId : productId}, function(data){
+			$("#bomId").empty();
+			$("#bomId").append('<option value="">BOM 선택</option>');
+			data.forEach(function(item) {
+				if (!bomSet.has(item.bomId)) {
+				       $("#bomId").append(
+				           $("<option>", {
+				               value: item.bomId,
+				               text: item.bomId
+				           })
+				       );
+				       bomSet.add(item.bomId);
+				   }
+				
+		});
+		
+		$("#materialId").empty().append('<option value="">자재 선택</option>');
+		data.forEach(function(item) {
+						$("#materialId").append(
+							$("<option>", {
+							value: item.materialId,
+							text: item.materialNm,
+						
+						})
+					);
+						
+				});
+		
+		
+		});
+	});	
 });	//jquery 준비 끝 부분
