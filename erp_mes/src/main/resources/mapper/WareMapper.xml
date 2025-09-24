@@ -477,7 +477,7 @@
 	                'Y', SYSDATE, #{locationId}, #{empId})
 	</insert>
 	
-	<!-- 500개 미만으로 채워진 위치 조회 -->
+	<!-- 1000개 미만으로 채워진 위치 조회 -->
 	<select id="getPartiallyFilledLocations" resultType="map">
 	    <![CDATA[
 	    SELECT 
@@ -548,10 +548,17 @@
 	<!-- Material warehouse_item 수량 추가 -->
 	<update id="updateWarehouseItemAmountMaterial">
 	    UPDATE warehouse_item
-	    SET item_amount = item_amount + #{addAmount},
+	    SET item_amount = item_amount + #{addAmount, jdbcType=INTEGER},
 	        update_date = SYSDATE
 	    WHERE location_id = #{locationId}
 	    AND material_id = #{materialId}
+	</update>
+	
+	<!-- 0924 input 테이블 manage_id 업데이트 -->
+	<update id="updateInputManageId">
+	    UPDATE input 
+	    SET manage_id = #{manageId}
+	    WHERE in_id = #{inId}
 	</update>
 	
 	<!-- Material warehouse_item 신규 삽입 (중복 체크) -->
@@ -590,6 +597,33 @@
 	    AND item_amount > 0
 	</select>
 	
+	
+	<!-- manage_id로 재고 수량 조회 -->
+	<select id="getMaterialStockByManageId" resultType="int">
+	    SELECT NVL(item_amount, 0)
+	    FROM warehouse_item
+	    WHERE manage_id = #{manageId}
+	    AND use_yn = 'Y'
+	</select>
+	<!-- 0924 manage_id별 Material 재고 조회 -->
+	<select id="getMaterialStockGroupByManageId" resultType="map">
+	    SELECT 
+	        wi.manage_id as "manageId",
+	        wi.material_id as "materialId",
+	        wi.warehouse_id as "warehouseId",
+	        w.warehouse_name as "warehouseName",
+	        wi.location_id as "locationId",
+	        wi.item_amount as "itemAmount",
+	        TO_CHAR(wi.create_date, 'YYYY-MM-DD HH24:MI') as "createDate",
+	        wi.emp_id as "empId"
+	    FROM warehouse_item wi
+	    INNER JOIN warehouse w ON wi.warehouse_id = w.warehouse_id
+	    WHERE wi.material_id = #{materialId}
+	    AND wi.item_amount > 0
+	    AND wi.use_yn = 'Y'
+	    ORDER BY wi.create_date ASC  <!-- 입고순(오래된것부터) -->
+	</select>
+	
 	<!-- 이미 있으면 수량만 업데이트 -->
 	<update id="updateExistingMaterialLocation">
 	    UPDATE warehouse_item
@@ -626,20 +660,22 @@
 	<select id="getTodayOutputCount" resultType="int">
 	    SELECT NVL(COUNT(*), 0)
 	    FROM output
-	    WHERE out_id LIKE 'OUT' || #{today} || '%'
+	    WHERE (out_id LIKE 'OUT' || #{today} || '%'
+	       OR out_id LIKE 'MOUT' || #{today} || '%')
 	</select>
 	
 	<!-- 오늘 배치 건수 -->
 	<select id="getTodayOutputBatchCount" resultType="integer">
-	    SELECT NVL(COUNT(DISTINCT batch_id), 0) 
+	    SELECT NVL(MAX(TO_NUMBER(SUBSTR(batch_id, -3))), 0)
 	    FROM output 
-	    WHERE batch_id LIKE 'OB' || #{today} || '%'
+	    WHERE batch_id LIKE 'MOB' || #{today} || '%'
 	</select>
 	
 	<!-- 출고 등록 -->
 	<insert id="insertOutput">
 	    INSERT INTO output (
 	        out_id, 
+	        lot_id,  
 	        product_id, 
 	        material_id, 
 	        warehouse_id, 
@@ -647,12 +683,12 @@
 	        out_type, 
 	        emp_id, 
 	        batch_id, 
-	        out_reason,
-	        out_remark,
-	        update_date, 
-	        manage_id
+	        manage_id,
+	        location_id,
+	        update_date
 	    ) VALUES (
 	        #{outId}, 
+	        #{lotId, jdbcType=VARCHAR},
 	        #{productId, jdbcType=VARCHAR}, 
 	        #{materialId, jdbcType=VARCHAR}, 
 	        #{warehouseId}, 
@@ -660,10 +696,29 @@
 	        #{outType}, 
 	        #{empId}, 
 	        #{batchId},
-	        #{outReason, jdbcType=VARCHAR},
-	        #{outRemark, jdbcType=VARCHAR}, 
-	        SYSDATE, 
-	        #{manageId}
+	        #{manageId},
+	        #{locationId, jdbcType=VARCHAR},
+	        SYSDATE
+	    )
+	</insert>
+	
+	<insert id="insertLotMaster" parameterType="map">
+	    INSERT INTO lot_master (
+	        lot_id,
+	        target_id,        
+	        target_id_value, 
+	        table_name,
+	        type,
+	        material_code,
+	        created_at
+	    ) VALUES (
+	        #{lotId},
+	        'out_id',         
+	        #{targetId},      
+	        #{tableName},
+	        #{type},
+	        #{materialCode},
+	        SYSDATE
 	    )
 	</insert>
 	
@@ -743,19 +798,17 @@
 	        COUNT(*) as "itemCount",
 	        SUM(out_count) as "totalCount",
 	        TO_CHAR(MIN(update_date), 'YYYY-MM-DD') as "outDate",
-	        TO_CHAR(MIN(update_date), 'HH24:MI') as "outTime",
-	        MAX(out_reason) as "outReason"
+	        TO_CHAR(MIN(update_date), 'HH24:MI') as "outTime"
 	    FROM output
 	    WHERE 1=1
+	    AND batch_id IS NOT NULL  <!-- NULL 체크 추가 -->
 	    <if test="outType != null and outType != ''">
 	        <choose>
 	            <when test="outType == 'material'">
 	                AND material_id IS NOT NULL
-	                AND product_id IS NULL
 	            </when>
 	            <when test="outType == 'product'">
 	                AND product_id IS NOT NULL
-	                AND material_id IS NULL
 	            </when>
 	        </choose>
 	    </if>

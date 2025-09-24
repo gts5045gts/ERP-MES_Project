@@ -3,6 +3,7 @@ package com.erp_mes.mes.stock.controller;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -329,7 +330,24 @@ public class WareController {
         
 	    return result;
 	}
-
+	
+	// manage_id별 재고 조회 API 추가
+	@GetMapping("/api/material-stock-by-manage/{materialId}")
+	@ResponseBody
+	public List<Map<String, Object>> getMaterialStockByManage(
+	        @PathVariable("materialId") String materialId) {  // "materialId" 추가!
+	    log.info("=== manage_id별 재고 조회 시작: {}", materialId);
+	    try {
+	        List<Map<String, Object>> result = wareService.getMaterialStockByManageId(materialId);
+	        log.info("=== 조회 결과: {}건", result.size());
+	        return result;
+	    } catch(Exception e) {
+	        log.error("=== 조회 실패:", e);
+	        e.printStackTrace();
+	        return new ArrayList<>();
+	    }
+	}
+	
 	// 출고 완료 처리
 	@PutMapping("/api/outputs/{outId}/complete")
 	@ResponseBody

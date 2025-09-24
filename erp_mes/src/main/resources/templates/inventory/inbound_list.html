@@ -1269,6 +1269,11 @@ function saveInput() {
         const materialId = $(this).find('.material-select').val();
         const qty = $(this).find('.material-qty').val();
         
+        if(parseInt(qty) > 1000) {
+            alert(`${materialId}: 한 번에 1000개까지만 입고 가능합니다!`);
+            return false;
+        }
+        
         if(materialId && qty) {
             items.push({
                 inType: $('#new_inType').val(),

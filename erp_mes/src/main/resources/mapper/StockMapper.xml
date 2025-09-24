@@ -550,7 +550,7 @@
 	    AND location_id = #{locationId}
 	</delete>
     
-    <!-- 500개 미만인 위치 조회 -->
+    <!-- 1000개 미만인 위치 조회 -->
     <select id="getProductLocationsWithSpace" resultType="map">
         SELECT 
             location_id as "locationId",
@@ -558,7 +558,7 @@
         FROM warehouse_item
         WHERE product_id = #{productId}
         AND warehouse_id = #{warehouseId}
-        AND item_amount &lt; 500
+        AND item_amount &lt; 1000
         AND use_yn = 'Y'
         ORDER BY item_amount DESC
     </select>

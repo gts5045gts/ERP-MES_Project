@@ -124,9 +124,14 @@ public class WareService {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer todayCount = wareMapper.getTodayInputCount(today);
         if(todayCount == null) todayCount = 0;
+        
+        // *** 500개 제한 체크 추가 ***
+        Integer inCount = Integer.parseInt(params.get("inCount").toString());
+        if(inCount > 1000) {
+            throw new RuntimeException("한 번에 1000개까지만 입고 가능합니다! 요청 수량: " + inCount);
+        }
 
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
-
         params.put("inId", inId);
 
         // 사유가 없으면 입고타입으로 설정
@@ -146,7 +151,6 @@ public class WareService {
             // 바로 재고 처리
             String productId = (String) params.get("productId");
             String warehouseId = (String) params.get("warehouseId");
-            Integer inCount = Integer.parseInt(params.get("inCount").toString());
             String empId = (String) params.get("empId");
 
             // product 테이블 수량 증가
@@ -182,69 +186,81 @@ public class WareService {
     }
 
     // 입고 검사 완료 처리 (로트 처리)
-    @Transactional
-    @TrackLot(tableName = "input", pkColumnName = "IN_ID") 
-    public void completeInput(String inId, String empId) {
-        Map<String, Object> input = wareMapper.selectInputById(inId);
-        
-        if(input == null) {
-            throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
-        }
-        
-        String currentStatus = (String) input.get("IN_STATUS");
-        
-        if("입고완료".equals(currentStatus)) {
-            log.info("이미 입고완료 처리된 건입니다: {}", inId);
-            return;
-        }
-        
-        String materialId = (String) input.get("MATERIAL_ID");
-        String productId = (String) input.get("PRODUCT_ID");
-        String warehouseId = (String) input.get("WAREHOUSE_ID");
-        Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
-        
-        // 위치 할당 먼저 시도
-        String firstLocation = null;
-        
-        if(productId != null) {
-            // 완제품 처리
-            firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
-        } else if(materialId != null) {
-            // 부품/반제품 처리
-            firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
-        }
-        
-        // 위치 할당 실패 시 에러 처리
-        if(firstLocation == null) {
-            throw new RuntimeException(
-                String.format("창고 %s에 충분한 저장 공간이 없습니다. 입고 수량: %d개", 
-                             warehouseId, inCount)
-            );
-        }
-        
-        // 위치 할당 성공한 경우에만 입고 완료 처리
-        wareMapper.updateInputStatus(inId, "입고완료");
-        
-        if(productId != null) {
-            wareMapper.updateProductQuantity(productId, inCount);
-        } else if(materialId != null) {
-            wareMapper.updateMaterialQuantity(materialId, inCount);
-        }
-        
-        wareMapper.updateInputLocation(inId, firstLocation);
-        
-        log.info("입고 완료: {} - 수량: {}, 첫 위치: {}", inId, inCount, firstLocation);
-        
-        HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", inId);
-    }
+	@Transactional
+	@TrackLot(tableName = "input", pkColumnName = "IN_ID")
+	public void completeInput(String inId, String empId) {
+	    Map<String, Object> input = wareMapper.selectInputById(inId);
+	    
+	    if(input == null) {
+	        throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
+	    }
+	    
+	    String currentStatus = (String) input.get("IN_STATUS");
+	    
+	    if("입고완료".equals(currentStatus)) {
+	        log.info("이미 입고완료 처리된 건입니다: {}", inId);
+	        return;
+	    }
+	    
+	    String materialId = (String) input.get("MATERIAL_ID");
+	    String productId = (String) input.get("PRODUCT_ID");
+	    String warehouseId = (String) input.get("WAREHOUSE_ID");
+	    Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
+	    
+	    // 위치 할당 먼저 시도
+	    String firstLocation = null;
+	    String manageId = null;  // *** manage_id 추가 ***
+	    
+	    if(productId != null) {
+	        // 완제품 처리
+	        firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
+	        if(firstLocation != null) {
+	            manageId = warehouseId + "_" + productId + "_" + firstLocation;  // *** manage_id 생성 ***
+	        }
+	    } else if(materialId != null) {
+	        // 부품/반제품 처리
+	        firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
+	        if(firstLocation != null) {
+	            manageId = warehouseId + "_" + materialId + "_" + firstLocation;  // *** manage_id 생성 ***
+	        }
+	    }
+	    
+	    // 위치 할당 실패 시 에러 처리
+	    if(firstLocation == null) {
+	        throw new RuntimeException(
+	            String.format("창고 %s에 충분한 저장 공간이 없습니다. 입고 수량: %d개", 
+	                         warehouseId, inCount)
+	        );
+	    }
+	    
+	    // 위치 할당 성공한 경우에만 입고 완료 처리
+	    wareMapper.updateInputStatus(inId, "입고완료");
+	    
+	    if(productId != null) {
+	        wareMapper.updateProductQuantity(productId, inCount);
+	    } else if(materialId != null) {
+	        wareMapper.updateMaterialQuantity(materialId, inCount);
+	    }
+	    
+	    wareMapper.updateInputLocation(inId, firstLocation);
+	    
+	    // *** manage_id 업데이트 추가 ***
+	    if(manageId != null) {
+	        wareMapper.updateInputManageId(inId, manageId);
+	    }
+	    
+	    log.info("입고 완료: {} - 수량: {}, 첫 위치: {}, manage_id: {}", inId, inCount, firstLocation, manageId);
+	    
+	    HttpSession session = SessionUtil.getSession();
+	    session.setAttribute("targetIdValue", inId);
+	}
     
     
     
     private String distributeToWarehouseItemsForMaterial(String warehouseId, String materialId, Integer totalCount, String empId) {
         String firstLocation = null;
         int remaining = totalCount;
-        int maxPerLocation = 500;
+        int maxPerLocation = 1000;
         int maxLocationsPerMaterial = 6;
         
         // 현재 이 material이 사용 중인 위치 수 확인
@@ -268,7 +284,7 @@ public class WareService {
                     Map<String, Object> params = new HashMap<>();
                     params.put("locationId", locationId);
                     params.put("materialId", materialId);
-                    params.put("itemAmount", amountToStore);
+                    params.put("addAmount", amountToStore);
                     
                     wareMapper.updateWarehouseItemAmountMaterial(params);
                     
@@ -355,7 +371,7 @@ public class WareService {
     private String distributeToWarehouseItemsForProduct(String warehouseId, String productId, Integer totalCount, String empId) {
         String firstLocation = null;
         int remaining = totalCount;
-        int maxPerLocation = 500;
+        int maxPerLocation = 1000;
         
         // 기존 위치 확인
         List<Map<String, Object>> existingItems = wareMapper.getPartiallyFilledLocationsProduct(warehouseId, productId, maxPerLocation);
@@ -505,91 +521,77 @@ public class WareService {
     public List<Map<String, Object>> getProductsWithStock() {
         return wareMapper.selectProductsWithStock();
     }
+    // Material manage_id별 재고 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMaterialStockByManageId(String materialId) {
+        return wareMapper.getMaterialStockGroupByManageId(materialId);
+    }
     
     // 배치 출고 등록 (통합 버전)
     @Transactional
     @TrackLot(tableName = "output", pkColumnName = "out_id")
     public String addOutputBatch(List<Map<String, Object>> items, String empId) {
-        // 기존 배치ID 생성 코드 사용
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
         if(batchCount == null) batchCount = 0;
-        String batchId = "OB" + today + String.format("%03d", batchCount + 1);
         
-        String lastOutId = null; // 마지막 outId 저장용
+        boolean isMaterialByManage = items.get(0).containsKey("manageId");
+        
+        String batchId;
+        if(isMaterialByManage) {
+            batchId = "MOB" + today + String.format("%03d", batchCount + 1);
+        } else {
+            batchId = "OB" + today + String.format("%03d", batchCount + 1);
+        }
+        
+        String lastOutId = null;
+        
+        //  카운터를 루프 밖에서 초기화
+        Integer outputCount = wareMapper.getTodayOutputCount(today);
+        if(outputCount == null) outputCount = 0;
         
         for(Map<String, Object> item : items) {
             String productId = (String) item.get("productId");
             Integer totalQty = Integer.parseInt(item.get("outCount").toString());
             
-            // Material인지 확인
-            boolean isMaterial = wareMapper.checkIsMaterial(productId);
-            
-            // 재고 위치 조회
-            List<Map<String, Object>> locations;
-            if(isMaterial) {
-                locations = wareMapper.getAllMaterialLocations(productId);
-            } else {
-                locations = wareMapper.getAllProductLocations(productId);
-            }
-            
-            int remaining = totalQty;
-            for(Map<String, Object> loc : locations) {
-                if(remaining <= 0) break;
+            if(isMaterialByManage) {
+                String manageId = (String) item.get("manageId");
+                String warehouseId = (String) item.get("warehouseId");
+                String locationId = (String) item.get("locationId");
                 
-                // 출고ID 생성
-                Integer outputCount = wareMapper.getTodayOutputCount(today);
-                if(outputCount == null) outputCount = 0;
-                String outId = "OUT" + today + String.format("%04d", outputCount + 1);
+                outputCount++;
+                String outId = "MOUT" + today + String.format("%04d", outputCount);
+                String lotId = "XX" + today + "-" + String.format("%03d", outputCount);
                 
-                lastOutId = outId; // 마지막 outId 업데이트
-                
-                Integer stockQty = ((Number) loc.get("itemAmount")).intValue();
-                Integer outQty = Math.min(remaining, stockQty);
-                
-                // 각 위치별로 output 행 생성
+                // output 테이블 삽입
                 Map<String, Object> outItem = new HashMap<>();
                 outItem.put("outId", outId);
+                outItem.put("lotId", lotId);
                 outItem.put("batchId", batchId);
-                outItem.put("warehouseId", loc.get("warehouseId"));
-                outItem.put("manageId", loc.get("manageId"));
-                outItem.put("locationId", loc.get("locationId"));
-                outItem.put("outCount", outQty);
-                outItem.put("empId", empId);
+                outItem.put("manageId", manageId);
+                outItem.put("materialId", productId);
+                outItem.put("warehouseId", warehouseId);
+                outItem.put("locationId", locationId);
+                outItem.put("outCount", totalQty);
                 outItem.put("outType", "출고완료");
+                outItem.put("empId", empId);
                 
-                if(isMaterial) {
-                    outItem.put("materialId", productId);
-                    // warehouse_item 재고 차감
-                    wareMapper.reduceMaterialWarehouseStock(productId,
-                        (String)loc.get("warehouseId"),
-                        (String)loc.get("locationId"),
-                        outQty);
-                } else {
-                    outItem.put("productId", productId);
-                    // warehouse_item 재고 차감
-                    wareMapper.reduceWarehouseItemStock(productId,
-                        (String)loc.get("warehouseId"),
-                        (String)loc.get("locationId"),
-                        outQty);
-                }
                 wareMapper.insertOutput(outItem);
-                remaining -= outQty;
-            }
-            // 전체 수량 차감
-            if(isMaterial) {
-                wareMapper.reduceMaterialQuantity(productId, totalQty);
-            } else {
-                wareMapper.reduceProductQuantity(productId, totalQty);
+                
+                // lot_master에도 수동 삽입
+                Map<String, Object> lotParams = new HashMap<>();
+                lotParams.put("lotId", lotId);
+                lotParams.put("targetId", outId);
+                lotParams.put("tableName", "output");
+                lotParams.put("type", "XX");
+                lotParams.put("materialCode", productId);  
+                
+                wareMapper.insertLotMaster(lotParams);
+                
+                // 재고 차감 - 모든 변수가 같은 스코프에 있음
+                wareMapper.reduceMaterialWarehouseStock(productId, warehouseId, locationId, totalQty);
             }
         }
-        
-        // LOT 추적을 위한 세션 설정 (마지막 outId 사용)
-        if(lastOutId != null) {
-            HttpSession session = SessionUtil.getSession();
-            session.setAttribute("targetIdValue", lastOutId);
-        }
-        
         return batchId;
     }
 

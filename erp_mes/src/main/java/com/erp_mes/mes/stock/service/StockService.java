@@ -449,7 +449,7 @@ public class StockService {
                 
                 String locationId = (String) loc.get("locationId");
                 int currentQty = ((Number) loc.get("itemAmount")).intValue();
-                int space = 500 - currentQty;
+                int space = 1000 - currentQty;
                 
                 if(space > 0) {
                     int addQty = Math.min(remainingQty, space);
@@ -468,7 +468,7 @@ public class StockService {
                 }
                 
                 String newLocation = emptyLocations.get(0);
-                int storeQty = Math.min(remainingQty, 500);
+                int storeQty = Math.min(remainingQty, 1000);
                 
                 if(isMaterial) {
                     stockMapper.insertMaterialStock(
