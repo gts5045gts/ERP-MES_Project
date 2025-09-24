@@ -20,4 +20,5 @@ public class ProductDTO {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private String spec;
+	private Integer price;
 }

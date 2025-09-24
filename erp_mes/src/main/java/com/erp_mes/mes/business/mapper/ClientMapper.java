@@ -20,5 +20,5 @@ public interface ClientMapper {
 	
 	void updateClient(ClientDTO client);
 	
-	List<ClientDTO> getOrderClients(@Param("clientType") String clientType);
+	List<ClientDTO> getOrderClients(@Param("clientType") String clientType, @Param("clientStatus") String clientStatus);
 }
