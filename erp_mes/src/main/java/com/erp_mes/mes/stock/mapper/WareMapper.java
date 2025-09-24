@@ -119,6 +119,9 @@ public interface WareMapper {
 	// warehouse_item 신규 등록 (Material)
 	int insertWarehouseItemMaterial(Map<String, Object> params);
 	
+	// item_location 테이블에 새 위치 추가 (이거 추가!)
+    int insertItemLocation(Map<String, Object> params);
+	
 	// warehouse_item 수량 증가
 	int updateWarehouseItemAmount(Map<String, Object> params);
 	
@@ -147,6 +150,16 @@ public interface WareMapper {
 	
 	// 출고 정보 조회
 	Map<String, Object> selectOutputById(@Param("outId") String outId);
+	
+	List<Map<String, Object>> getAllProductLocations(@Param("productId") String productId);
+	
+	// material이 사용 중인 위치 개수 조회
+	int getLocationCountForMaterial(@Param("warehouseId") String warehouseId, 
+	                                @Param("materialId") String materialId);
+
+	// item_amount가 0인 재사용 가능한 위치 조회
+	List<String> getReusableLocations(@Param("warehouseId") String warehouseId, 
+	                                  @Param("materialId") String materialId);
 	
 	// 출고 상태 변경
 	int updateOutputType(@Param("outId") String outId, @Param("type") String type);
@@ -230,6 +243,12 @@ public interface WareMapper {
 	int syncMaterialQty(@Param("materialId") String materialId);
 	
 	List<Map<String, Object>> getAllMaterialLocations(@Param("materialId") String materialId);
+	
+	// 생산 완료 제품 조회
+	List<Map<String, Object>> selectTodayProductionForInput(@Param("date") String date);
+
+	// work_result in_id 업데이트
+	int updateWorkResultInId(@Param("resultId") String resultId, @Param("inId") String inId);
     
     // ==================== 기초 데이터 조회 ====================
     

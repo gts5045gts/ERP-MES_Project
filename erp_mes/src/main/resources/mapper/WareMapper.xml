@@ -285,6 +285,49 @@
 	    ORDER BY product_name
 	</select>
 	
+	<select id="selectTodayProductionForInput" resultType="map">
+	    SELECT 
+	        wr.result_id as "resultId",
+	        wr.work_order_id as "workOrderId", 
+	        wr.good_qty as "availableQty",
+	        pp.product_id as "productId",
+	        p.product_name as "productName",
+	        TO_CHAR(wr.created_at, 'YYYY-MM-DD HH24:MI') as "productionTime",
+	        wo.emp_id as "workerId"
+	    FROM work_result wr
+	    INNER JOIN work_order wo ON wr.work_order_id = wo.work_order_id
+	    INNER JOIN product_plan pp ON wo.plan_id = pp.plan_id
+	    INNER JOIN product p ON pp.product_id = p.product_id
+	    WHERE wr.in_id IS NULL
+	    AND wr.good_qty > 0
+	    ORDER BY wr.created_at DESC
+	</select>
+	
+	<!-- work_result의 in_id 업데이트 -->
+	<update id="updateWorkResultInId">
+	    UPDATE work_result
+	    SET in_id = #{inId},
+	        updated_at = SYSDATE
+	    WHERE result_id = #{resultId}
+	</update>
+	
+	<!-- 단순 카운트 쿼리들 -->
+	<select id="countWorkResult" resultType="int">
+	    SELECT COUNT(*) FROM work_result
+	</select>
+	
+	<select id="countNullInId" resultType="int">
+	    SELECT COUNT(*) FROM work_result WHERE in_id IS NULL AND good_qty > 0
+	</select>
+	
+	<select id="testDirectQuery" resultType="map">
+	    SELECT 
+	        1 as "resultId",
+	        'TEST' as "productId"
+	    FROM work_result 
+	    WHERE ROWNUM = 1
+	</select>
+	
 	<!-- 거래처 목록 조회 (PURCHASE 타입만) -->
 	<select id="selectClientsList" resultType="map">
 	    SELECT 
@@ -388,6 +431,17 @@
 	    ORDER BY i.in_complete DESC
 	</select>
 	
+	<!-- 재사용 가능한 위치 조회 (item_amount = 0인 곳) -->
+	<select id="getReusableLocations" resultType="string">
+	    SELECT location_id 
+	    FROM warehouse_item
+	    WHERE warehouse_id = #{warehouseId}
+	    AND material_id = #{materialId}
+	    AND item_amount = 0
+	    AND use_yn = 'Y'
+	    ORDER BY location_id
+	</select>
+	
 	<!-- 입고 위치 업데이트 -->
     <update id="updateInputLocation">
 	    UPDATE input 
@@ -395,6 +449,17 @@
 	        update_date = SYSDATE
 	    WHERE in_id = #{inId}
 	</update>
+	
+	<!-- item_location 테이블에 새 위치 추가 -->
+	<insert id="insertItemLocation" parameterType="map">
+	    INSERT INTO item_location (
+	        warehouse_id, location_id, loc_zone, loc_rack, 
+	        loc_level, loc_cell, zone_yn, emp_id, create_date
+	    ) VALUES (
+	        #{warehouseId}, #{locationId}, #{locZone}, #{locRack},
+	        #{locLevel}, #{locCell}, #{zoneYn}, #{empId}, SYSDATE
+	    )
+	</insert>
 	
 	<!-- warehouse_item 저장/업데이트 -->
 	<insert id="insertOrUpdateWarehouseItem" parameterType="map">
@@ -490,14 +555,25 @@
 	</update>
 	
 	<!-- Material warehouse_item 신규 삽입 (중복 체크) -->
-	<insert id="insertWarehouseItemMaterial" parameterType="map">
+	<insert id="insertWarehouseItemMaterial">
 	    INSERT INTO warehouse_item (
-	        manage_id, warehouse_id, material_id, item_amount,
-	        use_yn, create_date, location_id, emp_id
-	    ) 
-	    SELECT 
-	        #{manageId}, #{warehouseId}, #{materialId}, #{itemAmount},
-	        'Y', SYSDATE, #{locationId}, #{empId}
+	        manage_id,
+	        warehouse_id, 
+	        material_id,
+	        item_amount,
+	        use_yn,
+	        create_date,
+	        location_id,
+	        emp_id
+	    ) SELECT 
+	        #{manageId},
+	        #{warehouseId},
+	        #{materialId},
+	        #{itemAmount},
+	        'Y',
+	        SYSDATE,
+	        #{locationId},
+	        #{empId}
 	    FROM dual
 	    WHERE NOT EXISTS (
 	        SELECT 1 FROM warehouse_item 
@@ -505,6 +581,14 @@
 	        AND material_id = #{materialId}
 	    )
 	</insert>
+	
+	<select id="getLocationCountForMaterial" resultType="int">
+	    SELECT COUNT(DISTINCT location_id)
+	    FROM warehouse_item
+	    WHERE warehouse_id = #{warehouseId}
+	    AND material_id = #{materialId}
+	    AND item_amount > 0
+	</select>
 	
 	<!-- 이미 있으면 수량만 업데이트 -->
 	<update id="updateExistingMaterialLocation">
@@ -637,6 +721,19 @@
 	    LEFT JOIN employee e ON o.emp_id = e.emp_id
 	    WHERE o.batch_id = #{batchId}
 	    ORDER BY o.out_id
+	</select>
+	
+	<select id="getAllProductLocations" resultType="map">
+	    SELECT 
+	        wi.warehouse_id as "warehouseId",
+	        wi.location_id as "locationId", 
+	        wi.manage_id as "manageId",
+	        wi.item_amount as "itemAmount"
+	    FROM warehouse_item wi
+	    WHERE wi.product_id = #{productId}
+	    AND wi.item_amount > 0
+	    AND wi.use_yn = 'Y'
+	    ORDER BY wi.item_amount ASC
 	</select>
 	
 	<!-- 날짜별 배치 목록 조회 -->

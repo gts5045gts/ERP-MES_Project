@@ -26,29 +26,35 @@
 	<select id="getAllStockList" resultMap="stockResultMap">
 	    SELECT * FROM (
 	        SELECT 
-	            material_id as product_id,
-	            material_name as product_name,
-	            material_type as product_type,
-	            NVL(quantity, 0) as quantity
-	        FROM material
+	            m.material_id as product_id,
+	            m.material_name as product_name,
+	            m.material_type as product_type,
+	            NVL((SELECT SUM(wi.item_amount) 
+	                 FROM warehouse_item wi 
+	                 WHERE wi.material_id = m.material_id 
+	                 AND wi.use_yn = 'Y'), 0) as quantity  -- warehouse_item 합계
+	        FROM material m
 	        WHERE 1=1
 	        <if test="productName != null and productName != ''">
-	            AND material_name LIKE '%' || #{productName} || '%'
+	            AND m.material_name LIKE '%' || #{productName} || '%'
 	        </if>
 	        
 	        UNION ALL
 	        
 	        SELECT 
-	            product_id,
-	            product_name,
-	            CASE WHEN product_type = 'PTYPE001' THEN '완제품' 
-	                 ELSE product_type 
+	            p.product_id,
+	            p.product_name,
+	            CASE WHEN p.product_type = 'PTYPE001' THEN '완제품' 
+	                 ELSE p.product_type 
 	            END as product_type,
-	            NVL(quantity, 0) as quantity
-	        FROM product
-	        WHERE product_type = 'PTYPE001'  <!-- PTYPE001만 조회 -->
+	            NVL((SELECT SUM(wi.item_amount) 
+	                 FROM warehouse_item wi 
+	                 WHERE wi.product_id = p.product_id 
+	                 AND wi.use_yn = 'Y'), 0) as quantity  
+	        FROM product p
+	        WHERE p.product_type = 'PTYPE001'
 	        <if test="productName != null and productName != ''">
-	            AND product_name LIKE '%' || #{productName} || '%'
+	            AND p.product_name LIKE '%' || #{productName} || '%'
 	        </if>
 	    )
 	    ORDER BY product_type DESC, product_id
