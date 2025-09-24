@@ -10,7 +10,6 @@
         
     </th:block>
         <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-    	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     
     
 </head>
@@ -76,7 +75,7 @@
 		  </div>
 		</div>
 		<!-- 모달2 -->
-		<div class="modal fade" id="dataModal2" tabindex="-1" aria-labelledby="dataModalLabel2" aria-hidden="true">
+		<div class="modal fade" id="hisModal" tabindex="-1" aria-labelledby="hisModal" aria-hidden="true">
 		  <div class="modal-dialog">
 		    <div class="modal-content">
 		      
@@ -103,16 +102,21 @@
 
 <th:block layout:fragment="script">
 <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 <!--  <script th:src="@{/bootstrap/js/plant/equip_fix.js}"></script>	 -->
 <!--  <script th:src="@{/bootstrap/js/plant/equip_fix_detail.js}"></script>	 -->
- <script>
+ <script th:inline="javascript">
 
  
- 
  document.addEventListener('DOMContentLoaded', function() {
+		let modalEl2 = document.getElementById("hisModal");;	//모달 2 상세보기 페이지 부분
+		let myModal2 = new bootstrap.Modal(modalEl2);
+	  	
 		const token = $("meta[name='_csrf']").attr("content");
 		const header = $("meta[name='_csrf_header']").attr("content");
 		const equipList = /*[[${equipList}]]*/ [];
+		let grid2;
+		
 		$(document).ajaxSend(function(e, xhr, options) {
 			if (token && header) {
 				xhr.setRequestHeader(header, token);
@@ -144,52 +148,70 @@
             headers: {
               [header]: token  // 동적으로 headerName을 키로 넣음
             }
-          })
-          .then(res => {
+        })
+        .then(res => {
             if (!res.ok) throw new Error('서버 응답 에러: ' + res.status);
             return res.json();
-          })
-          .then(data => {
+        })
+        .then(data => {
             grid.resetData(data);
-          })
-          .catch(err => console.error('fetch error:', err));
-        
-       //그리드 2 수리내역 보기 부분-------------------------------------------------
+        })
+        .catch(err => console.error('fetch error:', err));
        
-        const grid2 = new tui.Grid({
-    	    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
-    	    scrollX: false,
-    	    scrollY: false,
-    	    bodyHeight: 200,
-    	    columns: [
-    	      { header: '수리 시작일', name: 'startDt' },	
-    	      { header: '수리 종료일', name: 'endDt' },	
-    	      { header: '수리 사유', name: 'note' },
-    	    ],
-      	});
-        
-     
-        /*
         
         
+        /* //그리드 2 수리내역 보기 부분-------------------------------------------------
+       $(document).on('click', '#btnHistory', function() {
+        	
+    		modalEl2.dataset.btnVal = $(this).data('id'); // 모달에 저장
+    		myModal2.show(); // 모달 열기s
+       });
+       
+       
+      
+       		모달창에 그리드 생성 안됨 계속 초기화 되는 문제로 팝업으로 제어 
+		modalEl2.addEventListener('shown.bs.modal', function () {
+			this.setAttribute('aria-hidden', 'false');
+			if (!grid2) {
+				grid2 = new tui.Grid({
+				    el: document.getElementById('grid2'), // 그리드가 붙을 엘리먼트
+				    scrollX: false,
+				    scrollY: false,
+				    columns: [
+				      { header: '수리 시작일', name: 'startDt' },	
+				      { header: '수리 종료일', name: 'endDt' },	
+				      { header: '수리 사유', name: 'note' },
+				    ],
+				});
+			}
+			
+			grid2.refreshLayout();
+ 			const equipId = modalEl2.dataset.equipId;
+ 			$.get('/plant/fixHistoryGrid', {equipId : btnVal}, function(response){
+ 				grid2.resetData(response);
+ 				window.dispatchEvent(new Event('resize'));
+ 			});
+	
+	
+		});
+*/
+       
+       
+        //팝업창 제어
+         $(document).on('click', '#btnHistory', function() {
+			let btnVal = $(this).data('id');
+			let url = '/plant/fix_history?equipId=' + btnVal;
+			window.open(url, "popup", "width=830,height=450");
+     	 });
         
-   */
+        
+        
+        
         
         });//DOMContentLoaded
-       
-        $(document).ready(function(){
-       		$(document).on('#btnHistory', 'click', function() {
-       			alert("asd");
-// 				var equipId = $(this).data('id');
-// 			  	const url ='/plant/fix_history?equipId=' + equipId;
-// 			  	window.open(url, "popup", "width=830,height=450");
-			  
-			});	
-        });	
 
-       
-//  모달창 제어 
- $(document).ready(function(){
+
+$(document).ready(function(){
 	 	const form = $('#dataForm');
 		const openBtn = document.getElementById("openModalBtn");
 		
@@ -250,38 +272,7 @@
  });	//jquery 준비 끝 부분
  
  		
-		//수리 상세내역 보기 제어 부분------------------------------------------- 좀 더 수정 해야함
-		/*
-		$(document).ready(function(){
-			
 		
-		const modalEl2 = document.getElementById("dataModal2");	//모달 2 상세보기 페이지 부분
-		const myModal2 = new bootstrap.Modal(modalEl2);
-		
-		
-		
-		$('#btnHistory').on('click', function () {
-			  const equipId = $(this).data('id');
-			  modalEl2.dataset.equipId = equipId; // 모달에 저장
-			  myModal2.show(); // 모달 열기s
-			  
-			  
-		});	
-			
-			//tui-grid 레이아웃 다시 계산
-		modalEl2.addEventListener('shown.bs.modal', function () {
-			
-			const equipId = modalEl2.dataset.equipId;
-			$.get('/plant/fix_history', {equipId : equipId}, function(response){
-				grid2.resetData(response);
-				window.dispatchEvent(new Event('resize'));
-			});
-				
-		});
-			
-	
-		});	*/
- 
     </script>
 </th:block>
 </body>
