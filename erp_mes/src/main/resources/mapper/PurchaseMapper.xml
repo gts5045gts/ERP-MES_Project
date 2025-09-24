@@ -232,6 +232,43 @@
         	purchase_detail_status = #{purchaseStatus}
         WHERE 
         	purchase_id = #{purchaseId}
-    </update>   
+    </update>
+    
+	<select id="getWorkOrderShortages" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
+        SELECT
+            work_order_id,
+            material_id,
+            require_qty
+        FROM
+            work_order_shortage
+        WHERE
+            status = '요청'
+    </select>
+
+    <select id="getWorkOrderDetailsForPurchase" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
+        SELECT
+            wos.work_order_id,
+            wos.material_id,
+            wos.require_qty,
+            m.material_name,
+            m.price,
+            (wos.require_qty * m.price) AS totalPrice
+        FROM
+            work_order_shortage wos
+        JOIN
+            material m ON wos.material_id = m.material_id
+        WHERE
+            wos.work_order_id = #{workOrderId}
+<!--             AND wos.status = '요청' -->
+    </select>
+    
+    <update id="updateWorkOrderShortageStatus">
+        UPDATE 
+            work_order_shortage
+        SET 
+            status = #{status}
+        WHERE 
+            work_order_id = #{workOrderId}
+    </update>  
 	
 </mapper>

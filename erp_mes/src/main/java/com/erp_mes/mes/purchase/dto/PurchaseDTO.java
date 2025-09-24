@@ -28,4 +28,6 @@ public class PurchaseDTO {
 	private String empName; // 조회용
 	
 	private List<PurchaseDetailDTO> materials;
+	
+	private String workOrderId;
 }

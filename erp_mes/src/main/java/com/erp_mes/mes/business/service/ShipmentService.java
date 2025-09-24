@@ -232,7 +232,7 @@ public class ShipmentService {
 	public void updateDelayedShipments() {
 	    shipmentMapper.updateShipmentStatusToDelay();
 	    shipmentMapper.updateShipmentDetailStatusToDelay();
-	    // 이 메서드는 스케줄러에 등록하여 매일 자정에 실행
+	    // 이 메서드는 스케줄러에 등록하여 매일 자정에 실행되어야 하는데 안되는중,,0924 확인
 	}
 	
 }

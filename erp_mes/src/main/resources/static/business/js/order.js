@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center' },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderShortageDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.purchase.service.PurchaseService;
@@ -130,6 +131,22 @@ public class PurchaseController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("발주 취소 실패");
         }
+    }
+     
+    // WorkOrderShortage 목록 불러옴
+    @GetMapping("/api/work-orders/shortage")
+    public ResponseEntity<List<WorkOrderShortageDTO>> getWorkOrderShortage() {
+    	log.info("작업지시 목록 조회 요청");
+        List<WorkOrderShortageDTO> shortages = purchaseService.getWorkOrderShortages();
+        return ResponseEntity.ok(shortages);
+    }
+    
+    // 특정 작업지시의 상세 자재 목록을 불러옴
+    @GetMapping("/api/work-orders/{workOrderId}/details")
+    public ResponseEntity<List<WorkOrderShortageDTO>> getWorkOrderDetails(@PathVariable("workOrderId") String workOrderId) {
+    	log.info("작업지시 자재 목록 조회 요청");
+        List<WorkOrderShortageDTO> details = purchaseService.getWorkOrderDetailsForPurchase(workOrderId);
+        return ResponseEntity.ok(details);
     }
 	
 }

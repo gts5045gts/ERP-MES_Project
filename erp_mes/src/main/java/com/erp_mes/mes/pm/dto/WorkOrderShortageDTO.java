@@ -1,0 +1,24 @@
+package com.erp_mes.mes.pm.dto;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public class WorkOrderShortageDTO {
+	private String shortId;			//pk
+	private String workOrderId;
+    private String materialId;
+    private Integer requireQty;		// 자재별 수량
+    private String status;
+    
+    private String materialName; 	// 조회용
+    private Integer materialCount;	// 작업지시당 부족한 자재 종류의 수
+    private Integer price;
+    private Integer totalQty;		// 작업지시에 부족한 총 자재량
+    private Integer totalPrice;			// 발주 자재 목록에서 가격(변동될 수도 있음!)
+}

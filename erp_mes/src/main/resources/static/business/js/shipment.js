@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			columns: [
 				{ header: '출하번호', name: 'shipmentId', align: 'center' },
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center', width: 90 },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },

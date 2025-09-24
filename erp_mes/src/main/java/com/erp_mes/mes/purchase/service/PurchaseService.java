@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.erp_mes.mes.pm.dto.WorkOrderShortageDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.purchase.mapper.PurchaseMapper;
@@ -44,6 +45,11 @@ public class PurchaseService {
 				purchaseMapper.insertPurchaseDetail(material);
 				seq++;
 			}
+		}
+		
+		// 작업지시 발주인 경우, work_order_shortage의 status를 '발주완료'로 변경
+		if (purchaseDTO.getWorkOrderId() != null && !purchaseDTO.getWorkOrderId().isEmpty()) {
+			purchaseMapper.updateWorkOrderShortageStatus(purchaseDTO.getWorkOrderId(), "발주완료");
 		}
 
 		return purchaseDTO.getPurchaseId();
@@ -108,6 +114,27 @@ public class PurchaseService {
 	        
 	    // 해당 수주에 속한 모든 수주 상세 목록(orders_detail)의 상태를 'CANCELED'로 업데이트
 	    purchaseMapper.updatePurchaseDetailsStatus(purchaseId, "CANCELED");
+	}
+	
+	// 자재 부족한 작업지시 목록 조회
+	public List<WorkOrderShortageDTO> getWorkOrderShortages() {
+		return purchaseMapper.getWorkOrderShortages();
+	}
+
+	// 특정 작업지시의 상세 자재 목록 조회
+	public List<WorkOrderShortageDTO> getWorkOrderDetailsForPurchase(String workOrderId) {
+		log.info("Fetching work order details for ID: {}", workOrderId);
+	    List<WorkOrderShortageDTO> details = purchaseMapper.getWorkOrderDetailsForPurchase(workOrderId);
+
+	    // 로그 추가
+	    log.info("Found {} details for work order ID: {}", details.size(), workOrderId);
+	    for (WorkOrderShortageDTO dto : details) {
+	        log.info("Detail DTO: {}", dto.toString()); // dto.toString()으로 필드값 확인
 	    }
+
+	    return details;
+		
+//		return purchaseMapper.getWorkOrderDetailsForPurchase(workOrderId);
+	}
 	
 }
