@@ -71,11 +71,6 @@ public class LotAOP {
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
 				    	}
-//						기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
-//						기존 lot가져와서 parentLotId에 넣음
-//				    	if(entry.getKey().equals("LOT_ID")){
-//					        parentLotId = entry.getValue();	
-//				    	}
 				    	
 				    	if(tableName.equals("INPUT")){
 				    		Object productId = entry.getValue();
@@ -83,31 +78,39 @@ public class LotAOP {
 								domain = "finished";
 							}
 						}
-				    	
-				    	if(entry.getKey().equals("BATCH_ID") && tableName.equals("OUTPUT")){
-				    		Object inId = entry.getValue();
+//				    	기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
+//						기존 lot가져와서 parentLotId에 넣음
+				    	if(entry.getKey().equals("lot_id") && tableName.equals("OUTPUT")){
+			    			
+//				    		Object inId = entry.getValue();
 				    		
 				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
 				    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
 							
 				    		//중복으로 들어올경우 처리?
 				    		
-				    		parentLotId = lotUsageService.getInputLotId(inId);
-				    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
+//				    		parentLotId = lotUsageService.getInputLotId(inId);
+				    		parentLotId = entry.getValue();
 				    		
-				    		for (WorkResultDTO dto : workOrderList) {
-				    			 BigDecimal qty = dto.getQuantity();
-				    			 qtyUsed = qty.intValue();
-				    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
-				    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
+				    		if (parentLotId != null) {
+				    		
+					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(targetIdValue));
+					    		
+					    		for (WorkResultDTO dto : workOrderList) {
+					    			 BigDecimal qty = dto.getQuantity();
+					    			 qtyUsed = qty.intValue();
+					    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
+					    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
+					    		}
+					    		
+								MaterialUsageDTO usage = MaterialUsageDTO.builder()
+														.parentLotId((String) parentLotId) // 자재 lotID
+														.qtyUsed(qtyUsed)
+														.build();
+								usages.add(usage);
+								linkParent = true;
+								createLot=false;
 				    		}
-				    		
-							MaterialUsageDTO usage = MaterialUsageDTO.builder()
-													.parentLotId((String) parentLotId) // 자재 lotID
-													.qtyUsed(qtyUsed)
-													.build();
-							usages.add(usage);
-							linkParent = true;
 				    	}
 				    }
 				}

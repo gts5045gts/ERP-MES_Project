@@ -14,10 +14,11 @@ public enum LotDomain {
 	  
 	  // 2️⃣ 공정(Process / 작업 공정)
 	  INPUT("input", "IN"), // 입고
-	  POP("work_result", "POP"), // 입고
+	  POP("work_result", "POP"), // 공정
 	  CUTTING("cutting", "CUT"), // 절단 
 	  MACHINING("machining", "MCH"), // 성형/가공
 	  ASSEMBLY("assembly", "AS"), // 조립 
+	  OUT("out", "OUT"), // 포장/출하
 	  SHIPPING("shipping", "FG"), // 포장/출하
 	  ETC("etc", "XX"); // 기타 미정의
 	
