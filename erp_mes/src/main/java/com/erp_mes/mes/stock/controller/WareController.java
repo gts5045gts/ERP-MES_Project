@@ -256,6 +256,40 @@ public class WareController {
 	public List<Map<String, Object>> getRejectReasons() {
 	    return wareService.getRejectReasons();
 	}
+	
+	// 생산 완료 제품 조회 API
+	@GetMapping("/api/production/completed")
+	@ResponseBody
+	public List<Map<String, Object>> getCompletedProduction(
+	        @RequestParam(name = "date", required = false) String date) {
+	    log.info("생산 완료 제품 API 호출 - date: {}", date);
+	    List<Map<String, Object>> result = wareService.getCompletedProduction(date);
+	    log.info("조회 결과: {}건", result.size());
+	    return result;
+	}
+	
+	// 생산 완료 제품 입고
+	@PostMapping("/api/inputs/production-batch")
+	@ResponseBody
+	public Map<String, Object> addProductionInputBatch(
+	        @RequestBody List<Map<String, Object>> items, 
+	        Principal principal) {
+	    
+	    log.info("받은 items: {}", items);  // 로그 추가
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String batchId = wareService.addProductionBatch(items, principal.getName());
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 입고 완료");
+	    } catch(Exception e) {
+	        log.error("생산 입고 실패:", e);  // 에러 로그 추가
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
 	// ==================== 4. 출고 관리 API ====================
 
 	// 출고 목록 조회

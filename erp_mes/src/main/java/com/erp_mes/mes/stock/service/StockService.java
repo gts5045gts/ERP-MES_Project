@@ -73,30 +73,23 @@ public class StockService {
     public boolean reduceMaterialStock(String materialId, Integer reduceQty) {
         log.info("Material 재고 차감 - materialId: {}, 차감수량: {}", materialId, reduceQty);
         
-        // material 테이블 수량 차감
-        int result = stockMapper.reduceMaterialStock(materialId, reduceQty);
+        MaterialDTO material = stockMapper.selectMaterialById(materialId);
+        String warehouseType = "";
         
-        if(result > 0) {
-            // warehouse_item 테이블 차감 처리
-            MaterialDTO material = stockMapper.selectMaterialById(materialId);
-            String warehouseType = "";
-            
-            if(material.getMaterialType().equals("부품")) {
-                warehouseType = "원자재";
-            } else if(material.getMaterialType().equals("반제품")) {
-                warehouseType = "반제품";
+        if(material.getMaterialType().equals("부품")) {
+            warehouseType = "원자재";
+        } else if(material.getMaterialType().equals("반제품")) {
+            warehouseType = "반제품";
+        }
+        
+        if(!warehouseType.isEmpty()) {
+            List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
+            if(!warehouseIds.isEmpty()) {
+                String warehouseId = warehouseIds.get(0);
+                reduceMaterialWarehouseStock(materialId, warehouseId, reduceQty);
+                log.info("Material {} 재고 {} 차감 완료", materialId, reduceQty);
+                return true;
             }
-            
-            if(!warehouseType.isEmpty()) {
-                List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
-                if(!warehouseIds.isEmpty()) {
-                    String warehouseId = warehouseIds.get(0);
-                    reduceMaterialWarehouseStock(materialId, warehouseId, reduceQty);
-                }
-            }
-            
-            log.info("Material {} 재고 {} 차감 완료", materialId, reduceQty);
-            return true;
         }
         
         return false;

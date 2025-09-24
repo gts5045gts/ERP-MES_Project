@@ -781,10 +781,67 @@ function showBatchDetail(batchId) {
         url: `/inventory/api/outputs/batch/${batchId}`,
         type: 'GET',
         success: function(data) {
-            showBatchDetailModal(data, batchId);
+            // 모달 HTML 생성
+            let html = `
+                <div class="modal fade" id="batchDetailModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">출고 상세 - ${batchId}</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>출고ID</th>
+                                            <th>품목</th>
+                                            <th>창고</th>
+                                            <th>위치</th>
+                                            <th>수량</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            `;
+            
+            let totalQty = 0;
+            data.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.outId}</td>
+                        <td>${item.materialName || item.productName || '-'}</td>
+                        <td>${item.warehouseId}</td>
+                        <td>${item.locationId || '-'}</td>
+                        <td>${item.outCount}개</td>
+                    </tr>
+                `;
+                totalQty += item.outCount;
+            });
+            
+            html += `
+                                    </tbody>
+                                </table>
+                                <div class="alert alert-info">
+                                    총 출고 수량: ${totalQty}개
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 기존 모달 제거 후 새로 추가
+            $('#batchDetailModal').remove();
+            $('body').append(html);
+            $('#batchDetailModal').modal('show');
         },
         error: function(xhr) {
-            console.error("배치 상세 조회 실패:", xhr);
+            alert('상세 조회 실패');
         }
     });
 }
