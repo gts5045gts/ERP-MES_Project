@@ -343,7 +343,7 @@
             	FROM shipment_detail
             	WHERE
                 	shipment_id = #{shipmentId}
-                	AND shipment_detail_status != 'NOTSHIPPED'
+                	AND shipment_detail_status != 'READY'
         	)
 	</update>
 	

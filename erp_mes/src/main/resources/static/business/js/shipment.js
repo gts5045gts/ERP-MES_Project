@@ -118,9 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
 						let color = '';
 						let statusText = '';
 						switch (value.value) {
-							case 'NOTSHIPPED':
+							case 'READY':
 								color = 'blue';
-								statusText = '미출하';
+								statusText = '출하대기';
 								break;
 							case 'DELAY':
 								color = 'red';
@@ -399,9 +399,25 @@ document.addEventListener("DOMContentLoaded", () => {
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 
-		// 수정: 상세 목록 그리드에서 체크된 행만 가져옴
+		// 상세 목록 그리드에서 체크된 행만 가져옴
 		const checkedDetails = orderDetailGrid.getCheckedRows();
 		const allDetails = orderDetailGrid.getData();
+
+		// 출하 수량 유효성 검사
+		for (const item of checkedDetails) {
+			const shipmentQty = parseInt(item.shipmentQty);
+			const orderQty = parseInt(item.orderQty);
+
+			// 'orderQty'와 'remainingQty'를 비교하여 '부분출하' 상태를 판단
+			const isPartialShipment = (orderQty > item.remainingQty) && (item.remainingQty > 0);
+
+			if (isPartialShipment) {
+				if (isNaN(shipmentQty) || shipmentQty <= 0) {
+					alert(`부분출하 품목인 "${item.productName}"은(는) 출하 수량을 1개 이상 입력해야 합니다.`);
+					return; // 유효성 검사 실패 시 함수 실행 중단
+				}
+			}
+		}
 
 		if (checkedDetails.length !== allDetails.length) {
 			alert("해당 수주의 모든 상세 품목을 선택해야 출하 등록이 가능합니다.");
@@ -465,6 +481,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			let allSuccess = true;
+			
 			for (const payload of shipmentPayloads) {
 				console.log("전송될 페이로드:", payload);
 

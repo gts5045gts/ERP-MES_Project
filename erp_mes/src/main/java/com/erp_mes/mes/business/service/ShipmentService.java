@@ -108,6 +108,15 @@ public class ShipmentService {
 	        // 기존 출하 상세 기록이 있는지 확인 (출하번호 + 품목번호)
 	        ShipmentDetailDTO existingDetail = shipmentMapper.getShipmentDetailByShipmentAndProduct(shipmentId, detail.getProductId());
 	        
+	        // 기존 출하기록이 있고, 진행상태가 부분출하인 경우(=부분출하인 품목을 추가로 출하할 경우)에는 출하 수량을 1개이상 입력
+	        if (existingDetail != null && "PARTIAL".equals(existingDetail.getShipmentDetailStatus())) {
+	        	
+	            // 이번에 입력한 출하 수량(getShipmentQty())이 1개 미만일 경우 예외 발생
+	            if (detail.getShipmentQty() <= 0) {
+	                throw new IllegalArgumentException("부분출하 품목은 출하 수량을 1개 이상 입력해야 합니다.");
+	            }
+	        }
+	        
 	        // 새로운 출하 수량 (기존 출하수량 + 이번에 출하할 수량)
 	        int newTotalQty = detail.getShipmentQty();
 	        if (existingDetail != null) {
@@ -122,7 +131,7 @@ public class ShipmentService {
 	        // 출하수량에 따른 상태 결정
 	        String shipmentDetailStatus;
 	        if (newTotalQty == 0) { // 출하 수량이 0일 경우
-	        	shipmentDetailStatus = ("NOTSHIPPED");
+	        	shipmentDetailStatus = ("READY");
 	            allItemsShipped = false;
 	        } else if (newTotalQty < detail.getOrderQty()) { 
 	        	shipmentDetailStatus = ("PARTIAL");

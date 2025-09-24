@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					}
 				},
 				{
-					header: '입고예정일', name: 'inputDate', align: 'center',
+					header: '입고요청일', name: 'inputDate', align: 'center',
 					editor: {
 						type: 'datePicker',
 						options: {
