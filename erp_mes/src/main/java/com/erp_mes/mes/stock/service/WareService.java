@@ -439,6 +439,7 @@ public class WareService {
     
     // 배치 출고 등록 (통합 버전)
     @Transactional
+    @TrackLot(tableName = "output", pkColumnName = "out_id")
     public String addOutputBatch(List<Map<String, Object>> items, String empId) {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
@@ -486,6 +487,10 @@ public class WareService {
             }
 
             wareMapper.insertOutput(item);
+            
+            //자재이동 이력 저장 
+		    HttpSession session = SessionUtil.getSession();
+	        session.setAttribute("targetIdValue", outId); //pk_id의 값 입력
         }
 
         return batchId;

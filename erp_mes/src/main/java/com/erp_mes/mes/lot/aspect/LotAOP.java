@@ -84,7 +84,7 @@ public class LotAOP {
 							}
 						}
 				    	
-				    	if(entry.getKey().equals("OUT_ID") && tableName.equals("OUTPUT")){
+				    	if(entry.getKey().equals("BATCH_ID") && tableName.equals("OUTPUT")){
 				    		Object inId = entry.getValue();
 				    		
 				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김

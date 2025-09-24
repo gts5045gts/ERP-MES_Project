@@ -273,7 +273,6 @@ public class WareController {
 	// 배치(batchId) 출고 등록
 	@PostMapping("/api/outputs/batch")
 	@ResponseBody
-	@TrackLot(tableName = "output", pkColumnName = "batch_id")
 	public Map<String, Object> addOutputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    log.info("출고 배치 등록 요청: {}", items);
 	    
@@ -285,10 +284,6 @@ public class WareController {
 	                          
 	        String batchId = wareService.addOutputBatch(items, principal.getName());
 	        
-//		    out_id or batch_id 등을 넣는 위치
-		    HttpSession session = SessionUtil.getSession();
-	        session.setAttribute("targetIdValue", batchId); //pk_id의 값 입력
-	        
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 출고 등록 완료");
@@ -297,8 +292,6 @@ public class WareController {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
-	    
-
         
 	    return result;
 	}

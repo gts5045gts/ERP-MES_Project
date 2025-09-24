@@ -66,6 +66,7 @@ public class WorkResultController {
 	// 작업시작 체크박스 클릭시 작업현황 업데이트
 	@PostMapping("/workList") 
 	@ResponseBody
+	@TrackLot(tableName = "work_result", pkColumnName = "result_id")
 	public List<WorkResultDTO> workList(@RequestBody List<Long> workOrderIds) {
 		
 		if (workOrderIds == null || workOrderIds.isEmpty()) {
@@ -77,6 +78,10 @@ public class WorkResultController {
 		
 		// 생산실적 테이블
 		workResultService.workResultList(workOrderIds);
+		
+		//공정로트생성
+		HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", workOrderIds); //pk_id의 값 입력
 		
 		return workResultMapper.workResultWithBom(workOrderIds);
 	}

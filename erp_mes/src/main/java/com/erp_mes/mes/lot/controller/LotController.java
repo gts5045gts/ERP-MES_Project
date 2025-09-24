@@ -30,10 +30,10 @@ public class LotController {
 	@GetMapping("/test/{wordOrderId}")
 	@ResponseBody
 	@TrackLot(tableName = "work_result", pkColumnName = "work_order_id")
-	public String testLotTrack(@PathVariable("wordOrderId") String wordOrderId) {
+	public String testLotTrack(@PathVariable("wordOrderId") String workOrderId) {
 		
 		HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", wordOrderId); //pk_id의 값 입력
+        session.setAttribute("targetIdValue", workOrderId); //pk_id의 값 입력
 		return "ok";
 	}
 	
