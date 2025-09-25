@@ -31,7 +31,7 @@
 								<i class="fa-solid fa-pen"></i> 기본정보</h1>
 						</div>
 
-						<form id="registForm" name="registForm" enctype="multipart/form-data">
+						<form action="/personnel/registPro" method="post" enctype="multipart/form-data" id="registForm" name="registForm" >
 							<table class="eTable">
 								<tbody>
 									<tr>
@@ -165,13 +165,13 @@
 									</tr>
 								</tbody>
 							</table>
+						
+						</form>
 							<br> <br>
 							<div align="right">
 								<button type="button" class="btn btn-primary btn-sm" onclick="history.back()">취소</button>
 								<button type="submit" class="btn btn-primary btn-sm" id="registerBtn" onclick="formBtn()">등록</button>
 							</div>
-						
-						</form>
 
 					</div>
 					<!-- <div class="card-body"> 끝 -->
