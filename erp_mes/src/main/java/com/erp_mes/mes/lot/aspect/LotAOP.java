@@ -1,25 +1,24 @@
 package com.erp_mes.mes.lot.aspect;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.erp_mes.erp.config.util.SessionUtil;
-import com.erp_mes.erp.config.util.TableMetadataManager;
-import com.erp_mes.erp.config.util.TableMetadataManager.TableInfo;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
-import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
+import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
+import com.erp_mes.mes.pop.dto.WorkResultDTO;
+import com.erp_mes.mes.pop.mapper.WorkResultMapper;
 
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,107 +30,137 @@ import lombok.extern.log4j.Log4j2;
 public class LotAOP {
 
 	private final LotService lotService;
-
-//	@AfterReturning(pointcut = "execution(* com.erp_mes.mes..service.*Service.*(com.erp_mes.mes.lot.dto.LotDTO))", returning = "targetId")
-	public void LotTraceAspect(JoinPoint joinPoint, Object targetId) throws Throwable {
-//		log.info("★★★★★★★★★★★★★★★ 메서드 정보 : " + joinPoint.getSignature().toShortString());
-//		log.info("★★★★★★★★★★★★★★★ 파라미터 정보 : " + Arrays.toString(joinPoint.getArgs()));
-
-		Object arg = joinPoint.getArgs()[0]; // 첫번째 인자가 LotDTO 고정일 때
-
-		if (arg instanceof LotDTO lotDTO) {
-
-			if (targetId instanceof String) {
-				lotDTO.setTargetId((String) targetId); // targetId 세팅
-			}
-			// 비즈니스 처리(LOT 생성·연관 저장)는 서비스 메서드가 담당
-//			String lotId = lotService.createLotWithRelations(lotDTO);
-//			lotDTO.setLotId(lotId);// LOT ID 생성 및 저장
-		}
-	}
+	private final LotUsageService lotUsageService;
+	private final WorkResultMapper workResultMapper;
 	
-//	프로세스별 일관성이 없고 예외사항때문에 변경함
+//	프로세스별 예외사항 때문에 db조회 방식으로 변경함
 	@Around("@annotation(trackLot)")
-	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
+	public Object traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
+		
+		Object result = null;
 		
 		try {
 			
 			log.info("AOP 진입, TrackLot: " + trackLot);
 
-			pjp.proceed();
+			result = pjp.proceed();
 			
 			HttpSession session = SessionUtil.getSession();
-			Object obj = session.getAttribute("targetIdValue");
+			Object targetIdValue = session.getAttribute("targetIdValue");
 			
-			if (obj != null) {
+			if (targetIdValue != null) {
+				
+				Boolean linkParent = false;
+				Boolean createLot = true;
 				
 				Object materialType = null;
 				Object parentLotId = null;
-				String tableName = trackLot.tableName().toUpperCase();
-				String targetId = trackLot.pkColumnName();
-				String targetIdValue = (String) obj;
+				Object workOrderId = null;
+				
+				String tableName = trackLot.tableName().trim().toUpperCase();
+				String targetId = trackLot.pkColumnName().trim();
+				String domain = tableName;
+				String targetVal = null;
+				
+				int qtyUsed = 0;
+				
+				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
 				
 				List<Map<String, Object>> tableInfo = lotService.getTargetInfo(tableName, targetId, targetIdValue);
-				
-//				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+obj);
-				log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>레코드 정보는 : "+tableInfo);
 				
 				for (Map<String, Object> row : tableInfo) {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
 				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
-//				    		String key = entry.getKey();
 					        materialType = entry.getValue();	
 				    	}
-				    	if(entry.getKey().equals("LOT_ID")){
-//				    		String key = entry.getKey();
-					        parentLotId = entry.getValue();	
+				    	
+				    	if(entry.getKey().equals("work_order_id")){
+				    		workOrderId = entry.getValue();
+				    	}
+				    	
+				    	if(tableName.equals("INPUT")){
+				    		Object productId = entry.getValue();
+				    		if (productId != null) {
+								domain = "finished";
+							}
+						}
+//				    	기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
+//						기존 lot가져와서 parentLotId에 넣음
+				    	if(entry.getKey().equals("lot_id") && tableName.equals("OUTPUT")){
+			    			
+//				    		Object inId = entry.getValue();
+				    		
+				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
+				    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
+							
+				    		//중복으로 들어올경우 처리?
+				    		
+//				    		parentLotId = lotUsageService.getInputLotId(inId);
+				    		parentLotId = entry.getValue();
+				    		
+				    		if (parentLotId != null && workOrderId != null) {
+				    		
+					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(String.valueOf(workOrderId));
+					    		
+					    		for (WorkResultDTO dto : workOrderList) {
+					    			 BigDecimal qty = dto.getQuantity();
+					    			 qtyUsed = qty.intValue();
+					    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
+					    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
+					    		}
+					    		
+								MaterialUsageDTO usage = MaterialUsageDTO.builder()
+														.parentLotId((String) parentLotId) // 자재 lotID
+														.qtyUsed(qtyUsed)
+														.build();
+								usages.add(usage);
+								linkParent = true;
+//								createLot=false;
+				    		}
 				    	}
 				    }
 				}
 				
-//				log.info("materialType===="+ materialType);
-				
-				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
-				
-				//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남기면 됨
-				if (parentLotId != null) {
-					
-					usages = new ArrayList<MaterialUsageDTO>();
-					MaterialUsageDTO usage1 = MaterialUsageDTO.builder()
-											.parentLotId((String) parentLotId) // 이전 기록 LOT ID
-											.build();
-					usages.add(usage1);	
+				if (targetIdValue instanceof String) {
+				    targetVal = (String) targetIdValue;
+				} else if (targetIdValue instanceof Integer) {
+				    targetVal = Integer.toString((Integer) targetIdValue);
+				} else if (targetIdValue instanceof Long) {
+				    targetVal = Long.toString((Long) targetIdValue);
+				} else {
+				    // 그 외 타입은 toString()을 호출하거나 null 처리
+				    targetVal = (targetIdValue != null) ? targetIdValue.toString() : null;
 				}
 				
 				LotDTO lotDTO = LotDTO
 								.builder()
 								.tableName(tableName)
 								.targetId((String) targetId)
-								.targetIdValue((String) targetIdValue)
+								.targetIdValue(targetVal)
 								.materialCode((String) materialType)
 								.usages(usages)
 								.build();
-				
-//				log.info("lotDTO>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+lotDTO);
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
-			 	String lotId = lotService.createLotWithRelations(lotDTO, tableName, true, false);
+			 	String lotId = lotService.createLotWithRelations(lotDTO, domain, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-			 	if(!tableName.equals("MATERIAL_TYPE")){
+//			 	if(!tableName.equals("MATERIAL")){
+		 		if(createLot){
 			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
 		    	}
 			}
 			
 			if (session != null) {
-			    session.removeAttribute("lotInfo");
-			    log.info("lotDto 속성이 세션에서 삭제.");
+			    session.removeAttribute("targetIdValue");
 			}
 			
 			
 		} catch (Exception e) {
 			 log.error("Error during lotDTO creation or logging", e);
 		}
+		
+		return result;
 	}
 
 	/*

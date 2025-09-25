@@ -3,6 +3,7 @@ package com.erp_mes.mes.lot.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
+import com.erp_mes.mes.lot.mapper.LotMapper;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
@@ -36,6 +38,8 @@ public class LotService {
 
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
+	private final LotMapper lotMapper;
+	
 	@PersistenceContext
     private EntityManager entityManager;
 
@@ -63,7 +67,6 @@ public class LotService {
 		            .tableName(lotDTO.getTableName())
 		            .type(prefix)
 		            .materialCode(lotDTO.getMaterialCode())
-//		            .qty(lotQty)
 		            .machineId(machineId)
 		            .createdAt(LocalDateTime.now())
 		            .build();
@@ -88,6 +91,7 @@ public class LotService {
 		            LotMaterialUsage usage = LotMaterialUsage.builder()
 		                .parentLot(parentLot)
 		                .childLot(childLot)
+		                .qtyUsed(usageDTO.getQtyUsed())
 		                .createdAt(LocalDateTime.now())
 		                .build();
 		            usageRepository.save(usage);
@@ -112,7 +116,7 @@ public class LotService {
 		    
 			
 		} catch (Exception e) {
-			log.error("traceLot 처리 중 예외 발생222222222222222", e);
+			log.error("lot생성 처리 중 예외 발생", e);
 			throw e;
 		}
 	    
@@ -137,18 +141,20 @@ public class LotService {
 	    }
 	}
 
-	public String registWareHouse(LotDTO lotDTO) {
-
-//		여기에서 입고를 처리하고 WareHouse테이블에 save 해서 pk id값이 생성됨 그걸 리턴 
-		return "PRD002";
-	}
-
 	//targetTable 조회
-	public List<Map<String, Object>> getTargetInfo(String tableName, String targetId, String targetIdValue) {
+	public List<Map<String, Object>> getTargetInfo(String tableName, String targetId, Object targetIdValue) {
 		
         String sql = "SELECT * FROM " + tableName + " WHERE " + targetId + " = :targetIdValue";
 
         NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
+        
+        if (targetIdValue instanceof String) {
+			targetIdValue = (String) targetIdValue;
+		} else if (targetIdValue instanceof Integer) {
+			targetIdValue = (Integer) targetIdValue;
+		} else if (targetIdValue instanceof Long) {
+			targetIdValue = (Long) targetIdValue;
+		}
 
         nativeQuery.setParameter("targetIdValue", targetIdValue);
 
@@ -164,7 +170,7 @@ public class LotService {
         return (List<Map<String, Object>>) nativeQuery.getResultList();
 	}
 
-	public void updateLotId(String tableName, String targetId, String targetIdValue, String LotId) {
+	public void updateLotId(String tableName, String targetId, Object targetIdValue, String LotId) {
 		
 		if (!tableName.matches("^[a-zA-Z0-9_]+$")) {
 		    throw new IllegalArgumentException("Invalid table name format");
@@ -174,11 +180,30 @@ public class LotService {
 		    throw new IllegalArgumentException("Invalid column name format");
 		}
 		
+		if (targetIdValue instanceof String) {
+			targetIdValue = (String) targetIdValue;
+		} else if (targetIdValue instanceof Integer) {
+			targetIdValue = (Integer) targetIdValue;
+		} else if (targetIdValue instanceof Long) {
+			targetIdValue = (Long) targetIdValue;
+		}
+		
 		String sql = "UPDATE "+ tableName +" SET LOT_ID = :lot_id WHERE "+ targetId +" = :targetIdValue";
 		NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
         nativeQuery.setParameter("targetIdValue", targetIdValue);
         nativeQuery.setParameter("lot_id", LotId);
         nativeQuery.executeUpdate();
+	}
+
+	public List<LotDTO> getLotTrackingList(int page, int size) {
+		
+		int offset = page * size;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("offset", offset);
+        params.put("size", size);
+		
+		return lotMapper.lotListWithPaged(params);
 	}
 
 }

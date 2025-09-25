@@ -2,17 +2,6 @@
 console.log("CSRF Header:", csrfHeader);
 console.log("CSRF Token:", csrfToken);
 
-	// 모달창
-	document.addEventListener('DOMContentLoaded', () => {
-	    const btn = document.getElementById('openProductModalBtn');
-	    const modalEl = document.getElementById('productRegisterModal');
-	    const modal = new bootstrap.Modal(modalEl);
-	
-	    btn.addEventListener('click', () => {
-	        modal.show();
-	    });
-	});
-
 	
 	// 제품 등록 ajax
 	document.getElementById("productRegisterBtn").addEventListener("click", async () => {

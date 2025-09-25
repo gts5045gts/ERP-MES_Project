@@ -16,13 +16,55 @@
 <body>
 <th:block layout:fragment="content">
     <div class="container-fluid">
-    	
-<!--     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button> -->
-    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button>
+ 	    <h1 class="h3 mb-2 text-gray-900">공정 관리</h1>
+<!--     	모달창 버튼으로 변경 -->
+    	<button id="openModalBtn" class="btn btn-primary btn-sm" style="float:right;">추가</button>
 		<div id="grid" style="width: 100%; height: 300px;"></div>
 	
-
-
+	
+		<!-- 모달 -->
+		<div class="modal fade" id="dataModal" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      
+		      <!-- 모달 헤더 -->
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="dataModalLabel">공정 추가</h5>
+		      </div>
+		      
+		      <!-- 모달 바디 -->
+		      <div class="modal-body">
+		        <form id="dataForm">
+		          <div class="mb-3">
+		            <label for="proNm" class="form-label">공정명</label>
+		            <input type="text" class="form-control" id="proNm" name="proNm" required >
+		          </div>
+		          <div class="mb-3">
+		            <label for="note" class="form-label">공정 설명</label>
+		             <textarea class="form-control"  id="note" name="note" rows="3"></textarea>
+		          </div>
+		          <div class="mb-3">
+		            <label for="typeNm" class="form-label">공정 유형</label>
+		            <select name="typeNm" class="form-select" id="typeNm">
+		          		<option value="">공정 유형</option>
+		          		<th:block th:each="comList :${comList}">
+		          			<option th:value="${comList.comDtNm}" th:text="${comList.comDtNm}"></option>
+		          		</th:block>
+		       		</select>
+				           
+		          </div>
+		        </form>
+		      </div>
+		      
+		      <!-- 모달 푸터 -->
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" id="closeBtn">닫기</button>
+		        <button type="submit" id="saveBtn" class="btn btn-primary">저장</button>
+		      </div>
+		      
+		    </div>
+		  </div>
+		</div>
 
 
 
@@ -37,54 +79,10 @@
     </div>
 
 </th:block>
-
+<!-- js 분리  -->
 <th:block layout:fragment="script">
- <script>
- const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
- const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
- 
-	 
-	 document.addEventListener('DOMContentLoaded', function() {
-        // 그리드 초기화
-      
-        const grid = new tui.Grid({
-          el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
-          scrollX: true,
-          scrollY: true,
-          columns: [
-            { header: '공정번호', name: 'proId' },	
-            { header: '공정명', name: 'proNm' },	
-            { header: '공정 유형', name: 'typeNm' },
-            { header: '공정 설명', name: 'note',whiteSpace: 'normal' },
-            { header: '검사 유형', name: 'inspecNm' },
-//             { header: '공정 유무', name: 'equipId' },
-          ],
-        });
-        fetch('/plant/processGrid', {
-            method: 'GET',
-            headers: {
-              [header]: token  // 동적으로 headerName을 키로 넣음
-            }
-          })
-          .then(res => {
-            if (!res.ok) throw new Error('서버 응답 에러: ' + res.status);
-            return res.json();
-          })
-          .then(data => {
-            grid.resetData(data);
-          })
-          .catch(err => console.error('fetch error:', err));
-        });
-        
-	 
-	 
-	 // 팝업으로 창 띄우기
-	 function addProcess(){
-		 var url = '/plant/process_newForm';
-		 window.open(url, "popup", "width=830,height=450");
-	 }
-        
-    </script>
+ <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+ <script th:src="@{/bootstrap/js/plant/process.js}"></script>	
 </th:block>
 </body>
 </html>

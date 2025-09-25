@@ -90,6 +90,7 @@
 		SELECT client_name
 		FROM client
 		WHERE client_type = 'ORDER'
+		and client_status = 'ACTIVE'
 	</select>
 	
 </mapper>

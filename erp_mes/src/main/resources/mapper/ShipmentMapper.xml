@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.business.mapper.ShipmentMapper">
+<!-- 	출하 등록 모달창에서 출하할 수주리스트 불러올 때 수주상태가 '등록', '생산중', '출하진행중'인 수주만 불러옴 -->
+	<select id="getStatusOrder" resultType="com.erp_mes.mes.business.dto.OrderDTO">
+		SELECT 
+			order_id,
+			client_name,
+			order_date,
+			delivery_date
+		FROM 
+		 	orders
+		 WHERE
+		 	order_status IN ('RECEIVED', 'INPRODUCTION', 'INSHIPMENT') -- 등록, 생산중, 출하진행중
+	</select>
+	
+	<select id="getOrderDetailWithStockAndStatus" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
+        SELECT
+            od.order_id,
+            od.product_id,
+            od.product_name,
+            od.order_detail_status AS orderDetailStatus,
+            COALESCE(wi.stockQty, 0) AS stockQty,	-- 서브쿼리에서 계산된 총 재고량 
+            od.order_qty,
+            (od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS remainingQty, -- 남은 출하 수량 계산
+    		(od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS shipmentQty -- 출하수량(남은 수량으로 초기화)
+        FROM
+            orders_detail od
+        LEFT JOIN (
+        	SELECT 
+        		product_id,
+        		SUM(item_amount) AS stockQty -- 같은 제품이지만 위치가 다를 수 있기 때문에(ex: product_id = 'PRD001'인 컬럼이 여러개) 재고량 더하기
+        	FROM
+        		warehouse_item
+        	GROUP BY
+        		product_id
+        ) wi ON od.product_id = wi.product_id
+        LEFT JOIN (
+    		SELECT
+        		s.order_id,
+        		sd.product_id,
+        		SUM(sd.shipment_qty) AS total_shipped_qty
+    		FROM
+        		shipment_detail sd
+        	JOIN
+        		shipment s ON sd.shipment_id = s.shipment_id
+    		GROUP BY
+        		s.order_id, sd.product_id
+		) sd ON od.order_id = sd.order_id AND od.product_id = sd.product_id
+        WHERE
+        	od.order_id = #{orderId} AND od.order_detail_status != 'COMPLETION'
+    </select>
+    
+    <select id="getWarehouseItemsByProductId" resultType="com.erp_mes.mes.stock.dto.WarehouseItemDTO">
+        SELECT *
+        FROM warehouse_item 
+        WHERE product_id = #{productId} 
+        ORDER BY item_amount DESC
+    </select>
+    
+    <update id="updateWarehouseItemAmount">
+        UPDATE 
+            warehouse_item 
+        SET 
+            item_amount = item_amount - #{amount} 
+        WHERE 
+            manage_id = #{manageId}
+    </update>
+    
+<!-- 전체 shipment 개수 가져오기 -->
+  	<select id="countShipment" resultType="int">
+  		SELECT 
+  			COUNT(*)
+  		FROM 
+  			shipment
+  	</select>
+    
+<!-- 출하(shipment) insert -->
+  	<insert id="insertShipment" parameterType="com.erp_mes.mes.business.dto.ShipmentDTO">
+  		INSERT INTO shipment (
+  			shipment_id,
+        	order_id, 
+        	client_id, 
+        	emp_id,
+        	shipment_status, 
+        	shipment_date,
+        	delivery_date, 
+        	update_at
+   		) VALUES (
+   			#{shipmentId},
+        	#{orderId},
+        	#{clientId}, 
+        	#{empId},
+        	#{shipmentStatus},
+        	SYSDATE,
+        	#{deliveryDate, jdbcType=DATE}, 
+        	SYSDATE
+    	)
+	</insert>
+
+	<select id="getOrderInfoByOrderId" resultType="com.erp_mes.mes.business.dto.OrderDTO" parameterType="string">
+        SELECT 
+        	order_id AS orderId,
+        	client_id AS clientId,
+        	delivery_date AS deliveryDate
+        FROM
+        	orders
+        WHERE
+        	order_id = #{orderId}
+    </select>
+
+<!-- 출하 상세 (shipment_detail) insert -->
+  	<insert id="insertShipmentDetail" parameterType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+    	INSERT INTO shipment_detail (
+    		id,
+    		shipment_id,
+    		order_id,
+    		product_id,
+    		order_qty,
+			shipment_qty,
+			shipment_detail_status,
+    		create_at,
+    		update_at
+    	) VALUES (
+    		#{id},
+    		#{shipmentId},
+    		#{orderId},
+    		#{productId},
+    		#{orderQty},
+			#{shipmentQty},
+			#{shipmentDetailStatus},
+    		SYSDATE,
+    		SYSDATE
+    	)
+  	</insert>
+  	
+<!--   	출하 목록 조회 -->
+	<select id="getAllShipment" resultType="com.erp_mes.mes.business.dto.ShipmentDTO">
+		SELECT
+			s.shipment_id AS shipmentId,
+			s.order_id AS orderId,
+			s.client_id AS clientId,
+			s.emp_id AS empId,
+			s.shipment_status AS shipmentStatus,
+			s.shipment_date AS shipmentDate,
+			s.delivery_date AS deliveryDate,
+			e.emp_name AS empName,
+			c.client_name AS clientName
+		FROM shipment s
+		LEFT JOIN employee e ON s.emp_id = e.emp_id
+		LEFT JOIN client c ON s.client_id = c.client_id
+	</select>
+	
+<!-- 		출하 상세 목록 조회 -->
+	<select id="getShipmentDetailsByShipmentId" resultType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+		SELECT
+	    	sd.id,
+	    	sd.shipment_id,
+			sd.product_id,
+           	p.product_name AS productName,					
+            sd.order_qty,
+            sd.shipment_qty,
+            sd.shipment_detail_status
+        FROM
+            shipment_detail sd
+        INNER JOIN
+        	product p ON sd.product_id = p.product_id 
+        WHERE
+            sd.shipment_id = #{shipmentId}
+	</select>
+	
+<!-- 	출하 상세 상태 업데이트 -->
+	<update id="updateShipmentDetailStatus">
+    	UPDATE shipment_detail
+    	SET shipment_detail_status = #{status},
+        	update_at = SYSDATE
+        	
+    	WHERE shipment_id = #{shipmentId}
+      	AND id = #{id}
+	</update>
+
+<!-- 출하 상세 + 수주 상세 매핑 조회 -->
+	<select id="getOrderInfoByShipmentDetail" resultType="map">
+    	SELECT s.order_id AS orderId, sd.product_id AS productId
+    	FROM shipment_detail sd
+    	INNER JOIN shipment s ON sd.shipment_id = s.shipment_id
+    	WHERE sd.shipment_id = #{shipmentId} AND sd.id = #{id}
+	</select>
+	
+<!-- 수주 상세가 모두 COMPLETION이면 수주 상태도 COMPLETION으로 갱신 -->
+	<update id="updateOrderStatusIfAllDetailsCompleted" parameterType="string">
+    	UPDATE orders o
+    	SET o.order_status = 'COMPLETION'
+    	WHERE o.order_id = #{orderId}
+      	AND NOT EXISTS (
+          	SELECT 1
+         	FROM orders_detail od
+          	WHERE od.order_id = o.order_id
+            AND od.order_detail_status != 'COMPLETION'
+      	)
+	</update>		
+
+	<select id="getPendingShipmentDetails" resultType="com.erp_mes.mes.business.dto.ShipmentDetailDTO" parameterType="string">
+   		SELECT od.order_id,
+           	   od.product_id,
+        	   od.product_name,
+          	   od.order_qty - COALESCE(SUM(sd.shipment_qty),0) AS remainingQty
+    	FROM orders_detail od
+    	LEFT JOIN shipment_detail sd
+           ON od.product_id = sd.product_id
+          AND sd.shipment_detail_status != 'NOTSHIPPED'
+    	WHERE od.order_id = #{orderId}
+    	GROUP BY od.order_id, od.product_id, od.product_name, od.order_qty
+    	HAVING remainingQty > 0
+	</select>	
+
+    <!-- shipment_detail 테이블에서 특정 shipment_id의 다음 id 값 조회 -->
+	<select id="getNextDetailId" parameterType="string" resultType="int">
+    	SELECT
+    		COALESCE(MAX(id), 0) + 1
+    	FROM
+    		shipment_detail
+    	WHERE
+    		shipment_id = #{shipmentId}
+	</select>
+	
+	
+	
+	<select id="findExistingShipmentIdByOrderId" resultType="String">
+        SELECT shipment_id
+    	FROM (
+        	SELECT shipment_id
+        	FROM shipment
+        	WHERE order_id = #{orderId}
+    	)
+    	WHERE ROWNUM = 1
+    </select>
+
+    <select id="getShipmentDetailByShipmentAndProduct" resultType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+        SELECT
+        	id, 
+            shipment_id, 
+            product_id, 
+            shipment_qty
+        FROM 
+            shipment_detail
+        WHERE 
+            shipment_id = #{shipmentId}
+            AND product_id = #{productId}
+    </select>
+    
+    <update id="updateShipmentDetail" parameterType="com.erp_mes.mes.business.dto.ShipmentDetailDTO">
+        UPDATE shipment_detail
+        SET 
+            shipment_qty = #{shipmentQty},
+            shipment_detail_status = #{shipmentDetailStatus},
+            update_at = SYSDATE
+        WHERE 
+            shipment_id = #{shipmentId}
+            AND id = #{id}
+    </update>
+
+    <update id="updateShipmentStatus">
+        UPDATE shipment s
+        SET
+            s.shipment_status = 'COMPLETION',
+            s.update_at = SYSDATE
+        WHERE
+            s.shipment_id = #{shipmentId}
+    </update>
+
+    <update id="updateShipmentStatusPartial">
+        UPDATE shipment s
+        SET
+            s.shipment_status = 'PARTIAL',
+            s.update_at = SYSDATE
+        WHERE
+            s.shipment_id = #{shipmentId}
+    </update>
+	
+	<update id="updateOrderDetailStatus">
+        UPDATE orders_detail
+        SET 
+        	order_detail_status = #{status},
+            update_at = SYSDATE
+        WHERE 
+        	order_id = #{orderId}
+          	AND product_id = #{productId}
+    </update>
+
+    <update id="updateOrderStatus">
+        UPDATE orders
+        SET 
+        	order_status = #{status},
+            update_at = SYSDATE
+        WHERE
+        	order_id = #{orderId}
+    </update>
+    
+<!--     부분출하일 때 현재날짜(SYSDATE)가 납기예정일(delivery_date)보다 지났을 경우 상태를 날짜지연으로 변경 -->
+    <update id="updateShipmentStatusToDelay">
+    	UPDATE shipment
+    	SET 
+    		shipment_status = 'DELAY',
+        	update_at = SYSDATE
+    	WHERE 
+    		shipment_status = 'PARTIAL'
+      		AND delivery_date &lt; TRUNC(SYSDATE)
+	</update>
+	
+	<update id="updateShipmentDetailStatusToDelay">
+    	UPDATE shipment_detail
+    	SET 
+    		shipment_detail_status = 'DELAY',
+        	update_at = SYSDATE
+    	WHERE 
+    		shipment_id IN (
+        		SELECT shipment_id
+        		FROM shipment
+        		WHERE shipment_status = 'DELAY'
+          		AND delivery_date &lt; TRUNC(SYSDATE)
+    		)
+	</update>
+	
+<!-- 	날짜지연된 품목의 id 조회 -> 다른 수주를 출하할 때 해당품목의 출하를 막기위해-->
+	<select id="getDelayedProductIds" resultType="string">
+    	SELECT DISTINCT product_id
+    	FROM shipment_detail
+    	WHERE shipment_detail_status = 'DELAY'
+	</select>
+	
+</mapper>

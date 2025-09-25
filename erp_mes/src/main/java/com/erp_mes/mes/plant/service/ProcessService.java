@@ -77,7 +77,9 @@ public class ProcessService {
 		
 		proDTO.setInspecId(inspec.getInspectionFMId());
 		Process pro = new Process();
-		pro = pro.fromDTO(proDTO, codeRepository);
+		pro = pro.fromDTO(proDTO, fmRepository);
+		log.info("저장할 데이터 : " + proDTO.toString());
+
 		
 		proRepository.save(pro);
 		log.info("저장완료!!");

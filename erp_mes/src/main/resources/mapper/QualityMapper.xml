@@ -244,16 +244,17 @@
 	<insert id="insertDefectItem" parameterType="com.erp_mes.mes.pop.dto.DefectDTO">
 	    INSERT INTO DEFECT_ITEM (
 	        DEFECT_TYPE, DEFECT_REASON, DEFECT_QTY, WORK_ORDER_ID,
-	        PRODUCT_NAME, EMP_ID, DEFECT_LOCATION, DEFECT_DATE
+	        PRODUCT_NAME, EMP_ID, DEFECT_LOCATION, DEFECT_DATE, LOT_ID
 	    ) VALUES (
 	        #{defectType}, 
 	        #{defectReason}, 
 	        #{defectQty},
 	        #{workOrderId, jdbcType=NUMERIC}, 
-	        #{productName}, 
+	        #{productNm}, 
 	        #{empId}, 
 	        #{defectLocation}, 
-	        SYSDATE
+	        SYSDATE,
+	        #{lotId}
 	    )
 	</insert>
 

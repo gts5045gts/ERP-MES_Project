@@ -2,6 +2,8 @@ package com.erp_mes.mes.pop.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import groovy.transform.ToString;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,17 +15,16 @@ import lombok.Setter;
 @ToString
 public class DefectDTO {
 	
-    private Long defectItemId;
-    private String defectType;
-    private String defectReason;
-    private Long defectQty;
-    private String productName; // 불량품명
-    private String empId; // 작업자ID
-    private Integer defectLocation; // 불량위치 1:pop 2:QC/QA
-    private LocalDateTime defectDate;
-    private Long workOrderId;
-    private String lotId;
+	private Long defectItemId;					// 불량 ID
+	private Long workOrderId;					// 불량 ID
+	private String defectType;					// 불량 유형
+	private String defectReason;				// 불량 사유
+	private Long defectQty;						// 불량 수량
+	private String productNm;					// 불량 제품명
+	private String empId;						// 작업자 ID
+	private Long defectLocation;				// 불량위치
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	private LocalDateTime defectDate;			// 불량 발생일자
+	private String lotId;
 	
-	
-
 }

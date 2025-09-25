@@ -3,6 +3,7 @@ package com.erp_mes.mes.stock.controller;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.stock.dto.WarehouseDTO;
+import com.erp_mes.mes.stock.service.StockService;
 import com.erp_mes.mes.stock.service.WareService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -32,6 +37,7 @@ import lombok.extern.log4j.Log4j2;
 public class WareController {
 	
 	private final WareService wareService;
+    private final StockService stockService;
 	
 	// ==================== 1. 페이지 라우팅 ====================
 	
@@ -140,10 +146,12 @@ public class WareController {
 	@GetMapping("/api/inputs")
 	@ResponseBody
 	public List<Map<String, Object>> getInputList(
+	        @RequestParam(name = "itemType", required = false) String itemType,  // itemType 파라미터 추가
 	        @RequestParam(name = "batchId", required = false) String batchId,
 	        @RequestParam(name = "inType", required = false) String inType,
 	        @RequestParam(name = "inStatus", required = false) String inStatus) {
 	    
+	    // itemType으로 분기 처리 필요할 수도
 	    if(batchId != null && !batchId.isEmpty()) {
 	        return wareService.getInputListByBatch(batchId);
 	    }
@@ -192,13 +200,15 @@ public class WareController {
 	        for(Map<String, Object> item : items) {
 	            item.put("empId", principal.getName());
 	            item.put("batchId", batchId);
-	            wareService.addInput(item);
+	            
+	            String inId = wareService.addInput(item);
 	        }
 	        
 	        result.put("success", true);
 	        result.put("batchId", batchId);
 	        result.put("message", items.size() + "건 입고 등록 완료");
 	    } catch(Exception e) {
+	        log.error("입고 배치 등록 오류:", e);
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
@@ -221,7 +231,191 @@ public class WareController {
 	    return result;
 	}
 	
-	// ==================== 4. 데이터 조회 API ====================
+	// 입고 반려
+	@PutMapping("/api/inputs/{inId}/reject")
+	@ResponseBody
+	public Map<String, Object> rejectInput(
+	        @PathVariable("inId") String inId,
+	        @RequestParam("reason") String reason,
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.rejectInput(inId, reason, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고가 반려되었습니다.");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 반려 사유 코드 조회
+	@GetMapping("/api/reject-reasons")
+	@ResponseBody
+	public List<Map<String, Object>> getRejectReasons() {
+	    return wareService.getRejectReasons();
+	}
+	
+	// 생산 완료 제품 조회 API
+	@GetMapping("/api/production/completed")
+	@ResponseBody
+	public List<Map<String, Object>> getCompletedProduction(
+	        @RequestParam(name = "date", required = false) String date) {
+	    log.info("생산 완료 제품 API 호출 - date: {}", date);
+	    List<Map<String, Object>> result = wareService.getCompletedProduction(date);
+	    log.info("조회 결과: {}건", result.size());
+	    return result;
+	}
+	
+	// 생산 완료 제품 입고
+	@PostMapping("/api/inputs/production-batch")
+	@ResponseBody
+	public Map<String, Object> addProductionInputBatch(
+	        @RequestBody List<Map<String, Object>> items, 
+	        Principal principal) {
+	    
+	    log.info("받은 items: {}", items);  // 로그 추가
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String batchId = wareService.addProductionBatch(items, principal.getName());
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 입고 완료");
+	    } catch(Exception e) {
+	        log.error("생산 입고 실패:", e);  // 에러 로그 추가
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	// ==================== 4. 출고 관리 API ====================
+
+	// 출고 목록 조회
+	@GetMapping("/api/outputs")
+	@ResponseBody
+	public List<Map<String, Object>> getOutputList(
+	        @RequestParam(name = "outType", required = false) String outType,
+	        @RequestParam(name = "outStatus", required = false) String outStatus,
+	        @RequestParam(name = "startDate", required = false) String startDate,
+	        @RequestParam(name = "endDate", required = false) String endDate) {
+	    
+	    return wareService.getOutputList(outType, outStatus, startDate, endDate);
+	}
+
+	// 배치(batchId) 출고 등록
+	@PostMapping("/api/outputs/batch")
+	@ResponseBody
+	public Map<String, Object> addOutputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
+	    log.info("출고 배치 등록 요청: {}", items);
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        // 첫 번째 아이템에서 사유 추출
+	        String outReason = items.get(0).get("outReason") != null ? 
+	                          (String) items.get(0).get("outReason") : "정상출고";
+	                          
+	        String batchId = wareService.addOutputBatch(items, principal.getName());
+	        
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 출고 등록 완료");
+	    } catch(Exception e) {
+	        log.error("출고 배치 등록 실패: ", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+        
+	    return result;
+	}
+	
+	// manage_id별 재고 조회 API 추가
+	@GetMapping("/api/material-stock-by-manage/{materialId}")
+	@ResponseBody
+	public List<Map<String, Object>> getMaterialStockByManage(
+	        @PathVariable("materialId") String materialId) {  // "materialId" 추가!
+	    log.info("=== manage_id별 재고 조회 시작: {}", materialId);
+	    try {
+	        List<Map<String, Object>> result = wareService.getMaterialStockByManageId(materialId);
+	        log.info("=== 조회 결과: {}건", result.size());
+	        return result;
+	    } catch(Exception e) {
+	        log.error("=== 조회 실패:", e);
+	        e.printStackTrace();
+	        return new ArrayList<>();
+	    }
+	}
+	
+	// 출고완료 처리 엔드포인트
+	@PutMapping("/api/outputs/{outId}/complete")
+	@ResponseBody
+	public Map<String, Object> completeOutput(@PathVariable("outId") String outId, Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        // principal이 null일 수 있으니 체크
+	        String empId = principal != null ? principal.getName() : "SYSTEM";
+	        wareService.completeOutput(outId, empId);
+	        result.put("success", true);
+	        result.put("message", "출고완료 처리");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// 출고취소 처리 엔드포인트
+	@DeleteMapping("/api/outputs/{outId}/cancel")
+	@ResponseBody
+	public Map<String, Object> cancelOutput(@PathVariable String outId) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.cancelOutput(outId);
+	        result.put("success", true);
+	        result.put("message", "출고취소 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 배치별 출고 목록 조회 추가
+	@GetMapping("/api/outputs/batch/{batchId}")
+	@ResponseBody
+	public List<Map<String, Object>> getOutputListByBatch(@PathVariable("batchId") String batchId) {
+	    return wareService.getOutputListByBatch(batchId);
+	}
+
+	// 그룹화된 출고 목록 조회
+	@GetMapping("/api/outputs/grouped")
+	@ResponseBody
+	public List<Map<String, Object>> getGroupedOutputList(
+	    @RequestParam(name = "date", required = false) String date,
+	    @RequestParam(name = "outType", required = false) String outType) {
+	    return wareService.getOutputBatches(date, outType);
+	}
+	
+	// 0923 출고내역 삭제
+	@DeleteMapping("/api/outputs")
+	@ResponseBody
+	public Map<String, Object> deleteOutputs(@RequestBody List<String> outIds) {
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        int deleteCount = wareService.deleteOutputs(outIds);
+	        result.put("success", true);
+	        result.put("message", deleteCount + "건 삭제 완료");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+
+	// ==================== 5. 데이터 조회 API ====================
 
 	// 입고 가능한 자재 목록 조회
 	@GetMapping("/api/materials-for-input")
@@ -235,5 +429,32 @@ public class WareController {
 	@ResponseBody
 	public List<Map<String, Object>> getClientsList() {
 	    return wareService.getClientsList();
+	}
+
+	// 창고 타입 공통코드 조회
+	@GetMapping("/api/common-codes/warehouse-types")
+	@ResponseBody
+	public List<Map<String, String>> getWarehouseTypes() {
+	    return stockService.getMaterialTypes();
+	}
+
+	@GetMapping("/api/products-for-input")
+	@ResponseBody
+	public List<Map<String, Object>> getProductsForInput() {
+	    return wareService.getProductsForInput();
+	}
+
+	// 출고용 자재 목록 조회 (warehouse_item 재고 합산)
+	@GetMapping("/api/materials-with-stock")
+	@ResponseBody
+	public List<Map<String, Object>> getMaterialsWithStock() {
+	    return wareService.getMaterialsWithStock();
+	}
+
+	// 출고용 완제품 목록 조회 (warehouse_item 재고 합산)
+	@GetMapping("/api/products-with-stock")
+	@ResponseBody
+	public List<Map<String, Object>> getProductsWithStock() {
+	    return wareService.getProductsWithStock();
 	}
 }

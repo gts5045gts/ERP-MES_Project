@@ -43,24 +43,23 @@ public class ProcessController {
 	
 	//공정 관리 페이지
 	@GetMapping("/process")
-	public String process() {
-		log.info("완성");
-		
-		
-		return "/plant/process";
-	}
-	@GetMapping("/process_newForm")
-	public String process_newFrom(Model model) {
-		
+	public String process(Model model) {
+		log.info("완성");	
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
 		
 		
 		
 		model.addAttribute("comList", comList);
 		
-		return "/plant/process_newForm";
+		
+		return "/plant/process";
 	}
-	
+	@GetMapping("/process_list")		//공정 현황 페이지로 변경
+	public String process_list() {
+		log.info("공정 현황 페이지");
+		
+		return "/plant/process_list";
+	}
 	
 	
 	//요청 부분
@@ -77,44 +76,47 @@ public class ProcessController {
 	@ResponseBody
 	@PostMapping("/processAdd")
 	public ResponseEntity<String> processAdd(ProcessDTO proDTO){
-		log.info("설비 데이터를 전송합니다." + proDTO);
+		log.info("공정 데이터를 전송합니다." + proDTO + "-------------------------------------------");
 		
 		proService.savePro(proDTO);
 		
-		return ResponseEntity.ok("success");
+		return ResponseEntity.ok("success");		//리퀘스트 요청 후 성공 여부
 	}
 	
 	
 	//설비 및 이력 관리 페이지-------------------------------------------------------
 	@GetMapping("/equipment")
-	public String equipment() {
-		
-		
-		
-		
-		return "/plant/equipment";
-	}
-	
-	
-	@GetMapping("/equip_newForm")
-	public String equip_newForm(Model model) {
+	public String equipment(Model model) {
 		List<CommonDetailCodeDTO> comList = proService.findAllByPro();
 		
 																																																																																																																							
 		
 		model.addAttribute("comList", comList);
 		
-		return "/plant/equip_newForm";
+		
+		
+		return "/plant/equipment";
 	}
 	
+	@GetMapping("/equipment_list")
+	public String equipment_list() {
+		log.info("설비 현황 페이지");
+
+		
+		return "/plant/equipment_list";
+	}
 	@GetMapping("/maintenance")
 	public String equip_fix(Model model) {
+		List<Equip> equipList = proService.equipAll();
 		
+		
+		
+		model.addAttribute("equipList", equipList);
 		
 		
 		return "/plant/maintenance";
 	}
-	
+	/* 모달창으로 변경
 	@GetMapping("/fix_newForm")
 	public String equip_Fix(Model model) {
 		List<Equip> equipList = proService.equipAll();
@@ -124,20 +126,26 @@ public class ProcessController {
 		model.addAttribute("equipList", equipList);
 		
 		return "/plant/fix_newForm";
-	}
-	
+	}*/
 	@GetMapping("/fix_history")
 	public String fix_history(Model model,
 							@RequestParam("equipId")String equipId) {
-		
 		List<Map<String, Object>> equipList = equipService.findById(equipId);
 		
-		
-		model.addAttribute("equipList", equipList);
+		model.addAttribute("equipList",equipList);
 		
 		return "/plant/fix_history";
 	}
-	
+	@ResponseBody
+	@GetMapping("/fixHistoryGrid")
+	public String fixHistoryGrid(Model model,
+							@RequestParam("equipId")String equipId) {
+		List<Map<String, Object>> equipList = equipService.findById(equipId);
+		
+		model.addAttribute("equipList",equipList);
+		
+		return "/plant/fix_history";
+	}
 	
 	
 	//요청 부분
@@ -191,14 +199,21 @@ public class ProcessController {
 	//공정 라우팅 페이지 관련 
 	
 	@GetMapping("/process_route")
-	public String processRoute() {
+	public String processRoute(Model model) {
+		List<ProductDTO> productList = proRouteService.productList();
+		List<Process> proList = proRouteService.proList();
+		List<Equip> equipList = proRouteService.equipList();
 		
+		
+		model.addAttribute("product", productList);
+		model.addAttribute("proList", proList);
+		model.addAttribute("equipList", equipList);
 		
 		
 		
 		return "/plant/process_route";
 	}
-
+/*	모달 창으로 변경
 	@GetMapping("/route_newForm")
 	public String routeNewForm(Model model) {
 		List<ProductDTO> productList = proRouteService.productList();
@@ -213,7 +228,7 @@ public class ProcessController {
 		
 		return "/plant/route_newForm";
 	}
-	
+	*/
 	
 	@ResponseBody
 	@PostMapping("/routeAdd")
@@ -235,5 +250,18 @@ public class ProcessController {
 		log.info("-------------------------------------------------------" + routeList);
 		return routeList;
 	}
+	
+	@ResponseBody
+	@GetMapping("/materialInfo")
+	public List<Map<String, Object>> materialInfo(@RequestParam("productId") String productId){
+		
+		log.info("Grid 데이터 요청 받음");
+		
+		List<Map<String, Object>> material = proRouteService.findMaterialByProductId(productId);
+		
+		log.info("-------------------------------------------------------" + material);
+		return material;
+	}
+	
 	
 }

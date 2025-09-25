@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +38,7 @@ import com.erp_mes.erp.personnel.dto.PersonnelTransferDTO;
 import com.erp_mes.erp.personnel.service.PersonnelImgService;
 import com.erp_mes.erp.personnel.service.PersonnelService;
 import com.erp_mes.erp.personnel.service.PersonnelTransferService;
+import com.erp_mes.erp.personnel.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -49,6 +53,7 @@ public class PersonnelController {
     private final PersonnelTransferService personnelTransferService;
 	private final CommonCodeService commonCodeService;
     private final PersonnelImgService personnelImgService;
+    private final FileUtils fileUtils;
     //이미지 경로 
     @Value("${file.uploadBaseLocation}")
 	private String uploadBaseLocation;
@@ -127,10 +132,24 @@ public class PersonnelController {
 	@GetMapping("/loginShowImg/{empId}")
 	public ResponseEntity<Resource> getImg2(@PathVariable("empId") String empId) {
 		log.info("사원 번호 : " + empId);
-	
+		ResponseEntity<Resource> img = personnelImgService.getImgLocation(empId);
 		
-		
-		return personnelImgService.getImgLocation(empId);
+			
+			return img;
+		/*		이미지 잇을경우 없을경우 제어 할 예정
+		if(img != null && img.getStatusCode().is2xxSuccessful() ) {
+			
+			return img;
+		}
+		else {
+			
+			Resource resource = new ClassPathResource("static/bootstrap/img/undraw_profile.svg");
+			return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("image/svg+xml")) // 명확한 MIME 타입 지정
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                    .body(resource);
+					 	
+		}*/
 	}
 	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")

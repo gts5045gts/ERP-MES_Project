@@ -170,6 +170,10 @@
     font-size: 20px;
 }
 
+.btn-disabled {
+  pointer-events: none;  /* 클릭 막기 */
+  opacity: 0.5;          /* 흐릿하게 */
+}
 
-/*  */
+/* */
 

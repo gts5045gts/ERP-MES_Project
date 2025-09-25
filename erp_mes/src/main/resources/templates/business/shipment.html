@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <th:block layout:fragment="style">
+        <!-- Bootstrap CSS 링크 -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- 커스텀 CSS 파일 링크 -->
+        <link rel="stylesheet" th:href="@{/business/css/shipment.css}" />
+        <!-- Toast UI Grid CSS -->
+        <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    </th:block>
+    
+    <meta name="_csrf" content="${_csrf.token}"/>
+	<meta name="_csrf_header" content="${_csrf.headerName}"/>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid">
+        <div class="container-fluid">
+            <section class="section">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h4 class="m-0 font-weight-bold">출하 관리</h4>
+                    </div>
+                    <!-- Content Area -->
+                    <div class="card-body" style="overflow-y: auto;">
+                        <div class="table-container">
+                        	<div class="d-flex justify-content-between align-items-center mb-4">
+                        		<div class="search-container d-flex flex-fill gap-4">
+                        			<div class="d-flex align-items-center gap-2">
+                            			<label for="shipmentStatus" class="shipmentStatus">진행상태</label>
+                                		<select id="shipmentStatus" class="form-select" aria-label="전체">
+                                   			<option value="ALL">전체</option>
+                                    		<option value="COMPLETION">출하완료</option>
+                                    		<option value="PARTIAL">부분출하</option>
+                                    		<option value="DELAY">날짜지연</option>
+                                		</select>
+                                	</div>
+                                	<div class="d-flex align-items-center gap-2">
+										<label for="cliSearch" class="cliSearch">거래처명</label>
+										<input type="search" id="cliSearch" placeholder="">
+									</div>
+								</div>
+                            	<div class="search-buttons">
+                            		<button id="searchBtn" class="btn btn-light">검색</button>
+                                	<button id="addBtn" class="btn btn-light">등록</button>
+                            	</div>
+                            </div>
+                            
+                        	<hr>
+                            <label for="cliSearch" class="cliSearch">출하 목록</label>
+                            
+                            <div id="shipmentGrid"></div>
+                            
+                            <div class="mt-4">
+    							<label class="cliSearch">출하 상세 목록</label>
+    							<div id="shipmentDetailGrid"></div>
+							</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+	<div class="modal fade" id="shipmentAddModal" tabindex="-1" aria-labelledby="shipmentAddModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="shipmentModalTitle">출하 등록</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="shipmentAddForm">
+						<div class="row g-4">
+							<div class="col-md-6">
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<h5>수주 리스트</h5>
+								</div>
+								<div id="orderListGrid" ></div>
+							</div>
+
+							<div class="col-md-6">
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<h5>상세 목록</h5>
+								</div>
+								<div id="orderDetailGrid"></div>
+							</div>
+						</div>
+
+						<div class="modal-footer d-flex justify-content-end">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+							<button type="submit" class="btn btn-success" id="shipmentSubmitBtn">등록</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script th:src="@{/business/js/shipment.js}"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</th:block>
+
+</body>
+</html>

@@ -19,23 +19,15 @@ import com.erp_mes.mes.stock.service.WareService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-/**
- * 재고 관리 컨트롤러
- * - 재고 현황 조회/수정
- * - 자재(부품/반제품) 관리
- * - 제품(완제품) 관리
- * - 입출고 관리
- */
 @Log4j2  
 @Controller
 @RequiredArgsConstructor
 public class InvController {
     
-    private final WareService wareService;
     private final StockService stockService;
+    private final WareService wareService;
     
     // ==================== 1. 페이지 라우팅 ====================
-    
     
      //재고 현황 페이지
     @GetMapping("/inventory/stock")
@@ -45,7 +37,6 @@ public class InvController {
         model.addAttribute("warehouseList", warehouseList);
         return "inventory/stock_list";
     }
-    
     
     //입고 관리 페이지
     @GetMapping("/purchase/goods")
@@ -61,14 +52,12 @@ public class InvController {
         return "inventory/outbound_list";
     }
     
-    
      //자재(부품/반제품) 관리 페이지
     @GetMapping("/inventory/material")
     public String materialList(Model model) {
         log.info("자재 관리 페이지 접속");
         return "inventory/material_list";
     }
-    
     
     // 제품(완제품) 관리 페이지 (프로젝트에선 구현X - 담당자 따로있음.)
     @GetMapping("/inventory/item")
@@ -78,7 +67,6 @@ public class InvController {
     }
     
     // ==================== 2. 재고 현황 관리 API ====================
-    
    
     //전체 재고 목록 조회 (완제품, 반제품, 부품)
     @GetMapping("/api/inventory/all-stock")
@@ -215,16 +203,17 @@ public class InvController {
             @RequestParam("reason") String reason,
             Principal principal) {
         
-        log.info("자재 재고 차감 - 자재: {}, 창고: {}, 수량: {}", 
+        log.info("재고 투입 - materialId: {}, warehouseId: {}, 수량: {}", 
                  materialId, warehouseId, reduceQty);
         
         Map<String, Object> result = new HashMap<>();
         try {
-            boolean success = stockService.reduceMaterialStockFromWarehouse(
+            // StockService 대신 WareService 호출
+            boolean success = wareService.reduceMtlStock(
                 materialId, warehouseId, locationId, reduceQty, reason, principal.getName()
             );
             result.put("success", success);
-            result.put("message", success ? "재고 차감 완료" : "재고 차감 실패");
+            result.put("message", success ? "재고 투입 완료" : "재고 투입 실패");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", e.getMessage());
@@ -238,7 +227,7 @@ public class InvController {
     public List<Map<String, Object>> getMaterialWarehouseStock(@PathVariable("materialId") String materialId) {
         return stockService.getMaterialWarehouseStock(materialId);
     }
-    
+
     // ==================== 4. 완제품(Product) 관리 API -- 담당자가 따로있어 개인용 포폴용 ====================
     
     // 완제품 목록 조회

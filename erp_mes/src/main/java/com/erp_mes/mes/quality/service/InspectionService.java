@@ -153,9 +153,10 @@ public class InspectionService {
             defectDTO.setDefectType(finalDefectType); // 불량사유
             defectDTO.setDefectReason(finalRemarks);
             defectDTO.setDefectQty(defectiveCount);
-            defectDTO.setProductName(qualityMapper.findTargetNameByInId(inId)); // 자재명 조회
+            defectDTO.setProductNm(qualityMapper.findTargetNameByInId(inId)); // 자재명 조회
             defectDTO.setEmpId(empId);
-            defectDTO.setDefectLocation(2); // 2:QC/QA팀
+            defectDTO.setDefectLocation(2L); // 2:QC/QA팀
+            defectDTO.setLotId(lotId);
             
             qualityMapper.insertDefectItem(defectDTO);
         }
@@ -315,11 +316,11 @@ public class InspectionService {
             defectDTO.setDefectType(defectType != null ? defectType : "DEFECT"); 
             defectDTO.setDefectReason(remarks != null ? remarks : "상세 사유 없음");
             defectDTO.setDefectQty(defectiveCount);
-            defectDTO.setProductName(productName); 
+            defectDTO.setProductNm(productName); 
             defectDTO.setEmpId(empId);
             defectDTO.setWorkOrderId(workOrderIdLong); 
             defectDTO.setLotId(requestDTO.getLotId()); 
-            defectDTO.setDefectLocation(2); 
+            defectDTO.setDefectLocation(2L); 
             
             qualityMapper.insertDefectItem(defectDTO);
         }

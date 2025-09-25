@@ -17,24 +17,99 @@
 <th:block layout:fragment="content">
     <div class="container-fluid">
     	
-<!--     	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addProcess()" style="float:right;">추가</button> -->
 		<div class="d-flex align-items-center gap-2">
-  			<label for="orderStatus" class="orderStatus">진행상태</label>
-      		<select id="orderStatus" class="form-select" aria-label="전체">
-          	
+  			<label for="orderStatus" class="orderStatus">제품</label>
+      		<select id="orderStatus" class="form-select" aria-label="전체" style="margin-left:10px;">
+       			<option value="ALL">전체</option>
+          		<option value="RECEIVED">a엔진</option>
+          		<option value="INPRODUCTION">b엔진</option>
+          		<option value="INSHIPMENT">c엔진</option>
       		</select>
         </div>
-    	<button id="prs-add" class="btn btn-primary btn-sm" onclick="addRoute()" style="float:right;">추가</button>
+    	<button id="openModalBtn" class="btn btn-primary btn-sm" style="float:right;">추가</button>
 		<div id="grid" style="width: 100%; height: 300px;"></div>
 	
 
+		<!-- 모달 -->
+		<div class="modal fade" id="dataModal" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      
+		      <!-- 모달 헤더 -->
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="dataModalLabel">공정 라우팅 추가</h5>
+		      </div>
+		      
+		      <!-- 모달 바디 -->
+		      <div class="modal-body">
+		        <form id="dataForm">
 
+		          <div class="mb-3">
+		            <label for="typeNm" class="form-label">제품 이름</label>
+		            <select name="productId" class="form-select" id="productId">
+		          		<option value="">제품 이름을 선택하세요</option>
+		          		<th:block th:each="product :${product}">
+          					<option th:value="${product.productId}" th:text="${product.productName}"></option>
+          				</th:block>
+		       		</select>
+		          </div>
+		          <div class="selectBox" id="hideSelect" style="display:none;">
+			          <div class="mb-3">
+			            <label for="bomId" class="form-label">bom</label>
+			            <select name="bomId" class="form-select" id="bomId">
+			          		
+			       		</select>
+			          </div>
+			    
+			          <div class="mb-3">
+			            <label for="materialId" class="form-label">자재</label>
+			            <select name="materialId" class="form-select" id="materialId">
+			          		
+			       		</select>
+			          </div>
+		           </div>
+		          
+		          
+		          <div class="mb-3">
+		            <label for="typeNm" class="form-label">공정 이름</label>
+		            <select name="proId" class="form-select" id="proId">
+			          <option value="">공정 이름을 선택하세요</option>
+			          <th:block th:each="proList :${proList}">
+			          	<option th:value="${proList.proId}" th:text="${proList.proNm}"></option>
+			          </th:block>
+			        </select>
+		          </div>
+		          
+		          <div class="mb-3">
+		            <label for="typeNm" class="form-label">필요 설비</label>
+		            <select name="equipId" class="form-select" id="equipId">
+			          <option value="">필요한 설비를 선택하세요</option>
+			          <th:block th:each="equip :${equipList}">
+			          	<option th:value="${equip.equipId}" th:text="${equip.equipNm}"></option>
+			          </th:block>
+			        </select>
+		          </div>
 
-
-
-
-
-
+		          
+		          <div class="mb-3">
+		            <label for="note" class="form-label">공정 설명</label>
+		             <textarea class="form-control"  id="note" name="note" placeholder="공정 설명을 입력하세요"  rows="3"></textarea>
+		          </div>
+		          
+		        
+		          
+		        </form>
+		      </div>
+		      
+		      <!-- 모달 푸터 -->
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" id="closeBtn">닫기</button>
+		        <button type="submit" id="saveBtn" class="btn btn-primary">저장</button>
+		      </div>
+		      
+		    </div>
+		  </div>
+		</div>
 
 
 
@@ -43,53 +118,15 @@
     </div>
 
 </th:block>
-
+<!-- js 따로 분리 -->
 <th:block layout:fragment="script">
- <script>
- const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
- const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+ <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+ <script th:src="@{/bootstrap/js/plant/route.js}"></script>
  
-	 
-	 document.addEventListener('DOMContentLoaded', function() {
-        // 그리드 초기화
-      
-        const grid = new tui.Grid({
-          el: document.getElementById('grid'), // 그리드가 붙을 엘리먼트
-          scrollX: true,
-          scrollY: true,
-          columns: [
-            { header: '라우트 번호', name: 'routeId' },	
-            { header: '제품 이름', name: 'productNm' },	
-            { header: '공정 이름', name: 'proNm' },
-            { header: '필요 설비', name: 'equipNm' },
-            { header: '설명', name: 'note' }
-          ],
-        });
-        fetch('/plant/routeGrid', {
-            method: 'GET',
-            headers: {
-              [header]: token  // 동적으로 headerName을 키로 넣음
-            }
-          })
-          .then(res => {
-            if (!res.ok) throw new Error('서버 응답 에러: ' + res.status);
-            return res.json();
-          })
-          .then(data => {
-            grid.resetData(data);
-          })
-          .catch(err => console.error('fetch error:', err));
-        });
-        
-	 
-	 
-	 // 팝업으로 창 띄우기
-	 function addRoute(){
-		 var url = '/plant/route_newForm';
-		 window.open(url, "popup", "width=830,height=450");
-	 }
-        
-    </script>
+ <script>
+ 
+ 
+ </script>
 </th:block>
 </body>
 </html>

@@ -83,7 +83,7 @@ public class ClientController {
 	@GetMapping("/api/clients/order-type")
 	@ResponseBody
 	public List<ClientDTO> getOrderClients() {
-	    return clientService.getOrderClients("ORDER");
+	    return clientService.getOrderClients("ORDER", "ACTIVE");
 	}
 	
 }

@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.purchase.mapper.PurchaseMapper">
+
+	<resultMap id="purchaseWithDetailsMap" type="com.erp_mes.mes.purchase.dto.PurchaseDTO">
+    	<result property="purchaseId" column="purchase_id"/>
+    	<result property="clientId" column="client_id"/>
+    	<result property="empId" column="emp_id"/>
+    	<result property="purchaseDate" column="purchase_date"/>
+    	<result property="inputDate" column="input_date"/>
+    	<result property="totalPurchaseQty" column="total_purchase_qty"/>
+    	<result property="totalPurchasePrice" column="total_purchase_price"/>
+    	<result property="purchaseStatus" column="purchase_status"/>
+
+    	<!-- materials 매핑 -->
+    	<collection property="materials" ofType="com.erp_mes.mes.purchase.dto.PurchaseDetailDTO">
+        	<result property="purchaseId" column="purchase_id"/>
+        	<result property="id" column="id"/>
+        	<result property="materialId" column="material_id"/>
+        	<result property="materialName" column="material_name"/>
+        	<result property="unit" column="unit"/>
+        	<result property="purchaseQty" column="purchase_qty"/>
+        	<result property="purchasePrice" column="purchase_price"/>
+    	</collection>
+	</resultMap>
+
+<!-- 전체 purchase 개수 가져오기 -->
+  	<select id="countPurchase" resultType="int">
+  		SELECT 
+  			COUNT(*)
+  		FROM 
+  			purchase
+  	</select>
+
+<!-- 	발주 등록 모달창에 필요한 품목 리스트 -->
+	<select id="getAllMaterial" resultType="com.erp_mes.mes.stock.dto.MaterialDTO">
+		SELECT 
+			material_id,
+			material_name,
+			unit,
+			price
+		FROM   
+			material
+	</select>
+
+<!-- 발주(puechase) insert -->
+  	<insert id="insertPurchase" parameterType="com.erp_mes.mes.purchase.dto.PurchaseDTO">
+  		INSERT INTO purchase (
+        	purchase_id, 
+        	total_purchase_qty,
+    		total_purchase_price,
+    		client_id,
+    		purchase_date,
+    		input_date,
+    		emp_id,
+    		purchase_status,
+    		update_at
+   		) VALUES (
+        	#{purchaseId},
+        	#{totalPurchaseQty, jdbcType=INTEGER}, 
+        	#{totalPurchasePrice,  jdbcType=INTEGER}, 
+        	#{clientId},
+        	SYSDATE,
+        	#{inputDate, jdbcType=DATE},
+        	#{empId},
+        	'REQUEST', 
+        	SYSDATE
+    )
+	</insert>
+	
+<!-- 발주 상세 (purchase_detail) insert -->
+  	<insert id="insertPurchaseDetail" parameterType="com.erp_mes.mes.purchase.dto.PurchaseDetailDTO">
+    	INSERT INTO purchase_detail (
+    		purchase_id,
+    		id,
+    		material_id,
+    		material_name,
+    		unit,
+    		purchase_qty,
+    		purchase_price,
+    		purchase_detail_status,
+    		create_at,
+    		update_at
+    	) VALUES (
+    		#{purchaseId},
+    		#{id},
+    		#{materialId},
+    		#{materialName},
+    		#{unit},
+    		#{purchaseQty},
+    		#{purchasePrice},
+    		'REQUEST',
+    		SYSDATE,
+    		SYSDATE
+    	)
+  	</insert>
+
+<!-- 발주 목록 조회 -->
+	<select id="getAllPurchase" resultType="com.erp_mes.mes.purchase.dto.PurchaseDTO">
+		SELECT
+			p.purchase_id AS purchaseId,
+			p.purchase_date AS purchaseDate,
+			p.purchase_status AS purchaseStatus,
+			p.client_id AS clientId,
+			p.total_purchase_qty AS totalPurchaseQty,
+			p.total_purchase_price AS totalPurchasePrice,
+			p.input_date AS inputDate,
+			p.emp_id AS empId,
+			e.emp_name AS empName,
+			c.client_name AS clientName
+		FROM purchase p
+		LEFT JOIN employee e ON p.emp_id = e.emp_id
+		LEFT JOIN client c ON p.client_id = c.client_id
+	</select>
+
+<!-- 	발주 상세 목록 조회 -->
+	<select id="getPurchaseDetailsByOrderId" resultType="com.erp_mes.mes.purchase.dto.PurchaseDetailDTO">
+	    SELECT
+	    	id,
+	    	purchase_id,
+			material_id,
+           	material_name,					
+            purchase_qty,
+            unit,
+            purchase_price,
+            (purchase_qty * purchase_price) AS total_price,
+            purchase_detail_status
+        FROM
+            purchase_detail 
+        WHERE
+            purchase_id = #{purchaseId}
+	</select>
+	
+<!--  	 발주 수정 모달창에 기존 값 불러오기 -->
+	<select id="getPurchaseById" parameterType="string" resultMap="purchaseWithDetailsMap">
+    	SELECT 
+        	p.purchase_id,
+        	p.client_id,
+        	p.input_date,
+        	p.total_purchase_qty,
+        	p.total_purchase_price,
+        	p.purchase_status,
+        	d.id,
+        	d.material_id,
+        	d.material_name,
+        	d.unit,
+        	d.purchase_qty,
+        	d.purchase_price
+    	FROM 
+    		purchase p
+    	LEFT JOIN 
+    		purchase_detail d ON p.purchase_id = d.purchase_id
+    	WHERE 
+    		p.purchase_id = #{purchaseId}
+	</select>
+	
+<!-- 	발주 update -->
+    <update id="updatePurchase" parameterType="com.erp_mes.mes.purchase.dto.PurchaseDTO">
+        UPDATE purchase
+        SET
+            input_date = #{inputDate},
+            total_purchase_qty = #{totalPurchaseQty},
+            total_purchase_price = #{totalPurchasePrice},
+            update_at = SYSDATE
+        WHERE
+            purchase_id = #{purchaseId}
+    </update>	
+  
+<!--     발주 수정 시 purchase_detail 테이블에 있는 컬럼 중 purchaseid가 같은 컬럼을 delete 후 다시 insert 하기 위해  -->
+    <delete id="deletePurchaseDetails" parameterType="string">
+        DELETE
+        FROM 
+        	purchase_detail
+        WHERE
+        	purchase_id = #{purchaseId}
+    </delete>
+    
+<!--     한번의 수행에 purchase_detail 테이블에 여러 컬럼을 insert  -->
+    <insert id="insertPurchaseDetails" parameterType="java.util.List">
+		INSERT ALL
+		<foreach collection="list" item="material" separator=" ">
+			INTO purchase_detail (
+				purchase_id,
+				id,
+				material_id,
+				material_name,
+				unit,
+				purchase_qty,
+				purchase_price,
+				create_at,
+				update_at
+			) VALUES (
+				#{material.purchaseId},
+				#{material.id},
+				#{material.materialId},
+				#{material.materialName},
+				#{material.unit},
+				#{material.purchaseQty},
+				#{material.purchasePrice},
+				SYSDATE,
+				SYSDATE
+			)
+		</foreach>
+		SELECT * FROM DUAL 		-- INSERT ALL을 수행하기위해 더미 테이블인 DUAL 테이블 사용
+	</insert>
+	
+<!-- 	발주 상태 조회 -->
+	<select id="findPurchaseStatus" resultType="string">
+        SELECT 
+        	purchase_status
+        FROM 
+        	purchase
+        WHERE 
+        	purchase_id = #{purchaseId}
+    </select>
+
+<!-- 	발주 상태 update -->
+    <update id="updatePurchaseStatus">
+        UPDATE 
+        	purchase
+        SET 
+        	purchase_status = #{purchaseStatus}
+        WHERE 
+        	purchase_id = #{purchaseId}
+    </update>
+	<update id="updatePurchaseDetailsStatus">
+        UPDATE 
+        	purchase_detail
+        SET 
+        	purchase_detail_status = #{purchaseStatus}
+        WHERE 
+        	purchase_id = #{purchaseId}
+    </update>   
+	
+</mapper>

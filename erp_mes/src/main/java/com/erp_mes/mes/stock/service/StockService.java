@@ -73,30 +73,23 @@ public class StockService {
     public boolean reduceMaterialStock(String materialId, Integer reduceQty) {
         log.info("Material 재고 차감 - materialId: {}, 차감수량: {}", materialId, reduceQty);
         
-        // material 테이블 수량 차감
-        int result = stockMapper.reduceMaterialStock(materialId, reduceQty);
+        MaterialDTO material = stockMapper.selectMaterialById(materialId);
+        String warehouseType = "";
         
-        if(result > 0) {
-            // warehouse_item 테이블 차감 처리
-            MaterialDTO material = stockMapper.selectMaterialById(materialId);
-            String warehouseType = "";
-            
-            if(material.getMaterialType().equals("부품")) {
-                warehouseType = "원자재";
-            } else if(material.getMaterialType().equals("반제품")) {
-                warehouseType = "반제품";
+        if(material.getMaterialType().equals("부품")) {
+            warehouseType = "원자재";
+        } else if(material.getMaterialType().equals("반제품")) {
+            warehouseType = "반제품";
+        }
+        
+        if(!warehouseType.isEmpty()) {
+            List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
+            if(!warehouseIds.isEmpty()) {
+                String warehouseId = warehouseIds.get(0);
+                reduceMaterialWarehouseStock(materialId, warehouseId, reduceQty);
+                log.info("Material {} 재고 {} 차감 완료", materialId, reduceQty);
+                return true;
             }
-            
-            if(!warehouseType.isEmpty()) {
-                List<String> warehouseIds = stockMapper.getActiveWarehousesByType(warehouseType);
-                if(!warehouseIds.isEmpty()) {
-                    String warehouseId = warehouseIds.get(0);
-                    reduceMaterialWarehouseStock(materialId, warehouseId, reduceQty);
-                }
-            }
-            
-            log.info("Material {} 재고 {} 차감 완료", materialId, reduceQty);
-            return true;
         }
         
         return false;
@@ -215,8 +208,12 @@ public class StockService {
             
             if(!warehouseIds.isEmpty()) {
                 String warehouseId = warehouseIds.get(0);
+                
                 distributeStock(dto.getMaterialId(), warehouseId, dto.getQuantity(), dto.getEmpId());
+                
                 log.info("자재 등록 완료 - 창고: {}, 수량: {}", warehouseId, dto.getQuantity());
+            } else {
+                log.warn("해당 타입의 창고가 없습니다: {}", warehouseType);
             }
         }
     }
@@ -424,50 +421,72 @@ public class StockService {
             return;
         }
         
-        List<Map<String, Object>> existingLocations = 
-            stockMapper.getProductLocationsWithSpace(productId, warehouseId);
+        // Material인지 Product인지 확인
+        boolean isMaterial = stockMapper.existsMaterialById(productId);
         
+        // 해당 타입의 모든 창고 가져오기
+        String warehouseType = "";
+        if(isMaterial) {
+            MaterialDTO material = stockMapper.selectMaterialById(productId);
+            warehouseType = material.getMaterialType().equals("부품") ? "원자재" : "반제품";
+        } else {
+            warehouseType = "완제품";
+        }
+        
+        List<String> allWarehouses = stockMapper.getActiveWarehousesByType(warehouseType);
         int remainingQty = qty;
         
-        // 기존 위치 채우기 (최대 500개)
-        for(Map<String, Object> loc : existingLocations) {
+        // 모든 창고 순회하면서 분산 저장
+        for(String currentWarehouseId : allWarehouses) {
             if(remainingQty <= 0) break;
             
-            String locationId = (String) loc.get("locationId");
-            int currentQty = ((Number) loc.get("itemAmount")).intValue();
-            int space = 500 - currentQty;
+            // 기존 위치 채우기
+            List<Map<String, Object>> existingLocations = 
+                stockMapper.getProductLocationsWithSpace(productId, currentWarehouseId);
             
-            if(space > 0) {
-                int addQty = Math.min(remainingQty, space);
-                stockMapper.updateLocationStock(productId, warehouseId, locationId, currentQty + addQty);
-                remainingQty -= addQty;
+            for(Map<String, Object> loc : existingLocations) {
+                if(remainingQty <= 0) break;
+                
+                String locationId = (String) loc.get("locationId");
+                int currentQty = ((Number) loc.get("itemAmount")).intValue();
+                int space = 1000 - currentQty;
+                
+                if(space > 0) {
+                    int addQty = Math.min(remainingQty, space);
+                    stockMapper.updateLocationStock(productId, currentWarehouseId, locationId, currentQty + addQty);
+                    remainingQty -= addQty;
+                    log.info("창고 {} 위치 {}에 {} 개 추가", currentWarehouseId, locationId, addQty);
+                }
+            }
+            
+            // 빈 위치 찾아서 저장
+            while(remainingQty > 0) {
+                List<String> emptyLocations = stockMapper.getEmptyLocations(currentWarehouseId);
+                if(emptyLocations.isEmpty()) {
+                    log.info("창고 {}가 가득 참. 다음 창고로 이동", currentWarehouseId);
+                    break;  // 다음 창고로
+                }
+                
+                String newLocation = emptyLocations.get(0);
+                int storeQty = Math.min(remainingQty, 1000);
+                
+                if(isMaterial) {
+                    stockMapper.insertMaterialStock(
+                        productId, currentWarehouseId, newLocation, storeQty, empId
+                    );
+                } else {
+                    stockMapper.insertWarehouseItemWithLocation(
+                        productId, currentWarehouseId, newLocation, storeQty, empId
+                    );
+                }
+                
+                remainingQty -= storeQty;
+                log.info("창고 {} 위치 {}에 {} 개 저장", currentWarehouseId, newLocation, storeQty);
             }
         }
         
-        // 새 위치 할당
-        while(remainingQty > 0) {
-            List<String> emptyLocations = stockMapper.getEmptyLocations(warehouseId);
-            if(emptyLocations.isEmpty()) {
-                log.warn("창고 공간이 부족합니다. 남은 수량: {}", remainingQty);
-                break;
-            }
-            
-            String newLocation = emptyLocations.get(0);
-            int storeQty = Math.min(remainingQty, 500);
-            
-            // Material/Product 구분 처리
-            boolean isMaterial = stockMapper.existsMaterialById(productId);
-            
-            if(isMaterial) {
-                stockMapper.insertMaterialStock(
-                    productId, warehouseId, newLocation, storeQty, empId
-                );
-            } else {
-                stockMapper.insertWarehouseItemWithLocation(
-                    productId, warehouseId, newLocation, storeQty, empId
-                );
-            }
-            remainingQty -= storeQty;
+        if(remainingQty > 0) {
+            log.error("모든 {} 창고가 가득 참! 남은 수량: {}", warehouseType, remainingQty);
         }
     }
     
