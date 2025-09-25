@@ -18,7 +18,7 @@ public enum LotDomain {
 	  CUTTING("cutting", "CUT"), // 절단 
 	  MACHINING("machining", "MCH"), // 성형/가공
 	  ASSEMBLY("assembly", "AS"), // 조립 
-	  OUT("out", "OUT"), // 포장/출하
+	  OUT("output", "OUT"), // 포장/출하
 	  SHIPPING("shipping", "FG"), // 포장/출하
 	  ETC("etc", "XX"); // 기타 미정의
 	
