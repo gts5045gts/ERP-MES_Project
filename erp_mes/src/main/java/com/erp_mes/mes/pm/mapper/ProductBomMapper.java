@@ -1,6 +1,7 @@
 package com.erp_mes.mes.pm.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,8 @@ public interface ProductBomMapper {
 	// bom 리스트
 	List<BomDTO> getBomList(String productId);
 
-	List<BomDTO> getBomListRoute(String productId);
+	// bom 등록
+	int insertBomList(BomDTO bomDTO);
 	
 
 }
