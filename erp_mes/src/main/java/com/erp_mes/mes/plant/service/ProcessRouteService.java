@@ -51,6 +51,7 @@ public class ProcessRouteService {
 					map.put("productNm", dto.getProductNm());
 					map.put("equipNm", dto.getEquipNm());
 					map.put("proNm", dto.getProNm());
+					map.put("materialNm", dto.getMaterialNm());
 					return map;
 					})
 				.collect(Collectors.toList());
@@ -93,6 +94,7 @@ public class ProcessRouteService {
 		Long seq =(long)(routeList.size() + 1);
 		routeDTO.setProSeq(seq);
 		
+		/* 라인 컬럼 삭제
 		//Line_id 생성------------------------------
 		String productId = routeDTO.getProductId();  
 
@@ -103,7 +105,7 @@ public class ProcessRouteService {
 	    String lineId = "LINE" + lastThree;
 	    
 	    routeDTO.setLineId(lineId);
-	    
+	    */
 		
 
 	    routeMapper.save(routeDTO);
