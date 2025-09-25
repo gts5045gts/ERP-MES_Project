@@ -30,6 +30,8 @@ public interface ProductBomMapper {
 
 	// bom 등록
 	int insertBomList(BomDTO bomDTO);
+
+	List<BomDTO> getBomListRoute(String productId);
 	
 
 }
