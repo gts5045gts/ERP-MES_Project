@@ -348,15 +348,18 @@ public class WareController {
 	    }
 	}
 	
-	// 출고 완료 처리
+	// 출고완료 처리 엔드포인트
 	@PutMapping("/api/outputs/{outId}/complete")
 	@ResponseBody
 	public Map<String, Object> completeOutput(@PathVariable("outId") String outId, Principal principal) {
+	    
 	    Map<String, Object> result = new HashMap<>();
 	    try {
-	        wareService.completeOutput(outId, principal.getName());
+	        // principal이 null일 수 있으니 체크
+	        String empId = principal != null ? principal.getName() : "SYSTEM";
+	        wareService.completeOutput(outId, empId);
 	        result.put("success", true);
-	        result.put("message", "출고 완료");
+	        result.put("message", "출고완료 처리");
 	    } catch(Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
@@ -364,14 +367,15 @@ public class WareController {
 	    return result;
 	}
 
-	// 출고 취소
-	@DeleteMapping("/api/outputs/{outId}")
+	// 출고취소 처리 엔드포인트
+	@DeleteMapping("/api/outputs/{outId}/cancel")
 	@ResponseBody
-	public Map<String, Object> cancelOutput(@PathVariable("outId") String outId) {
+	public Map<String, Object> cancelOutput(@PathVariable String outId) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
 	        wareService.cancelOutput(outId);
 	        result.put("success", true);
+	        result.put("message", "출고취소 완료");
 	    } catch(Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
