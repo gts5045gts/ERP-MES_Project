@@ -35,10 +35,16 @@ loadProducts();
 	});
 	
 	
+// ==================================
 	// 제품 클릭 시 BOM 로드
+	
+	window.selectedProduct = null;
+
 	prodGrid.on('click', ev => {
 	    const rowData = prodGrid.getRow(ev.rowKey);
-	    if (rowData && typeof window.loadBomByProduct === "function") {
+	    if (rowData) {
+	        console.log("선택된 제품:", rowData);
+	        window.selectedProduct = rowData;
 	        window.loadBomByProduct(rowData.productId);
 	    }
 	});

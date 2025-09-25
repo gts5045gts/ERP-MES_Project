@@ -117,3 +117,66 @@
 	document.querySelector('.notice-title').addEventListener('click', function() {
 	document.querySelector('.notice-list').classList.toggle('show');
 	});
+	
+	// 입력안된 것들 검사 
+	
+	
+	function formBtn(){
+		let form = document.getElementById("registForm");
+		let name = document.getElementById("name").value;
+		let phone = document.getElementById("phone").value;
+		let resident = document.getElementById("resident").value;
+		let passwd = document.getElementById("passwd").value;
+		let staId = document.getElementById("staId").value;
+		let dep = document.getElementById("dep").value;
+		let pos = document.getElementById("pos").value;
+		let level = document.getElementById("level").value;
+		let addrNum = document.getElementById("addrNum").value;
+		let addr1 = document.getElementById("addr1").value;
+		let addr2 = document.getElementById("addr2").value;
+		let joinDate = document.getElementById("joinDate").value;
+		if(name === ""){
+			alert("이름을 입력해주세요.");
+			return
+		}else if(phone ===""){
+			alert("휴대폰 번호를 입력하세요.");
+			return
+		}else if(resident ===""){
+			alert("주민등록 번호를 입력하세요.");
+			return
+		}else if(passwd ===""){
+			alert("비밀 번호를 입력하세요.");
+			return
+		}else if(staId ===""){
+			alert("재직 현황를 선택하세요.");
+			return
+		}else if(dep ===""){
+			alert("부서를 선택하세요.");
+			return
+		}else if(pos ===""){
+			alert("직책을 선택하세요.");
+			return
+		}else if(level ===""){
+			alert("보안등급을 선택하세요.");
+			return
+		}else if(addrNum ===""){
+			alert("우편번호를 입력하세요.");
+			return
+		}else if(addr1 ===""){
+			alert("주소를 입력하세요.");
+			return
+		}else if(addr2 ===""){
+			alert("상세 주소를 입력하세요.");
+			return
+		}else if(joinDate ===""){
+			alert("입사일을 입력하세요.");
+			return
+		}
+		let formData = form.serialize();
+//		$.post("/")
+		
+		
+	}
+	
+	
+	

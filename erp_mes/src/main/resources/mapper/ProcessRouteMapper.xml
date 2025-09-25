@@ -19,6 +19,9 @@
     <result property="equipId" column="equip_id"/>
     <result property="equipNm" column="equip_nm"/>
     <result property="lineId" column="line_id"/>
+    <result property="bomId" column="bom_id"/>
+    <result property="materialId" column="material_id"/>
+    <result property="materialNm" column="material_name"/>
 
 </resultMap>
 
@@ -28,28 +31,36 @@
 			r.pro_seq,
 			r.note,
 			
-			p.pro_id,
+			r.pro_id,
 			p.pro_nm,
-			e.equip_id,
+			r.equip_id,
 			e.equip_nm,
-			d.product_id,
-			d.product_name
+			r.product_id,
+			d.product_name,
+			
+			r.material_id,
+			m.material_name
+			
 		FROM 
 			process_routing r
 		LEFT JOIN
 			process p 
 		ON 
 			r.pro_id = p.pro_id
-		LEFT JOIN 
+		JOIN 
 			equipment e
 		ON 
 			r.equip_id = e.equip_id
-		LEFT JOIN
+		JOIN
 			product d
 		ON
 			r.product_id = d.product_id
+		LEFT JOIN 
+			material m
+		on 
+			r.material_id = m.material_id
 		ORDER BY 
-			r.pro_seq ASC
+			d.product_id, r.pro_seq ASC
 			
 	</select>
 	<select id="findByProductIdAll" resultMap="ProcessRouteMap">
@@ -74,14 +85,14 @@
 <!-- 	    <selectKey keyProperty="proSeq" resultType="long" order="BEFORE"> -->
 <!--    			 SELECT NVL(MAX(pro_seq), 0) + 1 FROM process_routing WHERE product_id = #{productId} -->
 <!--   		</selectKey> -->
-	    
+<!-- 	    라인 컬럼 삭제로 인해 인서트에도 없앰 line_id , #{lineId} 삭제 -->
 	    insert into process_routing 
 	    (
-	        route_id, pro_seq, note, product_id, pro_id, equip_id, line_id
+	        route_id, pro_seq, note, product_id, pro_id, equip_id, bom_id, material_id
 	    )
 	    values 
 	    (
-	        #{routeId}, #{proSeq}, #{note}, #{productId}, #{proId}, #{equipId}, #{lineId}
+	        #{routeId}, #{proSeq}, #{note}, #{productId}, #{proId}, #{equipId}, #{bomId}, #{materialId}
 	    )
 	</insert>
 	

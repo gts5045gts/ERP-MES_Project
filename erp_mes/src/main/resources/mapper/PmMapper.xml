@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp_mes.mes.pm.mapper.PmMapper">
+	
+	<!-- 생산계획 리스트 -->
+	<select id="getProductPlanList" resultType="com.erp_mes.mes.pm.dto.ProductPlanDTO">
+		SELECT pp.plan_id, pp.product_id, p.product_name AS productName, pp.plan_quantity, 
+				pp.start_date, pp.end_date, pp.due_date, pp.emp_id, e.emp_name AS empName
+		FROM product_plan pp
+		JOIN product p
+		ON pp.product_id = p.product_id
+		JOIN employee e
+		ON pp.emp_id = e.emp_id
+	</select>
+
+	
+	<!-- 제품명 셀렉트박스 -->
+	<select id="getProductName" resultType="com.erp_mes.mes.pm.dto.ProductDTO">
+		SELECT product_id, product_name
+		FROM product
+	</select>
+	
+	<!-- 담당자 셀렉트박스 -->
+	<select id="getEmpInfo" resultType="com.erp_mes.mes.pm.dto.PersonnelDTO">
+		SELECT e.emp_id, e.emp_name AS name, c.com_dt_nm AS comdtNm
+		FROM employee e
+		JOIN common_dt_code c
+		ON e.emp_dept_id = c.com_dt_id
+		WHERE c.com_dt_id = 'DEP005'
+	</select>
+	
+		<!-- 등록된(received) 수주만 -->
+	<select id="getOrderId" resultType="com.erp_mes.mes.pm.dto.OrdersDTO">
+		SELECT od.id, od.order_id, od.order_qty, od.order_detail_status, o.delivery_date, od.product_id, od.product_name
+		FROM orders_detail od
+		JOIN orders o
+		ON od.order_id = o.order_id
+		WHERE order_status = 'RECEIVED'
+	</select>
+	
+	<!-- 등록된 수주를 클릭해서 해당 정보값 들고오기 -->
+	<select id="getOrdersProduct" resultType="com.erp_mes.mes.pm.dto.OrdersDetailDTO">
+		SELECT od.id,
+		       od.order_id,
+		       od.product_id,
+		       od.product_name,
+		       od.order_qty,
+		       od.order_price,
+		       od.unit,
+		       od.order_detail_status,
+		       o.delivery_date
+		FROM orders_detail od
+		JOIN orders o
+		ON o.order_id = od.order_id
+		WHERE od.order_id = #{orderId}
+		  AND od.id = #{id}
+		  AND od.order_detail_status = 'RECEIVED'
+	</select>
+	
+	<!-- 생산계획 등록 -->
+	<insert id="insertProductPlan" parameterType="com.erp_mes.mes.pm.dto.ProductPlanDTO">
+		INSERT INTO product_plan(plan_id, product_id, plan_quantity, start_date, end_date, due_date, emp_id)
+		VALUES (
+			#{planId},
+			#{productId},
+			#{planQuantity},
+			#{startDate},
+			#{endDate},
+			#{dueDate},
+			#{empId}
+        )
+	</insert>
+	
+	<!-- 작업지시서 리스트 -->
+	<select id="getWorkOrderList" resultType="com.erp_mes.mes.pm.dto.WorkOrderDTO">
+		SELECT *
+		FROM work_order w
+		JOIN employee e ON w.emp_id = e.emp_id
+	</select>
+
+	<!-- possible한 생산계획만 들고오기 -->	
+	<select id="getPlanList" resultType="com.erp_mes.mes.pm.dto.ProductPlanDTO">
+		SELECT *
+		FROM product_plan
+		WHERE plan_status = 'POSSIBLE'
+	</select>
+	
+	<!-- 생산계획 아이디로 제품명과 생산수량 라우트 그룹 라인명 들고오기 -->	
+	<select id="getWorkOderInfo" resultType="com.erp_mes.mes.pm.dto.ProductPlanDTO">
+		SELECT DISTINCT
+		    pp.plan_id,
+		    pp.plan_quantity,
+		    p.product_name,
+		    b.bom_id
+		FROM product_plan pp
+		JOIN product p 
+		    ON pp.product_id = p.product_id
+		JOIN process_routing pr
+		    ON pp.product_id = pr.product_id
+		JOIN bom b
+            ON p.product_id = b.product_id
+		WHERE pp.plan_id = #{planId}
+		  AND pp.plan_status = 'POSSIBLE'
+	</select>
+	
+	<!-- bom 필요 자재수와 창고 자재 수 비교 -->	
+	<select id="getWorkOderInventory" resultType="com.erp_mes.mes.pm.dto.BomDTO">
+		SELECT
+			b.bom_id,
+		    b.material_id,
+		    m.material_name,
+		    b.quantity,
+		    (b.quantity * pp.plan_quantity) AS total_needed_quantity,
+		    m.quantity AS stock_quantity,
+		    CASE WHEN m.quantity >= (b.quantity * pp.plan_quantity) THEN '작업 가능'
+		         ELSE '작업 불가능'
+		    END AS work_possible
+		FROM product_plan pp
+		JOIN bom b ON pp.product_id = b.product_id
+		JOIN material m ON b.material_id = m.material_id
+		WHERE pp.plan_id = #{planId}
+	</select>
+	
+	<!-- 작업지시 등록 -->
+	<insert id="insertWorkOrder" parameterType="com.erp_mes.mes.pm.dto.WorkOrderDTO">
+		INSERT INTO work_order(plan_id, bom_id, emp_id, start_date, end_date, work_order_status, created_at)
+		VALUES (
+			#{planId},
+			#{bomId},
+			#{empId},
+			#{startDate, jdbcType=DATE},
+			#{endDate, jdbcType=DATE},
+			#{workOrderStatus},
+			SYSDATE
+        )
+	</insert>
+	
+	<!-- bom의 자재, 재고량 조회 -->
+	<select id="getMaterialsByBomId" resultType="com.erp_mes.mes.pm.dto.BomDTO">
+	    SELECT 
+	        b.bom_id,
+	        b.product_id,
+	        b.material_id,
+	        m.material_name    AS materialName,
+	        b.quantity, 
+	        m.quantity         AS stockQuantity,
+	        b.unit,
+	        b.revision_no,
+	        b.created_at
+	    FROM bom b
+	    JOIN material m
+	      ON b.material_id = m.material_id
+	    WHERE b.bom_id = #{bomId}
+	</select>
+	
+	<select id="getPurchaseInfo" resultType="com.erp_mes.mes.pm.dto.BomDTO">
+	    SELECT 
+	        b.material_id,
+	        m.material_name,
+	        (b.quantity * pp.plan_quantity) AS totalNeededQuantity, -- 필요 수량
+	        m.quantity AS stockQuantity,                             -- 보유 재고
+	        ((b.quantity * pp.plan_quantity) - m.quantity) AS requiredQty -- 부족 수량
+	    FROM bom b
+	    JOIN work_order w ON b.bom_id = w.bom_id
+	    JOIN product_plan pp ON w.plan_id = pp.plan_id
+	    JOIN material m ON m.material_id = b.material_id
+	    WHERE w.work_order_id = #{workOrderId}
+	      <![CDATA[
+	      AND m.quantity < (b.quantity * pp.plan_quantity)
+	      ]]>
+	</select>
+	
+	<!-- 발주 등록 -->
+	<insert id="insertPusrchase" parameterType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
+		INSERT INTO work_order_shortage(work_order_id, material_id, require_qty, status, request_date)
+		VALUES (
+			#{workOrderId},
+			#{materialId},
+			#{requireQty},
+			#{status},
+			SYSDATE
+        )
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,9 @@
 package com.erp_mes.mes.pm.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -37,6 +40,7 @@ public class ProductBomController {
 	public String getProductBomInfo(Model model) {
 		
 		List<ProductDTO> productDTOList = productBomService.getProductList();
+		model.addAttribute("productDTOList", productDTOList);
 		log.info(" >>>>>>>>>>>>>>>>>>>>>>>>>>> productDTOList : " + productDTOList);
 		
 		// 제품유형(공통코드)
@@ -73,6 +77,20 @@ public class ProductBomController {
 		return productBomService.getBomList(productId); // json으로 변환 => 그리드에 값 넣어야해서
 	}
 	
+	// bom 등록
+	@ResponseBody
+	@PostMapping("/bomRegist")
+	public String registBom(@RequestBody BomDTO bomDTO) {
+		
+		log.info(">>> bomId=" + bomDTO.getBomId());
+	    log.info(">>> productId=" + bomDTO.getProductId());
+	    log.info(">>> revisionNo=" + bomDTO.getRevisionNo());
+	    log.info(">>> materialIds=" + bomDTO.getMaterials());
+		
+	    productBomService.insertBomList(bomDTO);
+
+	    return "success";
+	}
 }
 
 

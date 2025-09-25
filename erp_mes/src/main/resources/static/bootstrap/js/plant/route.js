@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	    { header: '제품 이름', name: 'productNm' },	
 	    { header: '공정 이름', name: 'proNm' },
 	    { header: '필요 설비', name: 'equipNm' },
+	    { header: '자재이름', name: 'materialNm' },
 	    { header: '설명', name: 'note' }
 	],
 });
