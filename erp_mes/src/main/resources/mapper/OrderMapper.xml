@@ -270,7 +270,7 @@
 		SELECT * FROM DUAL 		-- INSERT ALL을 수행하기위해 더미 테이블인 DUAL 테이블 사용
 	</insert>
 	
-<!-- 	수주 상세 진행상태 update -->
+<!-- 	생산계획 등록 시 수주 상세 진행상태 update -->
     <update id="updateOrderDetailStatus">
         UPDATE orders_detail od
 		SET od.order_detail_status = 'INPRODUCTION'

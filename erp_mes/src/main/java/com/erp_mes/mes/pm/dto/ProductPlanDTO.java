@@ -21,6 +21,7 @@ public class ProductPlanDTO {
 	private String productId;
 	private String bomId;
 	private String productName;
+	private String orderId;
 	private Integer planQuantity;
 	
 	@JsonFormat(pattern = "yyyy-MM-dd")
