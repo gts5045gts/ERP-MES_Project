@@ -55,5 +55,11 @@ public class WorkResult {
 	@Column(name = "LOT_ID")   // 로트
 	private String lotId;
 	
+	@Column(name = "in_id")
+    private String inId;		// 입고(fk)
+	
+	@Column(name = "route_id")
+    private Long routeId;		// 라우팅
+	
 
 }

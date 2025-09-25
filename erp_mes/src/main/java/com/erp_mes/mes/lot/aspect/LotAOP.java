@@ -100,7 +100,7 @@ public class LotAOP {
 				    		
 				    		if (parentLotId != null && workOrderId != null) {
 				    		
-					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(String.valueOf(workOrderId)));
+					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(String.valueOf(workOrderId));
 					    		
 					    		for (WorkResultDTO dto : workOrderList) {
 					    			 BigDecimal qty = dto.getQuantity();

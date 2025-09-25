@@ -7,16 +7,16 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Setter
-@Service
 @ToString
+@NoArgsConstructor
 public class CommonDetailCodeDTO {
 
 	private String comId; // 코드(fk)
@@ -42,5 +42,11 @@ public class CommonDetailCodeDTO {
 		}
 		return dto;
 	}
+	
+	 public CommonDetailCodeDTO(String comId, String comDtNm) {
+		 this.comId = comId;
+		 this.comDtNm = comDtNm;
+	 }
+
 	
 }

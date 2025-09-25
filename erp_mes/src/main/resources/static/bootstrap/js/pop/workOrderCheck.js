@@ -9,8 +9,14 @@ $(document).ready(function() {
 			
             const tbody = $('#workOrderBody');
             tbody.empty(); // 기존 내용 초기화
+			
+			const seenIds = new Set();
 
             workOrders.forEach(function(item) {
+				if (seenIds.has(item.workOrderId)) {
+                    return; // 이미 추가된 workOrderId면 스킵
+                }
+                seenIds.add(item.workOrderId);
 				
 				// 상태에따른 클래스 변경(색깔구분)
 				let statusClass = '';
@@ -21,10 +27,9 @@ $(document).ready(function() {
 			    }
 				
                 const tr = `
-                    <tr data-id="${item.workOrderId}" data-equipment="${item.equipmentNm}" data-goodqty="${item.goodQty}">
+                    <tr data-id="${item.workOrderId}" data-product-id="${item.productId}" data-equipment="${item.equipmentNm}" data-goodqty="${item.goodQty}">
                         <td>${item.workOrderId}</td>
                         <td>${item.productNm}</td>
-                        <td>${item.processNm}</td>
                         <td>${item.startDate}</td>
                         <td>${item.endDate}</td>
                         <td class="${statusClass}">${item.workOrderStatus}</td>
@@ -34,8 +39,8 @@ $(document).ready(function() {
             });
 			
 			updateProgressChart(workOrders);
-			updateEquipmentChart();
 			updateQuantityChart(workOrders);
+			
 			
         },
         error: function(xhr, status, error) {
@@ -44,23 +49,14 @@ $(document).ready(function() {
     });
 });
 
+
 /* BOM 조회 */
 const columns1 = [
   	{ header: '공정명', name: 'processNm' },
   	{ header: '설비명', name: 'equipmentNm' },
   	{ header: '자재명', name: 'materialNm' },
-  	{ header: '필요수량', name: 'quantity' },
-	{ 
-		header: '작업시작', 
-		name: 'workStart',
-		formatter: function(props) {
-			if (props.row.workStarted) {
-				return `<span class="status-progress">진행중</span>`; // 이미 작업 시작된 경우
-			} else {
-				return `<input type="checkbox" class="work-start" data-row-key="${props.rowKey}" data-id="${props.row.workOrderId}">`;
-			}
-		} 
-	}
+  	{ header: '수량', name: 'quantity' },
+  	{ header: '공정순서', name: 'proSeq' }
 ];
 
 // BOM + 설비공정 그리드
@@ -77,6 +73,7 @@ let selectedInput = null;
 // 작업지시 행 클릭하면 모달창
 $('#workOrderBody').on('click', 'tr', function() {
 	
+	const productId = $(this).data('product-id');
 	const workOrderId = $(this).data('id');
 	
 	const status = $(this).find('td:last').text().trim(); // 마지막 td가 상태라고 가정
@@ -92,16 +89,21 @@ $('#workOrderBody').on('click', 'tr', function() {
 	
     modal.show();
 	
+	$('#workOrderCheck').data('id', workOrderId);
+	
+	
 	// 모달이 완전히 열린 후 Grid 초기화
 	modalEl.addEventListener('shown.bs.modal', function() {
 		$.ajax({
-			url: `/pop/bom/${workOrderId}`, 
+			url: `/pop/bom/${productId}`, 
 	        type: 'GET',
 	        dataType: 'json',
 	        success: function(bomData) {
 				
 	            Workgrid1.resetData(bomData);   // BOM 데이터를 Grid에 세팅
 	            Workgrid1.refreshLayout();      // 레이아웃 갱신
+
+				
 	        },
 	        error: function(xhr, status, error) {
 	            console.error('BOM 조회 실패:', error);
@@ -118,4 +120,5 @@ $('#popModal').on('hidden.bs.modal', function () {
     selectedInput = null;             // 선택된 input 초기화
     $('#Workgrid1 .material-req').prop('checked', false); // 체크박스 초기화
 });
+
 

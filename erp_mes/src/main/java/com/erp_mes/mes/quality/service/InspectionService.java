@@ -153,9 +153,9 @@ public class InspectionService {
             defectDTO.setDefectType(finalDefectType); // 불량사유
             defectDTO.setDefectReason(finalRemarks);
             defectDTO.setDefectQty(defectiveCount);
-            defectDTO.setProductName(qualityMapper.findTargetNameByInId(inId)); // 자재명 조회
-            defectDTO.setEmployeeId(empId);
-            defectDTO.setDefectLocation(2); // 2:QC/QA팀
+            defectDTO.setProductNm(inspectionRemarks); // 자재명 조회
+            defectDTO.setEmpId(empId);
+//            defectDTO.setDefectLocation(2); // 2:QC/QA팀
             
             qualityMapper.insertDefectItem(defectDTO);
         }
