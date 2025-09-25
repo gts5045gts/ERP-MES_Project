@@ -30,7 +30,13 @@ public class ProcessRouteDTO {
 	private String equipId;			//설비 아이디
 	private String equipNm;			//설비 이름
 	
-	private String lineId;			//라인 아이디 값
+	//추가된 내용 붐 아이디안에 자재정보---------------------------------------------
+	
+	private String bomId;			//작업지시서 아이디
+	private String materialId;		//bom 안에 있는 자재 아이디
+	private String materialNm;		//bom 안에 있는 자재 아이디
+	
+//	private String lineId;			//라인 컬럼 삭제
 	
 	
 	
