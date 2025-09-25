@@ -105,6 +105,8 @@ $('#workOrderCheck').on('click', function() {
         },
         success: function(res) {
             // DB 기준으로 화면 갱신
+			
+			console.log("ressss"+res)
 			res.forEach(item => grid.appendRow(item));
 			
 			// 작업지시서의 상태변경

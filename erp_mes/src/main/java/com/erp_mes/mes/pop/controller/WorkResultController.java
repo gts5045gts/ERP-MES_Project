@@ -70,8 +70,12 @@ public class WorkResultController {
 	// 작업시작 클릭시 작업현황 업데이트
 	@PostMapping("/startWork") 
 	@ResponseBody
-
+	@TrackLot(tableName = "work_result", pkColumnName = "work_order_id")
 	public List<WorkResultDTO> startWork(@RequestBody WorkResultDTO work) {
+		
+		HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", work.getWorkOrderId());
+		
 		return workResultService.startWork(work.getWorkOrderId());
 	}
 	
