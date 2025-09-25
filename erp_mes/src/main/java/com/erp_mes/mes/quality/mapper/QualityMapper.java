@@ -62,4 +62,10 @@ public interface QualityMapper {
  Integer findInCountByInId(String inId);
  String findTargetNameByInId(String inId);
  void insertDefectItem(DefectDTO defectDTO);
+ 
+// 검사결과 상세 조회
+InspectionTargetDTO getIncomingDetail(Long inspectionId);
+List<InspectionTargetDTO> getProcessDetail(Long inspectionId);
+String findInspectionTypeById(Long inspectionId);
+
 }

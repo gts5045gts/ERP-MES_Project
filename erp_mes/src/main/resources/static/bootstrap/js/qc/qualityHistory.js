@@ -26,6 +26,45 @@ document.addEventListener('DOMContentLoaded', function() {
 		rowHeaders: ['rowNum'],
 		bodyHeight: 'auto' // 무한 스크롤 활성화
 	});
+    
+	function showInspectionDetailModal(detailData) {
+	    if (!detailData) {
+	        alert('상세 정보가 유효하지 않습니다.');
+	        return;
+	    }
+
+		const isIncoming = detailData.inspectionType === 'QC001';
+
+		// HTML 모달 요소에 데이터 매핑
+		document.getElementById('detailInspectionId').value = detailData.inspectionId || '';
+		document.getElementById('detailTargetName').value = detailData.targetName || '';
+	    
+	    // 1. 데이터 설정 (값 자체는 DTO에 맞게 설정)
+	    document.getElementById('detailTargetId').value = detailData.targetId || 'N/A'; // 작업지시 ID / 자재 코드
+	    document.getElementById('detailPlanId').value = detailData.planId || 'N/A'; // 생산 계획 ID
+
+		document.getElementById('detailInspectionType').value = detailData.inspectionTypeName || detailData.inspectionType || '';
+		document.getElementById('detailLotId').value = detailData.lotId || '';
+		// 불량 사유
+		const defectReasonElement = document.getElementById('detailDefectReason');
+		defectReasonElement.value = detailData.defectReason || '(불량 사유 미기재 또는 해당 없음)';
+		// 비고
+		document.getElementById('detailRemarks').value = detailData.remarks || '(비고 미기재)';
+	    // 이 필드들은 HTML에서 해당 ID를 가진 input의 부모 (예: .form-group)로 접근해야 합니다.
+	    const targetIdContainer = document.getElementById('detailTargetId').closest('.form-group');
+	    const planIdContainer = document.getElementById('detailPlanId').closest('.form-group');
+	    
+	    if (targetIdContainer) {
+	        // 수입 검사(QC001)일 경우 숨김 처리
+	        targetIdContainer.style.display = isIncoming ? 'none' : 'block';
+	    }
+	    if (planIdContainer) {
+	        // 수입 검사(QC001)일 경우 숨김 처리
+	        planIdContainer.style.display = isIncoming ? 'none' : 'block';
+	    }
+		// 모달 표시
+		$('#detailModal').modal('show');  
+	}
 
 	// 기존 loadHistoryData 함수를 제거하고, 필터링 로직만 수정
 	function filterHistoryData() {
@@ -260,6 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				targetId: selectedTargetData.targetId,
 				acceptedCount: acceptedCount,
 				defectiveCount: defectiveCount,
+				productId: selectedTargetData.productId,
+				processId: selectedTargetData.processId,
 				lotId: selectedTargetData.lotId || '',
 				inspectionType: selectedTargetData.inspectionType,
 				remarks: remarks,
@@ -298,7 +339,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 registrationData.defectType = defectType;
             }
             
-            // 💡 [수정] 수량 기반 등록 API 사용
             // 이 API는 중간 공정이든 최종 공정이든 WORK_ORDER의 검사 결과를 처리합니다.
             // 서버에서 isLastProcess를 체크하여 상태 업데이트를 분기합니다.
             apiUrl = '/quality/api/register-process-inspection-result'; 
@@ -331,8 +371,37 @@ document.addEventListener('DOMContentLoaded', function() {
 			alert('등록 중 오류 발생');
 		}
 	});
+	
+    // DOMContentLoaded 내부에서 호출되도록 재배치합니다.
+    function setupHistoryGridClickListener() {
+        historyGrid.on('click', async (ev) => {
+            if (typeof ev.rowKey !== 'undefined') {
+                const rowData = historyGrid.getRow(ev.rowKey);
+                const inspectionId = rowData.inspectionId; // 검사 ID
+                
+                try {
+                    const response = await fetch(`/quality/api/inspection-detail/${inspectionId}`);
+                    
+                    // HTTP 상태 코드 확인 (500 에러 등을 걸러냅니다)
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류: ' + response.status);
+                    }
+                    
+                    const detailData = await response.json();
+                    
+                    showInspectionDetailModal(detailData); 
+                    
+                } catch (error) {
+                    console.error('Failed to fetch inspection detail:', error);
+                    alert('검사 상세 정보를 불러오는 데 실패했습니다.');
+                }
+            }
+        });
+    }
+
 
 	// 페이지 로드 시 초기 데이터 로드
 	historyGrid.readData();
 	loadTargetData();
+    setupHistoryGridClickListener(); 
 });

@@ -22,6 +22,7 @@ public class DefectDTO {
     private Integer defectLocation; // 불량위치 1:pop 2:QC/QA
     private LocalDateTime defectDate;
     private Long workOrderId;
+    private String lotId;
 	
 	
 

@@ -431,4 +431,17 @@ public class InspectionController {
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@GetMapping("/api/inspection-detail/{inspectionId}")
+	@ResponseBody
+	public ResponseEntity<InspectionTargetDTO> getInspectionDetail(@PathVariable("inspectionId") Long inspectionId) {
+	    try {
+	        // inspectionService.getInspectionDetail(inspectionId) 호출
+	    	InspectionTargetDTO detail = inspectionService.getInspectionDetail(inspectionId);
+	        return new ResponseEntity<>(detail, HttpStatus.OK);
+	    } catch (Exception e) {
+	        log.error("Failed to fetch inspection detail: {}", e.getMessage());
+	        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
 }

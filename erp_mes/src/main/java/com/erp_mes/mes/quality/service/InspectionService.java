@@ -283,16 +283,17 @@ public class InspectionService {
         String defectType = requestDTO.getDefectType();
         
         // 1. 검사 결과 판정
-        String inspectionResult = (defectiveCount > 0) ? "불합격" : "합격";
-        String inspectionRemarks = "합격: " + acceptedCount + "개, 불량: " + defectiveCount + "개, 비고: " + remarks;
+        Long totalCount = acceptedCount + defectiveCount;
+        String inspectionRemarks = "합격: " + acceptedCount + "개, 불량: " + defectiveCount + "개";
+        String inspectionResult = (defectiveCount > 0 && defectiveCount.equals(totalCount)) ? "불합격" : "합격";
         
         // 2. INSPECTION 테이블에 검사 이력 등록 (Long 타입이 필요하지 않으므로 기존 DTO 유지)
         InspectionDTO inspectionDTO = new InspectionDTO();
         inspectionDTO.setInspectionType(inspectionType);
         inspectionDTO.setEmpId(empId);
-        inspectionDTO.setLotId(lotId);
         inspectionDTO.setProductId(requestDTO.getProductId());
         inspectionDTO.setProcessId(requestDTO.getProcessId());
+        inspectionDTO.setLotId(lotId);
         
         qualityMapper.insertInspection(inspectionDTO);
         Long newInspectionId = inspectionDTO.getInspectionId();
@@ -317,18 +318,46 @@ public class InspectionService {
             defectDTO.setProductName(productName); 
             defectDTO.setEmpId(empId);
             defectDTO.setWorkOrderId(workOrderIdLong); 
+            defectDTO.setLotId(requestDTO.getLotId()); 
             defectDTO.setDefectLocation(2); 
             
             qualityMapper.insertDefectItem(defectDTO);
         }
 
         // 5. WORK_RESULT 업데이트 및 WORK_ORDER 상태 업데이트
-        
-        // 5.1. WORK_RESULT 업데이트 (Mapper가 String을 받는다고 가정하고 String 사용)
-        // qualityMapper.updateWorkResultCounts(workOrderIdString, acceptedCount, defectiveCount); 
-        
-        // 5.2. WORK_ORDER 상태 업데이트 (Mapper가 String을 받는다고 가정하고 String 사용)
         qualityMapper.updateWorkOrderStatus(workOrderIdString); 
+    }
+
+    // 검사 ID로 상세 정보를 조회하는 메서드
+    @Transactional(readOnly = true)
+    public InspectionTargetDTO getInspectionDetail(Long inspectionId) {
+        
+        String inspectionType = qualityMapper.findInspectionTypeById(inspectionId); 
+        InspectionTargetDTO detail = null;
+
+        if (inspectionType == null) {
+            return null; // 검사 기록이 없음
+        }
+
+        if ("QC001".equals(inspectionType)) {
+            // 수입 검사 (단일 행이 기대됨)
+            detail = qualityMapper.getIncomingDetail(inspectionId);
+        } else if ("QC002".equals(inspectionType) || "QC003".equals(inspectionType)) {
+            // 1. Mapper에서 List로 결과를 받습니다. (Mapper 인터페이스 변경 필요)
+            List<InspectionTargetDTO> details = qualityMapper.getProcessDetail(inspectionId); 
+            
+            // 2. 결과가 있다면 첫 번째 요소만 선택합니다.
+            if (details != null && !details.isEmpty()) {
+                detail = details.get(0);
+            }
+        } 
+        // 검사 유형 이름을 매핑
+        if (detail != null) {
+            Map<String, String> qcTypeMap = getQcTypeMap();
+            detail.setInspectionTypeName(qcTypeMap.get(detail.getInspectionType()));
+        }
+
+        return detail;
     }
     
 }
