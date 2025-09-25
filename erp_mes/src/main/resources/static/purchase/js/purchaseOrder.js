@@ -33,30 +33,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const workOrderAddBtn = document.getElementById("WorkOrderAddBtn");
 	const normalAddBtn = document.getElementById("NormalAddBtn");
-	let editBtn = document.getElementById("editBtn");
-	if (!editBtn) {
-		editBtn = document.createElement("button");
-		editBtn.id = "editBtn";
-		editBtn.type = "button";
-		editBtn.className = "btn btn-secondary ms-2";
-		editBtn.textContent = "수정";
-		editBtn.style.display = "none";
-		if (normalAddBtn && normalAddBtn.parentNode) {
-			normalAddBtn.parentNode.insertBefore(editBtn, normalAddBtn.nextSibling);
-		} else {
-			document.body.appendChild(editBtn);
-		}
+	
+//	const addBtn = document.getElementById("addBtn");
+	if (!isPURTeam && !isAUTLevel) {
+//		if (addBtn) addBtn.style.display = "none";
+		if (workOrderAddBtn) workOrderAddBtn.style.display = "none";
+		if (normalAddBtn) normalAddBtn.style.display = "none";
 	}
-
-	editBtn.addEventListener('click', () => {
-		const focused = purchaseGrid.getFocusedCell();
-		if (!focused) {
-			alert("수정할 행을 선택해주세요.");
-			return;
+	
+	if (isPURTeam || isAUTLevel) {
+		let editBtn = document.getElementById("editBtn");
+		if (!editBtn) {
+			editBtn = document.createElement("button");
+			editBtn.id = "editBtn";
+			editBtn.type = "button";
+			editBtn.className = "btn btn-secondary ms-2";
+			editBtn.textContent = "수정";
+			editBtn.style.display = "none";
+			if (normalAddBtn && normalAddBtn.parentNode) {
+				normalAddBtn.parentNode.insertBefore(editBtn, normalAddBtn.nextSibling);
+			} else {
+				document.body.appendChild(editBtn);
+			}
 		}
-		const rowData = purchaseGrid.getRow(focused.rowKey);
-		openEditModal(rowData.purchaseId, rowData);
-	});
+
+		editBtn.addEventListener('click', () => {
+			const focused = purchaseGrid.getFocusedCell();
+			if (!focused) {
+				alert("수정할 행을 선택해주세요.");
+				return;
+			}
+			const rowData = purchaseGrid.getRow(focused.rowKey);
+			openEditModal(rowData.purchaseId, rowData);
+		});
+	}
 
 	const initializePage = () => {
 		purchaseGrid = new tui.Grid({
@@ -101,11 +111,11 @@ document.addEventListener("DOMContentLoaded", () => {
 								break;
 							case 'WAITING':
 								color = 'green';
-								statusText = '입고 대기';
+								statusText = '입고대기';
 								break;
 							case 'COMPLETION':
 								color = 'black';
-								statusText = '입고 완료';
+								statusText = '입고완료';
 								break;
 						}
 						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;
@@ -171,44 +181,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		purchaseGrid.on('click', async (ev) => {
 			const rowData = purchaseGrid.getRow(ev.rowKey);
+			
 			if (!rowData) {
 				editBtn.style.display = "none";
 				editBtn.removeAttribute('data-purchaseId');
 				return;
 			}
 
-			if (rowData.purchaseType === '작업지시발주' && ev.columnName === 'purchaseStatus') {
-				alert("작업지시 발주는 취소할 수 없습니다.");
-				return;
-			}
-
-			if (ev.columnName === 'purchaseStatus') {
-				if (rowData.purchaseStatus === 'CANCELED') {
-					alert("이미 취소된 발주입니다.");
+			if (isPURTeam || isAUTLevel) {
+				if (rowData.purchaseType === '작업지시발주' && ev.columnName === 'purchaseStatus') {
+					alert("작업지시 발주는 취소할 수 없습니다.");
 					return;
 				}
-				editBtn.style.display = "none";
-				if (confirm("발주를 취소하시겠습니까?")) {
-					const purchaseId = rowData.purchaseId;
-					try {
-						const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-						const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-						const res = await fetch(`/purchase/api/purchase/${purchaseId}/cancel`, {
-							method: "PUT",
-							headers: { "Content-Type": "application/json", [csrfHeader]: csrfToken }
-						});
-						if (!res.ok) throw new Error(await res.text());
-						purchaseGrid.setValue(ev.rowKey, 'purchaseStatus', 'CANCELED');
-						alert("발주가 취소되었습니다.");
-						loadPurchaseDetails(purchaseId);
-					} catch (err) {
-						console.error("발주 취소 실패:", err);
-						alert("발주 취소 실패: " + err.message);
+
+				if (ev.columnName === 'purchaseStatus') {
+					if (rowData.purchaseStatus === 'CANCELED') {
+						alert("이미 취소된 발주입니다.");
+						return;
 					}
+					editBtn.style.display = "none";
+					if (confirm("발주를 취소하시겠습니까?")) {
+						const purchaseId = rowData.purchaseId;
+						try {
+							const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+							const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+							const res = await fetch(`/purchase/api/purchase/${purchaseId}/cancel`, {
+								method: "PUT",
+								headers: { "Content-Type": "application/json", [csrfHeader]: csrfToken }
+							});
+							if (!res.ok) throw new Error(await res.text());
+							purchaseGrid.setValue(ev.rowKey, 'purchaseStatus', 'CANCELED');
+							alert("발주가 취소되었습니다.");
+							loadPurchaseDetails(purchaseId);
+						} catch (err) {
+							console.error("발주 취소 실패:", err);
+							alert("발주 취소 실패: " + err.message);
+						}
+					}
+					return;
 				}
-				return;
 			}
+			
 			loadPurchaseDetails(rowData.purchaseId);
+			
 			if (rowData.purchaseStatus === 'REQUEST' && rowData.purchaseType === '일반발주') {
 				editBtn.style.display = "inline-block";
 				editBtn.dataset.purchaseId = rowData.purchaseId;
@@ -223,12 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	//--- 서버 통신 함수 ---
 	let allPurchaseOrders = [];
-
-	//	function loadPurchaseOrders() {
-	//		fetch("/purchase/api/purchase").then(response => response.json()).then(data => {
-	//			purchaseGrid.resetData(data);
-	//		}).catch(error => console.error("발주 목록 불러오기 오류:", error));
-	//	}
 
 	// 발주 전체 목록 불러오기
 	function loadPurchaseOrders() {

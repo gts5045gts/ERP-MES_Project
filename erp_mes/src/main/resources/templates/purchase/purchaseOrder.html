@@ -193,6 +193,11 @@
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     <script th:src="@{/purchase/js/purchaseOrder.js}"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    
+    <script th:inline="javascript">
+    	const isPURTeam = /*[[${isPURTeam}]]*/ false;
+    	const isAUTLevel = /*[[${isAUTLevel}]]*/ false;
+	</script>
 </th:block>
 
 </body>

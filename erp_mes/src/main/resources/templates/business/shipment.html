@@ -113,6 +113,11 @@
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     <script th:src="@{/business/js/shipment.js}"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    
+    <script th:inline="javascript">
+    	const isBUSTeam = /*[[${isBUSTeam}]]*/ false;
+    	const isAUTLevel = /*[[${isAUTLevel}]]*/ false;
+	</script>
 </th:block>
 
 </body>

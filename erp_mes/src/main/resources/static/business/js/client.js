@@ -29,6 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let isEditMode = false; // 등록/수정 모드 구분
 	let allClient = [];
+	
+	const addBtn = document.getElementById("addBtn");
+	if (!isAUTLevel) {
+		if (addBtn) addBtn.style.display = "none";
+	}
 
 	// 페이지 처음 로딩 시 전체 목록 불러오기
 	function loadClients(){
@@ -85,14 +90,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	loadClients();
 
 	// 등록 버튼 이벤트
-	document.getElementById("addBtn").addEventListener("click", () => {
-		isEditMode = false;
-		modalTitle.textContent = "거래처 등록";
-		submitBtn.textContent = "등록";
-		form.reset();
-		document.getElementById("clientId").value = ""; // hidden 초기화
-		clientAddModal.show();
-	});
+	if(addBtn){
+		addBtn.addEventListener("click", () => {
+			isEditMode = false;
+			modalTitle.textContent = "거래처 등록";
+			submitBtn.textContent = "등록";
+			form.reset();
+			document.getElementById("clientId").value = ""; // hidden 초기화
+			clientAddModal.show();
+		});
+	}
 
 	// 주소 찾기 버튼 이벤트 (카카오 주소 API 연동)
 	document.getElementById("searchAddress").addEventListener("click", () => {
@@ -104,26 +111,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		}).open();
 	});
 
-	grid.on("dblclick", (ev) => {
-		const rowData = grid.getRow(ev.rowKey);
-		if (!rowData) return;
+	if(isAUTLevel) {
+		grid.on("dblclick", (ev) => {
+			const rowData = grid.getRow(ev.rowKey);
+			if (!rowData) return;
 
-		isEditMode = true;
-		modalTitle.textContent = "거래처 수정";
-		submitBtn.textContent = "수정";
+			isEditMode = true;
+			modalTitle.textContent = "거래처 수정";
+			submitBtn.textContent = "수정";
 
-		// 데이터 세팅
-		document.getElementById("clientId").value = rowData.clientId;
-		document.getElementById("clientName").value = rowData.clientName;
-		document.getElementById("ceoName").value = rowData.ceoName;
-		document.getElementById("businessNumber").value = rowData.businessNumber;
-		document.getElementById("clientPhone").value = rowData.clientPhone;
-		document.getElementById("clientAddress").value = rowData.clientAddress;
-		document.getElementById("clientType").value = rowData.clientTypeCode;
-		document.getElementById("clientStatus").value = rowData.clientStatusCode;
+			// 데이터 세팅
+			document.getElementById("clientId").value = rowData.clientId;
+			document.getElementById("clientName").value = rowData.clientName;
+			document.getElementById("ceoName").value = rowData.ceoName;
+			document.getElementById("businessNumber").value = rowData.businessNumber;
+			document.getElementById("clientPhone").value = rowData.clientPhone;
+			document.getElementById("clientAddress").value = rowData.clientAddress;
+			document.getElementById("clientType").value = rowData.clientTypeCode;
+			document.getElementById("clientStatus").value = rowData.clientStatusCode;
 
-		clientAddModal.show();
-	});
+			clientAddModal.show();
+		});
+	}
 
 	// 모달 폼 제출 이벤트 (등록, 수정 같이 사용)
 	form.addEventListener("submit", async (event) => {

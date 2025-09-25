@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +38,17 @@ public class PurchaseController {
 	
 	// 발주 화면
 	@GetMapping("purchaseOrder")
-	public String order() {
+	public String order(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+		
+		String userDeptId = userDetails.getEmpDeptId();
+		String userLevelId = userDetails.getEmpLevelId();
+		
+		// 부서 코드가 'DEP007'(구매팀)일 경우, 버튼 표시 여부를 true로 설정
+        boolean isPurTeam = "DEP007".equals(userDeptId);
+        model.addAttribute("isPURTeam", isPurTeam);
+        
+        boolean isAutLevel = "AUT001".equals(userLevelId);
+        model.addAttribute("isAUTLevel", isAutLevel);
 
 		return "/purchase/purchaseOrder";
 	}
