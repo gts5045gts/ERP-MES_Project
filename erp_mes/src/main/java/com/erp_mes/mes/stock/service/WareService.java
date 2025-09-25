@@ -524,26 +524,32 @@ public class WareService {
         
         String batchId = "MOB" + today + String.format("%03d", batchCount + 1);
         
+        // manage_id별 시퀀스를 메모리에서 관리
+        Map<String, Integer> seqMap = new HashMap<>();
+        
         for(Map<String, Object> item : items) {
             String manageId = (String) item.get("manageId");
             String materialId = (String) item.get("materialId");
             
-            // manage_id별 시퀀스 조회
-            Integer seq = wareMapper.getOutputSeqByManageId(manageId, today);
-            seq = (seq == null ? 0 : seq) + 1;
+            // DB에서 최대값 조회 (처음 한 번만)
+            if(!seqMap.containsKey(manageId)) {
+                Integer dbSeq = wareMapper.getOutputSeqByManageId(manageId, today);
+                seqMap.put(manageId, dbSeq == null ? 0 : dbSeq);
+            }
             
-            // manage_id에서 고유 부분 추출
+            // 메모리에서 시퀀스 증가
+            Integer seq = seqMap.get(manageId) + 1;
+            seqMap.put(manageId, seq);
+            
             String[] parts = manageId.split("_");
             String uniquePart = "";
             if(parts.length >= 2) {
-                // materialId 부분 (예: aa05)
                 uniquePart = parts[1];
             }
             
-            // OUT + 날짜 + 자재코드 + 시퀀스
             String outId = "OUT" + today + uniquePart + String.format("%02d", seq);
             
-            log.info("manageId: {}, 생성된 outId: {}", manageId, outId);
+            log.info("manageId: {}, seq: {}, 생성된 outId: {}", manageId, seq, outId);
             
             item.put("outId", outId);
             item.put("materialId", materialId);
