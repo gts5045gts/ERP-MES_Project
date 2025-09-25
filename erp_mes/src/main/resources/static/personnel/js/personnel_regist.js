@@ -3,7 +3,7 @@
  */
 
 // 전화번호 유효성 검사 
-	document.getElementById('emp_ph').addEventListener('input', function(e) {
+	document.getElementById('phone').addEventListener('input', function(e) {
   		let input = e.target.value.replace(/\D/g, ''); // 숫자 이외의 문자는 모두 제거
   
 		// 최대 11자리까지 허용 (예: 01012345678)
@@ -49,7 +49,7 @@
 		e.target.value = formatted;
 	});
 	**/
-	document.getElementById('emp_bd').addEventListener('input', function(e) {
+	document.getElementById('resident').addEventListener('input', function(e) {
 	  	let input = e.target.value.replace(/\D/g, ''); // 숫자만 남김
 
 		// 최대 13자리까지만 허용
@@ -120,7 +120,6 @@
 	
 	// 입력안된 것들 검사 
 	
-	
 	function formBtn(){
 		let form = document.getElementById("registForm");
 		let name = document.getElementById("name").value;
@@ -131,10 +130,11 @@
 		let dep = document.getElementById("dep").value;
 		let pos = document.getElementById("pos").value;
 		let level = document.getElementById("level").value;
-		let addrNum = document.getElementById("addrNum").value;
-		let addr1 = document.getElementById("addr1").value;
-		let addr2 = document.getElementById("addr2").value;
+		let addrNum = document.getElementById("emp_pc").value;
+		let addr1 = document.getElementById("emp_ad").value;
+		let addr2 = document.getElementById("emp_ba").value;
 		let joinDate = document.getElementById("joinDate").value;
+		
 		if(name === ""){
 			alert("이름을 입력해주세요.");
 			return
@@ -173,10 +173,12 @@
 			return
 		}
 		let formData = form.serialize();
-//		$.post("/")
+		$.post("/personnel/regist", formData, function(response){
+			alert("인사 등록이 완료되었습니다.");
+			
+		});
 		
 		
 	}
-	
 	
 	

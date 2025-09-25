@@ -38,7 +38,7 @@
 
 			<!-- Divider -->
 			<hr class="sidebar-divider">
-
+			<div sec:authorize="hasAuthority('ROLE_AUT001')">
 			<!-- Heading -->
 			<div class="sidebar-heading">Interface</div>
 
@@ -56,11 +56,11 @@
 							관리</a>
 					</div>
 				</div></li>
-
+			
 
 			<!-- Divider -->
 			<hr class="sidebar-divider">
-
+			</div>
 			<!-- Heading -->
 			<div class="sidebar-heading">
 				<!-- Nav Item - Utilities Collapse Menu -->
@@ -149,7 +149,7 @@
 				</div>
 				
 <!-- 				기준정보 관리 메뉴  -->
-			<li class="nav-item"><a class="nav-link collapsed"
+			<li class="nav-item"><a class="nav-link collapsed" sec:authorize="hasAuthority('ROLE_AUT001')"
 				data-toggle="collapse" data-target="#collapseMasterDate"
 				aria-expanded="true" aria-controls="collapseMasterDate"> <i
 					class="fas fa-fw fa-folder"></i> <span>기준정보관리</span>

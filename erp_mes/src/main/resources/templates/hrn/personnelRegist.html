@@ -49,7 +49,7 @@
 
 										<!-- 전화번호 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_ph" class="form-label">전화번호</label></th>
+											<label for="phone" class="form-label">전화번호</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="phone" name="phone">
 											<span id="checkPhoneResult"></span>
@@ -57,7 +57,7 @@
 
 										<!-- 생년월일 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_bd" class="form-label">주민등록번호</label></th>
+											<label for="resident" class="form-label">주민등록번호</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="resident" name="resident" placeholder="(ex) 990101-1111111" maxlength="14"></td>
 									</tr>
@@ -140,7 +140,7 @@
 										<th scope="row">
 											<label for="emp_pc" class="form-label">우편번호</label></th>
 										<td colspan="3">
-											<input type="text" class="form-control w-75" id="addrNum" name="addrNum"></td>
+											<input type="text" class="form-control w-75" id="emp_pc" name="addrNum"></td>
 										<td colspan="3">
 											<button type="button" class="btn btn-primary btn-sm" id="btnSearchAddress">주소검색</button>
 										</td>
@@ -151,12 +151,12 @@
 										<th scope="row" class="custom-th">
 											<label for="emp_ad" class="form-label">기본주소</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="addr1" name="addr1"></td>
+											<input type="text" class="form-control w-75" id="emp_ad" name="addr1"></td>
 										<!-- 상세주소 -->
 										<th scope="row" class="custom-th">
 											<label for="emp_ba" class="form-label">상세주소</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="addr2" name="addr2"></td>
+											<input type="text" class="form-control w-75" id="emp_ba" name="addr2"></td>
 											
 											<th scope="row" class="custom-th-r">
 											<label for="emp_hd" class="form-label">입사일</label></th>
@@ -165,13 +165,13 @@
 									</tr>
 								</tbody>
 							</table>
-						
-						</form>
 							<br> <br>
 							<div align="right">
 								<button type="button" class="btn btn-primary btn-sm" onclick="history.back()">취소</button>
 								<button type="submit" class="btn btn-primary btn-sm" id="registerBtn" onclick="formBtn()">등록</button>
 							</div>
+						
+						</form>
 
 					</div>
 					<!-- <div class="card-body"> 끝 -->
@@ -180,7 +180,7 @@
 </th:block>
 
 <th:block layout:fragment="script">
-<script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script>
+<!-- <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script> -->
 <script th:src="@{/personnel/js/personnel_regist.js}"></script>
 
 	 	
