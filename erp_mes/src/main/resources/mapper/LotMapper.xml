@@ -28,7 +28,7 @@
 	LEFT JOIN work_result w ON l.lot_id = w.lot_id
 	LEFT JOIN work_order o ON w.work_order_id = o.work_order_id
 	LEFT JOIN bom b ON o.bom_id = b.bom_id
-    LEFT JOIN process_routing pr ON o.line_id = pr.line_id      
+    LEFT JOIN process_routing pr ON o.route_id = pr.route_id      
     LEFT JOIN equipment e ON pr.equip_id = e.equip_id         
     LEFT JOIN process p ON pr.pro_id = p.pro_id
     where l.type = 'FG'

@@ -257,7 +257,7 @@
 						<a class="collapse-item" th:href="@{/plant/maintenance}">설비 이력</a> 
 						<a class="collapse-item" th:href="@{/plant/equipment_list}">설비 현황</a>
 						<a class="collapse-item" th:href="@{/plant/process_list}">공정 현황</a>
-						<a class="collapse-item" th:href="@{/lot}">LOT 추적</a>
+						<a class="collapse-item" th:href="@{/lot}" sec:authorize="hasAuthority('ROLE_AUT001')">LOT 추적</a>
 							
 
 					</div>
