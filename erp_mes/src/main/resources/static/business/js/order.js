@@ -28,44 +28,50 @@ document.addEventListener("DOMContentLoaded", () => {
 	let editOrderId = null;
 	let editItems = []; // 서버에서 불러온 편집 대상 품목들
 
-	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
 	const addBtn = document.getElementById("addBtn");
-	let editBtn = document.getElementById("editBtn");
-	if (!editBtn) {
-		editBtn = document.createElement("button");
-		editBtn.id = "editBtn";
-		editBtn.type = "button";
-		editBtn.className = "btn btn-secondary ms-2";
-		editBtn.textContent = "수정";
-		editBtn.style.display = "none"; // 기본 숨김
-		// addBtn이 있는 곳의 부모에 추가 (존재하지 않으면 body에 append)
-		if (addBtn && addBtn.parentNode) {
-			addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
-		} else {
-			document.body.appendChild(editBtn);
-		}
+	if (!isBUSTeam && !isAUTLevel) {
+	    if (addBtn) addBtn.style.display = "none";
 	}
-
-	// 수정 버튼 클릭 이벤트는 여기서 한 번만 등록
-	editBtn.addEventListener('click', () => {
-		console.log("수정 버튼 클릭됨");
-
-		// 현재 포커스된 셀 정보 가져오기
-		const focused = orderGrid.getFocusedCell();
-		console.log("focused:", focused);
-
-		if (!focused) {
-			alert("수정할 행을 선택해주세요.");
-			return;
+	
+	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
+	if (isBUSTeam || isAUTLevel) {
+		let editBtn = document.getElementById("editBtn");
+		if (!editBtn) {
+			editBtn = document.createElement("button");
+			editBtn.id = "editBtn";
+			editBtn.type = "button";
+			editBtn.className = "btn btn-secondary ms-2";
+			editBtn.textContent = "수정";
+			editBtn.style.display = "none"; // 기본 숨김
+			// addBtn이 있는 곳의 부모에 추가 (존재하지 않으면 body에 append)
+			if (addBtn && addBtn.parentNode) {
+				addBtn.parentNode.insertBefore(editBtn, addBtn.nextSibling);
+			} else {
+				document.body.appendChild(editBtn);
+			}
 		}
 
-		// 포커스된 rowKey 기반으로 행 데이터 가져오기
-		const rowData = orderGrid.getRow(focused.rowKey);
-		console.log("선택된 rowData:", rowData);
+		// 수정 버튼 클릭 이벤트는 여기서 한 번만 등록
+		editBtn.addEventListener('click', () => {
+			console.log("수정 버튼 클릭됨");
 
-		// 수정 모달 열기
-		openEditModal(rowData.orderId, rowData);
-	});
+			// 현재 포커스된 셀 정보 가져오기
+			const focused = orderGrid.getFocusedCell();
+			console.log("focused:", focused);
+
+			if (!focused) {
+				alert("수정할 행을 선택해주세요.");
+				return;
+			}
+
+			// 포커스된 rowKey 기반으로 행 데이터 가져오기
+			const rowData = orderGrid.getRow(focused.rowKey);
+			console.log("선택된 rowData:", rowData);
+
+			// 수정 모달 열기
+			openEditModal(rowData.orderId, rowData);
+		});
+	}
 
 	// TUI Grid 인스턴스들을 초기화하고 데이터를 불러오는 함수
 	const initializePage = () => {
@@ -238,47 +244,49 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 
 			// 수주상태 컬럼 클릭 시 취소 로직
-			if (ev.columnName === 'orderStatus') {
-				if (rowData.orderStatus === 'CANCELED') {
-					alert("이미 취소된 수주입니다.");
-					return;
-				}
-				if (rowData.orderStatus === 'RECEIVED') {
-					editBtn.style.display = "none";
-
-					if (confirm("수주를 취소하시겠습니까?")) {
-						const orderId = rowData.orderId;
-						try {
-							const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-							const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-
-							const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
-								method: "PUT",
-								headers: {
-									"Content-Type": "application/json",
-									[csrfHeader]: csrfToken
-								}
-							});
-
-							if (!res.ok) {
-								throw new Error(await res.text());
-							}
-
-							orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
-							alert("수주가 취소되었습니다.");
-
-							loadOrderDetails(orderId);
-						} catch (err) {
-							console.error("수주 취소 실패:", err);
-							alert("수주 취소 실패: " + err.message);
-						}
+			if (isBUSTeam || isAUTLevel) {
+				if (ev.columnName === 'orderStatus') {
+					if (rowData.orderStatus === 'CANCELED') {
+						alert("이미 취소된 수주입니다.");
+						return;
 					}
-				} else {
-					// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
-					alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");
+					if (rowData.orderStatus === 'RECEIVED') {
+						editBtn.style.display = "none";
+
+						if (confirm("수주를 취소하시겠습니까?")) {
+							const orderId = rowData.orderId;
+							try {
+								const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+								const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+								const res = await fetch(`/business/api/orders/${orderId}/cancel`, {
+									method: "PUT",
+									headers: {
+										"Content-Type": "application/json",
+										[csrfHeader]: csrfToken
+									}
+								});
+
+								if (!res.ok) {
+									throw new Error(await res.text());
+								}
+
+								orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+								alert("수주가 취소되었습니다.");
+
+								loadOrderDetails(orderId);
+							} catch (err) {
+								console.error("수주 취소 실패:", err);
+								alert("수주 취소 실패: " + err.message);
+							}
+						}
+					} else {
+						// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
+						alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");
+						return;
+					}
 					return;
 				}
-				return;
 			}
 
 			// 그 외 클릭: 상세 로드 및 수정 버튼 표시

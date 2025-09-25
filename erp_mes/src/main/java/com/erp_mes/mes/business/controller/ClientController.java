@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
 import com.erp_mes.mes.business.dto.ClientDTO;
 import com.erp_mes.mes.business.service.ClientService;
 
@@ -31,7 +34,12 @@ public class ClientController {
 	// 화면 이동과 데이터 조회로 분리한 이유는 테스트와 유지보수를 편하게 하기 위해 + 책임 분리
 	// 거래처 화면
 	@GetMapping("client")
-	public String client() {
+	public String client(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+
+		String userLevelId = userDetails.getEmpLevelId();
+        
+        boolean isAutLevel = "AUT001".equals(userLevelId);
+        model.addAttribute("isAUTLevel", isAutLevel);
 		
 		return "/business/client";
 	}

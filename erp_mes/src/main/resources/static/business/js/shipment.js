@@ -21,6 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	const day = String(today.getDate()).padStart(2, '0');
 	const todayString = `${year}-${month}-${day}`;
 
+	const addBtn = document.getElementById("addBtn");
+	if (!isBUSTeam && !isAUTLevel) {
+		if (addBtn) addBtn.style.display = "none";
+	}
+	
 	// 선택한 품목 정보를 저장할 배열
 	let selectedProducts = [];
 

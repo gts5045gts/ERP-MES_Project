@@ -33,11 +33,14 @@
 	
 		<!-- 등록된(received) 수주만 -->
 	<select id="getOrderId" resultType="com.erp_mes.mes.pm.dto.OrdersDTO">
-		SELECT od.id, od.order_id, od.order_qty, od.order_detail_status, o.delivery_date, od.product_id, od.product_name
-		FROM orders_detail od
-		JOIN orders o
-		ON od.order_id = o.order_id
-		WHERE order_status = 'RECEIVED'
+<!-- 		SELECT od.id, od.order_id, od.order_qty, od.order_detail_status, o.delivery_date, od.product_id, od.product_name -->
+<!-- 		FROM orders_detail od -->
+<!-- 		JOIN orders o -->
+<!-- 		ON od.order_id = o.order_id -->
+<!-- 		WHERE order_status = 'RECEIVED' OR order_status = 'INPRODUCTION' AND orders_detail_stauts = 'RECEIVED' -->
+select od.id, od.order_id, od.product_name, od.order_qty, od.order_detail_status, o.delivery_date
+from orders_detail od JOIN orders o ON od.order_id = o.order_id
+where order_detail_status = 'RECEIVED'
 	</select>
 	
 	<!-- 등록된 수주를 클릭해서 해당 정보값 들고오기 -->

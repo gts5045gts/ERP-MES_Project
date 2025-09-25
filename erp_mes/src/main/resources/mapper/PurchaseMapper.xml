@@ -116,6 +116,7 @@
 		FROM purchase p
 		LEFT JOIN employee e ON p.emp_id = e.emp_id
 		LEFT JOIN client c ON p.client_id = c.client_id
+		ORDER BY p.purchase_id DESC
 	</select>
 
 <!-- 	발주 상세 목록 조회 -->

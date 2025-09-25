@@ -151,6 +151,7 @@
 		FROM shipment s
 		LEFT JOIN employee e ON s.emp_id = e.emp_id
 		LEFT JOIN client c ON s.client_id = c.client_id
+		ORDER BY s.shipment_id desc
 	</select>
 	
 <!-- 		출하 상세 목록 조회 -->
