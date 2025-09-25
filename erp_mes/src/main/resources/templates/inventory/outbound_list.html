@@ -59,69 +59,92 @@
     
     <!-- 자재 출고 모달 -->
     <div class="modal fade" id="materialOutModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">자재 출고 등록 (공장 투입)</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label>출고담당자</label>
-                            <input type="text" class="form-control" id="material_out_emp" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label>출고목적</label>
-                            <select class="form-control" id="material_out_purpose">
-                                <option value="생산투입">생산투입</option>
-                                <option value="긴급투입">긴급투입</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6>출고 자재 목록</h6>
-                        <button type="button" class="btn btn-sm btn-info" onclick="addMaterialOutRow()">
-                            <i class="fas fa-plus"></i> 자재 추가
-                        </button>
-                    </div>
-                    
-                    <div id="materialOutList">
-                        <div class="material-out-item mb-2">
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <select class="form-control material-out-select" onchange="updateSelectedMaterialOutCount()">
-                                        <option value="">선택하세요</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="number" class="form-control material-out-qty" placeholder="수량" min="1">
-                                </div>
-                                <div class="col-md-2">
-                                    <button class="btn btn-danger btn-sm remove-material-out" onclick="removeMaterialOutRow(this)" style="display:none;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info mt-3">
-                        선택한 자재: <span id="selectedMaterialOutCount">0</span>종
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-warning" onclick="saveMaterialOut()">출고 등록</button>
-                </div>
-            </div>
-        </div>
-    </div>
+	    <div class="modal-dialog modal-xl">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title">부품 출고 등록</h5>
+	                <button type="button" class="close" data-dismiss="modal">
+	                    <span>&times;</span>
+	                </button>
+	            </div>
+	            <div class="modal-body">
+	                <div class="row mb-3">
+	                    <div class="col-md-6">
+	                        <label>출고담당자</label>
+	                        <input type="text" class="form-control" id="material_out_emp" readonly>
+	                    </div>
+	                    <div class="col-md-6">
+	                        <label>출고목적</label>
+	                        <select class="form-control" id="material_out_purpose">
+	                            <option value="생산투입">생산투입</option>
+	                            <option value="긴급투입">긴급투입</option>
+	                        </select>
+	                    </div>
+	                </div>
+	                
+	                <hr>
+	                
+	                <div class="d-flex justify-content-between mb-3">
+	                    <h6>출고 부품 선택</h6>
+	                    <button type="button" class="btn btn-sm btn-info" onclick="addMaterialOutRow()">
+	                        <i class="fas fa-plus"></i> 부품 추가
+	                    </button>
+	                </div>
+	                
+	                <div class="table-responsive">
+	                    <table class="table table-bordered">
+	                        <thead>
+	                            <tr>
+	                                <th width="25%">부품선택</th>
+	                                <th width="20%">창고</th>
+	                                <th width="25%">Manage ID</th>
+	                                <th width="15%">재고</th>
+	                                <th width="10%">출고수량</th>
+	                                <th width="5%">삭제</th>
+	                            </tr>
+	                        </thead>
+	                        <tbody id="materialOutList">
+	                            <tr class="material-out-row">
+	                                <td>
+	                                    <select class="form-control material-select" onchange="loadManageIds(this)">
+	                                        <option value="">부품 선택</option>
+	                                    </select>
+	                                </td>
+	                                <td>
+	                                    <select class="form-control warehouse-select" disabled>
+	                                        <option value="">-</option>
+	                                    </select>
+	                                </td>
+	                                <td>
+	                                    <select class="form-control manage-select" disabled>
+	                                        <option value="">-</option>
+	                                    </select>
+	                                </td>
+	                                <td class="stock-display">0</td>
+	                                <td>
+	                                    <input type="number" class="form-control out-qty" min="1" disabled>
+	                                </td>
+	                                <td>
+	                                    <button class="btn btn-sm btn-danger" onclick="removeMaterialOutRow(this)" style="display:none;">
+	                                        <i class="fas fa-trash"></i>
+	                                    </button>
+	                                </td>
+	                            </tr>
+	                        </tbody>
+	                    </table>
+	                </div>
+	                
+	                <div class="alert alert-info">
+	                    선택한 부품: <span id="selectedMaterialCount">0</span>종
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+	                <button type="button" class="btn btn-primary" onclick="saveMaterialOut()">출고등록</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
     
     <!-- 완제품 출고 모달 -->
 	<div class="modal fade" id="productOutModal" tabindex="-1">
@@ -190,20 +213,19 @@ let materialsData = [];
 let productsData = [];
 
 $(document).ready(function() {
-    getCurrentUser();
-    loadProductOutputList();  
-    
     // 탭 전환 이벤트
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         const target = $(e.target).attr("href");
-        if(target === "#product-out-content") {
-            console.log("완제품 출고 탭 활성화");
-            loadProductOutputList();
-        } else {
+        if(target === "#material-out-content") {
             console.log("자재 출고 탭 활성화");
             loadMaterialOutputList();
         }
     });
+    
+    // 초기 로드 (자재 출고 탭이 기본 활성화인 경우)
+    if($('#material-out-tab').hasClass('active')) {
+        loadMaterialOutputList();
+    }
 });
 
 // 현재 로그인 사용자
@@ -223,18 +245,25 @@ function getCurrentUser() {
 
 // 자재 출고 모달 열기
 function openMaterialOutModal() {
-    loadMaterialsForOut();
+    loadMaterialsForOut(); 
     $('#materialOutModal').modal('show');
+    
+    // 모달이 완전히 열린 후
+    $('#materialOutModal').on('shown.bs.modal', function() {
+        console.log("모달 열림 완료");
+        console.log("tbody 체크:", $('#materialOutTableBody').length);
+    });
 }
 
 // 자재 목록 로드 (warehouse_item 재고 포함)
 function loadMaterialsForOut() {
-	$.ajax({
+    $.ajax({
         url: '/inventory/api/materials-with-stock',
         type: 'GET',
         success: function(data) {
             materialsData = data;
             
+            // manage_id별 재고 추가 로드
             materialsData.forEach(material => {
                 $.ajax({
                     url: `/inventory/api/material-stock-by-manage/${material.materialId}`, 
@@ -245,47 +274,138 @@ function loadMaterialsForOut() {
                     }
                 });
             });
-            
+            // 모달 HTML 업데이트
             updateMaterialOutModal();
+            
+            bindMaterialOutEvents();
         }
+    });
+}
+
+function bindMaterialOutEvents() {
+    // 기존 이벤트 제거 후 재바인딩
+    $(document).off('click', '#addMaterialBtn');
+    $(document).on('click', '#addMaterialBtn', function() {
+        console.log("부품 추가 버튼 클릭");
+        addMaterialOutRow();
     });
 }
 
 //부품 선택 시 manage_id 선택 가능하도록
 function updateMaterialOutModal() {
     let html = `
-        <div class="material-out-item mb-3 border p-3">
-            <div class="row mb-2">
-                <div class="col-md-12">
-                    <select class="form-control material-select" onchange="showManageIdOptions(this)">
-                        <option value="">부품 선택</option>
-                        ${materialsData.map(m => 
-                            `<option value="${m.materialId}">${m.materialName} (총 ${m.quantity}개)</option>`
-                        ).join('')}
-                    </select>
-                </div>
-            </div>
-            <div class="manage-id-section" style="display:none;">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>선택</th>
-                            <th>Manage ID</th>
-                            <th>창고</th>
-                            <th>위치</th>
-                            <th>재고</th>
-                            <th>출고수량</th>
-                        </tr>
-                    </thead>
-                    <tbody class="manage-list"></tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th width="25%">부품선택</th>
+                        <th width="20%">창고</th>
+                        <th width="25%">Manage ID</th>
+                        <th width="15%">재고</th>
+                        <th width="10%">출고수량</th>
+                        <th width="5%">삭제</th>
+                    </tr>
+                </thead>
+                <tbody id="materialOutTableBody">
+                    <tr class="material-out-row">
+                        <td>
+                            <select class="form-control material-select" onchange="showManageOptions(this)">
+                                <option value="">부품 선택</option>
+                                ${materialsData.map(m => 
+                                    `<option value="${m.materialId}">${m.materialName} (총 ${m.quantity}개)</option>`
+                                ).join('')}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control warehouse-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-control manage-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </td>
+                        <td class="stock-display text-center">0</td>
+                        <td>
+                            <input type="number" class="form-control out-qty" min="1" disabled>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-danger" onclick="removeOutRow(this)" style="display:none;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-sm btn-info" id="addMaterialBtn">
+	            <i class="fas fa-plus"></i> 부품 추가
+	        </button>
         </div>
     `;
     
     $('#materialOutList').html(html);
 }
-
+//부품 선택 시 manage_id 옵션 표시 (새 함수)
+function showManageOptions(select) {
+    const materialId = $(select).val();
+    const row = $(select).closest('tr');
+    const warehouseSelect = row.find('.warehouse-select');
+    const manageSelect = row.find('.manage-select');
+    const stockDisplay = row.find('.stock-display');
+    const outQty = row.find('.out-qty');
+    
+    if(!materialId) {
+        warehouseSelect.prop('disabled', true).html('<option value="">-</option>');
+        manageSelect.prop('disabled', true).html('<option value="">-</option>');
+        stockDisplay.text('0');
+        outQty.prop('disabled', true).val('');
+        return;
+    }
+    
+    const material = materialsData.find(m => m.materialId === materialId);
+    if(!material || !material.manageStocks) return;
+    
+    // 창고 목록 구성
+    const warehouses = [...new Set(material.manageStocks.map(s => s.warehouseId))];
+    warehouseSelect.empty().append('<option value="">창고 선택</option>');
+    warehouses.forEach(wh => {
+        const whName = material.manageStocks.find(s => s.warehouseId === wh).warehouseName || wh;
+        warehouseSelect.append(`<option value="${wh}">${whName}</option>`);
+    });
+    warehouseSelect.prop('disabled', false);
+    
+    // 창고 선택 이벤트
+    warehouseSelect.off('change').on('change', function() {
+        const selectedWh = $(this).val();
+        if(!selectedWh) {
+            manageSelect.prop('disabled', true).html('<option value="">-</option>');
+            return;
+        }
+        
+        const whStocks = material.manageStocks.filter(s => s.warehouseId === selectedWh);
+        manageSelect.empty().append('<option value="">Manage ID 선택</option>');
+        
+        whStocks.forEach(stock => {
+            manageSelect.append(`
+                <option value="${stock.manageId}" 
+                        data-stock="${stock.itemAmount}"
+                        data-location="${stock.locationId}">
+                    ${stock.manageId} (${stock.itemAmount}개)
+                </option>
+            `);
+        });
+        manageSelect.prop('disabled', false);
+    });
+    
+    // manage_id 선택 이벤트
+    manageSelect.off('change').on('change', function() {
+        const stock = $(this).find('option:selected').data('stock') || 0;
+        stockDisplay.text(stock);
+        outQty.prop('disabled', false).attr('max', stock).val('');
+        updateSelectedMaterialOutCount();
+    });
+}
 //manage_id별 재고 조회 함수
 function showManageIdOptions(select) {
     const materialId = $(select).val();
@@ -373,44 +493,84 @@ function updateAllMaterialOutSelects() {
 
 // 자재 행 추가
 function addMaterialOutRow() {
-    const newRow = `
-        <div class="material-out-item mb-2">
-            <div class="row">
-                <div class="col-md-7">
-                    <select class="form-control material-out-select" onchange="updateSelectedMaterialOutCount()">
-                        <option value="">선택하세요</option>
-                        ${materialsData.map(item => {
-                            const typeLabel = item.materialType === '부품' ? '[부품]' : '[반제품]';
-                            return `<option value="${item.materialId}" data-stock="${item.quantity || 0}">
-                                ${typeLabel} ${item.materialName} (재고: ${item.quantity || 0}개)
-                            </option>`
-                        }).join('')}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control material-out-qty" placeholder="수량" min="1">
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-danger btn-sm remove-material-out" onclick="removeMaterialOutRow(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    $('#materialOutList').append(newRow);
-    if($('.material-out-item').length > 1) {
-        $('.remove-material-out').show();
+    console.log("addMaterialOutRow 호출됨");
+    console.log("materialsData:", materialsData);
+    
+    if(!materialsData || materialsData.length === 0) {
+        alert('부품 데이터를 로드중입니다.');
+        return;
     }
+    
+    // tbody 찾기 - 여러 방법으로 시도
+    let tbody = $('#materialOutList tbody');  // 먼저 tbody 찾기
+    if(tbody.length === 0) {
+        tbody = $('#materialOutList');  // tbody가 없으면 materialOutList 자체를 사용
+    }
+    
+    console.log("tbody 요소:", tbody);
+    console.log("tbody 존재 여부:", tbody.length > 0 ? "있음" : "없음");
+    
+    if(tbody.length === 0) {
+        console.error("테이블을 찾을 수 없습니다!");
+        return;
+    }
+    
+    const newRow = `
+        <tr class="material-out-row">
+            <td>
+                <select class="form-control material-select" onchange="showManageOptions(this)">
+                    <option value="">부품 선택</option>
+                    ${materialsData.map(m => 
+                        `<option value="${m.materialId}">${m.materialName} (총 ${m.quantity}개)</option>`
+                    ).join('')}
+                </select>
+            </td>
+            <td>
+                <select class="form-control warehouse-select" disabled>
+                    <option value="">-</option>
+                </select>
+            </td>
+            <td>
+                <select class="form-control manage-select" disabled>
+                    <option value="">-</option>
+                </select>
+            </td>
+            <td class="stock-display text-center">0</td>
+            <td>
+                <input type="number" class="form-control out-qty" min="1" disabled>
+            </td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-danger" onclick="removeOutRow(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    
+    console.log("추가할 HTML:", newRow);
+    console.log("추가 전 행 개수:", $('.material-out-row').length);
+    
+    // DOM에 추가
+    tbody.append(newRow);
+    
+    console.log("추가 후 행 개수:", $('.material-out-row').length);
+    
+    // 삭제 버튼 표시/숨김 처리
+    if($('.material-out-row').length > 1) {
+        $('.material-out-row').find('.btn-danger').show();
+    }
+    
+    updateSelectedMaterialOutCount();
 }
 
 // 자재 행 삭제
-function removeMaterialOutRow(btn) {
-    $(btn).closest('.material-out-item').remove();
-    if($('.material-out-item').length === 1) {
-        $('.remove-material-out').hide();
+function removeOutRow(btn) {
+    if($('.material-out-row').length > 1) {
+        $(btn).closest('tr').remove();
+        updateSelectedMaterialOutCount();
+    } else {
+        alert('최소 1개 이상의 품목이 필요합니다.');
     }
-    updateSelectedMaterialOutCount();
 }
 
 // 선택한 자재 수 업데이트
@@ -426,22 +586,24 @@ function updateSelectedMaterialOutCount() {
 function saveMaterialOut() {
     const items = [];
     
-    $('.material-out-item').each(function() {
+    $('.material-out-row').each(function() {
         const materialId = $(this).find('.material-select').val();
+        const warehouseId = $(this).find('.warehouse-select').val();
+        const manageId = $(this).find('.manage-select').val();
+        const locationId = $(this).find('.manage-select option:selected').data('location');
+        const outCount = $(this).find('.out-qty').val();
         
-        $(this).find('.manage-check:checked').each(function() {
-            const qty = $(this).closest('tr').find('.out-qty').val();
-            
-            if(qty && parseInt(qty) > 0) {
-                items.push({
-                    productId: materialId,
-                    manageId: $(this).data('manage'),
-                    warehouseId: $(this).data('warehouse'),
-                    locationId: $(this).data('location'),
-                    outCount: qty
-                });
-            }
-        });
+        if(materialId && manageId && outCount) {
+            items.push({
+                materialId: materialId, 
+                productId: null,         
+                manageId: manageId,
+                warehouseId: warehouseId,
+                locationId: locationId,
+                outCount: outCount,
+                outType: '출고대기'
+            });
+        }
     });
     
     if(items.length === 0) {
@@ -459,7 +621,7 @@ function saveMaterialOut() {
         },
         success: function(result) {
             if(result.success) {
-                alert(`출고 완료!\n배치번호: ${result.batchId}`);
+                alert('출고대기로 등록되었습니다.');
                 $('#materialOutModal').modal('hide');
                 loadMaterialOutputList();
             }
@@ -659,6 +821,8 @@ function resetProductOutForm() {
 
 // 자재 출고 목록 로드 함수 확인
 function loadMaterialOutputList() {
+	console.log("loadMaterialOutputList 호출됨");
+	
     $.ajax({
         url: '/inventory/api/outputs/grouped?outType=material',
         type: 'GET',
@@ -715,6 +879,7 @@ function renderMaterialOutputBatches(data) {
                     <th>출고유형</th>
                     <th>품목수</th>
                     <th>총수량</th>
+                    <th>상태</th>
                     <th>상세보기</th>
                 </tr>
             </thead>
@@ -722,9 +887,16 @@ function renderMaterialOutputBatches(data) {
     `;
     
     if(data.length === 0) {
-        html += '<tr><td colspan="7" class="text-center">데이터가 없습니다.</td></tr>';
+        html += '<tr><td colspan="8" class="text-center">데이터가 없습니다.</td></tr>';
     } else {
+        // *** 여기에 forEach 추가 ***
         data.forEach(batch => {
+            // 상태 배지 설정 (pendingCount가 있다고 가정)
+            const statusBadge = batch.pendingCount > 0 ? 
+                `<span class="badge badge-warning">대기 ${batch.pendingCount}건</span>` :
+                '<span class="badge badge-success">완료</span>';
+            
+            // 출고유형 배지 설정
             let typeLabel = '';
             if(batch.batchId && batch.batchId.startsWith('MI')) {
                 typeLabel = '<span class="badge badge-warning">재고투입</span>';
@@ -732,6 +904,7 @@ function renderMaterialOutputBatches(data) {
                 typeLabel = '<span class="badge badge-info">생산투입</span>';
             }
             
+            // 테이블 행 추가
             html += `
                 <tr>
                     <td class="text-center">
@@ -743,6 +916,7 @@ function renderMaterialOutputBatches(data) {
                     <td>${typeLabel}</td>
                     <td>${batch.itemCount}건</td>
                     <td>${batch.totalCount}개</td>
+                    <td>${statusBadge}</td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick="showBatchDetail('${batch.batchId}')">
                             <i class="fas fa-eye"></i> 상세보기
@@ -894,10 +1068,9 @@ function showBatchDetail(batchId) {
         url: `/inventory/api/outputs/batch/${batchId}`,
         type: 'GET',
         success: function(data) {
-            // 모달 HTML 생성
             let html = `
                 <div class="modal fade" id="batchDetailModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
+                    <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title">출고 상세 - ${batchId}</h5>
@@ -911,9 +1084,12 @@ function showBatchDetail(batchId) {
                                         <tr>
                                             <th>출고ID</th>
                                             <th>품목</th>
+                                            <th>Manage ID</th>
                                             <th>창고</th>
                                             <th>위치</th>
                                             <th>수량</th>
+                                            <th>상태</th>
+                                            <th>작업</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -921,13 +1097,41 @@ function showBatchDetail(batchId) {
             
             let totalQty = 0;
             data.forEach(item => {
+                // 상태 확인 - 여러 필드명 대응
+                const status = item.outType || item.OUT_TYPE || item.out_type || '출고대기';
+                const materialName = item.materialName || item.productName || '-';
+                
+                let statusBadge = '';
+                let actionButtons = '';
+                
+                if(item.outType === '출고완료') {
+                    statusBadge = '<span class="badge badge-success">완료</span>';
+                    actionButtons = '<span class="text-muted">처리완료</span>';
+                } else if(item.outType === '출고대기') { 
+                    statusBadge = '<span class="badge badge-warning">대기</span>';
+                    actionButtons = `
+                        <button class="btn btn-sm btn-success" onclick="completeOne('${item.outId}')">
+                            <i class="fas fa-check"></i> 확인
+                        </button>
+                        <button class="btn btn-sm btn-danger ml-1" onclick="cancelOne('${item.outId}')">
+                            <i class="fas fa-times"></i> 취소
+                        </button>
+                    `;
+                } else {
+                    statusBadge = `<span class="badge badge-secondary">${item.outType || '미정'}</span>`;
+                    actionButtons = '-';
+                }
+                
                 html += `
-                    <tr>
+                    <tr id="out-row-${item.outId}">
                         <td>${item.outId}</td>
-                        <td>${item.materialName || item.productName || '-'}</td>
+                        <td>${materialName}</td>
+                        <td><small class="text-muted">${item.manageId || '-'}</small></td>
                         <td>${item.warehouseId}</td>
                         <td>${item.locationId || '-'}</td>
                         <td>${item.outCount}개</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButtons}</td>
                     </tr>
                 `;
                 totalQty += item.outCount;
@@ -959,81 +1163,104 @@ function showBatchDetail(batchId) {
     });
 }
 
-//배치 상세 모달
-function showBatchDetailModal(data, batchId) {
-    let html = `
-        <div class="modal fade" id="batchDetailModal" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            출고 배치 상세: ${batchId}
-                            ${batchId.startsWith('MI') ? '<span class="badge badge-warning ml-2">재고투입</span>' : ''}
-                        </h5>
-                        <button type="button" class="close" data-dismiss="modal">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <strong>배치 정보:</strong> ${data.length}건의 출고 항목
-                        </div>
-                        <table class="table table-sm table-bordered">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>출고번호</th>
-                                    <th>품목ID</th>
-                                    <th>품목명</th>
-                                    <th>수량</th>
-                                    <th>단위</th>
-                                    <th>출고담당자</th>
-                                    <th>출고사유</th>
-                                    <th>출고일시</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-    `;
-    
-    if(data.length === 0) {
-        html += '<tr><td colspan="8" class="text-center">데이터가 없습니다.</td></tr>';
-    } else {
-        data.forEach(item => {
-            const productName = item.productName || 'Unknown';
-            const productId = item.productId || item.materialId || 'Unknown';
-            const unit = item.unit || 'EA';
-            const empInfo = item.empName ? `${item.empId} - ${item.empName}` : (item.empId || 'Unknown');
-            const outReason = item.outRemark || '-';
-            
-            html += `
-                <tr>
-                    <td>${item.outId}</td>
-                    <td>${productId}</td>
-                    <td>${productName}</td>
-                    <td class="text-right">${item.outCount}</td>
-                    <td>${unit}</td>
-                    <td>${empInfo}</td>
-                    <td>${outReason}</td>
-                    <td>${item.outDate || '-'}</td>
-                </tr>
-            `;
+// 개별 출고완료 처리
+function completeOne(outId) {
+    if(confirm('이 항목을 출고완료 처리하시겠습니까?')) {
+        $.ajax({
+            url: `/inventory/api/outputs/${outId}/complete`,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('출고완료 처리되었습니다.');
+                    // 해당 행 업데이트
+                    $(`#out-row-${outId}`).find('td:eq(5)').html('<span class="badge badge-success">완료</span>');
+                    $(`#out-row-${outId}`).find('td:eq(6)').html('<span class="text-muted">처리완료</span>');
+                    
+                    // 현재 탭 확인 후 새로고침
+                    if($('#material-out-tab').hasClass('active')) {
+                        loadMaterialOutputList();
+                    } else {
+                        loadProductOutputList();
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert('출고완료 처리 실패: ' + xhr.responseText);
+            }
         });
     }
-    
-    html += `
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    $('#batchDetailModal').remove();
-    $('body').append(html);
-    $('#batchDetailModal').modal('show');
+}
+
+// 개별 출고취소 처리 
+function cancelOne(outId) {
+    if(confirm('이 항목을 취소하시겠습니까?\n재고가 원상복구됩니다.')) {
+        $.ajax({
+            url: `/inventory/api/outputs/${outId}/cancel`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('출고가 취소되었습니다.');
+                    // 해당 행 제거
+                    $(`#out-row-${outId}`).fadeOut(function() {
+                        $(this).remove();
+                        
+                        // 남은 항목 확인
+                        if($('#batchDetailModal tbody tr').length === 0) {
+                            $('#batchDetailModal tbody').html(
+                                '<tr><td colspan="7" class="text-center">모든 항목이 처리되었습니다.</td></tr>'
+                            );
+                        }
+                    });
+                    
+                    // 현재 탭 확인 후 새로고침
+                    if($('#material-out-tab').hasClass('active')) {
+                        loadMaterialOutputList();
+                    } else {
+                        loadProductOutputList();
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert('출고취소 실패: ' + xhr.responseText);
+            }
+        });
+    }
+}
+
+// 개별 출고취소 처리
+function cancelOneOutput(outId) {
+    if(confirm('이 항목을 취소하시겠습니까?\n재고가 원상복구됩니다.')) {
+        $.ajax({
+            url: `/inventory/api/outputs/${outId}`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('출고취소 완료!');
+                    // 해당 행 제거
+                    $(`#out-row-${outId}`).fadeOut(function() {
+                        $(this).remove();
+                    });
+                    
+                    // 목록 새로고침
+                    if(typeof loadMaterialOutputList === 'function') {
+                        loadMaterialOutputList();
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert('출고취소 실패');
+            }
+        });
+    }
 }
 </script>
 </th:block>

@@ -261,6 +261,10 @@ public interface WareMapper {
 	
 	// LOT 마스터 등록
 	int insertLotMaster(Map<String, Object> params);
+	
+	// 0925 manage_id별 출고 시퀀스 조회
+    Integer getOutputSeqByManageId(@Param("manageId") String manageId, 
+                                   @Param("today") String today);
     
     // ==================== 기초 데이터 조회 ====================
     
