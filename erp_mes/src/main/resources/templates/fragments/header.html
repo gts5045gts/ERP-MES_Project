@@ -38,7 +38,7 @@
 
 			<!-- Divider -->
 			<hr class="sidebar-divider">
-			<th:block sec:authorize="hasAuthority('ROLE_AUT001')">
+			<th:block sec:authorize="hasAuthority('ROLE_AUT001')">		<!-- 관리자 권한만 보이게 수정 -->
 				<!-- Heading -->
 				<div class="sidebar-heading">Interface</div>
 		
@@ -148,7 +148,7 @@
 					MES
 				</div>
 				
-<!-- 				기준정보 관리 메뉴  -->
+<!-- 				기준정보 관리 메뉴  -->   <!-- 관리자 권한만 보이게 수정 -->
 			<li class="nav-item"><a class="nav-link collapsed" sec:authorize="hasAuthority('ROLE_AUT001')"
 				data-toggle="collapse" data-target="#collapseMasterDate"
 				aria-expanded="true" aria-controls="collapseMasterDate"> <i
