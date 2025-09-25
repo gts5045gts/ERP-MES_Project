@@ -119,8 +119,9 @@ public class OrderService {
 	
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	// 수주 목록의 상태를 '생산중'으로 업데이트. 생산계획 서비스에서 호출 해줘야함.
-    public void updateOrderStatusToInProduction(String orderId) {
+    public void updateOrderStatusToInProduction(String orderId, String productId) {
         orderMapper.updateOrderStatus(orderId, "INPRODUCTION");
+        orderMapper.updateOrderDetailStatus(orderId, productId);
     }
 	
     // 상태를 출하완료로 업데이트

@@ -5,7 +5,11 @@
 <head>
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
-<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    <style>
+	    #planRegisterModal .modal-dialog {
+		  max-width: 850px; /* 원하는 가로 크기 */
+		}
+	</style>
     </th:block>
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 </head>
@@ -29,7 +33,7 @@
 	
 		<form id="planForm">
 		<div class="modal fade" id="planRegisterModal" tabindex="-1" aria-labelledby="planRegisterLabel" aria-hidden="true">
-		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		    <div class="modal-dialog modal-dialog-scrollable">
 		        <div class="modal-content" id="modalContentContainer">
 		            
 		            <!-- 모달 헤더 -->
@@ -38,7 +42,7 @@
 		            </div>
 		
 		            <!-- 모달 바디 -->
-		            <div class="modal-body" style="height: 600px; ">
+		            <div class="modal-body" style="height: 600px;">
 		                <div class="row mb-4">
 						  <div class="col">
 						    <label class="form-label">등록된 수주</label>

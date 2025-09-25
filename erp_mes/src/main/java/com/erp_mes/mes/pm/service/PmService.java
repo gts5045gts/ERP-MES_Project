@@ -56,10 +56,10 @@ public class PmService {
 	// 생산계획 등록
 	public void productPlanRegist(ProductPlanDTO productPlanDTO) {
 		
-		orderService.updateOrderStatusToInProduction(productPlanDTO.getOrderId());
-		
 		productPlanDTO.setPlanStatus("POSSIBLE");
 		pmMapper.insertProductPlan(productPlanDTO);
+		
+		orderService.updateOrderStatusToInProduction(productPlanDTO.getOrderId(), productPlanDTO.getProductId());
 		
 	}
 
