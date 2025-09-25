@@ -163,15 +163,72 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 서버에서 목록/데이터 로드하는 함수들
 	//--------------------------------------------------------
 
-	// 페이지 로딩 시 전체 출하 목록 불러오기
+	let allShipment = [];
+
 	function loadShipments() {
 		fetch("/business/api/shipment")
 			.then(response => response.json())
 			.then(data => {
-				shipmentGrid.resetData(data);
+				allShipment = data;
+				shipmentGrid.resetData(allShipment);
 			})
 			.catch(error => console.error("출하 목록 불러오기 오류:", error));
 	}
+
+	// 검색 버튼 클릭 시 실행
+	function filterShipment() {
+		const status = document.getElementById("shipmentStatus").value;
+		const keyword = document.getElementById("combinedSearch").value.trim();
+		const startDate = document.getElementById("inputDateSearch").value;
+		const endDate = document.getElementById("inputDateEndSearch").value;
+
+		let filteredData = allShipment;
+
+		// 진행상태 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(order => order.shipmentStatus === status);
+		}
+
+		// 거래처명/발주번호 필터
+		if (keyword) {
+			filteredData = filteredData.filter(order =>
+				(order.clientName && order.clientName.includes(keyword)) ||
+				(order.shipmentId && order.shipmentId.includes(keyword))
+			);
+		}
+
+		// 입고요청일 필터
+		if (startDate || endDate) {
+			filteredData = filteredData.filter(order => {
+				// Grid 데이터의 필드명 'inputDate' 사용
+				const deliveryDate = order.deliveryDate;
+				if (!deliveryDate)
+					return false;
+
+				// 날짜 데이터가 유효한지 확인하고 범위 필터링
+				if (startDate && endDate) {
+					return deliveryDate >= startDate && deliveryDate <= endDate;
+				} else if (startDate) {
+					return deliveryDate >= startDate;
+				} else if (endDate) {
+					return deliveryDate <= endDate;
+				}
+				return false; // 날짜 데이터가 없으면 필터링
+			});
+		}
+
+		shipmentGrid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterShipment);
+
+	// 엔터키 검색
+	document.getElementById("combinedSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterShipment();
+		}
+	});
 
 	// 출하 상세 목록을 불러오는 함수
 	function loadShipmentDetails(shipmentId) {
@@ -418,11 +475,11 @@ document.addEventListener("DOMContentLoaded", () => {
 					return; // 유효성 검사 실패 시 함수 실행 중단
 				}
 			}
-			
+
 			if (shipmentQty > remainingQty) {
-			            alert(`"${item.productName}" 품목의 출하 수량(${shipmentQty})이 잔여 수량(${remainingQty})보다 많습니다.`);
-			            return;
-			        }
+				alert(`"${item.productName}" 품목의 출하 수량(${shipmentQty})이 잔여 수량(${remainingQty})보다 많습니다.`);
+				return;
+			}
 		}
 
 		if (checkedDetails.length !== allDetails.length) {
@@ -487,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			let allSuccess = true;
-			
+
 			for (const payload of shipmentPayloads) {
 				console.log("전송될 페이로드:", payload);
 

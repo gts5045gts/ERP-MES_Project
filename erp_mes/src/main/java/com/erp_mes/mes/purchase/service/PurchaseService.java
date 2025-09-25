@@ -46,9 +46,12 @@ public class PurchaseService {
 				seq++;
 			}
 		}
-		
+		log.info("DTO WorkOrderId: {}", purchaseDTO.getWorkOrderId());
+		log.info("작업지시발주 확인 전 로그");
 		// 작업지시 발주인 경우, work_order_shortage의 status를 '발주완료'로 변경
 		if (purchaseDTO.getWorkOrderId() != null && !purchaseDTO.getWorkOrderId().isEmpty()) {
+			log.info("작업지시발주 확인 if문 내부 로그");
+			
 			purchaseMapper.updateWorkOrderShortageStatus(purchaseDTO.getWorkOrderId(), "발주완료");
 		}
 
@@ -133,8 +136,6 @@ public class PurchaseService {
 	    }
 
 	    return details;
-		
-//		return purchaseMapper.getWorkOrderDetailsForPurchase(workOrderId);
 	}
-	
+
 }

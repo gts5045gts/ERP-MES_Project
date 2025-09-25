@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								color = 'green';
 								statusText = '입고 대기';
 								break;
-							default:
+							case 'COMPLETION':
 								color = 'black';
 								statusText = '입고 완료';
 								break;
@@ -153,11 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
 								break;
 							case 'WAITING':
 								color = 'green';
-								statusText = '입고 대기';
+								statusText = '입고대기';
 								break;
-							default:
+							case 'COMPLETION':
 								color = 'black';
-								statusText = '입고 완료';
+								statusText = '입고완료';
 								break;
 						}
 						return `<span style="color: ${color}; font-weight: bold;">${statusText}</span>`;
@@ -176,6 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				editBtn.removeAttribute('data-purchaseId');
 				return;
 			}
+
+			if (rowData.purchaseType === '작업지시발주' && ev.columnName === 'purchaseStatus') {
+				alert("작업지시 발주는 취소할 수 없습니다.");
+				return;
+			}
+
 			if (ev.columnName === 'purchaseStatus') {
 				if (rowData.purchaseStatus === 'CANCELED') {
 					alert("이미 취소된 발주입니다.");
@@ -216,11 +222,79 @@ document.addEventListener("DOMContentLoaded", () => {
 	initializePage();
 
 	//--- 서버 통신 함수 ---
+	let allPurchaseOrders = [];
+
+	//	function loadPurchaseOrders() {
+	//		fetch("/purchase/api/purchase").then(response => response.json()).then(data => {
+	//			purchaseGrid.resetData(data);
+	//		}).catch(error => console.error("발주 목록 불러오기 오류:", error));
+	//	}
+
+	// 발주 전체 목록 불러오기
 	function loadPurchaseOrders() {
-		fetch("/purchase/api/purchase").then(response => response.json()).then(data => {
-			purchaseGrid.resetData(data);
-		}).catch(error => console.error("발주 목록 불러오기 오류:", error));
+		fetch("/purchase/api/purchase")
+			.then(response => response.json())
+			.then(data => {
+				allPurchaseOrders = data; // 전체 목록 저장
+				purchaseGrid.resetData(allPurchaseOrders); // 그리드 초기 데이터 세팅
+			})
+			.catch(error => console.error("발주 목록 불러오기 오류:", error));
 	}
+
+	// 검색 버튼 클릭 시 실행
+	function filterPurchaseOrders() {
+		const status = document.getElementById("purchaseStatus").value;
+		const keyword = document.getElementById("combinedSearch").value.trim();
+		const startDate = document.getElementById("inputDateSearch").value;
+		const endDate = document.getElementById("inputDateEndSearch").value;
+
+		let filteredData = allPurchaseOrders;
+
+		// 진행상태 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(order => order.purchaseStatus === status);
+		}
+
+		// 거래처명/발주번호 필터
+		if (keyword) {
+			filteredData = filteredData.filter(order =>
+				(order.clientName && order.clientName.includes(keyword)) ||
+				(order.purchaseId && order.purchaseId.includes(keyword))
+			);
+		}
+
+		// 입고요청일 필터
+		if (startDate || endDate) {
+			filteredData = filteredData.filter(order => {
+				// Grid 데이터의 필드명 'inputDate' 사용
+				const inputDate = order.inputDate;
+				if (!inputDate) 
+					return false;
+
+				// 날짜 데이터가 유효한지 확인하고 범위 필터링
+				if (startDate && endDate) {
+					return inputDate >= startDate && inputDate <= endDate;
+				} else if (startDate) {
+					return inputDate >= startDate;
+				} else if (endDate) {
+					return inputDate <= endDate;
+				}
+				return false; // 날짜 데이터가 없으면 필터링
+			});
+		}
+
+		purchaseGrid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterPurchaseOrders);
+
+	// 엔터키 검색
+	document.getElementById("combinedSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterPurchaseOrders();
+		}
+	});
 
 	function loadPurchaseDetails(purchaseId) {
 		fetch(`/purchase/api/purchase/${purchaseId}/details`).then(response => {
@@ -285,12 +359,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			}, {});
 			const gridData = Object.values(groupedData).map(workOrder => {
 				const totalQty = workOrder.materials.reduce((sum, mat) => sum + mat.requireQty, 0);
-				return { 
-					workOrderId: workOrder.workOrderId, 
-					materialCount: workOrder.materials.length, 
+				return {
+					workOrderId: workOrder.workOrderId,
+					materialCount: workOrder.materials.length,
 					totalQty: totalQty,
 					startDate: workOrder.startDate
-				 };
+				};
 			});
 			workOrderGrid.resetData(gridData);
 		}).catch(error => console.error("작업지시 목록 불러오기 오류:", error));
@@ -531,25 +605,25 @@ document.addEventListener("DOMContentLoaded", () => {
 					{ header: '작업지시 ID', name: 'workOrderId', align: 'center' },
 					{ header: '자재 종류', name: 'materialCount', align: 'center' },
 					{ header: '총 필요 수량', name: 'totalQty', align: 'center' },
-					{ 
-					  header: '작업시작일', name: 'startDate', align: 'center',
-					  formatter: (value) => value.value ? value.value.split('T')[0] : ''
+					{
+						header: '작업시작일', name: 'startDate', align: 'center',
+						formatter: (value) => value.value ? value.value.split('T')[0] : ''
 					},
 				],
 				columnOptions: { resizable: true }
 			});
-			
+
 			workOrderGrid.on('click', (ev) => {
 				if (ev.rowKey != null) {
 					const row = workOrderGrid.getRow(ev.rowKey);
 					// 이미 체크된 행이라면 체크를 해제하고, 아니면 체크합니다.
 					if (workOrderGrid.getCheckedRowKeys().includes(ev.rowKey)) {
-					    workOrderGrid.uncheck(ev.rowKey);
+						workOrderGrid.uncheck(ev.rowKey);
 					} else {
-					    // 다른 행의 체크를 모두 해제하고, 현재 클릭한 행만 체크합니다.
-					    // 단일 선택만 가능하도록 변경
-					    workOrderGrid.uncheckAll();
-					    workOrderGrid.check(ev.rowKey);
+						// 다른 행의 체크를 모두 해제하고, 현재 클릭한 행만 체크합니다.
+						// 단일 선택만 가능하도록 변경
+						workOrderGrid.uncheckAll();
+						workOrderGrid.check(ev.rowKey);
 					}
 					updateWorkOrderSelectedItems(row.workOrderId);
 				}
@@ -620,11 +694,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	workOrderForm.addEventListener("submit", async (event) => {
 		event.preventDefault();
-		const workOrderId = workOrderGrid.getCheckedRowKeys()[0];
-		if (!workOrderId) {
+
+		const checkedKeys = workOrderGrid.getCheckedRowKeys();
+		if (checkedKeys.length === 0) {
 			alert("작업지시를 선택해주세요.");
 			return;
 		}
+
+		// 선택된 행의 데이터 객체를 가져옴
+		const selectedRowData = workOrderGrid.getRow(checkedKeys[0]);
+		const workOrderId = selectedRowData.workOrderId; // 여기서 선택한 workOrderId를 저장
+
 		const clientId = workOrderForm.querySelector("#workOrderClientId").value;
 		const clientName = workOrderForm.querySelector("#workOrderClientId").options[workOrderForm.querySelector("#workOrderClientId").selectedIndex].text;
 		const inputDate = workOrderForm.querySelector("#workOrderInputDate").value;
@@ -637,18 +717,17 @@ document.addEventListener("DOMContentLoaded", () => {
 			alert("입고예정일을 선택해주세요.");
 			return;
 		}
-		
+
 		// 선택된 작업지시의 작업시작일 가져오기
-		const selectedWorkOrderData = workOrderGrid.getRow(workOrderId);
-		const workOrderStartDate = selectedWorkOrderData.startDate; // 그리드에서 작업시작일 값을 가져옴
+		const workOrderStartDate = selectedRowData.startDate; // 그리드에서 작업시작일 값을 가져옴
 
 		// 날짜 비교
 		const inputDateObj = new Date(inputDate);
 		const workOrderStartDateObj = new Date(workOrderStartDate);
 
-		if (inputDateObj > workOrderStartDateObj) {
-		    alert("입고요청일은 작업지시의 작업시작일 이전이어야 합니다.");
-		    return;
+		if (inputDateObj >= workOrderStartDateObj) {
+			alert("입고요청일은 작업지시의 작업시작일 이전이어야 합니다.");
+			return;
 		}
 
 		const materials = workOrderSelectedMaterials.map(material => ({
@@ -697,8 +776,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function openEditModal(purchaseId, rowData) {
 		// 발주 유형이 '작업지시발주'인 경우, 바로 경고 메시지를 띄우고 종료
 		if (rowData.purchaseType === '작업지시발주') {
-		    alert("작업지시 발주는 수정할 수 없습니다.");
-		    return;
+			alert("작업지시 발주는 수정할 수 없습니다.");
+			return;
 		}
 		try {
 			const res = await fetch(`/purchase/api/purchase/${purchaseId}`);
@@ -707,19 +786,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			isEditMode = true;
 			editPurchaseId = purchaseId;
-			
-			const clientIdSelect = normalForm.querySelector("#clientId");
-			        clientIdSelect.value = purchase.clientId; // 거래처 설정
-			        clientIdSelect.disabled = true; // 수정 불가하도록 비활성화
 
-			        const inputDateInput = normalForm.querySelector("#inputDate");
-			        inputDateInput.value = purchase.inputDate ? purchase.inputDate.split('T')[0] : ''; // 입고요청일 설정
-			
-					editMaterials = purchase.materials.map(material => ({
-					            ...material,
-					            clientId: purchase.clientId,
-					            inputDate: purchase.inputDate
-					        }));
+			const clientIdSelect = normalForm.querySelector("#clientId");
+			clientIdSelect.value = purchase.clientId; // 거래처 설정
+			clientIdSelect.disabled = true; // 수정 불가하도록 비활성화
+
+			const inputDateInput = normalForm.querySelector("#inputDate");
+			inputDateInput.value = purchase.inputDate ? purchase.inputDate.split('T')[0] : ''; // 입고요청일 설정
+
+			editMaterials = purchase.materials.map(material => ({
+				...material,
+				clientId: purchase.clientId,
+				inputDate: purchase.inputDate
+			}));
 
 			document.getElementById('NormalPurchaseModalTitle').textContent = '발주 수정';
 			document.getElementById('purchaseSubmitBtn').textContent = '수정';

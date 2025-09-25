@@ -53,4 +53,5 @@ public interface PurchaseMapper {
 	
 	// 작업지시발주가 등록 시 work_order_shortage 테이블에서 해당 work_order_id 값을 가진 status를 '발주완료'로 update
 	void updateWorkOrderShortageStatus(@Param("workOrderId") String workOrderId, @Param("status") String status);
+
 }

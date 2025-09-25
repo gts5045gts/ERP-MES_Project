@@ -266,7 +266,6 @@
             material m ON wos.material_id = m.material_id
         WHERE
             wos.work_order_id = #{workOrderId}
-<!--             AND wos.status = '요청' -->
     </select>
     
     <update id="updateWorkOrderShortageStatus">

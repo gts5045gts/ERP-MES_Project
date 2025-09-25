@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		el: document.getElementById('clientGrid'),
 		scrollX: false,
 		scrollY: true,
-		bodyHeight: 350,
+		bodyHeight: 360,
 		rowHeight: 'auto',
 		minBodyHeight: 200,
 		emptyMessage: '조회결과가 없습니다.',
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 		data: []
 	});
-	
+
 
 	// 공용 모달 객체
 	const clientAddModal = new bootstrap.Modal(document.getElementById('clientAddModal'));
@@ -28,37 +28,61 @@ document.addEventListener("DOMContentLoaded", () => {
 	const submitBtn = form.querySelector("button[type='submit']");
 
 	let isEditMode = false; // 등록/수정 모드 구분
+	let allClient = [];
 
 	// 페이지 처음 로딩 시 전체 목록 불러오기
-	const loadClients = () => {
+	function loadClients(){
 		fetch("/business/api/clients")
 			.then(response => response.json())
 			.then(data => {
-				grid.resetData(data);
+				allClient = data;
+//				grid.resetData(allClient);
+				filterClient();
 			})
 			.catch(error => console.error("데이터 불러오는 과정에서 오류남:", error));
 	};
-	loadClients();
 
-	// 검색 버튼 이벤트
-	document.getElementById("searchBtn").addEventListener("click", () => {
-		const clientName = document.getElementById("cliSearch").value;
-		const clientType = document.getElementById("cliStatus").value;
+	// 검색 버튼 클릭 시 실행
+	function filterClient() {
+		console.log("ALL CLIENT DATA EXAMPLE:", allClient[0]); 
 
-		fetch(`/business/api/clients/search?clientName=${encodeURIComponent(clientName)}&clientType=${clientType}`)
-			.then(response => response.json())
-			.then(data => {
-				grid.resetData(data);
-			})
-			.catch(error => console.error("데이터 불러오기 오류:", error));
+		const type = document.getElementById("cliType").value;
+		const status = document.getElementById("cliStatus").value;
+		const keyword = document.getElementById("cliSearch").value.trim();
+
+		let filteredData = allClient;
+
+		// 거래처유형 필터
+		if (type !== "ALL") {
+			filteredData = filteredData.filter(client => client.clientTypeCode === type);
+		}
+
+		// 거래여부 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(client => client.clientStatusCode === status);
+		}
+
+		// 거래처명 필터
+		if (keyword) {
+			filteredData = filteredData.filter(client =>
+				(client.clientName && client.clientName.includes(keyword))
+			);
+		}
+
+		grid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterClient);
+
+	// 엔터키 검색
+	document.getElementById("cliSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterClient();
+		}
 	});
 
-	//	// 등록 버튼 이벤트: 모달창 띄우기
-	//	const addBtn = document.getElementById("addBtn");
-	//	const clientAddModal = new bootstrap.Modal(document.getElementById('clientAddModal'));
-	//	addBtn.addEventListener("click", () => {
-	//		clientAddModal.show();
-	//	});
+	loadClients();
 
 	// 등록 버튼 이벤트
 	document.getElementById("addBtn").addEventListener("click", () => {
