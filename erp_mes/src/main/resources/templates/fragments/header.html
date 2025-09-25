@@ -64,7 +64,7 @@
 			<!-- Heading -->
 			<div class="sidebar-heading">
 				<!-- Nav Item - Utilities Collapse Menu -->
-				Addons
+				ERP
 			</div>
 			<li class="nav-item"><a class="nav-link collapsed" href="#"
 				data-toggle="collapse" data-target="#collapseUtilities"
@@ -143,7 +143,10 @@
 
 					</div>
 				</div></li>
-				
+				<hr class="sidebar-divider">
+				<div class="sidebar-heading">
+					MES
+				</div>
 				
 <!-- 				기준정보 관리 메뉴  -->
 			<li class="nav-item"><a class="nav-link collapsed"
@@ -166,7 +169,35 @@
 						<a class="collapse-item" th:href="@{/inventory/ware}">창고 정보</a>
 					</div>
 				</div></li>
-
+			<!-- 				구매 관리메뉴 -->
+			<li class="nav-item"><a class="nav-link collapsed"
+				data-toggle="collapse" data-target="#purchase"
+				aria-expanded="true" aria-controls="purchase"> <i
+					class="fas fa-fw fa-folder"></i> <span>구매관리</span>
+			</a>
+				<div id="purchase" class="collapse"
+					aria-labelledby="headingPages" data-parent="#accordionSidebar">
+					<div class="bg-white py-2 collapse-inner rounded">
+						<h6 class="collapse-header">구매 관리:</h6>
+						<a class="collapse-item" th:href="@{/purchase/purchaseOrder}">발주 관리</a> 
+						<a class="collapse-item" th:href="@{/purchase/goods}">입고 관리</a>
+					</div>
+				</div></li>
+				
+				<!-- 				영업 관리 메뉴 -->
+			<li class="nav-item"><a class="nav-link collapsed"
+				data-toggle="collapse" data-target="#business"
+				aria-expanded="true" aria-controls="business"> <i
+					class="fas fa-fw fa-folder"></i> <span>영업관리</span>
+			</a>
+				<div id="business" class="collapse"
+					aria-labelledby="headingPages" data-parent="#accordionSidebar">
+					<div class="bg-white py-2 collapse-inner rounded">
+						<h6 class="collapse-header">영업 관리:</h6>
+						<a class="collapse-item" th:href="@{/business/order}">수주 관리</a> 
+						<a class="collapse-item" th:href="@{/business/shipment}">출하 관리</a> 
+					</div>
+				</div></li>
 				
 <!-- 					생산관리 메뉴  -->
 			<li class="nav-item"><a class="nav-link collapsed"
@@ -180,21 +211,40 @@
 						<h6 class="collapse-header">생산 및 작업 관리:</h6>
 						<a class="collapse-item" th:href="@{/pm/productPlan}">생산 계획</a> <a
 							class="collapse-item" th:href="@{pm/workOrder}">작업지시</a>
-					
 					</div>
 				</div></li>
 				
-<!-- 				POP 메뉴  -->
+			<!-- 				공정 및 설비 매뉴  -->
 			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#pop"
-				aria-expanded="true" aria-controls="pop"> <i
-					class="fas fa-fw fa-folder"></i> <span>POP</span>
+				data-toggle="collapse" data-target="#plant"
+				aria-expanded="true" aria-controls="plant"> <i
+					class="fas fa-fw fa-folder"></i> <span>공정 및 설비</span>
 			</a>
-				<div id="pop" class="collapse" 	
+				<div id="plant" class="collapse"
 					aria-labelledby="headingPages" data-parent="#accordionSidebar">
 					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">POP:</h6>
-						<a class="collapse-item" th:href="@{/pop/workResult}">POP</a>
+						<h6 class="collapse-header">공정 및 설비:</h6>
+						<a class="collapse-item" th:href="@{/plant/maintenance}">설비 이력</a> 
+						<a class="collapse-item" th:href="@{/plant/equipment_list}">설비 현황</a>
+						<a class="collapse-item" th:href="@{/plant/process_list}">공정 현황</a>
+						<a class="collapse-item" th:href="@{/lot}" sec:authorize="hasAuthority('ROLE_AUT001')">LOT 추적</a>
+					</div>
+				</div></li>	
+				
+<!-- 			재고관리 메뉴 -->
+			<li class="nav-item"><a class="nav-link collapsed"
+				data-toggle="collapse" data-target="#inventory"
+				aria-expanded="true" aria-controls="inventory"> <i
+					class="fas fa-fw fa-folder"></i> <span>재고관리</span>
+			</a>
+				<div id="inventory" class="collapse"
+					aria-labelledby="headingPages" data-parent="#accordionSidebar">
+					<div class="bg-white py-2 collapse-inner rounded">
+						<h6 class="collapse-header">재고 관리:</h6>
+						<a class="collapse-item" th:href="@{/inventory/stock}">재고 현황</a> 
+						<a class="collapse-item" th:href="@{/inventory/warehouse}">창고내 재고 현황</a>
+						<a class="collapse-item" th:href="@{/inventory/outbound}">출고 관리</a>
+						<a class="collapse-item" th:href="@{/inventory/goods}">입고 관리</a>	
 					</div>
 				</div></li>
 				
@@ -216,70 +266,20 @@
 					</div>
 				</div></li>
 				
-<!-- 				영업 관리 메뉴 -->
+			<!-- 				POP 메뉴  -->
 			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#business"
-				aria-expanded="true" aria-controls="business"> <i
-					class="fas fa-fw fa-folder"></i> <span>영업관리</span>
+				data-toggle="collapse" data-target="#pop"
+				aria-expanded="true" aria-controls="pop"> <i
+					class="fas fa-fw fa-folder"></i> <span>POP</span>
 			</a>
-				<div id="business" class="collapse"
+				<div id="pop" class="collapse" 	
 					aria-labelledby="headingPages" data-parent="#accordionSidebar">
 					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">영업 관리:</h6>
-						<a class="collapse-item" th:href="@{/business/order}">수주 관리</a> 
-						<a class="collapse-item" th:href="@{/business/shipment}">출하 관리</a> 
-					</div>
-				</div></li>
-<!-- 				구매 관리메뉴 -->
-			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#purchase"
-				aria-expanded="true" aria-controls="purchase"> <i
-					class="fas fa-fw fa-folder"></i> <span>구매관리</span>
-			</a>
-				<div id="purchase" class="collapse"
-					aria-labelledby="headingPages" data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">구매 관리:</h6>
-						<a class="collapse-item" th:href="@{/purchase/purchaseOrder}">발주 관리</a> 
-						<a class="collapse-item" th:href="@{/purchase/goods}">입고 관리</a>
+						<h6 class="collapse-header">POP:</h6>
+						<a class="collapse-item" th:href="@{/pop/workResult}">POP</a>
 					</div>
 				</div></li>
 				
-			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#plant"
-				aria-expanded="true" aria-controls="plant"> <i
-					class="fas fa-fw fa-folder"></i> <span>공정 및 설비</span>
-			</a>
-				<div id="plant" class="collapse"
-					aria-labelledby="headingPages" data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">공정 및 설비:</h6>
-						<a class="collapse-item" th:href="@{/plant/maintenance}">설비 이력</a> 
-						<a class="collapse-item" th:href="@{/plant/equipment_list}">설비 현황</a>
-						<a class="collapse-item" th:href="@{/plant/process_list}">공정 현황</a>
-						<a class="collapse-item" th:href="@{/lot}" sec:authorize="hasAuthority('ROLE_AUT001')">LOT 추적</a>
-							
-
-					</div>
-				</div></li>
-				
-			<li class="nav-item"><a class="nav-link collapsed"
-				data-toggle="collapse" data-target="#inventory"
-				aria-expanded="true" aria-controls="inventory"> <i
-					class="fas fa-fw fa-folder"></i> <span>재고관리</span>
-			</a>
-				<div id="inventory" class="collapse"
-					aria-labelledby="headingPages" data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">재고 관리:</h6>
-						<a class="collapse-item" th:href="@{/inventory/stock}">재고 현황</a> 
-						<a class="collapse-item" th:href="@{/inventory/warehouse}">창고내 재고 현황</a>
-						<a class="collapse-item" th:href="@{/inventory/outbound}">출고 관리</a>
-						<a class="collapse-item" th:href="@{/inventory/goods}">입고 관리</a>	
-					</div>
-				</div></li>
-				
-
 			<!-- Divider -->
 			<hr class="sidebar-divider d-none d-md-block">
 

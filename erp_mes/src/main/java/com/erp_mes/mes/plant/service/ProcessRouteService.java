@@ -86,6 +86,8 @@ public class ProcessRouteService {
 
 	@TrackLot(tableName = "processs_routing", pkColumnName = "route_id")
 	public void saveRoute(ProcessRouteDTO routeDTO) {
+		
+		
 		List<ProcessRouteDTO> routeList = routeMapper.findByProductIdAll(routeDTO.getProductId());
 		
 		Long seq =(long)(routeList.size() + 1);
@@ -102,11 +104,17 @@ public class ProcessRouteService {
 	    
 	    routeDTO.setLineId(lineId);
 	    
+		
+
+	    routeMapper.save(routeDTO);
+	    
+	    
+	    
+	    
+	    log.info("------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + routeDTO.getRouteId());
 //      *******로트 생성: pk value 를 넘겨주는 곳 모든 프로세스가 끝나고 입력하면됨**********
 		HttpSession session = SessionUtil.getSession();
 		session.setAttribute("targetIdValue", routeDTO.getRouteId()); //pk_id의 값 입력
-		
-		routeMapper.save(routeDTO);
 	
 
 	}
