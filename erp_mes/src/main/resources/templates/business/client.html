@@ -30,8 +30,8 @@
                         	<div class="d-flex justify-content-between align-items-center mb-4">
                         		<div class="search-container d-flex flex-fill gap-4">
                         			<div class="d-flex align-items-center gap-2">
-                            			<label for="cliStatus" class="cliStatus">거래처 유형</label>
-                                		<select id="cliStatus" class="form-select" aria-label="전체">
+                            			<label for="cliType" class="cliType">거래처 유형</label>
+                                		<select id="cliType" class="form-select" aria-label="전체">
                                    			<option value="ALL">전체</option>
                                     		<option value="PURCHASE">매입사</option>
                                     		<option value="ORDER">매출사</option>
@@ -39,8 +39,16 @@
                                 		</select>
                                 	</div>
                                 	<div class="d-flex align-items-center gap-2">
+                            			<label for="cliStatus" class="cliStatus">거래 여부</label>
+                                		<select id="cliStatus" class="form-select" aria-label="전체">
+                                   			<option value="ALL">전체</option>
+                                    		<option value="ACTIVE">거래중</option>
+                                    		<option value="INACTIVE">거래중지</option>
+                                		</select>
+                                	</div>
+                                	<div class="d-flex align-items-center gap-2">
 										<label for="cliSearch" class="cliSearch">거래처명</label>
-										<input type="search" id="cliSearch" placeholder="">
+										<input type="search" id="cliSearch" placeholder="" class="form-control" style="width: 180px;">
 									</div>
 								</div>
                             	<div class="search-buttons">

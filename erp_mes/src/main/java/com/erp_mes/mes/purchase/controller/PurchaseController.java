@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderShortageDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.purchase.service.PurchaseService;
@@ -32,7 +34,7 @@ public class PurchaseController {
 	public PurchaseController(PurchaseService purchaseService) {
 		this.purchaseService = purchaseService;
 	}
-
+	
 	// 발주 화면
 	@GetMapping("purchaseOrder")
 	public String order() {
@@ -130,6 +132,22 @@ public class PurchaseController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("발주 취소 실패");
         }
+    }
+     
+    // WorkOrderShortage 목록 불러옴
+    @GetMapping("/api/work-orders/shortage")
+    public ResponseEntity<List<WorkOrderShortageDTO>> getWorkOrderShortage() {
+    	log.info("작업지시 목록 조회 요청");
+        List<WorkOrderShortageDTO> shortages = purchaseService.getWorkOrderShortages();
+        return ResponseEntity.ok(shortages);
+    }
+    
+    // 특정 작업지시의 상세 자재 목록을 불러옴
+    @GetMapping("/api/work-orders/{workOrderId}/details")
+    public ResponseEntity<List<WorkOrderShortageDTO>> getWorkOrderDetails(@PathVariable("workOrderId") String workOrderId) {
+    	log.info("작업지시 자재 목록 조회 요청");
+        List<WorkOrderShortageDTO> details = purchaseService.getWorkOrderDetailsForPurchase(workOrderId);
+        return ResponseEntity.ok(details);
     }
 	
 }

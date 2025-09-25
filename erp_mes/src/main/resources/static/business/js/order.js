@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center' },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
@@ -302,16 +301,71 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 서버에서 목록/데이터 로드하는 함수들
 	//--------------------------------------------------------
+	let allOrders = [];
 
-	// 페이지 로딩 시 전체 수주 목록 불러오기
 	function loadOrders() {
 		fetch("/business/api/orders")
 			.then(response => response.json())
 			.then(data => {
-				orderGrid.resetData(data);
+				allOrders = data; // 전체 목록 저장
+				orderGrid.resetData(allOrders); // 그리드 초기 데이터 세팅
 			})
 			.catch(error => console.error("수주 목록 불러오기 오류:", error));
 	}
+
+	// 검색 버튼 클릭 시 실행
+	function filterOrders() {
+		const status = document.getElementById("orderStatus").value;
+		const keyword = document.getElementById("combinedSearch").value.trim();
+		const startDate = document.getElementById("inputDateSearch").value;
+		const endDate = document.getElementById("inputDateEndSearch").value;
+
+		let filteredData = allOrders;
+
+		// 진행상태 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(order => order.orderStatus === status);
+		}
+
+		// 거래처명/수주번호 필터
+		if (keyword) {
+			filteredData = filteredData.filter(order =>
+				(order.clientName && order.clientName.includes(keyword)) ||
+				(order.orderId && order.orderId.includes(keyword))
+			);
+		}
+
+		// 납기예정일 필터
+		if (startDate || endDate) {
+			filteredData = filteredData.filter(order => {
+				const deliveryDate = order.deliveryDate;
+				if (!deliveryDate)
+					return false;
+
+				// 날짜 데이터가 유효한지 확인하고 범위 필터링
+				if (startDate && endDate) {
+					return deliveryDate >= startDate && deliveryDate <= endDate;
+				} else if (startDate) {
+					return deliveryDate >= startDate;
+				} else if (endDate) {
+					return deliveryDate <= endDate;
+				}
+				return false; // 날짜 데이터가 없으면 필터링
+			});
+		}
+
+		orderGrid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterOrders);
+
+	// 엔터키 검색
+	document.getElementById("combinedSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterOrders();
+		}
+	});
 
 	// 수주 상세 목록을 불러오는 함수
 	function loadOrderDetails(orderId) {

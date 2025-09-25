@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			columns: [
 				{ header: '출하번호', name: 'shipmentId', align: 'center' },
 				{ header: '수주번호', name: 'orderId', align: 'center' },
-				{ header: '거래처 번호', name: 'clientId', align: 'center', width: 90 },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
@@ -73,13 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
 						let color = '';
 						let statusText = '';
 						switch (value.value) {
-							case 'PARTIAL':
-								color = 'green';
-								statusText = '부분출하';
+							case 'READY':
+								color = 'blue';
+								statusText = '출하대기';
 								break;
 							case 'DELAY':
 								color = 'red';
 								statusText = '날짜지연';
+								break;
+							case 'PARTIAL':
+								color = 'green';
+								statusText = '부분출하';
 								break;
 							case 'COMPLETION':
 								color = 'black';
@@ -114,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
 						let color = '';
 						let statusText = '';
 						switch (value.value) {
-							case 'NOTSHIPPED':
+							case 'READY':
 								color = 'blue';
-								statusText = '미출하';
+								statusText = '출하대기';
 								break;
 							case 'DELAY':
 								color = 'red';
@@ -160,15 +163,72 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 서버에서 목록/데이터 로드하는 함수들
 	//--------------------------------------------------------
 
-	// 페이지 로딩 시 전체 출하 목록 불러오기
+	let allShipment = [];
+
 	function loadShipments() {
 		fetch("/business/api/shipment")
 			.then(response => response.json())
 			.then(data => {
-				shipmentGrid.resetData(data);
+				allShipment = data;
+				shipmentGrid.resetData(allShipment);
 			})
 			.catch(error => console.error("출하 목록 불러오기 오류:", error));
 	}
+
+	// 검색 버튼 클릭 시 실행
+	function filterShipment() {
+		const status = document.getElementById("shipmentStatus").value;
+		const keyword = document.getElementById("combinedSearch").value.trim();
+		const startDate = document.getElementById("inputDateSearch").value;
+		const endDate = document.getElementById("inputDateEndSearch").value;
+
+		let filteredData = allShipment;
+
+		// 진행상태 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(order => order.shipmentStatus === status);
+		}
+
+		// 거래처명/발주번호 필터
+		if (keyword) {
+			filteredData = filteredData.filter(order =>
+				(order.clientName && order.clientName.includes(keyword)) ||
+				(order.shipmentId && order.shipmentId.includes(keyword))
+			);
+		}
+
+		// 입고요청일 필터
+		if (startDate || endDate) {
+			filteredData = filteredData.filter(order => {
+				// Grid 데이터의 필드명 'inputDate' 사용
+				const deliveryDate = order.deliveryDate;
+				if (!deliveryDate)
+					return false;
+
+				// 날짜 데이터가 유효한지 확인하고 범위 필터링
+				if (startDate && endDate) {
+					return deliveryDate >= startDate && deliveryDate <= endDate;
+				} else if (startDate) {
+					return deliveryDate >= startDate;
+				} else if (endDate) {
+					return deliveryDate <= endDate;
+				}
+				return false; // 날짜 데이터가 없으면 필터링
+			});
+		}
+
+		shipmentGrid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterShipment);
+
+	// 엔터키 검색
+	document.getElementById("combinedSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterShipment();
+		}
+	});
 
 	// 출하 상세 목록을 불러오는 함수
 	function loadShipmentDetails(shipmentId) {
@@ -364,6 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				// 서버에서 받은 데이터를 기반으로 그리드에 표시할 데이터 배열을 만듦
 				const gridData = data.map(item => ({
 					...item,
+					remainingQty: item.remainingQty, // 출하등록시 수주수량 > 출하수량일 경우 출하실패하도록 하기위한 필드
 					// 여기서 서버의 orderQty 값을 shipmentQty에 할당
 					shipmentQty: item.remainingQty
 				}));
@@ -395,9 +456,31 @@ document.addEventListener("DOMContentLoaded", () => {
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
 
-		// 수정: 상세 목록 그리드에서 체크된 행만 가져옴
+		// 상세 목록 그리드에서 체크된 행만 가져옴
 		const checkedDetails = orderDetailGrid.getCheckedRows();
 		const allDetails = orderDetailGrid.getData();
+
+		// 출하 수량 유효성 검사
+		for (const item of checkedDetails) {
+			const shipmentQty = parseInt(item.shipmentQty);
+			const orderQty = parseInt(item.orderQty);
+			const remainingQty = parseInt(item.remainingQty);
+
+			// 'orderQty'와 'remainingQty'를 비교하여 '부분출하' 상태를 판단
+			const isPartialShipment = (orderQty > item.remainingQty) && (item.remainingQty > 0);
+
+			if (isPartialShipment) {
+				if (isNaN(shipmentQty) || shipmentQty <= 0) {
+					alert(`부분출하 품목인 "${item.productName}"은(는) 출하 수량을 1개 이상 입력해야 합니다.`);
+					return; // 유효성 검사 실패 시 함수 실행 중단
+				}
+			}
+
+			if (shipmentQty > remainingQty) {
+				alert(`"${item.productName}" 품목의 출하 수량(${shipmentQty})이 잔여 수량(${remainingQty})보다 많습니다.`);
+				return;
+			}
+		}
 
 		if (checkedDetails.length !== allDetails.length) {
 			alert("해당 수주의 모든 상세 품목을 선택해야 출하 등록이 가능합니다.");
@@ -461,6 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			let allSuccess = true;
+
 			for (const payload of shipmentPayloads) {
 				console.log("전송될 페이로드:", payload);
 

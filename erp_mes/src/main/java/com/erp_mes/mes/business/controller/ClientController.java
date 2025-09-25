@@ -44,15 +44,6 @@ public class ClientController {
         
         return clientService.getAllClients();
     }
-
-//	// 거래처 검색 필터링
-//	@GetMapping("/api/clients/search")
-//    @ResponseBody
-//    public List<ClientDTO> getClients( @RequestParam(required = false) String clientName, @RequestParam(required = false, defaultValue = "ALL") String clientType) {
-//        log.info("거래처 검색 요청 - clientName: {}, clientType: {}", clientName, clientType);
-//        
-//        return clientService.getClients(clientName, clientType);
-//    }
 	
     // 거래처 등록
 	@PostMapping("/api/clients/submit")

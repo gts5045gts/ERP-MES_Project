@@ -122,6 +122,7 @@ public class OrderService {
     public void updateOrderStatusToInProduction(String orderId) {
         orderMapper.updateOrderStatus(orderId, "INPRODUCTION");
     }
+   
 	
     // 상태를 출하완료로 업데이트
 //	@Transactional
