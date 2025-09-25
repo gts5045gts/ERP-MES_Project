@@ -29,4 +29,11 @@ public class InspectionTargetDTO {
     private String processName; 
     private String equipName;  
     private String proSeq;
+    private Long goodQty;
+    private Long defectQty;
+    
+    // 상세 조회 모달용
+    private String planId;         // 생산 계획 번호
+    private String defectReason;   // 불량 상세 사유
+    private Long inspectionId; 
 }

@@ -227,7 +227,7 @@
 						<a class="collapse-item" th:href="@{/plant/maintenance}">설비 이력</a> 
 						<a class="collapse-item" th:href="@{/plant/equipment_list}">설비 현황</a>
 						<a class="collapse-item" th:href="@{/plant/process_list}">공정 현황</a>
-						<a class="collapse-item" th:href="@{/lot}">LOT 추적</a>
+						<a class="collapse-item" th:href="@{/lot}" sec:authorize="hasAuthority('ROLE_AUT001')">LOT 추적</a>
 					</div>
 				</div></li>	
 				
@@ -260,7 +260,7 @@
 						<h6 class="collapse-header">검사 관리:</h6>
 						<a class="collapse-item" th:href="@{/quality/qih}">품질검사 이력관리</a>
 						<h6 class="collapse-header">불량 관리:</h6>
-						<a class="collapse-item" th:href="@{/schedule}">불량 관리</a> <a
+						<a class="collapse-item" th:href="@{/defect}">불량 관리</a> <a
 							class="collapse-item" th:href="@{/schedule}">분석 리포트</a>
 
 					</div>

@@ -104,48 +104,53 @@
 		            </div>
 		
 		            <!-- 모달 바디 -->
-		            <div class="modal-body" style="height: 230px;">
+		            <div class="modal-body" style="height: 400px;">
+		                <div class="row mb-4">
+		                    <div class="col">
+		                        <label for="bom_id" class="form-label">BOM 아이디</label>
+		                        <input type="text" id="bom_id" name="bomId" class="form-control" placeholder="ex) BOM001" >
+		                    </div>
+		                    <div class="col">
+		                        <label for="revision_no" class="form-label">차수</label>
+		                        <input type="text" id="revision_no" name="revisionNo" class="form-control" placeholder="차수" >
+		                    </div>
+		                </div>
 		                <div class="row mb-4">
 		                    <div class="col">
 		                        <label for="product_id" class="form-label">제품코드</label>
-		                        <input type="text" id="product_id" name="productId" class="form-control" placeholder="제품코드">
+		                        <input type="text" id="bomProductId" name="productId" class="form-control" readonly="readonly">
 		                    </div>
 		                    <div class="col">
 		                        <label for="product_name" class="form-label">제품명</label>
-		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
+		                        <input type="text" id="bomProductName" name="productName" class="form-control" readonly="readonly">
 		                    </div>
 		                </div>
-		
-						<div class="row mb-4">
-		                    <div class="col">
-		                        <label for="product_name" class="form-label">원자재</label>
-		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
-		                    </div>
-		                    <div class="col">
-		                        <label for="product_name" class="form-label">필요 수량</label>
-		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
-		                    </div>
+
+						<div id="materialContainer">
+						  <div class="row mb-2 materialRow">
 						    <div class="col">
-						        <label for="product_type" class="form-label">자재 구분</label>
-								<select id="product_type" name="productType" class="form-control">
-								  <option value="">선택하세요</option>
-								  <option th:each="c : ${commonPtype}"
-								          th:value="${c.comDtId}"
-								          th:text="${c.comDtNm}"></option>
-								</select>
+						      <label class="form-label">원자재 코드</label>
+						      <input type="text" name="materialId" class="form-control" placeholder="원자재 코드">
 						    </div>
 						    <div class="col">
-						        <label for="unit" class="form-label">단위</label>
-								<select id="unit" name="unit" class="form-control">
-								  <option value="">선택하세요</option>
-								  <option th:each="c : ${commonUnit}"
-								          th:value="${c.comDtId}"
-								          th:text="${c.comDtNm}"></option>
-								</select>
+						      <label class="form-label">필요 수량</label>
+						      <input type="text" name="quantity" class="form-control" placeholder="수량">
 						    </div>
+						    <div class="col">
+						      <label class="form-label">단위</label>
+						      <select name="unit" class="form-control">
+						        <option value="">선택하세요</option>
+						        <option th:each="c : ${commonUnit}"
+						                th:value="${c.comDtId}"
+						                th:text="${c.comDtNm}"></option>
+						      </select>
+						    </div>
+						    <div class="col d-flex align-items-end">
+							<button type="button" class="btn btn-secondary btn-sm" id="addMaterialBtn">원자재 추가</button>
+						    </div>
+						  </div>
 						</div>
 		            </div>
-		
 		            <!-- 모달 푸터 -->
 		            <div class="modal-footer">
 		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>

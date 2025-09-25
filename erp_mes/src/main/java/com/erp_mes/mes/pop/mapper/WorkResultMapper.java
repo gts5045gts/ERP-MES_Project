@@ -12,22 +12,33 @@ import com.erp_mes.mes.pop.dto.WorkResultDTO;
 public interface WorkResultMapper {
 	
 	// 작업지시조회를 위한 조인
-	List<WorkResultDTO> workerkWithOrder(@Param("empId") String empId);
-	
+	List<WorkResultDTO> workerkWithOrder(@Param("empId") String empId);	
+
 	// bom조회를 위한 조인
-	List<WorkResultDTO> workOrderWithBom(@Param("workOrderId") Long workOrderId);
+	List<WorkResultDTO> workOrderWithBom(@Param("productId") String productId);
+    
+    // 작업지시서의 작업상태 업데이트
+	int updateWorkOrderStatus(@Param("workOrderId") Long workOrderId);
 	
-	// 작업현황을 위한 조인
-	List<WorkResultDTO> workResultWithBom(@Param("workOrderIds") List<Long> workOrderIds);
-	
-	// 작업진행중 업데이트
-	int updateWorkOrderStatus(@Param("list") List<Long> workOrderIds);
-	
+	// 작업현황 업데이트
+	List<WorkResultDTO> updateWorkResult(@Param("workOrderId") Long workOrderId);
+    
 	// 무한스크롤
 	List<WorkResultDTO> workResultWithPaged(Map<String, Object> params);
 	
 	// 작업완료 상태 업데이트(단일)
 	int updateWorkStatusFinish(@Param("workOrderId") Long workOrderId);
+
+	// 불량 아이디 저장
+	void updateDefectItemId(@Param("resultId") Long resultId, @Param("defectItemId") Long defectItemId);
+
+
+
 	
+	
+	
+
+
+
 
 }

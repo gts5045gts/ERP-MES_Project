@@ -35,18 +35,20 @@ public class LotAOP {
 	
 //	프로세스별 예외사항 때문에 db조회 방식으로 변경함
 	@Around("@annotation(trackLot)")
-	public void traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
+	public Object traceLot(ProceedingJoinPoint pjp, TrackLot trackLot) throws Throwable {
+		
+		Object result = null;
 		
 		try {
 			
 			log.info("AOP 진입, TrackLot: " + trackLot);
 
-			pjp.proceed();
+			result = pjp.proceed();
 			
 			HttpSession session = SessionUtil.getSession();
-			Object obj = session.getAttribute("targetIdValue");
+			Object targetIdValue = session.getAttribute("targetIdValue");
 			
-			if (obj != null) {
+			if (targetIdValue != null) {
 				
 				Boolean linkParent = false;
 				Boolean createLot = true;
@@ -57,8 +59,8 @@ public class LotAOP {
 				
 				String tableName = trackLot.tableName().trim().toUpperCase();
 				String targetId = trackLot.pkColumnName().trim();
-				String targetIdValue = (String) obj;
 				String domain = tableName;
+				String targetVal = null;
 				
 				int qtyUsed = 0;
 				
@@ -97,10 +99,9 @@ public class LotAOP {
 //				    		parentLotId = lotUsageService.getInputLotId(inId);
 				    		parentLotId = entry.getValue();
 				    		
-				    		
 				    		if (parentLotId != null && workOrderId != null) {
 				    		
-					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(Long.parseLong(String.valueOf(workOrderId)));
+					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(String.valueOf(workOrderId));
 					    		
 					    		for (WorkResultDTO dto : workOrderList) {
 					    			 BigDecimal qty = dto.getQuantity();
@@ -121,11 +122,22 @@ public class LotAOP {
 				    }
 				}
 				
+				if (targetIdValue instanceof String) {
+				    targetVal = (String) targetIdValue;
+				} else if (targetIdValue instanceof Integer) {
+				    targetVal = Integer.toString((Integer) targetIdValue);
+				} else if (targetIdValue instanceof Long) {
+				    targetVal = Long.toString((Long) targetIdValue);
+				} else {
+				    // 그 외 타입은 toString()을 호출하거나 null 처리
+				    targetVal = (targetIdValue != null) ? targetIdValue.toString() : null;
+				}
+				
 				LotDTO lotDTO = LotDTO
 								.builder()
 								.tableName(tableName)
 								.targetId((String) targetId)
-								.targetIdValue((String) targetIdValue)
+								.targetIdValue(targetVal)
 								.materialCode((String) materialType)
 								.usages(usages)
 								.build();
@@ -147,6 +159,8 @@ public class LotAOP {
 		} catch (Exception e) {
 			 log.error("Error during lotDTO creation or logging", e);
 		}
+		
+		return result;
 	}
 
 	/*

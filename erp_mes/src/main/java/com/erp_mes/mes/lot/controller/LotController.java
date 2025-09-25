@@ -1,5 +1,7 @@
 package com.erp_mes.mes.lot.controller;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -11,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
+import com.erp_mes.mes.lot.entity.LotMaster;
+import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
 
@@ -26,6 +31,8 @@ import lombok.extern.log4j.Log4j2;
 public class LotController {
 
 	private final LotService lotService;
+	
+	private final LotRepository lotRepository;
 
 	@GetMapping("/test/{wordOrderId}")
 	@ResponseBody
@@ -34,6 +41,27 @@ public class LotController {
 		
 		HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", workOrderId); //pk_id의 값 입력
+		return "ok";
+	}
+	
+	@GetMapping("/domaintest")
+	@ResponseBody
+	public String domainTest() {
+		String lotId = null;
+		
+		String domain = "output";
+		LotDomain lotDomain = LotDomain.fromDomain(domain.toLowerCase().trim());
+        String prefix = lotDomain.getPrefix();
+        
+        log.info(">>>>>>>>>>>>>>>>>>>>>>>lotDomamin======="+lotDomain);
+        log.info(">>>>>>>>>>>>>>>>>>>>>>>prepix======="+prefix);
+        
+        String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String lastLotId = lotRepository.findByLastLotId(prefix, datePart, null);
+        lotId = lotService.generateLotId(prefix, datePart, null, lastLotId);
+        
+        log.info("lotid======="+lotId);
+		
 		return "ok";
 	}
 	

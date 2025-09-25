@@ -127,7 +127,8 @@
 	
 	<update id="updateInputStatusByInId">
 	    UPDATE INPUT
-	    SET IN_STATUS = #{newStatus}
+	    SET IN_STATUS = #{newStatus},
+	    	IN_COUNT = #{acceptedCount}
 	    WHERE IN_ID = #{inId}
 	</update>
 	
@@ -173,49 +174,30 @@
 	    WHERE T1.IN_STATUS = '입고대기' AND T1.MATERIAL_ID IS NOT NULL
 	</select>
 	
-	<select id="getProcessInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+	<select id="getProcessInspectionTargetsGrouped" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
 	    SELECT
 	        T1.WORK_ORDER_ID AS targetId,
 	        T4.PRODUCT_NAME AS targetName,
 	        T2.PLAN_QUANTITY AS quantity,
-	        T7.INSPECTION_TYPE AS inspectionType,
-	        'WorkOrder' AS targetSource,
+	        'QC002' AS inspectionType,
 	        T1.WORK_ORDER_STATUS AS remarks,
-	        T3.PRODUCT_ID AS productId,
-	        T3.PRO_ID AS processId,
-	        T5.PRO_NM AS processName,
-	        T6.EQUIP_NM AS equipName,
-	        T1.EMP_ID AS empId,
-	        T3.PRO_SEQ AS proSeq FROM WORK_ORDER T1
+	        T8.GOOD_QTY AS goodQty,
+	        T8.DEFECT_QTY AS defectQty,
+	        'WorkOrder' AS targetSource,
+	        T4.PRODUCT_ID AS productId,
+	        (
+	            SELECT MIN(T5_SUB.PRO_ID)
+	            FROM PROCESS_ROUTING T3_SUB
+	            JOIN PROCESS T5_SUB ON T3_SUB.PRO_ID = T5_SUB.PRO_ID
+	            WHERE T3_SUB.PRODUCT_ID = T4.PRODUCT_ID
+	        ) AS processId
+	    FROM WORK_ORDER T1
 	    LEFT JOIN PRODUCT_PLAN T2 ON T1.PLAN_ID = T2.PLAN_ID
-	    LEFT JOIN PROCESS_ROUTING T3 ON T1.LINE_ID = T3.LINE_ID
-	    LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
-	    LEFT JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
-	    LEFT JOIN EQUIPMENT T6 ON T3.EQUIP_ID = T6.EQUIP_ID
-	    LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID = T7.INSPECTION_FM_ID
+	    LEFT JOIN PRODUCT T4 ON T2.PRODUCT_ID = T4.PRODUCT_ID
+	    LEFT JOIN WORK_RESULT T8 ON T1.WORK_ORDER_ID = T8.WORK_ORDER_ID
 	    WHERE T1.WORK_ORDER_STATUS = '검사대기'
 	</select>
 	
-	<select id="getPackagingInspectionTargets" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
-	    SELECT
-	        T1.WORK_ORDER_ID AS targetId,
-	        T4.PRODUCT_NAME AS targetName,
-	        T2.PLAN_QUANTITY AS quantity,
-	        T7.INSPECTION_TYPE AS inspectionType,
-	        'WorkOrder' AS targetSource,
-	        T1.WORK_ORDER_STATUS AS remarks,
-	        T3.PRODUCT_ID AS productId,
-	        T3.PRO_ID AS processId,
-	        T1.EMP_ID AS empId
-	    FROM WORK_ORDER T1
-	    LEFT JOIN PRODUCT_PLAN T2 ON T1.PLAN_ID = T2.PLAN_ID
-	    LEFT JOIN PROCESS_ROUTING T3 ON T1.LINE_ID = T3.LINE_ID
-	    LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
-	    LEFT JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
-	    LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID = T7.INSPECTION_FM_ID
-	    WHERE T1.WORK_ORDER_STATUS = '포장검사'
-	</select>
-		
 	<select id="findInspectionItemsByMaterialId"
 	    parameterType="Long"
 	    resultType="com.erp_mes.mes.quality.dto.InspectionItemDTO">
@@ -260,22 +242,91 @@
 	</select>
 	
 	<insert id="insertDefectItem" parameterType="com.erp_mes.mes.pop.dto.DefectDTO">
-	    <selectKey keyProperty="defectItemId" resultType="long" order="BEFORE">
-	        SELECT DEFECT_ITEM_SEQ.NEXTVAL FROM DUAL
-	    </selectKey>
 	    INSERT INTO DEFECT_ITEM (
-	        DEFECT_ITEM_ID, DEFECT_TYPE, DEFECT_REASON, DEFECT_QTY,
-	        PRODUCT_NAME, EMPLOYEE_ID, DEFECT_LOCATION, DEFECT_DATE
+	        DEFECT_TYPE, DEFECT_REASON, DEFECT_QTY, WORK_ORDER_ID,
+	        PRODUCT_NAME, EMP_ID, DEFECT_LOCATION, DEFECT_DATE, LOT_ID
 	    ) VALUES (
-	        #{defectItemId}, #{defectType}, #{defectReason}, #{defectQty},
-	        #{productName}, #{employeeId}, #{defectLocation}, SYSDATE
+	        #{defectType}, 
+	        #{defectReason}, 
+	        #{defectQty},
+	        #{workOrderId, jdbcType=NUMERIC}, 
+	        #{productNm}, 
+	        #{empId}, 
+	        #{defectLocation}, 
+	        SYSDATE,
+	        #{lotId}
 	    )
-	</insert>	
+	</insert>
 
 	<update id="updateWorkOrderStatus" parameterType="String">
 		UPDATE work_order
 		SET work_order_status = '작업완료'
 		WHERE work_order_id = #{workOrderId}
 	</update>
+	
+	<select id="findTargetNameByWorkOrderId" resultType="string">
+    SELECT 
+        T2.PRODUCT_NAME 
+    FROM WORK_ORDER T1
+    JOIN PRODUCT_PLAN T3 ON T1.PLAN_ID = T3.PLAN_ID
+    JOIN PRODUCT T2 ON T3.PRODUCT_ID = T2.PRODUCT_ID
+    WHERE T1.WORK_ORDER_ID = #{workOrderId}
+	</select>
+	
+	<update id="updateWorkResultCounts">
+    UPDATE WORK_RESULT
+    SET 
+        GOOD_QTY = #{acceptedCount},
+        DEFECT_QTY = #{defectiveCount}
+    WHERE 
+        WORK_ORDER_ID = #{workOrderId}
+	</update>
+	
+	<select id="findInspectionTypeById" parameterType="long" resultType="string">
+    SELECT 
+        INSPECTION_TYPE 
+    FROM INSPECTION 
+    WHERE INSPECTION_ID = #{inspectionId}
+	</select>
+	
+	<select id="getIncomingDetail" parameterType="long" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+	    SELECT
+	        T1.INSPECTION_ID AS inspectionId,
+	        T1.INSPECTION_TYPE AS inspectionType,
+	        'Incoming' AS targetSource,
+	        T1.LOT_ID AS lotId,
+	        T4.MATERIAL_NAME AS targetName,
+	        T1.MATERIAL_ID AS targetId,
+	        NULL AS planId,
+	        NULL AS workOrderId,
+	        T5.DEFECT_REASON AS defectReason,
+	        T2.REMARKS AS remarks
+	    FROM INSPECTION T1
+	    LEFT JOIN INSPECTION_RESULT T2 ON T1.INSPECTION_ID = T2.INSPECTION_ID
+	    LEFT JOIN MATERIAL T4 ON T1.MATERIAL_ID = T4.MATERIAL_ID
+	    LEFT JOIN DEFECT_ITEM T5 ON T4.MATERIAL_NAME = T5.PRODUCT_NAME AND T1.LOT_ID = T5.LOT_ID  
+	    WHERE T1.INSPECTION_ID = #{inspectionId}
+	</select>
+	
+	<select id="getProcessDetail" parameterType="long" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
+    SELECT
+        DISTINCT 
+        T1.INSPECTION_ID AS inspectionId,
+        T1.INSPECTION_TYPE AS inspectionType,
+        T1.LOT_ID AS lotId,
+        T4.PRODUCT_NAME AS targetName,
+        T3.WORK_ORDER_ID AS targetId,
+        T5.PLAN_ID AS planId,
+        TO_CHAR(T6.DEFECT_REASON) AS defectReason, 
+        TO_CHAR(T2.REMARKS) AS remarks
+    FROM INSPECTION T1
+    LEFT JOIN INSPECTION_RESULT T2 ON T1.INSPECTION_ID = T2.INSPECTION_ID
+    LEFT JOIN PRODUCT T4 ON T1.PRODUCT_ID = T4.PRODUCT_ID
+    LEFT JOIN PRODUCT_PLAN T5 ON T1.PRODUCT_ID = T5.PRODUCT_ID 
+    LEFT JOIN WORK_ORDER T3 ON T5.PLAN_ID = T3.PLAN_ID 
+    LEFT JOIN DEFECT_ITEM T6 ON T3.WORK_ORDER_ID = T6.WORK_ORDER_ID 
+
+    WHERE T1.INSPECTION_ID = #{inspectionId}
+	</select>
 
 </mapper>

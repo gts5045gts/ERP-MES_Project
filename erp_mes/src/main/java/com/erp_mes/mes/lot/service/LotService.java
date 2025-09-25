@@ -142,11 +142,19 @@ public class LotService {
 	}
 
 	//targetTable 조회
-	public List<Map<String, Object>> getTargetInfo(String tableName, String targetId, String targetIdValue) {
+	public List<Map<String, Object>> getTargetInfo(String tableName, String targetId, Object targetIdValue) {
 		
         String sql = "SELECT * FROM " + tableName + " WHERE " + targetId + " = :targetIdValue";
 
         NativeQuery<?> nativeQuery = entityManager.createNativeQuery(sql).unwrap(NativeQuery.class);
+        
+        if (targetIdValue instanceof String) {
+			targetIdValue = (String) targetIdValue;
+		} else if (targetIdValue instanceof Integer) {
+			targetIdValue = (Integer) targetIdValue;
+		} else if (targetIdValue instanceof Long) {
+			targetIdValue = (Long) targetIdValue;
+		}
 
         nativeQuery.setParameter("targetIdValue", targetIdValue);
 
@@ -162,7 +170,7 @@ public class LotService {
         return (List<Map<String, Object>>) nativeQuery.getResultList();
 	}
 
-	public void updateLotId(String tableName, String targetId, String targetIdValue, String LotId) {
+	public void updateLotId(String tableName, String targetId, Object targetIdValue, String LotId) {
 		
 		if (!tableName.matches("^[a-zA-Z0-9_]+$")) {
 		    throw new IllegalArgumentException("Invalid table name format");
@@ -170,6 +178,14 @@ public class LotService {
 
 		if (!targetId.matches("^[a-zA-Z0-9_]+$")) {
 		    throw new IllegalArgumentException("Invalid column name format");
+		}
+		
+		if (targetIdValue instanceof String) {
+			targetIdValue = (String) targetIdValue;
+		} else if (targetIdValue instanceof Integer) {
+			targetIdValue = (Integer) targetIdValue;
+		} else if (targetIdValue instanceof Long) {
+			targetIdValue = (Long) targetIdValue;
 		}
 		
 		String sql = "UPDATE "+ tableName +" SET LOT_ID = :lot_id WHERE "+ targetId +" = :targetIdValue";

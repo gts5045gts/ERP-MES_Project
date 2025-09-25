@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <!-- 개별페이지 CSS 영역 -->
+    <th:block layout:fragment="style">
+<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    </th:block>
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+</head>
+<body>
+	<th:block layout:fragment="content">
+
+		<div class="container-fluid">
+		    <div class="row">
+		        <!-- 생산계획 Grid -->
+		        <div class="col-md-12">
+		            <div class="card shadow mb-4">
+		            	<div class="d-flex align-items-center justify-content-between mb-2">
+			                <h3 class="mb-0">작업지시서</h3>
+			                <button class="btn btn-success btn-sm me-3" id="workOrderModalBtn">등록</button>
+		                </div>
+		                <div id="work-grid"></div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+	
+		<form id="workOrderForm">
+		<div class="modal fade" id="workOrderRegisterModal" tabindex="-1" aria-labelledby="workOrderRegisterLabel" aria-hidden="true">
+		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		        <div class="modal-content" id="modalContentContainer">
+		            
+		            <!-- 모달 헤더 -->
+		            <div class="modal-header" style="border-bottom: 1px solid black;">
+		                <h5 class="modal-title" id="workOrderRegisterLabel">작업지시 등록</h5>
+		            </div>
+		
+		            <!-- 모달 바디 -->
+		            <div class="modal-body" style="height: 600px;">
+		            	<!-- 등록용 히든값들 -->
+		                <input type="hidden" id="plan_id" name="planId">
+		                <input type="hidden" id="bom_id" name="bomId">
+		            
+		                <div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">생산계획서</label>
+							    <select id="planSelect" name="planId" class="form-control">
+							      <option value="">선택하세요</option>
+							      <option th:each="p : ${planList}"
+							              th:value="${p.planId}"
+							              th:text="${p.planId}">
+							      </option>
+							    </select>
+		                    </div>
+		                </div>
+		                
+		
+						<div class="row mb-4">
+		                    <div class="col">
+		                      <label for="product_name" class="form-label">제품명</label>
+		                      	<input type="text" id="product_name" name="productName" class="form-control" placeholder="ex) 엔진A" readonly="readonly">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">생산 수량</label>
+		                        <input type="text" id="plan_quantity" name="planQuantity" class="form-control" placeholder="ex) 10" readonly="readonly">
+		                    </div>
+						</div>
+		                <div class="row mb-4">
+		                    <div class="col">
+		                      <label for="emp_name" class="form-label">작업 담당자</label>
+						      <select name="empId" class="form-control" required="required">
+						        <option value="">선택하세요</option>
+						        <option th:each="e : ${empInfo}"
+						                th:value="${e.empId}"
+						                th:text="${e.name} + ' (' + ${e.comdtNm} + ')'">
+						        </option>
+						      </select>
+		                    </div>
+		                </div>
+						<div class="row mb-4">
+						    <div class="col">
+						        <label class="form-label">원자재 재고량</label>
+						        <div id="MATERIAL_CNT" 
+						             class="form-control" 
+						             style="height: 250px; overflow-y: auto; background-color: #e9ecef;">
+						            <!-- JS에서 자재별 재고량과 필요 수량 비교 결과를 동적으로 넣을 예정 -->
+						        </div>
+						    </div>
+
+		                </div>
+						<div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">작업 시작일</label>
+		                        <input type="date" id="start_date" name="startDate" class="form-control" required="required">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">작업 종료일</label>
+		                        <input type="date" id="end_date" name="endDate" class="form-control" required="required">
+		                    </div>
+
+		                </div>
+		            </div>
+		
+		            <!-- 모달 푸터 -->
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		                <button type="button" class="btn btn-primary" id="workOrderRegisterBtn">등록</button>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		</form>
+		
+		<form id="purchaseForm">
+		<div class="modal fade" id="purchaseModal" tabindex="-1" aria-labelledby="purchaseModalLabel" aria-hidden="true">
+		  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		    <div class="modal-content">
+		      
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="purchaseModalLabel">발주 요청</h5>
+		      </div>
+		
+		      <div class="modal-body">
+		        <input type="hidden" id="material_id" name="materialId">
+		        <input type="hidden" id="require_qty" name="requireQty">
+		
+		        <div class="mb-3">
+		          <label class="form-label">작업지시 ID</label>
+		          <input type="text" id="work_order_id" name="workOrderId" class="form-control" readonly>
+		        </div>
+		
+		        <div class="mb-3">
+		          <label class="form-label">부족 자재 목록</label>
+		          <div id="shortageList" class="form-control" style="height:200px; overflow-y:auto; background:#f9f9f9;"></div>
+		        </div>
+		      </div>
+		
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		        <button type="button" class="btn btn-primary" id="purchaseConfirmBtn">발주 확정</button>
+		      </div>
+		
+		    </div>
+		  </div>
+		</div>
+		</form>
+		
+	
+	</th:block>
+	<th:block layout:fragment="script">
+		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+		<script src="/bootstrap/js/pm/work_order_list.js"></script>
+		<script src="/bootstrap/js/pm/work_order_modal.js"></script>
+		<script src="/bootstrap/js/pm/purchase_modal.js"></script>
+	</th:block>
+</body>
+</html>

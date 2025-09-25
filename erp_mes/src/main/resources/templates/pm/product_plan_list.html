@@ -28,54 +28,67 @@
 		</div>
 	
 		<form id="planForm">
-		<div class="modal fade" id="productRegisterModal" tabindex="-1" aria-labelledby="productRegisterLabel" aria-hidden="true">
+		<div class="modal fade" id="planRegisterModal" tabindex="-1" aria-labelledby="planRegisterLabel" aria-hidden="true">
 		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
 		        <div class="modal-content" id="modalContentContainer">
 		            
 		            <!-- 모달 헤더 -->
 		            <div class="modal-header" style="border-bottom: 1px solid black;">
-		                <h5 class="modal-title" id="productRegisterLabel">제품 등록</h5>
+		                <h5 class="modal-title" id="planRegisterLabel">생산 계획 등록</h5>
 		            </div>
 		
 		            <!-- 모달 바디 -->
-		            <div class="modal-body" style="height: 230px;">
+		            <div class="modal-body" style="height: 600px;">
 		                <div class="row mb-4">
-		                    <div class="col">
-		                        <label for="product_id" class="form-label">제품코드</label>
-		                        <input type="text" id="product_id" name="productId" class="form-control" placeholder="제품코드">
-		                    </div>
-		                    <div class="col">
-		                        <label for="product_name" class="form-label">제품명</label>
-		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="제품명">
-		                    </div>
+						  <div class="col">
+						    <label class="form-label">등록된 수주</label>
+						    <!-- 그리드가 그려질 영역 -->
+						    <div id="order-grid"></div>
+						  </div>
 		                </div>
 		
 						<div class="row mb-4">
-						    <div class="col">
-						        <label for="product_type" class="form-label">제품 구분</label>
-								<select id="product_type" name="productType" class="form-control">
-								  <option value="">선택하세요</option>
-								  <option th:each="c : ${commonPtype}"
-								          th:value="${c.comDtId}"
-								          th:text="${c.comDtNm}"></option>
-								</select>
-						    </div>
-						    <div class="col">
-						        <label for="unit" class="form-label">단위</label>
-								<select id="unit" name="unit" class="form-control">
-								  <option value="">선택하세요</option>
-								  <option th:each="c : ${commonUnit}"
-								          th:value="${c.comDtId}"
-								          th:text="${c.comDtNm}"></option>
-								</select>
-						    </div>
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">생산계획 번호</label>
+		                        <input type="text" id="plan_id" name="planId" class="form-control" placeholder="ex) PP20250101-001">
+		                    </div>
 						</div>
+						<div class="row mb-4">
+		                    <div class="col">
+		                      <label for="product_name" class="form-label">제품명</label>
+						      <select name="productId" class="form-control">
+						        <option value="">선택하세요</option>
+						        <option th:each="p : ${productName}"
+						                th:value="${p.productId}"
+						                th:text="${p.productName} + ' (' + ${p.productId} + ')'">
+						        </option>
+						      </select>
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">생산 수량</label>
+		                        <input type="text" id="plan_quantity" name="planQuantity" class="form-control" placeholder="ex) 10">
+		                    </div>
+						</div>
+						<div class="row mb-4">
+		                    <div class="col">
+		                        <label for="product_id" class="form-label">생산계획 시작일</label>
+		                        <input type="date" id="start_date" name="startDate" class="form-control">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">생산계획 종료일</label>
+		                        <input type="date" id="end_date" name="endDate" class="form-control">
+		                    </div>
+		                    <div class="col">
+		                        <label for="product_name" class="form-label">납기일</label>
+		                        <input type="date" id="due_date" name="dueDate" class="form-control">
+		                    </div>
+		                </div>
 		            </div>
 		
 		            <!-- 모달 푸터 -->
 		            <div class="modal-footer">
 		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-		                <button type="button" class="btn btn-primary" id="productRegisterBtn">등록</button>
+		                <button type="button" class="btn btn-primary" id="planRegisterBtn">등록</button>
 		            </div>
 		        </div>
 		    </div>
@@ -87,7 +100,7 @@
 	<th:block layout:fragment="script">
 		<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
 		<script src="/bootstrap/js/pm/produdct_plan_list.js"></script>
-		<script src="/bootstrap/js/pm/product_modal.js"></script>
+		<script src="/bootstrap/js/pm/product_plan_modal.js"></script>
 	</th:block>
 </body>
 </html>
