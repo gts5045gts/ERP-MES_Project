@@ -19,6 +19,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class OrdersDTO {
 	
+	private Long id;
 	private String orderId;
 	private String orderStatus;
 	private String productId;
