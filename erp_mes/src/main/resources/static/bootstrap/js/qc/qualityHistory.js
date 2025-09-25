@@ -68,6 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	// --- 하단 그리드 (검사 대기 목록) ---
 	let incomingGrid, processGrid;
 	let selectedTargetData = null;
+    // checkIfLastProcess 함수는 서버에서 정의되어 있다고 가정합니다.
+    // async function checkIfLastProcess(targetId, proSeq) { ... } 
 
 	async function loadTargetData() {
 		// incomingGrid 인스턴스가 없으면 생성
@@ -109,8 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
 				columns: [
 					{ header: 'ID', name: 'targetId' },
 					{ header: '제품명', name: 'targetName' },
-//					{ header: '공정명', name: 'processName' },
-//					{ header: '설비명', name: 'equipName' },
 					{ header: '로트번호', name: 'lotId' },
 					{ header: '계획 수량', name: 'quantity' },
 					{ header: '양품 수량', name: 'goodQty' },
@@ -141,18 +141,21 @@ document.addEventListener('DOMContentLoaded', function() {
 				criteriaFieldsContainer.innerHTML = '';
 
 				if (selectedTargetData.targetSource === 'WorkOrder') {
+                    const totalGoodQuantity = selectedTargetData.goodQty || 0;
+
 					const fieldDiv = document.createElement('div');
 					fieldDiv.className = 'form-group';
 					fieldDiv.innerHTML = `
-						<label>총 생산 양품 수량: ${selectedTargetData.goodQty}</label><br>
+						<label>총 검사 수량 (생산 실적 합계): ${totalGoodQuantity}</label><br>
 						<label>합격 수량</label>
 						<input type="number" id="acceptedCount" class="form-control" placeholder="합격 수량 입력" required>
 						<label>불량 수량</label>
 						<input type="number" id="defectiveCount" class="form-control" placeholder="불량 수량 입력" required>
-						<div id="countWarning" class="text-danger mt-2" style="display:none;">입력된 수량의 합이 총 생산 양품 수량과 일치하지 않습니다.</div>
+						<div id="countWarning" class="text-danger mt-2" style="display:none;">입력된 수량의 합이 총 검사 수량 (${totalGoodQuantity})과 일치하지 않습니다.</div>
 					`;
 					criteriaFieldsContainer.appendChild(fieldDiv);
 
+                    // 불량 수량 입력 시 불량 정보 필드 표시 로직만 유지
 					document.getElementById('defectiveCount').addEventListener('input', async (e) => {
 						const defectiveCount = parseInt(e.target.value) || 0;
 						const defectFields = document.getElementById('defectFields');
@@ -231,50 +234,20 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	function updateResult(event) {
-		const input = event.target;
-		const measurement = parseFloat(input.value);
-		const tolerance = parseFloat(input.dataset.tolerance);
-		const standard = parseFloat(input.dataset.standard); // 기준값
-		const resultInput = input.closest('.form-group').querySelector('.result-input');
-
-		if (isNaN(measurement)) {
-			resultInput.value = '';
-			resultInput.style.color = 'black';
-			return;
-		}
-
-		const min = standard - tolerance;
-		const max = standard + tolerance;
-
-		if (tolerance === 0) {
-			if (measurement === standard) {
-				resultInput.value = '합격';
-				resultInput.style.color = 'blue';
-			} else {
-				resultInput.value = '불합격';
-				resultInput.style.color = 'red';
-			}
-		} else {
-			if (measurement >= min && measurement <= max) {
-				resultInput.value = '합격';
-				resultInput.style.color = 'blue';
-			} else {
-				resultInput.value = '불합격';
-				resultInput.style.color = 'red';
-			}
-		}
-	}
-	
 	document.getElementById('registerBtn').addEventListener('click', async () => {
 		let registrationData = {};
 		let apiUrl = '';
 
+        // 합격/불량 수량 공통 변수
+        const acceptedCount = parseInt(document.getElementById('acceptedCount').value) || 0;
+		const defectiveCount = parseInt(document.getElementById('defectiveCount').value) || 0;
+		const totalActualCount = acceptedCount + defectiveCount;
+        const remarks = document.getElementById('modalRemarks').value;
+        const defectType = document.getElementById('defectType') ? document.getElementById('defectType').value : null;
+
+
 		if (selectedTargetData.targetSource === 'Incoming') {
 			const expectedCount = selectedTargetData.quantity;
-			const acceptedCount = parseInt(document.getElementById('acceptedCount').value) || 0;
-			const defectiveCount = parseInt(document.getElementById('defectiveCount').value) || 0;
-			const totalActualCount = acceptedCount + defectiveCount;
 
 			if (totalActualCount !== expectedCount) {
 				document.getElementById('countWarning').style.display = 'block';
@@ -289,90 +262,47 @@ document.addEventListener('DOMContentLoaded', function() {
 				defectiveCount: defectiveCount,
 				lotId: selectedTargetData.lotId || '',
 				inspectionType: selectedTargetData.inspectionType,
-				remarks: document.getElementById('modalRemarks').value,
+				remarks: remarks,
 				materialId: selectedTargetData.materialId
 			};
 
 			if (defectiveCount > 0) {
-				const defectType = document.getElementById('defectType').value;
 				registrationData.defectType = defectType;
 			}
 			apiUrl = '/quality/api/verify-incoming-count';
 
 		} else if (selectedTargetData.targetSource === 'WorkOrder') {
-			const isLastProcess = await checkIfLastProcess(selectedTargetData.targetId, selectedTargetData.proSeq);
-			if (isLastProcess) {
-				const expectedCount = selectedTargetData.goodsQty;
-				const acceptedCount = parseInt(document.getElementById('acceptedCount').value) || 0;
-				const defectiveCount = parseInt(document.getElementById('defectiveCount').value) || 0;
-				const totalActualCount = acceptedCount + defectiveCount;
-
-				if (totalActualCount !== expectedCount) {
-					document.getElementById('countWarning').style.display = 'block';
-					return;
-				} else {
-					document.getElementById('countWarning').style.display = 'none';
-				}
-
-				registrationData = {
-					targetSource: selectedTargetData.targetSource,
-					targetId: selectedTargetData.targetId,
-					acceptedCount: acceptedCount,
-					defectiveCount: defectiveCount,
-					lotId: selectedTargetData.lotId || '',
-					inspectionType: selectedTargetData.inspectionType,
-					remarks: document.getElementById('modalRemarks').value,
-					productId: selectedTargetData.productId,
-					processId: selectedTargetData.processId,
-				};
-
-				if (defectiveCount > 0) {
-					const defectType = document.getElementById('defectType').value;
-					registrationData.defectType = defectType;
-				}
-				
-				apiUrl = '/quality/api/register-process-inspection-result';
 			
-			} else {
-				const measurementInputs = document.querySelectorAll('.measurement-input');
-				const results = [];
-				let allValid = true;
-				
-				measurementInputs.forEach(input => {
-					const measurement = parseFloat(input.value);
-					const resultInput = input.closest('.form-group').querySelector('.result-input');
+            const totalGoodQuantity = selectedTargetData.goodQty || 0;
+            const expectedCount = totalGoodQuantity; // 검증 기준은 총 생산 수량
 
-					if (isNaN(measurement)) {
-						allValid = false;
-						return;
-					}
-
-					const resultValue = (resultInput.value === '합격') ? '합격' : '불합격';
-
-					results.push({
-						itemId: input.dataset.itemId,
-						measurement: measurement,
-						result: resultValue
-					});
-				});
-
-				if (!allValid) {
-					alert('모든 실측값을 올바르게 입력해주세요.');
-					return;
-				}
-
-				registrationData = {
-					targetSource: selectedTargetData.targetSource,
-					targetId: selectedTargetData.targetId,
-					lotId: selectedTargetData.lotId || '',
-					inspectionType: selectedTargetData.inspectionType,
-					remarks: document.getElementById('modalRemarks').value,
-					productId: selectedTargetData.productId,
-					processId: selectedTargetData.processId,
-					inspectionResults: results
-				};
-				apiUrl = '/quality/api/register-inspection-result';
+			if (totalActualCount !== expectedCount) { // 조건이 참(true)이 되어야 오류가 발생합니다.
+			    document.getElementById('countWarning').style.display = 'block'; // 오류 메시지 표시
+			    return;
 			}
+
+            registrationData = {
+                targetSource: selectedTargetData.targetSource,
+                targetId: selectedTargetData.targetId, // WORK_ORDER_ID
+                acceptedCount: acceptedCount,
+                defectiveCount: defectiveCount,
+                lotId: selectedTargetData.lotId || '',
+                inspectionType: selectedTargetData.inspectionType,
+                remarks: remarks,
+                productId: selectedTargetData.productId,
+                processId: selectedTargetData.processId,
+                proSeq: selectedTargetData.proSeq
+            };
+
+            if (defectiveCount > 0) {
+                registrationData.defectType = defectType;
+            }
+            
+            // 💡 [수정] 수량 기반 등록 API 사용
+            // 이 API는 중간 공정이든 최종 공정이든 WORK_ORDER의 검사 결과를 처리합니다.
+            // 서버에서 isLastProcess를 체크하여 상태 업데이트를 분기합니다.
+            apiUrl = '/quality/api/register-process-inspection-result'; 
+
 		} else {
 			alert('유효하지 않은 검사 유형입니다.');
 			return;

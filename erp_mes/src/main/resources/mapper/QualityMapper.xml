@@ -176,22 +176,25 @@
 	
 <select id="getProcessInspectionTargetsGrouped" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
     SELECT
+        DISTINCT
         T1.WORK_ORDER_ID AS targetId,
         T4.PRODUCT_NAME AS targetName,
         T2.PLAN_QUANTITY AS quantity,
         T7.INSPECTION_TYPE AS inspectionType,
         T1.WORK_ORDER_STATUS AS remarks,
-        SUM(T8.GOOD_QTY) AS goodQty,
-        SUM(T8.DEFECT_QTY) AS defectQty
+        T8.GOOD_QTY AS goodQty,
+        T8.DEFECT_QTY AS defectQty,
+        'WorkOrder' AS targetSource
     FROM WORK_ORDER T1
     LEFT JOIN PRODUCT_PLAN T2 ON T1.PLAN_ID = T2.PLAN_ID
-    LEFT JOIN PROCESS_ROUTING T3 ON T1.LINE_ID = T3.LINE_ID AND T2.PRODUCT_ID = T3.PRODUCT_ID
+    
+    LEFT JOIN PROCESS_ROUTING T3 ON T2.PRODUCT_ID = T3.PRODUCT_ID
+    
     LEFT JOIN PRODUCT T4 ON T3.PRODUCT_ID = T4.PRODUCT_ID
     LEFT JOIN PROCESS T5 ON T3.PRO_ID = T5.PRO_ID
     LEFT JOIN INSPECTION_FM T7 ON T5.INSPECTION_FM_ID = T7.INSPECTION_FM_ID
     LEFT JOIN WORK_RESULT T8 ON T1.WORK_ORDER_ID = T8.WORK_ORDER_ID
     WHERE T1.WORK_ORDER_STATUS = '검사대기'
-    GROUP BY T1.WORK_ORDER_ID, T4.PRODUCT_NAME, T2.PLAN_QUANTITY, T7.INSPECTION_TYPE, T1.WORK_ORDER_STATUS
 </select>
 
 <select id="getProcessDetails" parameterType="String" resultType="com.erp_mes.mes.quality.dto.InspectionTargetDTO">
@@ -265,22 +268,43 @@
 	</select>
 	
 	<insert id="insertDefectItem" parameterType="com.erp_mes.mes.pop.dto.DefectDTO">
-	    <selectKey keyProperty="defectItemId" resultType="long" order="BEFORE">
-	        SELECT DEFECT_ITEM_SEQ.NEXTVAL FROM DUAL
-	    </selectKey>
 	    INSERT INTO DEFECT_ITEM (
-	        DEFECT_ITEM_ID, DEFECT_TYPE, DEFECT_REASON, DEFECT_QTY,
-	        PRODUCT_NAME, EMPLOYEE_ID, DEFECT_LOCATION, DEFECT_DATE
+	        DEFECT_TYPE, DEFECT_REASON, DEFECT_QTY, WORK_ORDER_ID,
+	        PRODUCT_NAME, EMP_ID, DEFECT_LOCATION, DEFECT_DATE
 	    ) VALUES (
-	        #{defectItemId}, #{defectType}, #{defectReason}, #{defectQty},
-	        #{productName}, #{employeeId}, #{defectLocation}, SYSDATE
+	        #{defectType}, 
+	        #{defectReason}, 
+	        #{defectQty},
+	        #{workOrderId, jdbcType=NUMERIC}, 
+	        #{productName}, 
+	        #{empId}, 
+	        #{defectLocation}, 
+	        SYSDATE
 	    )
-	</insert>	
+	</insert>
 
 	<update id="updateWorkOrderStatus" parameterType="String">
 		UPDATE work_order
 		SET work_order_status = '작업완료'
 		WHERE work_order_id = #{workOrderId}
+	</update>
+	
+	<select id="findTargetNameByWorkOrderId" resultType="string">
+    SELECT 
+        T2.PRODUCT_NAME 
+    FROM WORK_ORDER T1
+    JOIN PRODUCT_PLAN T3 ON T1.PLAN_ID = T3.PLAN_ID
+    JOIN PRODUCT T2 ON T3.PRODUCT_ID = T2.PRODUCT_ID
+    WHERE T1.WORK_ORDER_ID = #{workOrderId}
+	</select>
+	
+	<update id="updateWorkResultCounts">
+    UPDATE WORK_RESULT
+    SET 
+        GOOD_QTY = #{acceptedCount},
+        DEFECT_QTY = #{defectiveCount}
+    WHERE 
+        WORK_ORDER_ID = #{workOrderId}
 	</update>
 
 </mapper>

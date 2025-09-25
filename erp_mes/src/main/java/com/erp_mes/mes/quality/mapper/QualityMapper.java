@@ -33,6 +33,8 @@ public interface QualityMapper {
  int insertInspection(InspectionDTO inspectionDTO);
  int insertInspectionResult(InspectionResultDTO resultDTO);
  
+ // WORK_ORDER_ID로 제품명을 조회하는 메서드
+ String findTargetNameByWorkOrderId(String workOrderId);
  
  // 검사 이력 조회
  List<InspectionResultDTO> getInspectionResultList();
@@ -45,6 +47,12 @@ public interface QualityMapper {
  // 검사 완료 후 상태 업데이트
  int updateWorkOrderStatus(String workOrderId);
  int updateInputStatus(String inputId);
+ // 공정 검사 후 WORK_RESULT 테이블의 수량을 업데이트하는 메서드
+ int updateWorkResultCounts(
+     @Param("workOrderId") String workOrderId, 
+     @Param("acceptedCount") Long acceptedCount, 
+     @Param("defectiveCount") Long defectiveCount
+ );
  
  // 검사 항목 및 허용 공차 조회 
  List<InspectionItemDTO> findInspectionItemsByMaterialId(String materialId);

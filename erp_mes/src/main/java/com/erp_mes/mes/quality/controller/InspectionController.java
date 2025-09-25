@@ -406,4 +406,29 @@ public class InspectionController {
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+    // 공정 검사 수량 등록 API
+	@PostMapping("/api/register-process-inspection-result")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> registerProcessInspectionResult(
+			@RequestBody InspectionRegistrationRequestDTO requestDTO,
+			@AuthenticationPrincipal PersonnelLoginDTO personnelLoginDTO) {
+		
+		Map<String, Object> response = new HashMap<>();
+		try {
+			// 클라이언트로부터 받은 데이터에 로그인한 사원 ID 추가
+			requestDTO.setEmpId(personnelLoginDTO.getEmpId());
+            
+			inspectionService.registerProcessInspectionResult(requestDTO);
+			
+			response.put("success", true);
+			response.put("message", "공정 검사 결과 등록 및 처리가 성공적으로 완료되었습니다.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("Failed to register process inspection result: {}", e.getMessage());
+			response.put("success", false);
+			response.put("message", "공정 검사 등록 실패: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

@@ -18,9 +18,10 @@ public class DefectDTO {
     private String defectReason;
     private Long defectQty;
     private String productName; // 불량품명
-    private String employeeId; // 작업자ID
+    private String empId; // 작업자ID
     private Integer defectLocation; // 불량위치 1:pop 2:QC/QA
     private LocalDateTime defectDate;
+    private Long workOrderId;
 	
 	
 
