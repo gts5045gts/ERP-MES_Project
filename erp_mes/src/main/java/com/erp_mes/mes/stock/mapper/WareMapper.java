@@ -287,4 +287,23 @@ public interface WareMapper {
 
     // 입고 정보 조회 (사유 포함)
     Map<String, Object> selectInputWithReason(@Param("inId") String inId);
+    
+ // 발주 대기 목록 조회
+    List<Map<String, Object>> selectPendingPurchases();
+    
+    // 발주 상세 조회
+    List<Map<String, Object>> selectPurchaseDetails(@Param("purId") String purId);
+    
+    // 특정 품목의 발주 상세 조회
+    Map<String, Object> selectPurchaseDetailByMaterial(@Param("purId") String purId, 
+                                                      @Param("materialId") String materialId);
+    
+    // 발주 상태 업데이트
+    int updatePurchaseStatus(@Param("purId") String purId, 
+                            @Param("status") String status);
+    
+    // 발주 상세 상태 업데이트
+    int updatePurchaseDetailStatus(@Param("purId") String purId,
+                                  @Param("materialId") String materialId,
+                                  @Param("status") String status);
 }

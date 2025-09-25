@@ -132,37 +132,66 @@ public class WareService {
 
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         params.put("inId", inId);
-
+        
+        // 발주 연계 처리 - BATCH 생성 시점에 WAITING으로 변경
+        String purchaseId = (String) params.get("purchaseId");
+        
         if(params.get("inReason") == null || "".equals(params.get("inReason"))) {
             params.put("inReason", params.get("inType"));
         }
 
         if("product".equals(itemType)) {
-            // 완제품도 일단 입고대기로 변경
-            params.put("inStatus", "입고대기");  // 입고완료 → 입고대기
+            params.put("inStatus", "입고대기");
             params.put("productId", params.get("productId"));
-
             wareMapper.insertInput(params);
             
-            // 바로 completeInput 호출
             String empId = (String) params.get("empId");
             completeInput(inId, empId);
             
             log.info("완제품 입고 처리: {}", inId);
 
         } else {
-            // 부품/반제품은 기존대로 입고대기
             params.put("inStatus", "입고대기");
             String materialId = (String) params.get("productId");
             params.put("materialId", materialId);
             params.remove("productId");
 
             wareMapper.insertInput(params);
+            
+            // 발주 연계 시 상태를 WAITING으로 변경
+            if(purchaseId != null && !purchaseId.isEmpty()) {
+                wareMapper.updatePurchaseDetailStatus(purchaseId, materialId, "WAITING");
+                updatePurchaseMainStatus(purchaseId);
+            }
+            
             log.info("부품/반제품 입고 대기: {}", inId);
         }
         
         return inId;
     }
+    // 발주 메인 상태 업데이트
+    private void updatePurchaseMainStatus(String purchaseId) {
+        // 모든 상세가 REQUEST가 아닌지 확인
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+        boolean hasWaitingOrComplete = details.stream()
+            .anyMatch(d -> "WAITING".equals(d.get("status")) || "COMPLETION".equals(d.get("status")));
+        
+        if(hasWaitingOrComplete) {
+            wareMapper.updatePurchaseStatus(purchaseId, "WAITING");
+        }
+    }
+    // 발주 완료 체크
+    private void checkAndUpdatePurchaseCompletion(String purchaseId) {
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+        boolean allComplete = details.stream()
+            .allMatch(d -> "COMPLETION".equals(d.get("status")));
+        
+        if(allComplete) {
+            wareMapper.updatePurchaseStatus(purchaseId, "COMPLETION");
+            log.info("발주 {} 모든 품목 입고 완료", purchaseId);
+        }
+    }
+
     
     // 오늘 배치 건수 조회
     public Integer getTodayBatchCount(String today) {
@@ -175,6 +204,11 @@ public class WareService {
     @TrackLot(tableName = "input", pkColumnName = "IN_ID")
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
+        
+        // 디버깅: input 데이터 확인
+        log.info("=== 입고완료 처리 시작 ===");
+        log.info("inId: {}", inId);
+        log.info("input 데이터: {}", input);
         
         if(input == null) {
             throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
@@ -190,39 +224,56 @@ public class WareService {
         String materialId = (String) input.get("MATERIAL_ID");
         String productId = (String) input.get("PRODUCT_ID");
         String warehouseId = (String) input.get("WAREHOUSE_ID");
+        String purchaseId = (String) input.get("PURCHASE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
-        // 위치 할당
+        // 디버깅: 발주 정보 확인
+        log.info("materialId: {}, purchaseId: {}", materialId, purchaseId);
+        
         String firstLocation = null;
         String manageId = null;
         
-        if(productId != null && materialId == null) {
-            // 완제품 처리
-            firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
-            if(firstLocation != null) {
-                manageId = warehouseId + "_" + productId + "_" + firstLocation;
+        if(materialId != null && purchaseId != null && !purchaseId.isEmpty()) {
+            log.info("=== 발주 연계 입고 상태 업데이트 시작 ===");
+            log.info("purchaseId: {}, materialId: {}", purchaseId, materialId);
+            
+            try {
+                // 1. 해당 발주-자재의 상세 상태를 COMPLETION으로
+                int updateResult = wareMapper.updatePurchaseDetailStatus(purchaseId, materialId, "COMPLETION");
+                log.info("purchase_detail 업데이트 결과: {} 건", updateResult);
+                
+                // 2. 해당 발주의 모든 상세 조회
+                List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+                boolean allComplete = true;
+                
+                for(Map<String, Object> detail : details) {
+                    String detailMaterialId = (String) detail.get("materialId");
+                    String status = (String) detail.get("status");
+                    log.info("발주 상세 체크 - materialId: {}, status: {}", detailMaterialId, status);
+                    
+                    if(!"COMPLETION".equals(status)) {
+                        allComplete = false;
+                    }
+                }
+                
+                // 3. 모든 상세가 완료되면 메인 발주도 COMPLETION
+                if(allComplete) {
+                    wareMapper.updatePurchaseStatus(purchaseId, "COMPLETION");
+                    log.info("발주 {} 전체 완료 처리", purchaseId);
+                } else {
+                    log.info("발주 {} 아직 미완료 항목 있음", purchaseId);
+                }
+                
+            } catch(Exception e) {
+                log.error("발주 상태 업데이트 실패", e);
+                // 발주 처리 실패해도 입고는 계속 진행
             }
-            
-            wareMapper.updateProductQuantity(productId, inCount);
-            
-        } else if(materialId != null) {
-            // 부품/반제품 처리
-            firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
-            if(firstLocation != null) {
-                manageId = warehouseId + "_" + materialId + "_" + firstLocation;
-            }
-            
-            wareMapper.updateMaterialQuantity(materialId, inCount);
+        } else if(productId != null) {
+            // 완제품인 경우 - 발주 처리 안 함
+            log.info("완제품 입고 - 발주 처리 스킵 (productId: {})", productId);
         }
         
-        if(firstLocation == null) {
-            throw new RuntimeException(
-                String.format("창고 %s에 충분한 저장 공간이 없습니다. 입고 수량: %d개", 
-                             warehouseId, inCount)
-            );
-        }
-        
-        // 입고 완료 처리
+        // 기존 마지막 처리
         wareMapper.updateInputStatus(inId, "입고완료");
         wareMapper.updateInputLocation(inId, firstLocation);
         
@@ -230,14 +281,53 @@ public class WareService {
             wareMapper.updateInputManageId(inId, manageId);
         }
         
-        log.info("입고 완료: {} - 위치: {}, manage_id: {}", inId, firstLocation, manageId);
+        log.info("=== 입고 완료 처리 종료 ===");
         
-        // LOT 추적용 세션 - @TrackLot이 LOT 생성
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", inId);
     }
     
-    
+    // 새로 추가: 발주 관련 메서드만
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPendingPurchases() {
+        return wareMapper.selectPendingPurchases();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPurchaseDetails(String purId) {
+        return wareMapper.selectPurchaseDetails(purId);
+    }
+
+    private void checkAndUpdatePurchaseStatus(String purId) {
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purId);
+        boolean allWaitingOrComplete = details.stream()
+            .allMatch(d -> !"REQUEST".equals(d.get("status")));
+        
+        if(allWaitingOrComplete) {
+            wareMapper.updatePurchaseStatus(purId, "WAITING");
+        }
+    }
+
+    private void updatePurchaseCompletion(String purId, String materialId) {
+        Map<String, Object> detail = wareMapper.selectPurchaseDetailByMaterial(purId, materialId);
+        if(detail != null) {
+            Integer orderQty = ((Number) detail.get("orderQty")).intValue();
+            Integer receivedQty = ((Number) detail.get("receivedQty")).intValue();
+            
+            if(receivedQty >= orderQty) {
+                wareMapper.updatePurchaseDetailStatus(purId, materialId, "COMPLETION");
+                
+                // 전체 발주 완료 체크
+                List<Map<String, Object>> allDetails = wareMapper.selectPurchaseDetails(purId);
+                boolean allComplete = allDetails.stream()
+                    .allMatch(d -> "COMPLETION".equals(d.get("status")));
+                
+                if(allComplete) {
+                    wareMapper.updatePurchaseStatus(purId, "COMPLETION");
+                }
+            }
+        }
+    }
     
     private String distributeToWarehouseItemsForMaterial(String warehouseId, String materialId, Integer totalCount, String empId) {
         String firstLocation = null;
@@ -524,32 +614,19 @@ public class WareService {
         
         String batchId = "MOB" + today + String.format("%03d", batchCount + 1);
         
-        // manage_id별 시퀀스를 메모리에서 관리
-        Map<String, Integer> seqMap = new HashMap<>();
+        // 오늘 전체 출고 건수 조회
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
         
         for(Map<String, Object> item : items) {
             String manageId = (String) item.get("manageId");
             String materialId = (String) item.get("materialId");
             
-            // DB에서 최대값 조회 (처음 한 번만)
-            if(!seqMap.containsKey(manageId)) {
-                Integer dbSeq = wareMapper.getOutputSeqByManageId(manageId, today);
-                seqMap.put(manageId, dbSeq == null ? 0 : dbSeq);
-            }
+            // 단순 일련번호 증가
+            todayTotalCount++;
+            String outId = "OUT" + today + String.format("%04d", todayTotalCount);
             
-            // 메모리에서 시퀀스 증가
-            Integer seq = seqMap.get(manageId) + 1;
-            seqMap.put(manageId, seq);
-            
-            String[] parts = manageId.split("_");
-            String uniquePart = "";
-            if(parts.length >= 2) {
-                uniquePart = parts[1];
-            }
-            
-            String outId = "OUT" + today + uniquePart + String.format("%02d", seq);
-            
-            log.info("manageId: {}, seq: {}, 생성된 outId: {}", manageId, seq, outId);
+            log.info("생성된 outId: {}", outId);
             
             item.put("outId", outId);
             item.put("materialId", materialId);

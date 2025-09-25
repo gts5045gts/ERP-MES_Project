@@ -103,7 +103,7 @@
 	        m.material_name as "materialName",
 	        i.product_id as "productId",  
 	        p.product_name as "productName",
-	        i.result_id as "resultId", 
+	        i.purchase_id as "purchaseId", 
 	        i.client_id as "clientId",
 	        c.client_name as "clientName",
 	        i.in_count as "inCount",
@@ -113,18 +113,90 @@
 	        i.in_type as "inType",
 	        TO_CHAR(i.in_complete, 'YYYY-MM-DD HH24:MI:SS') as "inComplete",
 	        i.location_id as "locationId",
-	        i.batch_id as "batchId",
-	        wr.work_order_id as "workOrderId"
+	        i.batch_id as "batchId"
 	    FROM input i
 	    LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
 	    LEFT JOIN material m ON i.material_id = m.material_id
 	    LEFT JOIN product p ON i.product_id = p.product_id  
 	    LEFT JOIN client c ON i.client_id = c.client_id
 	    LEFT JOIN employee e ON i.emp_id = e.emp_id
-	    LEFT JOIN work_result wr ON i.result_id = wr.result_id 
 	    WHERE 1=1
 	    ORDER BY i.in_complete DESC
 	</select>
+	
+	<select id="selectPendingPurchases" resultType="map">
+	    SELECT 
+	        p.purchase_id as "purId",
+	        p.client_id as "clientId",
+	        c.client_name as "clientName",
+	        TO_CHAR(p.purchase_date, 'YYYY-MM-DD') as "purDate",
+	        p.purchase_status as "purStatus",
+	        p.total_purchase_qty as "totalQty",
+	        p.total_purchase_price as "totalPrice",
+	        (SELECT COUNT(*) FROM purchase_detail pd WHERE pd.purchase_id = p.purchase_id) as "itemCount"
+	    FROM purchase p
+	    LEFT JOIN client c ON p.client_id = c.client_id
+	    WHERE p.purchase_status IN ('REQUEST', 'WAITING')  <!-- COMPLETION 제외 -->
+	    ORDER BY p.purchase_date DESC, p.purchase_id DESC
+	</select>
+	
+	<!-- 발주 상세 조회 -->
+	<select id="selectPurchaseDetails" resultType="map">
+	    SELECT 
+	        pd.id as "purDetailId",
+	        pd.purchase_id as "purId",
+	        pd.material_id as "materialId",
+	        pd.material_name as "materialName",
+	        pd.purchase_qty as "orderQty",
+	        pd.purchase_detail_status as "status",
+	        pd.unit,
+	        NVL(m.quantity, 0) as "currentStock",
+	        COALESCE(
+	            (SELECT SUM(i.in_count) 
+	             FROM input i 
+	             WHERE i.purchase_id = pd.purchase_id 
+	             AND i.material_id = pd.material_id
+	             AND i.in_status != '입고반려'), 0
+	        ) as "receivedQty"
+	    FROM purchase_detail pd
+	    LEFT JOIN material m ON pd.material_id = m.material_id
+	    WHERE pd.purchase_id = #{purId}
+	    ORDER BY pd.material_id
+	</select>
+	
+	<!-- 발주 상태 업데이트 -->
+	<update id="updatePurchaseStatus">
+	    UPDATE purchase 
+	    SET purchase_status = #{status},
+	        update_at = SYSDATE
+	    WHERE purchase_id = #{purId}
+	</update>
+	
+	<!-- 특정 품목의 발주 상세 조회 -->
+	<select id="selectPurchaseDetailByMaterial" resultType="map">
+	    SELECT 
+	        pd.id as "purDetailId",
+	        pd.purchase_qty as "orderQty",
+	        pd.purchase_detail_status as "status",
+	        COALESCE(
+	            (SELECT SUM(i.in_count) 
+	             FROM input i 
+	             WHERE i.purchase_id = pd.purchase_id 
+	             AND i.material_id = pd.material_id
+	             AND i.in_status != '입고반려'), 0
+	        ) as "receivedQty"
+	    FROM purchase_detail pd
+	    WHERE pd.purchase_id = #{purId}
+	    AND pd.material_id = #{materialId}
+	</select>
+	
+	<update id="updatePurchaseDetailStatus">
+	    UPDATE purchase_detail
+	    SET purchase_detail_status = #{status},
+	        update_at = SYSDATE
+	    WHERE purchase_id = #{purId}
+	    AND material_id = #{materialId}
+	</update>
 	
 	<!-- Product warehouse_item 관련 쿼리 -->
 	<select id="getPartiallyFilledLocationsProduct" resultType="map">
@@ -201,6 +273,7 @@
 	        warehouse_id,
 	        <if test="productId != null">product_id,</if>
 	        <if test="materialId != null">material_id,</if>
+	        <if test="purchaseId != null and purchaseId != ''">purchase_id,</if> 
 	        result_id, 
 	        client_id, 
 	        in_count, 
@@ -216,6 +289,7 @@
 	        #{warehouseId},
 	        <if test="productId != null">#{productId},</if>
 	        <if test="materialId != null">#{materialId},</if>
+	        <if test="purchaseId != null and purchaseId != ''">#{purchaseId},</if>
 	        #{resultId, jdbcType=NUMERIC},
 	        #{clientId},
 	        #{inCount}, 
@@ -621,7 +695,7 @@
 	    WHERE wi.material_id = #{materialId}
 	    AND wi.item_amount > 0
 	    AND wi.use_yn = 'Y'
-	    ORDER BY wi.create_date ASC  <!-- 입고순(오래된것부터) -->
+	    ORDER BY wi.create_date ASC  <!-- 입고순(오래된것부터) 정렬 -->
 	</select>
 	
 	<!-- 이미 있으면 수량만 업데이트 -->
