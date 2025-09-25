@@ -150,91 +150,106 @@ function updateProgressChart(workOrders) {
 }
 
 // ======================== 설비별 막대 그래프 ============================================
-function updateEquipmentChart() {
-	const rows = $('#workOrderBody tr');
-	const equipmentData = {};
 
+const STORAGE_KEY = "cumulativeEquipment";
+const Y_AXIS_MIN = 10;
 
-	rows.each(function() {
-		const equip = $(this).data('equipment');
-		const qty = parseInt($(this).data('goodqty')) || 0;
-		if (!equipmentData[equip]) equipmentData[equip] = 0;
-		equipmentData[equip] += qty;
-	});
+function updateEquipmentChart(bomData = []) {
+    const filtered = bomData.filter(row => row.workOrderStatus === "진행중");
 	
+    const currentEquipment = {};
+    filtered.forEach(row => {
+        const equip = row.equipmentNm;
+        currentEquipment[equip] = (currentEquipment[equip] || 0) + 1;
+    });
 
-	const data = Object.keys(equipmentData).map(equip => ({
-		equipment: equip,
-		quantity: equipmentData[equip]
-	}));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentEquipment));
 
-	// SVG 초기화
-	const svg = d3.select("#equipmentChart");
-	svg.selectAll("*").remove();
+    const data = Object.keys(currentEquipment).map(equip => ({
+        equipment: equip,
+        count: currentEquipment[equip]
+    }));
 
-	const margin = { top: 30, right: 30, bottom: 30, left: 80 };
-	const width = +svg.attr("width") - margin.left - margin.right;
-	const height = +svg.attr("height") - margin.top - margin.bottom;
-
-	const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-	// X축: 설비 이름
-	const x = d3.scaleBand()
-		.domain(data.map(d => d.equipment))
-		.range([0, width])
-		.padding(0.4);
-
-	// Y축: 퍼센트 (0~100%)
-	const y = d3.scaleLinear()
-		.domain([0, 100])
-		.range([height, 0]);
-
-	// X축
-	g.append("g")
-		.attr("transform", `translate(0,${height})`)
-	    .call(d3.axisBottom(x))
-	    .selectAll("text")
-	    .attr("transform", "rotate(0)") // 회전 제거
-	    .style("text-anchor", "middle") // 가운데 정렬
-	    .style("font-weight", "bold")   // 진하게
-		.style("font-size", "12px")
-	    .style("fill", "#666");         // 검정색
-
-	// Y축 (퍼센트)
-	g.append("g")
-		.call(d3.axisLeft(y).ticks(10).tickFormat(d => d + "%"));
-
-	// 제목
-	svg.append("text")
-		.attr("x", width / 2 + margin.left)
-		.attr("y", margin.top / 2)
-		.attr("text-anchor", "middle")
-		.style("font-size", "16px")
-		.style("font-weight", "bold")
-		.text("당일 설비별 생산률(량)");
-
-	// 막대
-	g.selectAll(".bar")
-		.data(data)
-		.enter()
-		.append("rect")
-		.attr("class", "bar")
-		.attr("x", d => x(d.equipment) + x.bandwidth() * 0.2) // 폭 60%로 가운데
-	  	.attr("y", d => y(d.quantity))
-	  	.attr("width", x.bandwidth() * 0.6) 
-		.attr("height", d => height - y(Math.min(d.quantity, 100)))
-		.attr("fill", "#ed7e31");
-
-	// 값 표시
-	g.selectAll(".label")
-		.data(data)
-		.enter()
-  		.append("text")
-  		.attr("x", d => x(d.equipment) + x.bandwidth() / 2)
-  		.attr("y", d => y(d.quantity) - 5) 
-  		.attr("text-anchor", "middle")
-  		.style("font-size", "12px") // 글자 크기 줄임
-  		.text(d => d.quantity + "개");
-		
+    drawChart(data);
 }
 
+// 새로고침 시 저장된 값 복원 후 차트 표시
+document.addEventListener("DOMContentLoaded", () => {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const data = Object.keys(saved).map(equip => ({
+        equipment: equip,
+        count: saved[equip]
+    }));
+    drawChart(data);
+});
+
+function drawChart(data) {
+    const svg = d3.select("#equipmentChart");
+    const margin = { top: 30, right: 30, bottom: 50, left: 80 };
+    const width = +svg.attr("width") - margin.left - margin.right;
+    const height = +svg.attr("height") - margin.top - margin.bottom;
+
+    let g = svg.select("g.chart-group");
+    if (g.empty()) {
+        g = svg.append("g").attr("class", "chart-group")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+        g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${height})`);
+        g.append("g").attr("class", "y-axis");
+        svg.append("text")
+            .attr("class", "chart-title")
+            .attr("x", width / 2 + margin.left)
+            .attr("y", margin.top / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .text("오늘자 설비별 사용 횟수");
+    }
+
+    const x = d3.scaleBand()
+        .domain(data.map(d => d.equipment))
+        .range([0, width])
+        .padding(0.4);
+
+    const currentMax = d3.max(data, d => d.count) || 0;
+    const yMax = Math.max(currentMax, Y_AXIS_MIN);
+
+    const y = d3.scaleLinear()
+        .domain([0, yMax])
+        .nice()
+        .range([height, 0]);
+
+    g.select(".x-axis").call(d3.axisBottom(x));
+    g.select(".y-axis").call(d3.axisLeft(y).ticks(5));
+
+    const bars = g.selectAll(".bar").data(data, d => d.equipment);
+    bars.join(
+        enter => enter.append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.equipment))
+            .attr("width", x.bandwidth())
+            .attr("y", d => y(d.count))
+            .attr("height", d => height - y(d.count))
+            .attr("fill", "#ed7e31"),
+        update => update
+            .transition().duration(300)
+            .attr("y", d => y(d.count))
+            .attr("height", d => height - y(d.count)),
+        exit => exit.remove()
+    );
+
+    const labels = g.selectAll(".label").data(data, d => d.equipment);
+    labels.join(
+        enter => enter.append("text")
+            .attr("class", "label")
+            .attr("x", d => x(d.equipment) + x.bandwidth() / 2)
+            .attr("y", d => y(d.count) - 5)
+            .attr("text-anchor", "middle")
+            .style("font-size", "12px")
+            .text(d => d.count + "회"),
+        update => update
+            .transition().duration(300)
+            .attr("y", d => y(d.count) - 5)
+            .text(d => d.count + "회"),
+        exit => exit.remove()
+    );
+}

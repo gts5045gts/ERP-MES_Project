@@ -48,7 +48,16 @@ public class WorkResultService {
 	@Transactional
 	public List<WorkResultDTO> startWork(Long workOrderId) {
 		workResultMapper.updateWorkOrderStatus(workOrderId);
-		
+
+		  WorkResult result = workResultRepository.findByWorkOrderId(workOrderId)
+		            .orElseGet(() -> {
+		                WorkResult w = new WorkResult();
+		                w.setWorkOrderId(workOrderId); // 단순히 work_order_id만 세팅
+		                return w;
+		            });
+
+		    workResultRepository.save(result);
+
 		return workResultMapper.updateWorkResult(workOrderId);
 	}
 
@@ -83,7 +92,7 @@ public class WorkResultService {
 	public List<CommonDetailCodeDTO> getDefectReason() {
 		return comDtRepository.findByComId_ComId("DEFECT")
 				.stream()
-                .map(code -> new CommonDetailCodeDTO(code.getComId().getComId(), code.getComDtNm()))
+                .map(code -> new CommonDetailCodeDTO(code.getComDtId(), code.getComDtNm()))
                 .collect(Collectors.toList());
 	}
 

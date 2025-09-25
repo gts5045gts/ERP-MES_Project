@@ -39,8 +39,8 @@ $(document).ready(function() {
             });
 			
 			updateProgressChart(workOrders);
-			updateEquipmentChart();
 			updateQuantityChart(workOrders);
+			
 			
         },
         error: function(xhr, status, error) {
@@ -55,7 +55,7 @@ const columns1 = [
   	{ header: '공정명', name: 'processNm' },
   	{ header: '설비명', name: 'equipmentNm' },
   	{ header: '자재명', name: 'materialNm' },
-  	{ header: '필요수량', name: 'quantity' },
+  	{ header: '수량', name: 'quantity' },
   	{ header: '공정순서', name: 'proSeq' }
 ];
 
@@ -102,6 +102,8 @@ $('#workOrderBody').on('click', 'tr', function() {
 				
 	            Workgrid1.resetData(bomData);   // BOM 데이터를 Grid에 세팅
 	            Workgrid1.refreshLayout();      // 레이아웃 갱신
+
+				
 	        },
 	        error: function(xhr, status, error) {
 	            console.error('BOM 조회 실패:', error);
@@ -118,4 +120,5 @@ $('#popModal').on('hidden.bs.modal', function () {
     selectedInput = null;             // 선택된 input 초기화
     $('#Workgrid1 .material-req').prop('checked', false); // 체크박스 초기화
 });
+
 

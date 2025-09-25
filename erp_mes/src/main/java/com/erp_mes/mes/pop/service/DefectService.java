@@ -41,8 +41,9 @@ public class DefectService {
 // ==============================================================================
 
 	// 불량 테이블 저장
-	public void saveDefect(Long resultId, DefectDTO defectDTO) {
-		defectMapper.saveDefect();
+	public Long saveDefect(DefectDTO defectDTO) {
+	    defectMapper.saveDefect(defectDTO); // insert 실행
+	    return defectDTO.getDefectItemId(); 
 	}
 	
 

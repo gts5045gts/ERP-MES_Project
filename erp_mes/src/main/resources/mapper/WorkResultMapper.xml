@@ -13,6 +13,7 @@
         o.work_order_id 	AS workOrderId,
         pr.product_id       AS productId,
         prod.product_name	AS productNm,
+        e.equip_nm    		AS equipmentNm,
         o.emp_id 			AS empId,
         emp.emp_name 		AS empNm,
         o.start_date 		AS startDate,
@@ -22,6 +23,7 @@
 	LEFT JOIN work_result w ON w.work_order_id = o.work_order_id
 	LEFT JOIN employee emp ON emp.emp_id = o.emp_id
 	LEFT JOIN process_routing pr ON o.bom_id = pr.bom_id
+	LEFT JOIN equipment e ON pr.equip_id = e.equip_id
     LEFT JOIN product prod ON pr.product_id = prod.product_id
  	WHERE o.emp_id = #{empId}
 </select>
@@ -68,19 +70,19 @@
         w.good_qty        	AS goodQty,
         w.defect_qty      	AS defectQty,
         w.updated_at      	AS updatedAt,
+        w.defect_item_id    AS defectItemId,
         
         o.work_order_id   	AS workOrderId,
         o.bom_id          	AS bomId,
         o.work_order_status AS workOrderStatus,
         pr.product_id		AS productId,
-        pr.plan_quantity    AS planQty
+        pr.plan_quantity    AS planQty,
+		prod.product_name 	AS productNm
 
- 
     FROM work_order o
     LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
     LEFT JOIN product_plan pr 	 ON o.plan_id = pr.plan_id
-
-    
+	LEFT JOIN product prod ON pr.product_id = prod.product_id
     WHERE o.work_order_id = #{workOrderId}
 </select>
 
@@ -91,6 +93,7 @@
         w.good_qty        	AS goodQty,
         w.defect_qty      	AS defectQty,
         w.updated_at      	AS updatedAt,
+        w.defect_item_id    AS defectItemId,
         
         o.work_order_id   	AS workOrderId,
         o.bom_id          	AS bomId,
@@ -120,7 +123,7 @@
 <update id="updateDefectItemId">
 	UPDATE work_result
     SET defect_item_id = #{defectItemId}
-    WHERE result_id = #{resultId}
+    WHERE work_order_id = #{workOrderId}
 </update>
 
 

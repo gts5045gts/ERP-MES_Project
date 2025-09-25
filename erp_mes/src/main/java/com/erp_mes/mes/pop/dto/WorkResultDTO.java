@@ -72,9 +72,6 @@ public class WorkResultDTO {
     
     //생산계획
     private Long planQty;		// 목표 수량
-    
-    //불량
-
 
 
 

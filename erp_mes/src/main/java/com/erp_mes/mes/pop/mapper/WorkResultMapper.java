@@ -30,7 +30,7 @@ public interface WorkResultMapper {
 	int updateWorkStatusFinish(@Param("workOrderId") Long workOrderId);
 
 	// 불량 아이디 저장
-	void updateDefectItemId(Long resultId, Long defectItemId);
+	void updateDefectItemId(@Param("resultId") Long resultId, @Param("defectItemId") Long defectItemId);
 
 
 

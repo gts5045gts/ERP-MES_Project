@@ -7,11 +7,18 @@
 
 
 <!-- 불량 테이블 업데이트 -->
-<insert id="saveDefect" useGeneratedKeys="true" keyProperty="defectItemId">
-	INSERT INTO defect_table
-		(defect_type, defect_reason, defect_qty, product_name, employee_id, defect_location, defect_date)
-    VALUES
-		(#{defectType}, #{defectReason}, #{defectQty}, #{productNm}, #{empId}, #{defectLocation}, #{defectDate})
+<insert id="saveDefect"  parameterType="com.erp_mes.mes.pop.dto.DefectDTO"  keyProperty="defectItemId">
+	INSERT INTO defect_item
+		(work_order_id , defect_type, defect_reason, defect_qty, product_name, emp_id, defect_location, defect_date)
+	VALUES
+		(#{workOrderId,jdbcType=NUMERIC},
+		#{defectType,jdbcType=VARCHAR},
+		#{defectReason,jdbcType=VARCHAR},
+		#{defectQty,jdbcType=NUMERIC},
+		#{productNm,jdbcType=VARCHAR},
+		#{empId,jdbcType=VARCHAR},
+		#{defectLocation,jdbcType=VARCHAR},
+		#{defectDate,jdbcType=DATE})
 </insert>
 
 

@@ -11,8 +11,8 @@ const columns = [
 	{ header: 'Result ID', name: 'resultId', hidden: true },
 	{ header: '작업지시아이디', name: 'workOrderId', filter: 'select' },
 	{ header: '제품명', name: 'productNm', filter: 'select' },
-/*    { header: '공정명', name: 'processNm', filter: 'select' },
-    { header: '설비명', name: 'equipmentNm', filter: 'select' },*/
+//    { header: '공정명', name: 'processNm', filter: 'select' },
+//    { header: '설비명', name: 'equipmentNm', hidden: true },
 	{ header: '목표수량', name: 'planQty' },
     { header: '생산수량', name: 'goodQty' },
     { header: '불량수량', name: 'defectQty' },
@@ -87,6 +87,8 @@ function loadPage(page) {
             } else {
                 grid.appendRows(res); // 이후 페이지는 append
             }
+			
+
         });
 }
 
@@ -116,6 +118,21 @@ $('#workOrderCheck').on('click', function() {
 		               .addClass('status-progress');
 		        }
 		    });
+			
+			// 해당 작업지시서 BOM 가져와서 그래프 업데이트
+			const productId = res[0].productId;
+			$.ajax({
+				url: `/pop/bom/${productId}`,
+				type: 'GET',
+				dataType: 'json',
+				success: function(bomData) {
+					updateEquipmentChart(bomData);
+				},
+				error: function(err) { console.error('BOM 조회 실패:', err); }
+			});
+
+
+			
         // 모달 닫기 및 체크박스 없애기
             $('#popModal').modal('hide');
         },
@@ -141,7 +158,7 @@ document.getElementById('grid').addEventListener('click', function(e) {
     }
 });
 
-// =============== 불량사유 입력 ==============================
+// =============== 불량사유 버튼 ==============================
 
 
 const defectBtnContainer = $('#defectReasonOptions');
@@ -149,9 +166,10 @@ const defectBtnContainer = $('#defectReasonOptions');
 $('#defectReasonBtn').on('click', function() {
 	$.getJSON('/pop/defectReason', function(data) {
 		defectBtnContainer.empty(); // 기존 버튼 제거
+		console.log(data);
 
 		data.forEach(d => {
-			const btn = $(`<button class="btn btn-sm btn-secondary defectOption" data-code="${d.comId}">${d.comDtNm}</button>`);
+			const btn = $(`<button class="btn btn-sm btn-secondary defectOption" data-code="${d.comDtId}">${d.comDtNm}</button>`);
 			defectBtnContainer.append(btn);
 		});
 
@@ -162,6 +180,10 @@ $('#defectReasonBtn').on('click', function() {
 let selectedDefects = new Set();
 
 $('#defectReasonOptions').on('click', '.defectOption', function() {
+	
+	// 선택 토글
+   	$(this).toggleClass('selected');
+	
 	const defectReason = $(this).text();
 	const input = $('#defectReasonInput');
 
@@ -210,8 +232,8 @@ $('#defectSaveBtn').on('click', function() {
 	debugger;
 	const resultId = $('#workUpdateModal').data('rowId');
 	
-    const defectQty = parseInt($('#defectQtyInput').val(), 10);
-	
+    const defectQty = parseInt($('#defectQtyInput').val(), 10);	
+	const defectType = $('.defectOption.selected').data('code');
 	const defectReason = $('#defectReasonInput').val().trim();
 	
 	if(defectQty > 0 && !defectReason) {
@@ -220,6 +242,7 @@ $('#defectSaveBtn').on('click', function() {
 	}
 	
 	const row = grid.getData().find(r => r.resultId == resultId);
+	const workOrderId = row.workOrderId;
 	
 	const goodQty = row.planQty - defectQty;
 	
@@ -240,26 +263,38 @@ $('#defectSaveBtn').on('click', function() {
 		beforeSend: function(xhr) {
 			xhr.setRequestHeader(csrfHeader, csrfToken);
 		},
-		success: function(cnt) {
-			if (cnt > 0) {
-				$.getJSON('/pop/workResultList?page=0&size=20', function(data) {
-			        row.defectQty = dto.defectQty;
-			        row.defectReason = dto.defectReason;
-					grid.resetData(data); // 전체 데이터 다시 렌더링
-
-					updateQuantityChart(data);
+		success: function() {
+			// 불량이 있을 때만 defect 테이블 업데이트
+			if (defectQty > 0 && defectReason) {
+				const defectDTO = {
+					defectItemId: 11,
+					defectQty: defectQty,
+					defectType: defectType,
+					defectReason: defectReason,
+					empId: row.empId,
+					productNm: row.productNm
+				};
+				$.ajax({
+					url: '/pop/saveDefect',
+					type: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify({ resultId: resultId, workOrderId: workOrderId, defectDTO: defectDTO }),
+					beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
+					success: function() { console.log('불량 테이블 저장 완료'); },
+					error: function(err) { console.error('불량 테이블 저장 실패', err); }
 				});
-			
 			}
+
+			// 그리드 갱신
+			$.getJSON('/pop/workResultList?page=0&size=20', function(data) {
+				grid.resetData(data);
+				updateQuantityChart(data);
+			});
 		},
-		error: function(err) {
-			console.error('작업 수정 실패:', err);
-		}
+		error: function(err) { console.error('작업 수정 실패', err); }
 	});
 
-	// 모달 닫기
 	$('#workUpdateModal').modal('hide');
-
 });
 
 // ===================== 작업완료 ===============================
@@ -322,7 +357,8 @@ document.getElementById('grid').addEventListener('click', function(e) {
 // 그리드 새로고침 함수
 function reloadGrid() {
     $.getJSON('/pop/workResultList?page=0&size=20', function(data) {
-        grid.resetData(data); // 전체 렌더링
+        grid.resetData(data); // 전체 렌더링		
+
     });
 }
 

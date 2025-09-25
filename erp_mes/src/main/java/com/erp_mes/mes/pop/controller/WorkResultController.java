@@ -111,6 +111,7 @@ public class WorkResultController {
 	@ResponseBody
 	public void saveDefect(Authentication authentication, @RequestBody Map<String, Object> map) {
 		Long resultId = Long.valueOf(map.get("resultId").toString());
+		Long workOrderId = Long.valueOf(map.get("workOrderId").toString());
 		String empId = authentication.getName();
 		
 		// Map -> DefectDTO 변환
@@ -119,10 +120,12 @@ public class WorkResultController {
 		
 		defectDTO.setEmpId(empId);
 		defectDTO.setDefectLocation(1L);
+		defectDTO.setWorkOrderId(workOrderId);
 		
-		defectService.saveDefect(resultId, defectDTO);
 		
-		workResultService.updateDefect(resultId, defectDTO.getDefectItemId());
+		Long defectItemId = defectService.saveDefect(defectDTO);
+		
+		workResultService.updateDefect(resultId, defectItemId);
 	}
 	
 
