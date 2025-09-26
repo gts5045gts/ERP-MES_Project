@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		el: document.getElementById('clientGrid'),
 		scrollX: false,
 		scrollY: true,
-		bodyHeight: 350,
+		bodyHeight: 360,
 		rowHeight: 'auto',
 		minBodyHeight: 200,
 		emptyMessage: '조회결과가 없습니다.',
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		],
 		data: []
 	});
-	
+
 
 	// 공용 모달 객체
 	const clientAddModal = new bootstrap.Modal(document.getElementById('clientAddModal'));
@@ -28,47 +28,78 @@ document.addEventListener("DOMContentLoaded", () => {
 	const submitBtn = form.querySelector("button[type='submit']");
 
 	let isEditMode = false; // 등록/수정 모드 구분
+	let allClient = [];
+	
+	const addBtn = document.getElementById("addBtn");
+	if (!isAUTLevel) {
+		if (addBtn) addBtn.style.display = "none";
+	}
 
 	// 페이지 처음 로딩 시 전체 목록 불러오기
-	const loadClients = () => {
+	function loadClients(){
 		fetch("/business/api/clients")
 			.then(response => response.json())
 			.then(data => {
-				grid.resetData(data);
+				allClient = data;
+//				grid.resetData(allClient);
+				filterClient();
 			})
 			.catch(error => console.error("데이터 불러오는 과정에서 오류남:", error));
 	};
+
+	// 검색 버튼 클릭 시 실행
+	function filterClient() {
+		console.log("ALL CLIENT DATA EXAMPLE:", allClient[0]); 
+
+		const type = document.getElementById("cliType").value;
+		const status = document.getElementById("cliStatus").value;
+		const keyword = document.getElementById("cliSearch").value.trim();
+
+		let filteredData = allClient;
+
+		// 거래처유형 필터
+		if (type !== "ALL") {
+			filteredData = filteredData.filter(client => client.clientTypeCode === type);
+		}
+
+		// 거래여부 필터
+		if (status !== "ALL") {
+			filteredData = filteredData.filter(client => client.clientStatusCode === status);
+		}
+
+		// 거래처명 필터
+		if (keyword) {
+			filteredData = filteredData.filter(client =>
+				(client.clientName && client.clientName.includes(keyword))
+			);
+		}
+
+		grid.resetData(filteredData);
+	}
+
+	// 검색 이벤트 바인딩
+	document.getElementById("searchBtn").addEventListener("click", filterClient);
+
+	// 엔터키 검색
+	document.getElementById("cliSearch").addEventListener("keydown", function(e) {
+		if (e.key === "Enter") {
+			filterClient();
+		}
+	});
+
 	loadClients();
 
-	// 검색 버튼 이벤트
-	document.getElementById("searchBtn").addEventListener("click", () => {
-		const clientName = document.getElementById("cliSearch").value;
-		const clientType = document.getElementById("cliStatus").value;
-
-		fetch(`/business/api/clients/search?clientName=${encodeURIComponent(clientName)}&clientType=${clientType}`)
-			.then(response => response.json())
-			.then(data => {
-				grid.resetData(data);
-			})
-			.catch(error => console.error("데이터 불러오기 오류:", error));
-	});
-
-	//	// 등록 버튼 이벤트: 모달창 띄우기
-	//	const addBtn = document.getElementById("addBtn");
-	//	const clientAddModal = new bootstrap.Modal(document.getElementById('clientAddModal'));
-	//	addBtn.addEventListener("click", () => {
-	//		clientAddModal.show();
-	//	});
-
 	// 등록 버튼 이벤트
-	document.getElementById("addBtn").addEventListener("click", () => {
-		isEditMode = false;
-		modalTitle.textContent = "거래처 등록";
-		submitBtn.textContent = "등록";
-		form.reset();
-		document.getElementById("clientId").value = ""; // hidden 초기화
-		clientAddModal.show();
-	});
+	if(addBtn){
+		addBtn.addEventListener("click", () => {
+			isEditMode = false;
+			modalTitle.textContent = "거래처 등록";
+			submitBtn.textContent = "등록";
+			form.reset();
+			document.getElementById("clientId").value = ""; // hidden 초기화
+			clientAddModal.show();
+		});
+	}
 
 	// 주소 찾기 버튼 이벤트 (카카오 주소 API 연동)
 	document.getElementById("searchAddress").addEventListener("click", () => {
@@ -80,26 +111,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		}).open();
 	});
 
-	grid.on("dblclick", (ev) => {
-		const rowData = grid.getRow(ev.rowKey);
-		if (!rowData) return;
+	if(isAUTLevel) {
+		grid.on("dblclick", (ev) => {
+			const rowData = grid.getRow(ev.rowKey);
+			if (!rowData) return;
 
-		isEditMode = true;
-		modalTitle.textContent = "거래처 수정";
-		submitBtn.textContent = "수정";
+			isEditMode = true;
+			modalTitle.textContent = "거래처 수정";
+			submitBtn.textContent = "수정";
 
-		// 데이터 세팅
-		document.getElementById("clientId").value = rowData.clientId;
-		document.getElementById("clientName").value = rowData.clientName;
-		document.getElementById("ceoName").value = rowData.ceoName;
-		document.getElementById("businessNumber").value = rowData.businessNumber;
-		document.getElementById("clientPhone").value = rowData.clientPhone;
-		document.getElementById("clientAddress").value = rowData.clientAddress;
-		document.getElementById("clientType").value = rowData.clientTypeCode;
-		document.getElementById("clientStatus").value = rowData.clientStatusCode;
+			// 데이터 세팅
+			document.getElementById("clientId").value = rowData.clientId;
+			document.getElementById("clientName").value = rowData.clientName;
+			document.getElementById("ceoName").value = rowData.ceoName;
+			document.getElementById("businessNumber").value = rowData.businessNumber;
+			document.getElementById("clientPhone").value = rowData.clientPhone;
+			document.getElementById("clientAddress").value = rowData.clientAddress;
+			document.getElementById("clientType").value = rowData.clientTypeCode;
+			document.getElementById("clientStatus").value = rowData.clientStatusCode;
 
-		clientAddModal.show();
-	});
+			clientAddModal.show();
+		});
+	}
 
 	// 모달 폼 제출 이벤트 (등록, 수정 같이 사용)
 	form.addEventListener("submit", async (event) => {

@@ -118,7 +118,7 @@
   	</insert>
 
 <!-- 	수주 등록 모달창에 필요한 품목 리스트 -->
-	<select id="getAllProduct" resultType="com.erp_mes.mes.pm.dto.ProductDTO">
+	<select id="getAllProduct" resultType="com.erp_mes.mes.stock.dto.ProductDTO">
 		SELECT 
 			p.product_id,
 			p.product_name,
@@ -143,6 +143,7 @@
 			emp_name
 		FROM 
 		 	orders
+		ORDER BY order_id desc
 	</select>
 	
 <!--  수주 목록 검색 (상태/거래처명 조건) -->
@@ -270,7 +271,7 @@
 		SELECT * FROM DUAL 		-- INSERT ALL을 수행하기위해 더미 테이블인 DUAL 테이블 사용
 	</insert>
 	
-<!-- 	수주 상세 진행상태 update -->
+<!-- 	생산계획 등록 시 수주 상세 진행상태 update -->
     <update id="updateOrderDetailStatus">
         UPDATE orders_detail od
 		SET od.order_detail_status = 'INPRODUCTION'

@@ -102,104 +102,149 @@
 
 		<!-- 부품입고 모달 -->
 		<div class="modal fade" id="addInputModal" tabindex="-1">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title">신규 입고 등록 (부품/반제품)</h5>
-						<button type="button" class="close" data-dismiss="modal">
-							<span>&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<div class="row mb-3">
-							<div class="col-md-12">
-								<label>입고 유형</label> <input type="text" class="form-control"
-									id="new_inReason" placeholder="입고 유형를 입력하세요">
-							</div>
-						</div>
-						<div class="row mb-3">
-							<div class="col-md-12">
-								<label>비고</label>
-								<textarea class="form-control" id="new_inRemark" rows="2"
-									placeholder="추가 설명이 필요한 경우 입력하세요"></textarea>
-							</div>
-						</div>
-
-						<div class="row mb-3">
-							<div class="col-md-6">
-								<label>입고담당자</label> <input type="text" class="form-control"
-									id="currentEmpInfo" readonly>
-							</div>
-							<div class="col-md-6">
-								<label>입고타입</label> <select class="form-control" id="new_inType">
-									<option value="정기입고">정기입고</option>
-									<option value="긴급입고">긴급입고</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="row mb-3">
-							<div class="col-md-6">
-								<label>거래처</label> <select class="form-control"
-									id="new_clientId">
-									<!-- Ajax로 로드 -->
-								</select>
-							</div>
-							<div class="col-md-6">
-								<label>창고</label> <select class="form-control"
-									id="new_warehouseId">
-									<option th:each="warehouse : ${warehouseList}"
-										th:value="${warehouse.warehouseId}"
-										th:text="${warehouse.warehouseName}"></option>
-								</select>
-							</div>
-						</div>
-
-						<hr>
-
-						<div
-							class="d-flex justify-content-between align-items-center mb-3">
-							<h6>자재 목록 (부품/반제품만 입고 가능)</h6>
-							<button type="button" class="btn btn-sm btn-info"
-								onclick="addMaterialRow()">
-								<i class="fas fa-plus"></i> 자재 추가
-							</button>
-						</div>
-
-						<div id="materialsList">
-							<div class="material-item mb-2">
-								<div class="row">
-									<div class="col-md-7">
-										<select class="form-control material-select">
-											<!-- Ajax로 로드 -->
-										</select>
-									</div>
-									<div class="col-md-3">
-										<input type="number" class="form-control material-qty"
-											placeholder="수량" min="1">
-									</div>
-									<div class="col-md-2">
-										<button class="btn btn-danger btn-sm remove-material"
-											onclick="removeMaterialRow(this)" style="display: none;">
-											<i class="fas fa-trash"></i>
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<div class="alert alert-info mt-3">
-							선택한 자재: <span id="selectedMaterialCount">0</span>종
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary"
-							data-dismiss="modal">취소</button>
-						<button type="button" class="btn btn-primary"
-							onclick="saveInput()">등록</button>
-					</div>
-				</div>
-			</div>
+		    <div class="modal-dialog modal-xl"> 
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <h5 class="modal-title">신규 입고 등록 (부품/반제품)</h5>
+		                <button type="button" class="close" data-dismiss="modal">
+		                    <span>&times;</span>
+		                </button>
+		            </div>
+		            <div class="modal-body">
+		                <!-- 발주서 연계 섹션 추가 -->
+		                <div class="card mb-3">
+		                    <div class="card-header bg-info text-white">
+		                        <h6 class="mb-0">발주서 연계 (선택사항)</h6>
+		                    </div>
+		                    <div class="card-body">
+		                        <div class="row">
+		                            <div class="col-md-6">
+		                                <label>발주서 선택</label>
+		                                <select class="form-control" id="purchase_select" onchange="loadPurchaseDetails()">
+		                                    <option value="">-- 발주서 없이 입고 --</option>
+		                                </select>
+		                            </div>
+		                            <div class="col-md-6">
+		                                <div id="purchase_info" style="display:none;">
+		                                    <div class="alert alert-warning mb-0">
+		                                        <small>발주번호: <span id="selected_pur_id"></span></small><br>
+		                                        <small>거래처: <span id="selected_client"></span></small>
+		                                    </div>
+		                                </div>
+		                            </div>
+		                        </div>
+		                        
+		                        <!-- 발주 상세 테이블 -->
+		                        <div id="purchase_detail_section" style="display:none;" class="mt-3">
+		                            <table class="table table-sm table-bordered">
+		                                <thead class="thead-light">
+		                                    <tr>
+		                                        <th width="20%">품목명</th>
+		                                        <th width="15%">거래처</th>
+		                                        <th width="15%">품목명</th>
+		                                        <th width="10%">물어온 재고</th>
+		                                        <th width="10%">발주내역에 적힌 물량</th>
+		                                        <th width="10%">기입고수량</th>
+		                                        <th width="10%">잔여수량</th>
+		                                        <th width="10%">입고수량</th>
+		                                    </tr>
+		                                </thead>
+		                                <tbody id="purchase_detail_body">
+		                                </tbody>
+		                            </table>
+		                        </div>
+		                    </div>
+		                </div>
+		                
+						<div class="d-flex justify-content-between align-items-center mb-3">
+		                    <h6>자재 목록</h6>
+		                    <button type="button" class="btn btn-sm btn-info" onclick="addMaterialRow()">
+		                        <i class="fas fa-plus"></i> 자재 추가
+		                    </button>
+		                </div>
+		
+		                <div id="materialsList">
+		                    <div class="material-item mb-2">
+		                        <div class="row">
+		                            <div class="col-md-7">
+		                                <select class="form-control material-select">
+		                                    <!-- Ajax로 로드 -->
+		                                </select>
+		                            </div>
+		                            <div class="col-md-3">
+		                                <input type="number" class="form-control material-qty" placeholder="수량" min="1">
+		                            </div>
+		                            <div class="col-md-2">
+		                                <button class="btn btn-danger btn-sm remove-material" onclick="removeMaterialRow(this)" style="display: none;">
+		                                    <i class="fas fa-trash"></i>
+		                                </button>
+		                            </div>
+		                        </div>
+		                    </div>
+		                </div>
+		                
+		                <div class="alert alert-info mt-3">
+		                    선택한 자재: <span id="selectedMaterialCount">0</span>종
+		                </div>
+		                
+		                <div class="row mb-3">
+		                    <div class="col-md-6">
+		                        <label>입고담당자</label>
+		                        <input type="text" class="form-control" id="currentEmpInfo" readonly>
+		                    </div>
+		                    <div class="col-md-6">
+		                        <label>입고타입</label>
+		                        <select class="form-control" id="new_inType">
+		                            <option value="정기입고">정기입고</option>
+		                            <option value="긴급입고">긴급입고</option>
+		                        </select>
+		                    </div>
+		                </div>
+		
+		                <div class="row mb-3">
+		                    <div class="col-md-6">
+		                        <label>거래처</label>
+		                        <select class="form-control" id="new_clientId">
+		                            <!-- Ajax로 로드 -->
+		                        </select>
+		                    </div>
+		                    <div class="col-md-6">
+		                        <label>창고</label>
+		                        <select class="form-control" id="new_warehouseId">
+		                            <option th:each="warehouse : ${warehouseList}"
+		                                th:value="${warehouse.warehouseId}"
+		                                th:text="${warehouse.warehouseName}"></option>
+		                        </select>
+		                    </div>
+		                </div>
+		                
+		                <!-- 기존 입고 정보 섹션 -->
+		                <div class="row mb-3">
+		                    <div class="col-md-12">
+		                        <label>입고 유형</label>
+		                        <input type="text" class="form-control" id="new_inReason" placeholder="입고 유형을 입력하세요">
+		                    </div>
+		                </div>
+		                
+		                <div class="row mb-3">
+		                    <div class="col-md-12">
+		                        <label>비고</label>
+		                        <textarea class="form-control" id="new_inRemark" rows="2"></textarea>
+		                    </div>
+		                </div>
+		
+		                <hr>
+		
+		                
+		
+		                
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+		                <button type="button" class="btn btn-primary" onclick="saveInput()">등록</button>
+		            </div>
+		        </div>
+		    </div>
 		</div>
 
 		<!-- 완제품 입고 모달 -->
@@ -265,75 +310,26 @@ $(document).ready(function() {
     loadProductInputList();
     loadMaterials();
     loadClients();
- 	// 탭 변경 시 데이터 새로고침
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-	    const target = $(e.target).attr("href");
-	    
-	    if(target === "#product-content") {
-	        $.ajax({
-	            url: '/inventory/api/inputs/grouped',
-	            type: 'GET',
-	            success: function(data) {
-	                // PB로 시작하는 배치만 필터링 (완제품 입고)
-	                const productData = data.filter(item => 
-	                    item.batchId && item.batchId.startsWith('PB')
-	                );
-	                
-	                let html = `
-	                    <table class="table table-hover">
-	                        <thead>
-	                            <tr>
-	                                <th>입고 내역</th>
-	                                <th>구분</th>
-	                                <th>수량</th>
-	                                <th>담당자</th>
-	                                <th>작업</th>
-	                            </tr>
-	                        </thead>
-	                        <tbody>
-	                `;
-	                
-	                if(productData.length === 0) {
-	                    html += `<tr><td colspan="5" class="text-center">완제품 입고 내역이 없습니다.</td></tr>`;
-	                } else {
-	                    productData.forEach(group => {
-	                        // 화면과 같은 형식으로 표시
-	                        const dateTime = `${group.inDate || ''} ${group.inTime || ''}`;
-	                        html += `
-	                            <tr>
-	                                <td>${dateTime} 생산완료 내역입니다.</td>
-	                                <td><span class="badge badge-success">정기입고</span></td>
-	                                <td>${group.totalCount || 0}건 (총 ${group.totalQty || 0}개)</td>
-	                                <td>${group.empName || group.empId || '-'}</td>
-	                                <td>
-	                                    <button class="btn btn-sm btn-primary" 
-	                                            onclick="showDetail('${group.batchId}', '생산완료')">
-	                                        내역확인
-	                                    </button>
-	                                </td>
-	                            </tr>
-	                        `;
-	                    });
-	                }
-	                
-	                html += '</tbody></table>';
-	                $('#product-content .table-responsive').html(html);
-	            }
-	        });
-	    }
-	});
+    loadPendingPurchases(); // 발주 목록 로드
     
-    // 부트스트랩 탭 이벤트 리스너
+    // 탭 변경 시 데이터 새로고침 (하나로 통합)
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         const target = $(e.target).attr("href");
         
-        if(target === "#product-content") {
-            // 완제품 탭 활성화되면 데이터 로드
+        if(target === "#material-content") {
+            // 부품/반제품 탭
+            loadGroupedInputList();
+        } 
+        else if(target === "#product-content") {
+            // 완제품 탭
             $.ajax({
                 url: '/inventory/api/inputs/grouped',
                 type: 'GET',
                 success: function(data) {
-                    const productData = data.filter(item => item.inType === '생산완료');
+                    // PB로 시작하는 배치만 필터링 (완제품 입고)
+                    const productData = data.filter(item => 
+                        item.batchId && item.batchId.startsWith('PB')
+                    );
                     
                     let html = `
                         <table class="table table-hover">
@@ -353,12 +349,13 @@ $(document).ready(function() {
                         html += `<tr><td colspan="5" class="text-center">완제품 입고 내역이 없습니다.</td></tr>`;
                     } else {
                         productData.forEach(group => {
+                            const dateTime = `${group.inDate || ''} ${group.inTime || ''}`;
                             html += `
                                 <tr>
-                                    <td>${group.inDate} ${group.inTime} 생산완료</td>
+                                    <td>${dateTime} 생산완료 내역입니다.</td>
                                     <td><span class="badge badge-success">생산완료</span></td>
-                                    <td>${group.totalCount}건 (총 ${group.totalQty}개)</td>
-                                    <td>${group.empName}</td>
+                                    <td>${group.totalCount || 0}건 (총 ${group.totalQty || 0}개)</td>
+                                    <td>${group.empName || group.empId || '-'}</td>
                                     <td>
                                         <button class="btn btn-sm btn-primary" 
                                                 onclick="showDetail('${group.batchId}', '생산완료')">
@@ -376,7 +373,14 @@ $(document).ready(function() {
             });
         }
     });
+    
+    // 모달 이벤트 추가
+    $('#addInputModal').on('show.bs.modal', function() {
+        loadPendingPurchases(); // 모달 열 때 발주 목록 로드
+    });
+    loadGroupedInputList();
 });
+
 // 생산 완료 제품 로드
 function loadProductionCompleted() {
     console.log("loadProductionCompleted 호출됨");
@@ -1127,7 +1131,7 @@ function saveProductBatch() {
     $('.prod-check:checked').each(function() {
         const data = $(this).data('info');
         items.push({
-            resultId: data.resultId,  // result_id 유지
+            resultId: data.resultId,
             itemType: 'product',
             productId: data.productId,
             inCount: data.availableQty,
@@ -1143,7 +1147,7 @@ function saveProductBatch() {
     }
     
     $.ajax({
-        url: '/inventory/api/inputs/production-batch', 
+        url: '/inventory/api/inputs/production-batch',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(items),
@@ -1152,26 +1156,40 @@ function saveProductBatch() {
         },
         success: function(result) {
             if(result.success) {
-                alert(`입고 처리 중...\n배치번호: ${result.batchId}\n\n완제품은 자동으로 검사완료 처리됩니다.`);
+                alert(`입고대기로 등록되었습니다.\n배치번호: ${result.batchId}\n\n개별 검사 후 입고완료 처리하면 LOT가 부여됩니다.`);
                 $('#productInputModal').modal('hide');
                 
-                // 잠시 후 목록 새로고침 (completeInput 처리 시간 고려)
+                // 목록 새로고침
                 setTimeout(function() {
                     loadGroupedInputList();
                     loadProductionCompleted();
-                    
-                    // 완제품 탭도 새로고침
-                    if($('#product-tab').hasClass('active')) {
-                        loadProductGroupedList();
-                    }
-                }, 1000);
+                }, 500);
             }
         },
         error: function(xhr) {
-            console.error("입고 실패:", xhr);
-            alert('입고 처리 중 오류가 발생했습니다.');
+            alert('입고 등록 실패');
         }
     });
+}
+
+//완제품 입고 완료 버튼 처리
+function completeProductInput(inId) {
+    if(confirm('이 제품을 입고완료 하시겠습니까?\nLOT번호가 부여됩니다.')) {
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/complete-product`,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('입고완료! LOT번호가 부여되었습니다.');
+                    refreshDetailModal();
+                    loadGroupedInputList();
+                }
+            }
+        });
+    }
 }
 
 //완제품 폼 초기화
@@ -1309,6 +1327,7 @@ function saveInput() {
     const items = [];
     const inReason = $('#new_inReason').val() || $('#new_inType').val();
     const inRemark = $('#new_inRemark').val();
+    const purchaseId = $('#purchase_select').val(); // 발주ID
     
     $('.material-item').each(function() {
         const materialId = $(this).find('.material-select').val();
@@ -1327,18 +1346,14 @@ function saveInput() {
                 inCount: qty,
                 warehouseId: $('#new_warehouseId').val(),
                 inReason: inReason,
-                inRemark: inRemark
+                inRemark: inRemark,
+                purchaseId: purchaseId 
             });
         }
     });
     
     if(items.length === 0) {
         alert('최소 하나의 자재를 선택하세요.');
-        return;
-    }
-    
-    if(!$('#new_clientId').val()) {
-        alert('거래처를 선택하세요.');
         return;
     }
     
@@ -1351,20 +1366,199 @@ function saveInput() {
             'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
         },
         success: function(result) {
-            console.log("서버 응답:", result);
-            
             if(result && result.success) {
-                alert('입고 완료!');
-                $('#productInputModal').modal('hide');
-                loadGroupedInputList();
-            } else {
-                // success가 없거나 false일 때
-                alert('입고는 되었으나 응답 처리 문제');
-                $('#productInputModal').modal('hide');
+                alert(`입고 대기 등록 완료!\n배치번호: ${result.batchId}\n\n발주 상태가 WAITING으로 변경되었습니다.`);
+                $('#addInputModal').modal('hide');
                 loadGroupedInputList();
             }
         }
     });
+}
+
+//새로 추가: 발주 관련 함수만
+function openPurchaseInputModal() {
+    loadPendingPurchases();
+    $('#purchaseInputModal').modal('show');
+}
+
+function loadPendingPurchases() {
+    console.log("발주서 목록 로드 시작");
+    
+    $.ajax({
+        url: '/inventory/api/pending-purchases',
+        type: 'GET',
+        success: function(data) {
+            console.log("받은 발주 데이터:", data);
+            
+            const select = $('#purchase_select');
+            select.empty();
+            select.append('<option value="">-- 발주서 없이 입고 --</option>');
+            
+            if(data && data.length > 0) {
+                data.forEach(p => {
+                    select.append(`
+                        <option value="${p.purId}" 
+                                data-client-id="${p.clientId}"
+                                data-client-name="${p.clientName}">
+                            ${p.purId} - ${p.clientName} (${p.itemCount}건)
+                        </option>
+                    `);
+                });
+                console.log("발주서 목록 추가 완료");
+            } else {
+                console.log("발주 데이터가 없습니다");
+                select.append('<option value="" disabled>발주 대기 건이 없습니다</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("발주서 로드 실패:", error);
+            console.error("상태코드:", xhr.status);
+            console.error("응답:", xhr.responseText);
+            
+            const select = $('#purchase_select');
+            select.empty();
+            select.append('<option value="">-- 발주서 로드 실패 --</option>');
+        }
+    });
+}
+
+//발주 상세 로드
+function loadPurchaseDetails() {
+    const purId = $('#purchase_select').val();
+    
+    if(!purId) {
+        $('#purchase_info').hide();
+        $('#purchase_detail_section').hide();
+        $('#new_clientId').prop('disabled', false);
+        return;
+    }
+    
+    const clientId = $('#purchase_select option:selected').data('client-id');
+    const clientName = $('#purchase_select option:selected').data('client-name');
+    
+    // 발주 정보 표시
+    $('#selected_pur_id').text(purId);
+    $('#selected_client').text(clientName);
+    $('#purchase_info').show();
+    
+    // 거래처 자동 설정
+    $('#new_clientId').val(clientId).prop('disabled', true);
+    
+    $.ajax({
+        url: `/inventory/api/purchase-details/${purId}`,
+        type: 'GET',
+        success: function(data) {
+            const tbody = $('#purchase_detail_body');
+            tbody.empty();
+            
+            // 테이블 헤더 HTML 수정
+            $('#purchase_detail_section table thead').html(`
+                <tr>
+                    <th width="25%">품목정보</th>
+                    <th width="15%">거래처</th>
+                    <th width="10%">현재고</th>
+                    <th width="10%">발주수량</th>
+                    <th width="10%">기입고</th>
+                    <th width="10%">잔여</th>
+                    <th width="10%">입고수량</th>
+                </tr>
+            `);
+            
+            data.forEach(item => {
+                const remainQty = item.orderQty - item.receivedQty;
+                const rowClass = remainQty <= 0 ? 'table-success' : '';
+                const isDisabled = remainQty <= 0;
+                
+                tbody.append(`
+                    <tr class="${rowClass}" data-material-id="${item.materialId}">
+                        <td>
+                            <div style="display:flex; align-items:center;">
+                                <div style="width:80px; height:60px; border:1px solid #ddd; 
+                                           display:flex; align-items:center; justify-content:center;
+                                           margin-right:10px; background:#f8f9fa;">
+                                    <small style="font-size:11px;">${item.materialId}</small>
+                                </div>
+                                <div>
+                                    <strong>${item.materialName}</strong>
+                                    <br><small class="text-muted">${item.unit}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${clientName}</td>
+                        <td class="text-center">
+                            <span class="badge badge-secondary">
+                                ${item.currentStock || 0}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <strong class="text-primary">${item.orderQty}</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-info">${item.receivedQty}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge ${remainQty > 0 ? 'badge-warning' : 'badge-success'}">
+                                ${remainQty}
+                            </span>
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   class="form-control form-control-sm purchase-input-qty" 
+                                   data-material="${item.materialId}"
+                                   data-purchase="${purId}"
+                                   max="${remainQty}" 
+                                   value="${remainQty > 0 ? remainQty : 0}"
+                                   ${isDisabled ? 'disabled' : ''}>
+                        </td>
+                    </tr>
+                `);
+            });
+            
+            $('#purchase_detail_section').show();
+            
+            // 자동으로 자재 목록에 추가
+            if(data.some(item => item.orderQty - item.receivedQty > 0)) {
+                autoFillMaterials(data);
+            }
+        }
+    });
+}
+
+function autoFillMaterials(purchaseDetails) {
+    $('#materialsList').empty();
+    
+    purchaseDetails.forEach((item, index) => {
+        const remainQty = item.orderQty - item.receivedQty;
+        if(remainQty > 0) {
+            const html = `
+                <div class="material-item mb-2">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <select class="form-control material-select" disabled>
+                                <option value="${item.materialId}" selected>
+                                    [${item.materialId}] ${item.materialName}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control material-qty" 
+                                   value="${remainQty}" min="1" max="${remainQty}">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-danger btn-sm remove-material" 
+                                    onclick="removeMaterialRow(this)" 
+                                    ${index === 0 ? 'style="display:none;"' : ''}>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#materialsList').append(html);
+        }
+    });
+    
+    updateSelectedCount();
 }
 
 // 폼 초기화

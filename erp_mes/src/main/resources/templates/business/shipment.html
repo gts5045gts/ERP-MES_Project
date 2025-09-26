@@ -33,15 +33,22 @@
                             			<label for="shipmentStatus" class="shipmentStatus">진행상태</label>
                                 		<select id="shipmentStatus" class="form-select" aria-label="전체">
                                    			<option value="ALL">전체</option>
-                                    		<option value="COMPLETION">출하완료</option>
+                                   			<option value="READY">출하대기</option>
                                     		<option value="PARTIAL">부분출하</option>
+                                    		<option value="COMPLETION">출하완료</option>
                                     		<option value="DELAY">날짜지연</option>
                                 		</select>
                                 	</div>
                                 	<div class="d-flex align-items-center gap-2">
-										<label for="cliSearch" class="cliSearch">거래처명</label>
-										<input type="search" id="cliSearch" placeholder="">
+										<label for="combinedSearch" class="combinedSearchLabel">검색</label>
+            							<input type="search" id="combinedSearch" placeholder="거래처명/출하번호" class="form-control" style="width: 180px;">
 									</div>
+									<div class="d-flex align-items-center gap-2">
+            							<label for="inputDateSearch" class="inputDateSearch">납기일</label>
+            							<input type="date" id="inputDateSearch" class="form-control" style="width: 140px;">
+            							<span class="text-secondary">~</span>
+            							<input type="date" id="inputDateEndSearch" class="form-control" style="width: 140px;">
+        							</div>
 								</div>
                             	<div class="search-buttons">
                             		<button id="searchBtn" class="btn btn-light">검색</button>
@@ -106,6 +113,11 @@
 	<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
     <script th:src="@{/business/js/shipment.js}"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    
+    <script th:inline="javascript">
+    	const isBUSTeam = /*[[${isBUSTeam}]]*/ false;
+    	const isAUTLevel = /*[[${isAUTLevel}]]*/ false;
+	</script>
 </th:block>
 
 </body>

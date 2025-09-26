@@ -117,29 +117,10 @@ public class OrderService {
         }
     }
 	
-	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	// 수주 목록의 상태를 '생산중'으로 업데이트. 생산계획 서비스에서 호출 해줘야함.
-    public void updateOrderStatusToInProduction(String orderId) {
+	// 생산계획 등록시 해당 수주의 상태와 상세상태를 생산중으로 update
+    public void updateOrderStatusToInProduction(String orderId, String productId) {
         orderMapper.updateOrderStatus(orderId, "INPRODUCTION");
+        orderMapper.updateOrderDetailStatus(orderId, productId);
     }
-	
-    // 상태를 출하완료로 업데이트
-//	@Transactional
-//	public void completeOrderDetail(String orderDetailId) {
-//	    // 1. 특정 수주 상세를 'COMPLETION'으로 업데이트
-//	    orderMapper.updateSingleDetailStatus(orderDetailId, "COMPLETION");
-//
-//	    // 2. 업데이트된 수주 상세의 orderId를 가져옴
-//	    String orderId = orderMapper.findOrderIdByDetailId(orderDetailId);
-//
-//	    // 3. 해당 수주의 모든 상세 품목이 완료되었는지 확인
-//	    boolean allCompleted = orderMapper.isAllDetailsCompleted(orderId);
-//
-//	    // 4. 모든 상세 품목이 완료되었으면, 수주 상태도 'COMPLETION'으로 업데이트
-//	    if (allCompleted) {
-//	        orderMapper.updateOrderStatusToCompletion(orderId);
-//	    }
-//	}	
-	
 	
 }

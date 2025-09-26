@@ -7,13 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
@@ -37,7 +37,17 @@ public class OrderController {
 
 	// 수주 화면
 	@GetMapping("order")
-	public String order() {
+	public String order(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+		log.info(userDetails);
+		String userDeptId = userDetails.getEmpDeptId();
+		String userLevelId = userDetails.getEmpLevelId();
+		
+		// 부서 코드가 'DEP006'(영업팀)일 경우, 버튼 표시 여부를 true로 설정
+        boolean isBusTeam = "DEP006".equals(userDeptId);
+        model.addAttribute("isBUSTeam", isBusTeam);
+        
+        boolean isAutLevel = "AUT001".equals(userLevelId);
+        model.addAttribute("isAUTLevel", isAutLevel);
 
 		return "/business/order";
 	}

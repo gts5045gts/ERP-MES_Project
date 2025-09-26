@@ -5,8 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.erp_mes.mes.business.dto.OrderDTO;
-import com.erp_mes.mes.business.dto.OrderDetailDTO;
+import com.erp_mes.mes.pm.dto.WorkOrderShortageDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDTO;
 import com.erp_mes.mes.purchase.dto.PurchaseDetailDTO;
 import com.erp_mes.mes.stock.dto.MaterialDTO;
@@ -46,5 +45,13 @@ public interface PurchaseMapper {
 	String findPurchaseStatus(String purchaseId);
 	void updatePurchaseStatus(@Param("purchaseId") String purchaseId, @Param("purchaseStatus") String purchaseStatus);
 	void updatePurchaseDetailsStatus(@Param("purchaseId") String purchaseId, @Param("purchaseStatus") String purchaseStatus);
-    
+	
+// 작업지시발주 모달창 grid	
+	List<WorkOrderShortageDTO> getWorkOrderShortages();
+	// 특정 작업지시의 상세 자재 목록 조회 (발주 등록)
+	List<WorkOrderShortageDTO> getWorkOrderDetailsForPurchase(@Param("workOrderId") String workOrderId);
+	
+	// 작업지시발주가 등록 시 work_order_shortage 테이블에서 해당 work_order_id 값을 가진 status를 '발주완료'로 update
+	void updateWorkOrderShortageStatus(@Param("workOrderId") String workOrderId, @Param("status") String status);
+
 }
