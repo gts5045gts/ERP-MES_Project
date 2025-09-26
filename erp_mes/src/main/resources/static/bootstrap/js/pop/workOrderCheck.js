@@ -38,8 +38,11 @@ $(document).ready(function() {
                 tbody.append(tr);
             });
 			
-			updateProgressChart(workOrders);
-			updateQuantityChart(workOrders);
+			$.getJSON('/pop/workResultList?page=0&size=20', function(workResults) {
+				grid.resetData(workResults);          // 그리드에 세팅
+				updateQuantityChart(workResults);     // 생산/불량 도넛
+				updateProgressChart(workOrders);     // 전체 진행률 도넛
+			});
 			
 			
         },
@@ -78,10 +81,9 @@ $('#workOrderBody').on('click', 'tr', function() {
 	
 	const status = $(this).find('td:last').text().trim(); // 마지막 td가 상태라고 가정
 
-	if (status === '검사대기') {
-		// 검사대기 상태면 모달 열지 않음
-		alert('작업완료된 작업지시는 열 수 없습니다.');
-		return;
+	if (status === '검사대기' || status === '작업완료') {
+	    alert('작업완료된 작업지시는 열 수 없습니다.');
+	    return;
 	}
 	
 	const modalEl = document.getElementById('popModal');  // DOM element

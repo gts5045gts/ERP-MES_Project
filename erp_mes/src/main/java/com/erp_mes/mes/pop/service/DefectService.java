@@ -35,17 +35,25 @@ import lombok.RequiredArgsConstructor;
 public class DefectService {
 	
 	private final DefectMapper defectMapper;
-	
+	private final WorkResultMapper workResultMapper;
 
 
 // ==============================================================================
 
 	// 불량 테이블 저장
 	public Long saveDefect(DefectDTO defectDTO) {
+		String lotId = workResultMapper.findLotIdByWorkOrderId(defectDTO.getWorkOrderId());
+		defectDTO.setLotId(lotId);
+
 	    defectMapper.saveDefect(defectDTO); // insert 실행
 	    return defectDTO.getDefectItemId(); 
 	}
 	
+	// 불량 수량 업데이트
+	@Transactional
+	public int updateDefect(DefectDTO defectDTO) {
+		return defectMapper.updateDefect(defectDTO);
+	}
 
 
 }
