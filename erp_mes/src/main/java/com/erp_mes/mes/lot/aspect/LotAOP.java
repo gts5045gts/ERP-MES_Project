@@ -74,10 +74,14 @@ public class LotAOP {
 				
 				List<Map<String, Object>> tableInfo = lotService.getTargetInfo(tableName, targetId, targetIdValue);
 				
+				if (tableInfo == null) {
+					return null;
+				}
+				
 				for (Map<String, Object> row : tableInfo) {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
 				    	
-//				    	log.info(">>>>>>>>>entry.getValue()" + entry.getValue());
+				    	log.info(">>>>>>>>>entry.getValue()" + entry.getValue());
 				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
