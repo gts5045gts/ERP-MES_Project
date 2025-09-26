@@ -717,7 +717,37 @@ public class WareService {
         
         return "OUT" + today + shortCode + String.format("%02d", seq + 1);
     }
-
+    
+    // 기존 addOutputBatch는 그대로 두고, 생산계획 전용 메서드 추가
+    @Transactional
+    public String addProductionMaterialOutputBatch(String planId, List<Map<String, Object>> items, String empId) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+        
+        String batchId = "PMOB" + today + String.format("%03d", batchCount + 1);
+        
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
+        
+        for(Map<String, Object> item : items) {
+            todayTotalCount++;
+            String outId = "POUT" + today + String.format("%04d", todayTotalCount);
+            
+            log.info("생산계획 자재 출고 등록: {}", outId);
+            
+            item.put("outId", outId);
+            item.put("batchId", batchId);
+            item.put("empId", empId);
+            item.put("outType", "출고대기");
+            item.put("planId", planId);  // 생산계획 ID 추가
+            
+            wareMapper.insertOutput(item);
+        }
+        
+        return batchId;
+    }
+    
     // 해당 품목의 재고가 있는 창고 정보(warehouseId, manageId) 조회
     private Map<String, Object> findAvailableWarehouseWithManage(String productId) {
         List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
@@ -745,13 +775,11 @@ public class WareService {
             throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
         }
         
-        // 디버깅 로그 추가
         log.info("출고 정보: {}", output);
         
         String materialId = (String) output.get("MATERIAL_ID");
         String productId = (String) output.get("PRODUCT_ID");
         
-        // null 체크 추가
         if(materialId == null && productId == null) {
             throw new RuntimeException("출고할 품목 정보가 없습니다.");
         }
@@ -760,13 +788,17 @@ public class WareService {
         String locationId = (String) output.get("LOCATION_ID");
         Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
         
-        // materialId가 있는 경우만 처리
+        // materialId가 있는 경우만 처리 (부품 출고)
         if(materialId != null) {
             log.info("Material 출고: materialId={}, warehouseId={}, locationId={}, qty={}", 
                      materialId, warehouseId, locationId, outCount);
             
             wareMapper.reduceMaterialWarehouseStock(materialId, warehouseId, locationId, outCount);
             wareMapper.reduceMaterialQuantity(materialId, outCount);
+            
+            // *** work_order_id 11번 업데이트 추가 ***
+            wareMapper.updateOutputWorkOrder(outId, 11);
+            log.info("work_order_id 11번으로 업데이트 완료");
         } else if(productId != null) {
             // Product 처리
             log.info("Product 출고: productId={}, warehouseId={}, locationId={}, qty={}", 
@@ -982,6 +1014,33 @@ public class WareService {
     }
     
     @Transactional
+    public String addProductionOutputBatch(String planId, List<Map<String, Object>> items, String empId) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+        
+        String batchId = "MOB" + today + String.format("%03d", batchCount + 1);
+        
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
+        
+        for(Map<String, Object> item : items) {
+            todayTotalCount++;
+            String outId = "OUT" + today + String.format("%04d", todayTotalCount);
+            
+            item.put("outId", outId);
+            item.put("batchId", batchId);
+            item.put("empId", empId);
+            item.put("outType", "출고대기");
+            item.put("planId", planId);
+            
+            wareMapper.insertOutput(item);
+        }
+        
+        return batchId;
+    }
+    
+    @Transactional
     @TrackLot(tableName = "output", pkColumnName = "out_id")
     public void completeProductOutput(String outId, String empId) {
         Map<String, Object> output = wareMapper.selectOutputById(outId);
@@ -1025,6 +1084,17 @@ public class WareService {
         return wareMapper.getProductStockGroupByManageId(productId);
     }
     
+    // 생산계획 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPendingProductPlans() {
+        return wareMapper.selectPendingProductPlans();
+    }
+
+    // 생산계획별 BOM 상세 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPlanBOMDetails(String planId) {
+        return wareMapper.selectPlanBOMDetails(planId);
+    }
     // ==================== 데이터 조회 ====================
 
     // 부품 목록 조회 (구버전)

@@ -538,7 +538,6 @@ public class WareController {
 	    }
 	    return result;
 	}
-	// ---
 	// 완제품 manage_id별 재고 조회
 	@GetMapping("/api/product-stock-by-manage/{productId}")
 	@ResponseBody
@@ -546,5 +545,48 @@ public class WareController {
 	        @PathVariable("productId") String productId) {
 	    log.info("=== 완제품 manage_id별 재고 조회: {}", productId);
 	    return wareService.getProductStockByManageId(productId);
+	}
+	// ---
+	
+	// 생산계획 대기 목록 조회
+	@GetMapping("/api/pending-plans")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingPlans() {
+	    return wareService.getPendingProductPlans();
+	}
+
+	// 생산계획별 BOM 상세 조회
+	@GetMapping("/api/plan-bom/{planId}")
+	@ResponseBody
+	public List<Map<String, Object>> getPlanBOM(@PathVariable("planId") String planId) {
+	    return wareService.getPlanBOMDetails(planId);
+	}
+	
+	@PostMapping("/api/outputs/production-material-batch")
+	@ResponseBody
+	public Map<String, Object> addProductionOutputBatch(
+	        @RequestBody Map<String, Object> requestData, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String planId = (String) requestData.get("planId");
+	        List<Map<String, Object>> items = (List<Map<String, Object>>) requestData.get("items");
+	        
+	        if(planId == null || planId.isEmpty()) {
+	            throw new RuntimeException("생산계획 ID가 필요합니다.");
+	        }
+	        
+	        String batchId = wareService.addProductionOutputBatch(planId, items, principal.getName());
+	        
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 생산계획 자재 출고 등록");
+	    } catch(Exception e) {
+	        log.error("생산계획 자재 출고 실패:", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
 	}
 }

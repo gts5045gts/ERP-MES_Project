@@ -290,6 +290,20 @@ public interface WareMapper {
     // 특정 접두사로 시작하는 out_id의 최대 번호 조회
     Integer getMaxOutputCount(@Param("prefix") String prefix);
     
+    // work_order_id 업데이트
+    int updateOutputWorkOrder(@Param("outId") String outId, 
+                             @Param("workOrderId") Integer workOrderId);
+    
+    // 생산계획 관련 메서드 추가
+    List<Map<String, Object>> selectPendingProductPlans();
+    List<Map<String, Object>> selectPlanBOMDetails(@Param("planId") String planId);
+
+    // 생산계획 기반 출고 배치 처리
+    int insertProductionOutputBatch(Map<String, Object> params);
+
+    // output 테이블에 plan_id 업데이트
+    int updateOutputPlanId(@Param("outId") String outId, @Param("planId") String planId);
+    
     // ==================== 기초 데이터 조회 ====================
     
     // 부품 목록 조회 (구버전)
