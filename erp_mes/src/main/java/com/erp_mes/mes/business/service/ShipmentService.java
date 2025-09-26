@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
+import com.erp_mes.mes.business.dto.OutputDTO;
 import com.erp_mes.mes.business.dto.ShipmentDTO;
 import com.erp_mes.mes.business.dto.ShipmentDetailDTO;
 import com.erp_mes.mes.business.mapper.ShipmentMapper;
@@ -125,7 +126,7 @@ public class ShipmentService {
 
 	        // 출하 수량이 0보다 클 경우에만 재고 차감(이번에 출하할 수량만 차감)
 	        if (detail.getShipmentQty() > 0) {
-	            deductStock(detail.getProductId(), detail.getShipmentQty());
+	            deductStock(detail.getProductId(), detail.getOrderId() ,detail.getShipmentQty());
 	        }
 	        
 	        // 출하수량에 따른 상태 결정
@@ -179,18 +180,17 @@ public class ShipmentService {
 	    return shipmentId;
 	}
 	
-	private void deductStock(String productId, int shipmentQty) {
-        // 재고가 많은 순서대로 재고 품목을 가져옴
-        List<WarehouseItemDTO> warehouseItems = shipmentMapper.getWarehouseItemsByProductId(productId);
+	private void deductStock(String productId, String orderId, int shipmentQty) {
+        List<OutputDTO> outputItems = shipmentMapper.getOutputItemsByProductIdAndOrderId(productId, orderId);
         
         int remainingQtyToDeduct = shipmentQty;
         
-        for (WarehouseItemDTO item : warehouseItems) {
+        for (OutputDTO item : outputItems) {
             if (remainingQtyToDeduct <= 0) {
                 break;
             }
             
-            int currentStock = item.getItemAmount();
+            int currentStock = item.getOutCount();
             int deductAmount;
             
             if (currentStock >= remainingQtyToDeduct) {
@@ -201,8 +201,10 @@ public class ShipmentService {
                 remainingQtyToDeduct -= currentStock;
             }
             
-            // 재고 업데이트
-            shipmentMapper.updateWarehouseItemAmount(item.getManageId(), deductAmount);
+            // 1. 출고등록시 출고대기 상태가되며 output 테이블에 insert됨
+            // 2. 출고등록한 수량이 out_count값이고 등록 수량만큼 창고에서 이미 재고가 빠졌기 때문에
+            //    해당 product_id의 창고 재고수량을 update 하는게 아닌 output 테이블의 out_count값을 출하수량만큼 차감
+            shipmentMapper.updateOutputItemCount(item.getProductId(), item.getOrderId(), deductAmount);
         }
         
         if (remainingQtyToDeduct > 0) {

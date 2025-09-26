@@ -317,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				bodyHeight: 280,
 				columns: [
 					{ header: '수주번호', name: 'orderId', align: 'center', width: 140 },
-					{ header: '거래처', name: 'clientName', align: 'center', width: 100 },
+					{ header: '거래처', name: 'clientName', align: 'center', minwidth: 100 },
 					{
 						header: '수주일', name: 'orderDate', align: 'center', width: 100,
 						formatter: function(value) {
@@ -362,11 +362,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				rowHeaders: ['checkbox'],
 				columns: [
 					{ header: '수주번호', name: 'orderId', align: 'center', width: 140 },
-					{ header: '품목명', name: 'productName', align: 'center' },
-					{ header: '재고량', name: 'stockQty', align: 'center' },
-					{ header: '수주수량', name: 'orderQty', align: 'center' },
+					{ header: '품목명', name: 'productName', align: 'center', width: 90 },
+					{ header: '재고량', name: 'stockQty', align: 'center', width: 75 },
+					{ header: '수주수량', name: 'orderQty', align: 'center', width: 75 },
 					{
-						header: '필요출하수량', name: 'shipmentQty', align: 'center',
+						header: '필요출하수량', name: 'shipmentQty', align: 'center', minwidth: 80,
 						editor: 'text'
 					},
 				],
