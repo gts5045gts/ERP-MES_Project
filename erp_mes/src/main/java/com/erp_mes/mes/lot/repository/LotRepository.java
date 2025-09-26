@@ -12,6 +12,7 @@ import com.erp_mes.mes.lot.entity.LotMaster;
 @Repository
 public interface LotRepository extends JpaRepository<LotMaster, String> {
 
+	//마지막 lot_id 조회
 	@Query(value = """
 			SELECT lot_id FROM lot_master
 			WHERE lot_id LIKE :prefix || :datePart ||
@@ -20,5 +21,16 @@ public interface LotRepository extends JpaRepository<LotMaster, String> {
 			""", nativeQuery = true)
 	String findByLastLotId(@Param("prefix") String prefix, @Param("datePart") String datePart,
 			@Param("machineId") String machineId);
+
+	//work_order_id 조회
+	@Query(value = """
+			SELECT 
+				work_order_id
+			FROM 
+				work_result
+			WHERE
+				lot_id = :lotId
+			""", nativeQuery = true)
+	Long findPopByworkOrderId(@Param("lotId") String popLotId);
 
 }
