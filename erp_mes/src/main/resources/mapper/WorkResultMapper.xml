@@ -31,28 +31,46 @@
 <!-- 상세작업지시 모달을 위한 조인 -->
 <select id="workOrderWithBom" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
 	SELECT
-		pr.product_id   AS productId,
-        pr.pro_id		AS processId,
-        pr.route_id		AS routeId,
-        pr.pro_seq		AS proSeq,
-        p.pro_nm      	AS processNm,
-        pr.equip_id   	AS equipmentId,
-        e.equip_nm    	AS equipmentNm,
-        pr.bom_id     	AS bomId,
-        pr.material_id  AS materialId,
-        m.material_name AS materialNm,
+		pr.product_id   	AS productId,
+        pr.pro_id			AS processId,
+        pr.route_id			AS routeId,
+        pr.pro_seq			AS proSeq,
+        p.pro_nm      		AS processNm,
+        pr.equip_id   		AS equipmentId,
+        e.equip_nm    		AS equipmentNm,
+        pr.bom_id     		AS bomId,
+        pr.material_id  	AS materialId,
+        m.material_name 	AS materialNm,
         (SELECT quantity
          FROM bom b
          WHERE 
             b.bom_id = pr.bom_id
             AND b.material_id = pr.material_id        
-		 ) AS quantity
+		 ) AS quantity,
+		 (SELECT MIN(work_order_id)
+          FROM work_order o
+          WHERE o.bom_id = pr.bom_id) AS workOrderId,
+          (SELECT MIN(work_order_status)
+		   FROM work_order o
+		   WHERE o.bom_id = pr.bom_id) AS workOrderStatus
     FROM process_routing pr
     LEFT JOIN process p ON pr.pro_id = p.pro_id
     LEFT JOIN equipment e ON pr.equip_id = e.equip_id
     LEFT JOIN material m ON pr.material_id = m.material_id
     WHERE pr.product_id = #{productId}
     ORDER BY pr.pro_seq ASC
+</select>
+
+<!-- 작업지시 기준 설비만 가져오기(대시보드를 위함) -->
+<select id="bomByWorkOrderId" parameterType="long" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+	SELECT
+	    o.work_order_id AS workOrderId,
+	    e.equip_id      AS equipmentId,
+	    e.equip_nm      AS equipmentNm
+	FROM work_order o
+	JOIN process_routing pr ON pr.bom_id = o.bom_id
+	JOIN equipment e ON e.equip_id = pr.equip_id
+	WHERE o.work_order_id = #{workOrderId}
 </select>
 
 
@@ -119,12 +137,15 @@
 	WHERE work_order_id = #{_parameter}
 </update>
 
-<!-- 불량아이디 업데이트 -->
-<update id="updateDefectItemId">
-	UPDATE work_result
-    SET defect_item_id = #{defectItemId}
+<!-- 로트아이디 -->
+<select id="findLotIdByWorkOrderId" resultType="string" parameterType="long">
+    SELECT lot_id 
+    FROM work_result 
     WHERE work_order_id = #{workOrderId}
-</update>
+    FETCH FIRST 1 ROWS ONLY
+</select>
+
+
 
 
 

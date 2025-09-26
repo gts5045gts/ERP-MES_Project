@@ -17,7 +17,8 @@ public interface DefectMapper {
 	
 
 
-
+	// 불량 업데이트
+	int updateDefect(DefectDTO defectDTO);
 
 	
 	

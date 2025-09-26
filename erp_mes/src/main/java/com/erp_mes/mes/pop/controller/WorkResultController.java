@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import com.erp_mes.erp.commonCode.controller.CommonCodeController;
 import com.erp_mes.erp.commonCode.dto.CommonCodeDTO;
 import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.mes.pop.dto.DefectDTO;
@@ -33,11 +33,13 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RequiredArgsConstructor
 public class WorkResultController {
+
+    private final CommonCodeController commonCodeController;
 	
 	private final WorkResultMapper workResultMapper;
 	private final WorkResultService workResultService;
 	private final DefectService defectService;
-	
+
 // ===================================================================
 	
 	
@@ -62,6 +64,13 @@ public class WorkResultController {
 	@ResponseBody
 	public List<WorkResultDTO> getBom(@PathVariable("productId") String productId) {
 		return workResultService.workOrderWithBom(productId);
+	}
+	
+	// 하나의 작업지시 기준 bom 조회
+	@GetMapping("/bom/workOrder/{workOrderId}")
+	@ResponseBody
+	public List<WorkResultDTO> getBomByWorkOrder(@PathVariable("workOrderId") Long workOrderId) {
+	    return workResultService.bomByWorkOrderId(workOrderId);
 	}
 	
 	// 작업시작 클릭시 작업현황 업데이트
@@ -106,28 +115,29 @@ public class WorkResultController {
 		return workResultService.getDefectReason();  
 	}
 	
-	// 작업완료 버튼 클릭시 불량 테이블에 추가
+	// 불량 기입시 불량 테이블에 추가
 	@PostMapping("/saveDefect")
 	@ResponseBody
-	public void saveDefect(Authentication authentication, @RequestBody Map<String, Object> map) {
-		Long resultId = Long.valueOf(map.get("resultId").toString());
-		Long workOrderId = Long.valueOf(map.get("workOrderId").toString());
-		String empId = authentication.getName();
-		
-		// Map -> DefectDTO 변환
-		ObjectMapper mapper = new ObjectMapper();
-		DefectDTO defectDTO = mapper.convertValue(map.get("defectDTO"), DefectDTO.class);
-		
-		defectDTO.setEmpId(empId);
-		defectDTO.setDefectLocation(1L);
-		defectDTO.setWorkOrderId(workOrderId);
-		
-		
-		Long defectItemId = defectService.saveDefect(defectDTO);
-		
-		workResultService.updateDefect(resultId, defectItemId);
+	public Long saveDefect(Authentication authentication, @RequestBody DefectDTO defectDTO) {
+
+	    // 로그인한 작업자 ID 세팅
+	    defectDTO.setEmpId(authentication.getName());
+	    defectDTO.setDefectLocation(1L);
+
+	    // 불량 테이블에 저장
+	    Long defectItemId = defectService.saveDefect(defectDTO);
+
+	    return defectItemId;
 	}
 	
+	
+	// 불량수량 업데이트
+	@PostMapping("/updateDefect")
+	@ResponseBody
+	public int updateDefect(@RequestBody DefectDTO defectDTO) {
+		
+		return defectService.updateDefect(defectDTO);
+	}
 
 	
 	
