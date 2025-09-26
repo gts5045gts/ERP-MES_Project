@@ -55,17 +55,16 @@ a[aria-expanded="true"]>.caret::before {
 								<li class="list-group-item p-2"><a data-toggle="collapse"
 									href="#lotA" class="d-flex align-items-center"
 									aria-expanded="false" aria-controls="lotA"> <span
-										class="mr-2 caret"></span> <span th:text="*{lotId}"></span> <!-- 예시 
-	LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중) -->
+										class="mr-2 caret"></span> <span th:text="|*{lotId} *{productName} (*{worOrderStatus})|"></span>
 								</a>
 									<ul class="collapse pl-4 mt-2" id="lotA" data-parent="#lotTree">
 										<!-- 공정 토글 -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#procA" aria-controls="procA"
-											class="d-flex align-items-center"> <span
+											data-toggle="collapse" th:href="'#procA_' + *{workOrderId}" th:aria-controls="'procA_' + *{workOrderId}"
+											class="d-flex align-items-center" th:attr="data-value=*{productId}"> <span
 												class="mr-2 caret"></span> 공정
 										</a>
-											<ul class="collapse pl-3 mt-2" id="procA" data-parent="#lotA">
+											<ul class="collapse pl-3 mt-2" th:id="'procA_' + *{workOrderId}" data-parent="#lotA">
 												<li class="list-group-item py-1 px-2 border-0"><a
 													href="#" class="lot-leaf"
 													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-001","step":"재단"}'>재단</a>
@@ -81,11 +80,11 @@ a[aria-expanded="true"]>.caret::before {
 											</ul></li>
 										<!-- 자재 토글 -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#matA" aria-controls="matA"
+											data-toggle="collapse" th:href="'#matA' + *{workOrderId}" th:aria-controls="'matA' + *{workOrderId}"
 											class="d-flex align-items-center"> <span
 												class="mr-2 caret"></span> 자재
 										</a>
-											<ul class="collapse pl-3 mt-2" id="matA" data-parent="#lotA">
+											<ul class="collapse pl-3 mt-2" th:id="'matA' + *{workOrderId}" data-parent="#lotA">
 												<li class="list-group-item py-1 px-2 border-0"><a
 													href="#" class="lot-leaf"
 													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-004","material":"가죽-브라운"}'>가죽-브라운</a>
@@ -97,11 +96,11 @@ a[aria-expanded="true"]>.caret::before {
 											</ul></li>
 										<!-- 설비 토글 (참고로 동일 패턴) -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#eqA" aria-controls="eqA"
+											data-toggle="collapse" th:href="'#eqA' + *{workOrderId}" th:aria-controls="'eqA' + *{workOrderId}"
 											class="d-flex align-items-center"> <span
 												class="mr-2 caret"></span> 설비
 										</a>
-											<ul class="collapse pl-3 mt-2" id="eqA" data-parent="#lotA">
+											<ul class="collapse pl-3 mt-2" th:id="'eqA' + *{workOrderId}" data-parent="#lotA">
 												<li class="list-group-item py-1 px-2 border-0"><a
 													href="#" class="lot-leaf"
 													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","equip":"내부 부착기 1호 / EQ060"}'>내부

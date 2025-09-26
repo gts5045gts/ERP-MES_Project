@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
-import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
@@ -73,6 +72,6 @@ public class LotController {
 		List<LotDTO> lotDTOList = lotService.getLotTrackingList(page, size);
 		model.addAttribute("lotDTOList", lotDTOList);
 		
-		return "/lot/lot_list";
+		return "lot/lot_list";
 	}
 }
