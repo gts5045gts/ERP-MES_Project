@@ -85,7 +85,7 @@ public class ProcessRouteService {
 		return equipList;
 	}
 
-	@TrackLot(tableName = "processs_routing", pkColumnName = "route_id")
+//	@TrackLot(tableName = "processs_routing", pkColumnName = "route_id") 	삭제
 	public void saveRoute(ProcessRouteDTO routeDTO) {
 		
 		
@@ -115,8 +115,8 @@ public class ProcessRouteService {
 	    
 	    log.info("------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + routeDTO.getRouteId());
 //      *******로트 생성: pk value 를 넘겨주는 곳 모든 프로세스가 끝나고 입력하면됨**********
-		HttpSession session = SessionUtil.getSession();
-		session.setAttribute("targetIdValue", routeDTO.getRouteId()); //pk_id의 값 입력
+//		HttpSession session = SessionUtil.getSession();
+//		session.setAttribute("targetIdValue", routeDTO.getRouteId()); //pk_id의 값 입력
 	
 
 	}

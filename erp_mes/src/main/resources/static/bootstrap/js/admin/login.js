@@ -13,10 +13,10 @@
 	          empPw = "1234";
 	          break;
 			case "USER":
-  	          empNo = "2025082802";
+  	          empNo = "2025082803";
   	          empPw = "1234";
   	          break;
-	      }
+	      }	//일반사원 사원번호 변경
 		  
 	      document.getElementById("empId").value = empNo;
 	      document.getElementById("exampleInputPassword").value = empPw;
