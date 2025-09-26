@@ -29,19 +29,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	let isEditMode = false; // 등록/수정 모드 구분
 	let allClient = [];
-	
+
 	const addBtn = document.getElementById("addBtn");
 	if (!isAUTLevel) {
 		if (addBtn) addBtn.style.display = "none";
 	}
 
 	// 페이지 처음 로딩 시 전체 목록 불러오기
-	function loadClients(){
+	function loadClients() {
 		fetch("/business/api/clients")
 			.then(response => response.json())
 			.then(data => {
 				allClient = data;
-//				grid.resetData(allClient);
+				//				grid.resetData(allClient);
 				filterClient();
 			})
 			.catch(error => console.error("데이터 불러오는 과정에서 오류남:", error));
@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 검색 버튼 클릭 시 실행
 	function filterClient() {
-		console.log("ALL CLIENT DATA EXAMPLE:", allClient[0]); 
+		console.log("ALL CLIENT DATA EXAMPLE:", allClient[0]);
 
 		const type = document.getElementById("cliType").value;
 		const status = document.getElementById("cliStatus").value;
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	loadClients();
 
 	// 등록 버튼 이벤트
-	if(addBtn){
+	if (addBtn) {
 		addBtn.addEventListener("click", () => {
 			isEditMode = false;
 			modalTitle.textContent = "거래처 등록";
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}).open();
 	});
 
-	if(isAUTLevel) {
+	if (isAUTLevel) {
 		grid.on("dblclick", (ev) => {
 			const rowData = grid.getRow(ev.rowKey);
 			if (!rowData) return;
@@ -137,6 +137,38 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 모달 폼 제출 이벤트 (등록, 수정 같이 사용)
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
+
+		const businessNumber = document.getElementById("businessNumber").value.trim();
+
+		//  사업자번호 검증 API 호출
+		try {
+			const validateResponse = await fetch("/business/api/validateBizNo", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ businessNumber })
+			});
+
+			if (!validateResponse.ok) {
+				alert("사업자등록번호 검증 요청 실패!");
+				return;
+			}
+
+			const validateResult = await validateResponse.json();
+			console.log("검증 결과:", validateResult);
+
+			// 공공데이터 응답 예시: {"status_code":"OK","data":[{"b_no":"1234567890","b_stt":"계속사업자","valid":"01"}]}
+			const validCode = validateResult.data[0].valid; // 01: 유효, 02: 폐업, 03: 휴업
+
+			if (validCode !== "01") {
+				alert("유효하지 않은 사업자등록번호입니다. (폐업/휴업/미등록)");
+				return;
+			}
+
+		} catch (error) {
+			console.error("검증 API 호출 에러:", error);
+			alert("사업자등록번호 검증 중 오류가 발생했습니다.");
+			return;
+		}
 
 		// 필수 입력 필드 확인
 		const requiredFields = [
