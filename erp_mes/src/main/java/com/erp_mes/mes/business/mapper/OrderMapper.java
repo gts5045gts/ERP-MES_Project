@@ -52,5 +52,7 @@ public interface OrderMapper {
    
     int updateOrderDetailStatus(@Param("orderId") String orderId, @Param("productId") String productId);
 
+	void updateReason(@Param("orderId") String orderId, @Param("reason") String reason);
+
 
 }

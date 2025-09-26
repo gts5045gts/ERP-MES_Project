@@ -140,7 +140,8 @@
 			total_order_price,
 			delivery_date,
 			emp_id,
-			emp_name
+			emp_name,
+			reason
 		FROM 
 		 	orders
 		ORDER BY order_id desc
@@ -219,6 +220,14 @@
         	order_detail_status = #{orderStatus}
         WHERE 
         	order_id = #{orderId}
+    </update>
+    <update id="updateReason">
+    	UPDATE
+    		orders
+    	SET
+    		reason = #{reason}
+    	WHERE
+    		order_id = #{orderId}
     </update>    
     
 <!--     수주 update -->

@@ -30,9 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const addBtn = document.getElementById("addBtn");
 	if (!isBUSTeam && !isAUTLevel) {
-	    if (addBtn) addBtn.style.display = "none";
+		if (addBtn) addBtn.style.display = "none";
 	}
-	
+
 	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
 	if (isBUSTeam || isAUTLevel) {
 		let editBtn = document.getElementById("editBtn");
@@ -253,8 +253,21 @@ document.addEventListener("DOMContentLoaded", () => {
 					if (rowData.orderStatus === 'RECEIVED') {
 						editBtn.style.display = "none";
 
-						if (confirm("수주를 취소하시겠습니까?")) {
-//							comfirm -> prompt 로 변경해서 취소사유 입력할 수 있도록 해놓기
+						const cancelReason = prompt("수주를 취소하시겠습니까? 취소 사유를 입력해주세요.");
+
+						// 사용자가 '취소'를 누르거나, 아무것도 입력하지 않고 '확인'을 누른 경우 처리
+						if (cancelReason === null) {
+							// 사용자가 prompt 창에서 '취소' 버튼을 누름
+							return;
+						}
+
+						// 사유 입력 확인 (필요에 따라 최소 글자 수 등 추가 검증 가능)
+						if (cancelReason.trim() === "") {
+							alert("취소 사유를 반드시 입력해야 합니다.");
+							return;
+						}
+
+//						if (confirm("수주를 취소하시겠습니까?")) {
 							const orderId = rowData.orderId;
 							try {
 								const csrfToken = document.querySelector('meta[name="_csrf"]').content;
@@ -265,7 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
 									headers: {
 										"Content-Type": "application/json",
 										[csrfHeader]: csrfToken
-									}
+									},
+									body: JSON.stringify({ reason: cancelReason })
 								});
 
 								if (!res.ok) {
@@ -280,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								console.error("수주 취소 실패:", err);
 								alert("수주 취소 실패: " + err.message);
 							}
-						}
+//						}
 					} else {
 						// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
 						alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");

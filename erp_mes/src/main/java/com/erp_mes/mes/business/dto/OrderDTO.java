@@ -25,6 +25,7 @@ public class OrderDTO {
 	private String empId;				// 수주 등록자 (= 로그인한 사용자)
 	private String empName;
 	private LocalDateTime updateAt;			// 수정일
+	private String reason;
 	
 	private List<OrderDetailDTO> items;
 }

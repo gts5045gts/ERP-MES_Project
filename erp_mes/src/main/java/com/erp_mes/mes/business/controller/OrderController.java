@@ -128,9 +128,10 @@ public class OrderController {
 	
 	// 수주 취소 
     @PutMapping("/api/orders/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId) {
+    public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId, @RequestBody OrderDTO reason) {
         try {
-        	orderService.cancelOrder(orderId);
+        	String cancelReason = reason.getReason();
+        	orderService.cancelOrder(orderId, cancelReason);
             return ResponseEntity.ok(Map.of("orderId", orderId, "newStatus", "CANCELED"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
