@@ -22,6 +22,7 @@ import com.erp_mes.mes.lot.mapper.LotMapper;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
+import com.erp_mes.mes.stock.mapper.WareMapper;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -39,6 +40,7 @@ public class LotService {
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
 	private final LotMapper lotMapper;
+	private final WareMapper wareMapper;
 	
 	@PersistenceContext
     private EntityManager entityManager;
@@ -209,6 +211,23 @@ public class LotService {
 
 	public Long getPopLotId(String popLotId) {
 		return lotRepository.findPopByworkOrderId(popLotId);
+	}
+
+	public List<LotMaster> getOutPutLotIdAll(Object workOrderId) {
+		workOrderId = Long.parseLong(String.valueOf(workOrderId));
+		return lotRepository.findByWorkOrderId((Long) workOrderId);
+	}
+
+	public int getOutPutQty(String targetIdValue) {
+		Map<String, Object> output = wareMapper.selectOutputById(targetIdValue);
+		
+		if(output == null) {
+            throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
+        }
+		
+		Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
+		
+		return outCount;
 	}
 
 }

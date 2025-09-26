@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
+import com.erp_mes.mes.lot.entity.LotMaster;
+import com.erp_mes.mes.lot.entity.LotMaterialUsage;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
@@ -90,42 +92,41 @@ public class LotAOP {
 				    		Object popLotId = entry.getValue();
 				    		popWorkOrderID = lotService.getPopLotId((String) popLotId);
 						}
-//				    	기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
-//						기존 lot가져와서 parentLotId에 넣음
-				    	if(entry.getKey().equals("lot_id") && tableName.equals("OUTPUT")){
-			    			
-//				    		Object inId = entry.getValue();
-				    		
-				    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
-				    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
-							
-				    		//중복으로 들어올경우 처리?
-				    		
-//				    		parentLotId = lotUsageService.getInputLotId(inId);
-				    		parentLotId = entry.getValue();
-				    		
-				    		if (parentLotId != null && workOrderId != null) {
-				    		
-					    		List<WorkResultDTO> workOrderList = workResultMapper.workOrderWithBom(String.valueOf(workOrderId));
-					    		
-					    		for (WorkResultDTO dto : workOrderList) {
-					    			 BigDecimal qty = dto.getQuantity();
-					    			 qtyUsed = qty.intValue();
-					    			 log.info("processNm>>>>>>>>>>>>>>>>"+dto.getProcessNm());
-					    			 log.info("equipmentNm>>>>>>>>>>>>>>>>"+dto.getEquipmentNm());
-					    		}
-					    		
-								MaterialUsageDTO usage = MaterialUsageDTO.builder()
-														.parentLotId((String) parentLotId) // 자재 lotID
-														.qtyUsed(qtyUsed)
-														.build();
-								usages.add(usage);
-								linkParent = true;
-//								createLot=false;
-				    		}
-				    	}
+				    	
+				    	if(tableName.equals("OUTPUT")){
+				    		popWorkOrderID = Long.parseLong(String.valueOf(workOrderId));
+						}
 				    }
 				}
+				
+				if(tableName.equals("WORK_RESULT")){
+	    			
+		    		//자재 투입이 있는 시점에만 lot_material_usage를 사용해 부모-자식 LOT 연결을 남김
+		    		//자재 출고 등록(공장 투입)시 work_order_id를 남기고 자재번호(in_id)를 연결
+		    		
+		    		if (workOrderId != null) {
+		    			
+		    			List<LotMaster> lotMasters = lotService.getOutPutLotIdAll(workOrderId);
+		    			
+		    			for (LotMaster lot : lotMasters){
+		    				
+		    				parentLotId = lot.getLotId();
+		    				
+		    				qtyUsed = lotService.getOutPutQty(lot.getTargetIdValue());
+		    				
+		    				log.info("qtyUsed>>>>>>>>>>>>>>>>"+qtyUsed);
+				    		
+							MaterialUsageDTO usage = MaterialUsageDTO.builder()
+													.parentLotId((String) parentLotId) // 자재 lotID
+													.qtyUsed(qtyUsed)
+													.build();
+							usages.add(usage);
+							linkParent = true;
+		    			}
+			   
+//						createLot=false;
+		    		}
+		    	}
 				
 				if (targetIdValue instanceof String) {
 				    targetVal = (String) targetIdValue;
@@ -151,7 +152,6 @@ public class LotAOP {
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
 			 	String lotId = lotService.createLotWithRelations(lotDTO, domain, createLot, linkParent);
 				//입고/공정/검사 테이블에는 lot_master의 lot_id를 업데이트 필요
-//			 	if(!tableName.equals("MATERIAL")){
 		 		if(createLot){
 			        lotService.updateLotId(tableName, targetId, targetIdValue, lotId);
 		    	}

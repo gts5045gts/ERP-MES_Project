@@ -796,7 +796,7 @@ public class WareService {
             wareMapper.reduceMaterialQuantity(materialId, outCount);
             
             // *** work_order_id 11번 업데이트 추가 ***
-            wareMapper.updateOutputWorkOrder(outId, 11);
+            wareMapper.updateOutputWorkOrder(outId, 17);
             log.info("work_order_id 11번으로 업데이트 완료");
         } else if(productId != null) {
             // Product 처리

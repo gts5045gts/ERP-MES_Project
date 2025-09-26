@@ -33,4 +33,6 @@ public interface LotRepository extends JpaRepository<LotMaster, String> {
 			""", nativeQuery = true)
 	Long findPopByworkOrderId(@Param("lotId") String popLotId);
 
+	List<LotMaster> findByWorkOrderId(Long workOrderId);
+
 }

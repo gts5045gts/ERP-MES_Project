@@ -369,6 +369,7 @@ public class WareController {
 	// 출고완료 처리 엔드포인트
 	@PutMapping("/api/outputs/{outId}/complete")
 	@ResponseBody
+	@TrackLot(tableName = "output", pkColumnName = "out_id")
 	public Map<String, Object> completeOutput(@PathVariable("outId") String outId, Principal principal) {
 	    
 	    Map<String, Object> result = new HashMap<>();
@@ -378,6 +379,9 @@ public class WareController {
 	        wareService.completeOutput(outId, empId);
 	        result.put("success", true);
 	        result.put("message", "출고완료 처리");
+	        
+	        HttpSession session = SessionUtil.getSession();
+	        session.setAttribute("targetIdValue", outId);
 	    } catch(Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
