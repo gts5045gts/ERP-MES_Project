@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		el: document.getElementById('clientGrid'),
 		scrollX: false,
 		scrollY: true,
-		bodyHeight: 360,
+		bodyHeight: 400,
 		rowHeight: 'auto',
 		minBodyHeight: 200,
 		emptyMessage: '조회결과가 없습니다.',

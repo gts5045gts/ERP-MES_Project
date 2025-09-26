@@ -29,8 +29,8 @@
 						<div class="text-left regist_title">
 							<h1 class="h4 text-gray-900 mb-4">
 								<i class="fa-solid fa-pen"></i> 기본정보</h1>
+						<button class="btn btn-primary btn-sm" id="inputData" onclick="input()">정보입력</button>
 						</div>
-
 						<form action="/personnel/registPro" method="post" enctype="multipart/form-data" id="registForm" name="registForm" >
 							<table class="eTable">
 								<tbody>
@@ -43,7 +43,7 @@
 										</td>
 										<!-- 이름 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_nm" class="form-label">이름</label></th>
+											<label for="name" class="form-label">이름</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="name" name="name"></td>
 
@@ -65,7 +65,7 @@
 									<tr>
 										<!-- 성별 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_bd" class="form-label">패스워드</label></th>
+											<label for="passwd" class="form-label">패스워드</label></th>
 										<td colspan="3" class="custom-td">
 											<input type="text" class="form-control w-75" id="passwd" name="passwd" placeholder="패스워드 입력" ></td>
 										<!-- 이메일 -->
@@ -99,7 +99,7 @@
 
 										<!-- 부서명 -->
 										<th scope="row" class="custom-th">
-											<label for="dep_nm" class="form-label">부서명</label></th>
+											<label for="dep" class="form-label">부서명</label></th>
 										<td colspan="3">
 											<select id="dep" name="deptId" class="form-select w-75">
 												<option value="1">부서명을 선택하세요</option>
@@ -182,7 +182,37 @@
 <th:block layout:fragment="script">
 <!-- <script th:src="@{/bootstrap/vendor/jquery/jquery.min.js}"></script> -->
 <script th:src="@{/personnel/js/personnel_regist.js}"></script>
-
+	<script>
+// 	테스트용 정보 입력 버튼
+		$(document).ready(function(){
+		
+			$("#inputData").on("click", function(){
+			
+				const employeeData = {
+						  name: "김둘리",
+						  phone: "010-1234-5678",
+						  resident: "990101-1234567",
+						  passwd: "test1234",
+						  email: "hong@test.com",
+						  emp_pc: "12345",
+						  emp_ad: "서울특별시 강남구 테헤란로",
+						  emp_ba: "101동 1001호",
+						  joinDate: "2025-09-26"  // yyyy-mm-dd 형식
+				};
+				
+				// 데이터 입력
+				for (let key in employeeData) {
+				  const el = document.getElementById(key);
+				  if (el) {
+				    el.value = employeeData[key];
+				    console.log(`[입력됨] ${key}: ${employeeData[key]}`);
+				  } else {
+				    console.warn(`[없음] id="${key}"`);
+				  }
+				}
+			});
+		});
+	</script>
 	 	
 	
 

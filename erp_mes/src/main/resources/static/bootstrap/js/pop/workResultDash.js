@@ -1,4 +1,5 @@
 //=============== 도넛차트(불량률, 생산률) ======================================= 
+
 function updateQuantityChart(workOrders) {
 	var width = 230,
 		height = 270,
@@ -54,10 +55,17 @@ function updateQuantityChart(workOrders) {
 		.data(pie(data))
 		.enter().append("g")
 		.attr("class", "arc");
+	
+	// 빈도넛용
+	var arcZero = d3.arc()
+		.outerRadius(radius - 10)
+		.innerRadius(radius / 2)
+		.startAngle(0)
+		.endAngle(2 * Math.PI); // 360도 전체
 
 	g.append("path")
-		.attr("d", arc)
-		.style("fill", d => color(d.data.label));
+		.attr("d", d => d.data.value === 0 ? arcZero() : arc(d))
+	    .style("fill", d => d.data.value === 0 ? "rgb(223 222 222)" : color(d.data.label));	
 
 	g.append("text")
 		.attr("transform", d => `translate(${arc.centroid(d)})`)
@@ -65,7 +73,7 @@ function updateQuantityChart(workOrders) {
 		.style("text-anchor", "middle")
 		.style("fill", "white")
 		.style("font-weight", "bold")
-		.text(d => d.data.label);
+		  .text(d => d.data.value === 0 ? "" : d.data.label);
 
 	// 중앙 총 생산량 표시
 	svg.append("text")
@@ -84,7 +92,7 @@ function updateProgressChart(workOrders) {
 
 	// 완료/미완료 계산
 	var total = workOrders.length;
-	var completed = workOrders.filter(d => d.workOrderStatus === '검사대기').length;
+	var completed = workOrders.filter(d => d.workOrderStatus === '검사대기' || d.workOrderStatus === '작업완료').length;
 	var incomplete = total - completed;
 
 	var data = [
@@ -94,7 +102,7 @@ function updateProgressChart(workOrders) {
 
 	var color = d3.scaleOrdinal()
 		.domain(["완료", "미완료"])
-		.range(["#4caf50", "#ccc"]);
+		.range(["#4caf50", "rgb(223 222 222)"]);
 
 	d3.select("#progressChart").selectAll("*").remove(); // 이전 차트 제거
 
@@ -112,6 +120,7 @@ function updateProgressChart(workOrders) {
 		.attr("height", height)
 		.append("g")
 		.attr("transform", `translate(${width / 2},${height / 2 - 20})`);
+		
 
 	// 제목 추가
 	svg.append("text")
@@ -132,12 +141,12 @@ function updateProgressChart(workOrders) {
 		.style("fill", d => color(d.data.label));
 
 	g.append("text")
-		.attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+		.attr("transform", d => "translate(" + arc.centroid(d) + ")")
 		.attr("dy", "0.35em")
 		.style("text-anchor", "middle")
 		.style("fill", "white")
 		.style("font-weight", "bold")
-		.text(d => d.data.label);
+		.text(d => d.data.value === 0 ? "" : d.data.label);
 
 
 	// 중앙 퍼센트 표시
@@ -155,24 +164,24 @@ const STORAGE_KEY = "cumulativeEquipment";
 const Y_AXIS_MIN = 10;
 
 function updateEquipmentChart(bomData = []) {
-    const filtered = bomData.filter(row => row.workOrderStatus === "진행중");
-	
-    const currentEquipment = {};
-    filtered.forEach(row => {
-        const equip = row.equipmentNm;
-        currentEquipment[equip] = (currentEquipment[equip] || 0) + 1;
-    });
+	    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentEquipment));
+	    bomData.forEach(row => {
+	        const equip = row.equipmentNm;
+	        saved[equip] = (saved[equip] || 0) + 1; // 누적
+	    });
 
-    const data = Object.keys(currentEquipment).map(equip => ({
-        equipment: equip,
-        count: currentEquipment[equip]
-    }));
+	    // 로컬 스토리지 업데이트
+	    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
 
-    drawChart(data);
-}
+	    // 차트용 데이터 변환
+	    const data = Object.keys(saved).map(equip => ({
+	        equipment: equip,
+	        count: saved[equip]
+	    }));
 
+	    drawChart(data);
+	}
 // 새로고침 시 저장된 값 복원 후 차트 표시
 document.addEventListener("DOMContentLoaded", () => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");

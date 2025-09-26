@@ -41,43 +41,43 @@
 										</td>
 										<!-- 이름 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_nm" class="form-label">이름</label></th>
+											<label for="name" class="form-label">이름</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_nm" name="name" th:value="${personnel.name}"></td>
+											<input type="text" class="form-control w-75" id="name" name="name" th:value="${personnel.name}"></td>
 
 										<!-- 전화번호 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_ph" class="form-label">전화번호</label></th>
+											<label for="phone" class="form-label">전화번호</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_ph" name="phone" th:value="${personnel.phone}">
+											<input type="text" class="form-control w-75" id="phone" name="phone" th:value="${personnel.phone}">
 											<span id="checkPhoneResult"></span>
 										</td>
 
 										<!-- 생년월일 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_bd" class="form-label">주민등록번호</label></th>
+											<label for="resident" class="form-label">주민등록번호</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_bd" name="resident" placeholder="(ex) 990101-1111111" maxlength="14" th:value="${personnel.resident}"></td>
+											<input type="text" class="form-control w-75" id="resident" name="resident" placeholder="(ex) 990101-1111111" maxlength="14" th:value="${personnel.resident}"></td>
 									</tr>
 
 									<tr>
 										<!-- 성별 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_bd" class="form-label">새 비밀번호</label></th>		<!-- 새로운 패스워드로 변경  -->
+											<label for="passwd" class="form-label">새 비밀번호</label></th>		<!-- 새로운 패스워드로 변경  -->
 										<td colspan="3" class="custom-td">
-											<input type="text" class="form-control w-75" id="emp_bd" name="passwd" placeholder="패스워드 입력"></td>
+											<input type="text" class="form-control w-75" id="passwd" name="passwd" placeholder="패스워드 입력"></td>
 										<!-- 이메일 -->
 										<th scope="row">
-											<label for="emp_em" class="form-label">이메일</label></th>
+											<label for="email" class="form-label">이메일</label></th>
 										<td colspan="3">
-											<input type="text" class="form-control w-75" id="emp_em" name="email" placeholder="aaa@naver.com" th:value="${personnel.email}">
+											<input type="text" class="form-control w-75" id="email" name="email" placeholder="aaa@naver.com" th:value="${personnel.email}">
 											<span id="checkEmailResult"></span>
 										</td>
 										<!-- 재직현황 -->
 										<th scope="row">
-											<label for="emp_yn" class="form-label">재직현황</label></th>
+											<label for="staId" class="form-label">재직현황</label></th>
 										<td colspan="3">
-											<select id="emp_yn" name="staId" class="form-select w-75">
+											<select id="staId" name="staId" class="form-select w-75">
 												<th:block th:each=" status: ${status}">
 													<option  th:value="${status.comDtId}" th:text="${status.comDtNm}" th:selected="${status.comDtId == personnel.staId}"></option>
 												</th:block>
@@ -100,7 +100,7 @@
 										<th scope="row" class="custom-th">
 											<label for="dep_nm" class="form-label">부서명</label></th>
 										<td colspan="3">
-											<select id="dep_nm" name="deptId" class="form-select w-75">
+											<select id="dep" name="deptId" class="form-select w-75">
 												<option value="1">부서명을 선택하세요</option>
 												<th:block th:each="departments : ${departments}">
 													<option th:value="${departments.comDtId}" th:text="${departments.comDtNm}" th:selected="${departments.comDtId == personnel.deptId}"></option>	<!--  -->
@@ -109,9 +109,9 @@
 										</td>
 										<!-- 직책 -->
 										<th scope="row" class="custom-th">
-											<label for="emp_gd" class="form-label">직책</label></th>
+											<label for="pos" class="form-label">직책</label></th>
 										<td colspan="3">
-											<select id="emp_gd" name="posId" class="form-select w-75">
+											<select id="pos" name="posId" class="form-select w-75">
 												<option value="1">직책을 선택하세요</option>
 												<th:block th:each="position : ${position}">
 													<option th:value="${position.comDtId}" th:text="${position.comDtNm}" th:selected="${position.comDtId == personnel.posId}"></option> <!--  -->
@@ -123,9 +123,9 @@
 									
 									
 										<th scope="row" class="custom-th">
-											<label for="emp_lv" class="form-label">보안등급</label></th>
+											<label for="level" class="form-label">보안등급</label></th>
 										<td colspan="3">
-											<select id="emp_lv" name="levId" class="form-select w-75">
+											<select id="level" name="levId" class="form-select w-75">
 												<option value="" >보안등급을 선택하세요</option>
 												<th:block th:each="level : ${level}">
 													<option th:value="${level.comDtId}" th:text="${level.comDtNm}"  th:selected="${level.comDtId == personnel.levId}" > 
@@ -159,9 +159,9 @@
 											<input type="text" class="form-control w-75" id="emp_ba" name="addr2" th:value="${personnel.addr2}"></td>
 											
 											<th scope="row" class="custom-th-r">
-											<label for="emp_hd" class="form-label">입사일</label></th>
+											<label for="joinDate" class="form-label">입사일</label></th>
 										<td colspan="3" class="custom-td">
-											<input type="date" class="form-control w-75" id="emp_hd" name="joinDate" th:value="${personnel.joinDate}"></td>
+											<input type="date" class="form-control w-75" id="joinDate" name="joinDate" th:value="${personnel.joinDate}"></td>
 									</tr>
                         </tbody>
                     </table>

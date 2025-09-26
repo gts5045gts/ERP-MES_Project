@@ -183,6 +183,7 @@
 	        T1.WORK_ORDER_STATUS AS remarks,
 	        T8.GOOD_QTY AS goodQty,
 	        T8.DEFECT_QTY AS defectQty,
+	        T8.LOT_ID AS lotId,
 	        'WorkOrder' AS targetSource,
 	        T4.PRODUCT_ID AS productId,
 	        (

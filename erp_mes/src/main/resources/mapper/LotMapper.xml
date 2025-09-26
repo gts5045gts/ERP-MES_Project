@@ -18,11 +18,10 @@
 	    o.work_order_id  	AS workOrderId,
 	    o.work_order_status AS workOrderStatus
 	
-	    
 	FROM lot_master l
-	LEFT JOIN work_result w ON l.lot_id = w.lot_id
-	LEFT JOIN work_order o ON w.work_order_id = o.work_order_id
-	LEFT JOIN bom b ON o.bom_id = b.bom_id
+	LEFT JOIN work_order o l.w.work_order_id = o.work_order_id
+	LEFT JOIN bom b ON o.bom_id = o.bom_id
+	LEFT JOIN product p ON b.product_id = p.product_id
     
     where l.type = 'FG'
 	ORDER BY l.lot_id ASC

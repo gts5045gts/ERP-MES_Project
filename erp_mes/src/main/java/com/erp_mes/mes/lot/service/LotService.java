@@ -68,6 +68,7 @@ public class LotService {
 		            .type(prefix)
 		            .materialCode(lotDTO.getMaterialCode())
 		            .machineId(machineId)
+		            .workOrderId(lotDTO.getWorkOrderId())
 		            .createdAt(LocalDateTime.now())
 		            .build();
 
@@ -204,6 +205,10 @@ public class LotService {
         params.put("size", size);
 		
 		return lotMapper.lotListWithPaged(params);
+	}
+
+	public Long getPopLotId(String popLotId) {
+		return lotRepository.findPopByworkOrderId(popLotId);
 	}
 
 }

@@ -23,7 +23,7 @@ public class WorkResultDTO {
 	
 	private Long resultId;		// 실적 id
 	private Long workOrderId; 		// 작업지시 id (fk)
-	private Long goodQty = 0L;			// 생산수량
+	private Long goodQty;			// 생산수량
 	private Long defectItemId;		// 항목 ID(불량) (fk)
 	private Long defectQty = 0L;			// 불량수량
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")

@@ -8,10 +8,14 @@
 	          empNo = "2025082801";
 	          empPw = "1234";
 	          break;
-	        case "USER":
+	        case "HR":		//인사팀 계정 추가
 	          empNo = "2025082802";
 	          empPw = "1234";
 	          break;
+			case "USER":
+  	          empNo = "2025082802";
+  	          empPw = "1234";
+  	          break;
 	      }
 		  
 	      document.getElementById("empId").value = empNo;

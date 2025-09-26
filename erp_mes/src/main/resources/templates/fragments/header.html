@@ -4,10 +4,8 @@
 	layout:fragment="header">
 
 	<th:block sec:authorize="isAuthenticated()">
-		<input type="hidden" id="currentEmpId"
-			th:value="${#authentication.principal.empId}" />
-		<input type="hidden" id="currentEmpName"
-			th:value="${#authentication.principal.name}" />
+		<input type="hidden" id="currentEmpId" th:value="${#authentication.principal.empId}" />
+		<input type="hidden" id="currentEmpName" th:value="${#authentication.principal.name}" />
 	</th:block>
 
 	<!-- Page Wrapper -->
@@ -45,15 +43,14 @@
 				<!-- Nav Item - Pages Collapse Menu -->
 				<li class="nav-item"><a class="nav-link collapsed" href="#"
 					data-toggle="collapse" data-target="#collapseTwo"
-					aria-expanded="true" aria-controls="collapseTwo"> <i
-						class="fas fa-fw fa-cog"></i> <span>시스템 관리</span>
+					aria-expanded="true" aria-controls="collapseTwo">
+					<i class="fas fa-fw fa-cog"></i> <span>시스템 관리</span>
 				</a>
 					<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
 						data-parent="#accordionSidebar">
 						<div class="bg-white py-2 collapse-inner rounded">
 							<h6 class="collapse-header">코드관리 메뉴:</h6>
-							<a class="collapse-item" th:href="@{/admin/commonCode}">공통코드
-								관리</a>
+							<a class="collapse-item" th:href="@{/admin/commonCode}">공통코드 관리</a>
 						</div>
 					</div></li>
 				
@@ -68,8 +65,8 @@
 			</div>
 			<li class="nav-item"><a class="nav-link collapsed" href="#"
 				data-toggle="collapse" data-target="#collapseUtilities"
-				aria-expanded="true" aria-controls="collapseUtilities"> <i
-					class="fas fa-fw fa-wrench"></i> <span>인사관리</span>
+				aria-expanded="true" aria-controls="collapseUtilities">
+				<i class="fas fa-fw fa-wrench"></i> <span>인사관리</span>
 			</a>
 				<div id="collapseUtilities" class="collapse"
 					aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
@@ -578,10 +575,57 @@ function createMessageItem(message) {
     return messageItem;
 }
 
+//사이드바 메뉴 상태 유지 로직 추가
+//==========================================================================
+
+// 페이지 로드 시 이전에 열려있던 메뉴 복원
+function restoreMenuState() {
+ 	// Session Storage에서 저장된 메뉴 ID를 가져옴
+	const activeCollapseId = sessionStorage.getItem('activeCollapseMenu');
+ 
+ 	if (activeCollapseId) {
+     	// 이전에 열려있던 메뉴의 collapse 요소를 찾고
+     	const collapseElement = document.getElementById(activeCollapseId);
+     
+     	if (collapseElement) {
+         	// Bootstrap의 'show' 클래스를 추가하여 메뉴를 펼침
+         	collapseElement.classList.add('show');
+         
+         	// 연결된 메뉴 제목(<a> 태그)에 'collapsed' 클래스를 제거하여 열림 상태로 유지
+         	const menuLink = document.querySelector(`[data-target="#${activeCollapseId}"]`);
+        	if (menuLink) {
+             	menuLink.classList.remove('collapsed');
+             	menuLink.setAttribute('aria-expanded', 'true');
+         	}
+     	}
+ 	}
+}
+
+// 서브 메뉴(.collapse-item) 클릭 시 상태 저장
+function setupMenuStateSaving() {
+ 	document.querySelectorAll('.collapse-item').forEach(item => {
+     	item.addEventListener('click', function() {
+         	// 클릭된 서브 메뉴가 속한 부모 collapse 메뉴의 ID를 찾아서
+         	// .collapse 클래스를 가진 가장 가까운 조상 요소를 찾고
+         	let parentCollapse = this.closest('.collapse');
+         	if (parentCollapse) {
+             	// 해당 ID 를 Session Storage에 저장
+             	sessionStorage.setItem('activeCollapseMenu', parentCollapse.id);
+         	}
+     	});
+ 	});
+}
+//==========================================================================
+
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     updateApprovalAlerts();  
     document.getElementById('alertsDropdown').addEventListener('click', updateApprovalAlerts);
     connectWebsocket();
+    
+ 	// 메뉴 상태 저장 함수 실행
+    setupMenuStateSaving();
+    // 메뉴 상태 복원 함수 실행 -> 가장 마지막에 실행되어야 모든 로드 후 상태를 적용할 수 있음
+    restoreMenuState();
 });
 </script>

@@ -29,8 +29,11 @@ public interface WorkResultMapper {
 	// 작업완료 상태 업데이트(단일)
 	int updateWorkStatusFinish(@Param("workOrderId") Long workOrderId);
 
-	// 불량 아이디 저장
-	void updateDefectItemId(@Param("resultId") Long resultId, @Param("defectItemId") Long defectItemId);
+	// 불량 실적에 로트아이디 넣기
+	String findLotIdByWorkOrderId(@Param("workOrderId") Long workOrderId);
+
+	List<WorkResultDTO> bomByWorkOrderId(@Param("workOrderId") Long workOrderId);
+
 
 
 

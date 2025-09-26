@@ -105,9 +105,13 @@ $('#workOrderCheck').on('click', function() {
         },
         success: function(res) {
             // DB 기준으로 화면 갱신
-			
-			console.log("ressss"+res)
-			res.forEach(item => grid.appendRow(item));
+			res.forEach(item => {
+				// 작업 시작 시점에 생산수량을 목표수량으로 세팅
+				if (!item.goodQty) {  // 이미 값이 있으면 그대로, 없으면
+					item.goodQty = item.planQty || 0;
+				}
+				grid.appendRow(item);
+			});
 			
 			// 작업지시서의 상태변경
 			const workOrderIds = [...new Set(res.map(item => item.workOrderId))];
@@ -121,14 +125,12 @@ $('#workOrderCheck').on('click', function() {
 		        }
 		    });
 			
-			// 해당 작업지시서 BOM 가져와서 그래프 업데이트
-			const productId = res[0].productId;
 			$.ajax({
-				url: `/pop/bom/${productId}`,
+				url: `/pop/bom/workOrder/${workOrderId}`,
 				type: 'GET',
 				dataType: 'json',
-				success: function(bomData) {
-					updateEquipmentChart(bomData);
+				success: function(equipData) {
+					updateEquipmentChart(equipData); // 바로 그래프 업데이트
 				},
 				error: function(err) { console.error('BOM 조회 실패:', err); }
 			});
@@ -146,14 +148,14 @@ $('#workOrderCheck').on('click', function() {
 
 // =============== 작업 수정 버튼 ==============================================
 document.getElementById('grid').addEventListener('click', function(e) {
+	
     if (e.target && e.target.classList.contains('edit-btn')) {
 		const resultId = e.target.getAttribute('data-result-id'); // 문자열이므로 필요하면 parseInt
 		const row = grid.getData().find(r => r.resultId == resultId);
-
 		// 모달 input 초기값 세팅
 		$('#workUpdateModal').data('rowId', resultId);
-        $('#goodQtyInput').val(row.goodQty);
         $('#defectQtyInput').val(row.defectQty);
+		$('#defectReasonInput').val(row.defectReason || '');
 	
         const modal = new bootstrap.Modal(document.getElementById('workUpdateModal'));
         modal.show();
@@ -168,10 +170,9 @@ const defectBtnContainer = $('#defectReasonOptions');
 $('#defectReasonBtn').on('click', function() {
 	$.getJSON('/pop/defectReason', function(data) {
 		defectBtnContainer.empty(); // 기존 버튼 제거
-		console.log(data);
 
 		data.forEach(d => {
-			const btn = $(`<button class="btn btn-sm btn-secondary defectOption" data-code="${d.comDtId}">${d.comDtNm}</button>`);
+			const btn = $(`<button class="btn btn-sm btn-secondary defectOption" data-code="${d.comId}">${d.comDtNm}</button>`);
 			defectBtnContainer.append(btn);
 		});
 
@@ -231,7 +232,6 @@ $('.num-input.saved').on('focus', function() {
 
 // =========== 불량수량 업데이트 ========================
 $('#defectSaveBtn').on('click', function() {
-	debugger;
 	const resultId = $('#workUpdateModal').data('rowId');
 	
     const defectQty = parseInt($('#defectQtyInput').val(), 10);	
@@ -244,8 +244,6 @@ $('#defectSaveBtn').on('click', function() {
 	}
 	
 	const row = grid.getData().find(r => r.resultId == resultId);
-	const workOrderId = row.workOrderId;
-	
 	const goodQty = row.planQty - defectQty;
 	
 	const dto = { 
@@ -266,27 +264,46 @@ $('#defectSaveBtn').on('click', function() {
 			xhr.setRequestHeader(csrfHeader, csrfToken);
 		},
 		success: function() {
-			// 불량이 있을 때만 defect 테이블 업데이트
-			if (defectQty > 0 && defectReason) {
-				const defectDTO = {
-					defectItemId: 11,
-					defectQty: defectQty,
-					defectType: defectType,
-					defectReason: defectReason,
-					empId: row.empId,
-					productNm: row.productNm
-				};
-				$.ajax({
-					url: '/pop/saveDefect',
-					type: 'POST',
-					contentType: 'application/json',
-					data: JSON.stringify({ resultId: resultId, workOrderId: workOrderId, defectDTO: defectDTO }),
-					beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
-					success: function() { console.log('불량 테이블 저장 완료'); },
-					error: function(err) { console.error('불량 테이블 저장 실패', err); }
-				});
+			if (!row.defectItemId) {
+			    const defectDTO = {
+			        defectQty: defectQty,
+			        defectType: defectType,
+			        defectReason: defectReason,
+			        empId: row.empId,
+			        productNm: row.productNm,
+			        workOrderId: row.workOrderId
+			    };
+			    $.ajax({
+			        url: '/pop/saveDefect',
+			        type: 'POST',
+			        contentType: 'application/json',
+			        data: JSON.stringify(defectDTO),
+			        beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
+			        success: function(savedId) { 
+			            console.log('불량 INSERT 완료, id:', savedId); 
+			            // 새로 insert된 defectItemId를 row에 세팅하면 이후 수정 가능
+			            row.defectItemId = savedId;
+			        }
+			    });
 			}
 
+			// 2️⃣ 이미 불량이 존재하면 UPDATE
+			if (row.workOrderId && row.defectItemId) {
+			    const defectDTO = {
+			        defectItemId: row.defectItemId,
+			        defectQty: defectQty,
+			        defectType: defectType,
+			        defectReason: defectReason,
+			    };
+			    $.ajax({
+			        url: '/pop/updateDefect',
+			        type: 'POST',
+			        contentType: 'application/json',
+			        data: JSON.stringify(defectDTO),
+			        beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
+			        success: function() { console.log('불량 수정 완료'); }
+			    });
+			}
 			// 그리드 갱신
 			$.getJSON('/pop/workResultList?page=0&size=20', function(data) {
 				grid.resetData(data);
@@ -301,60 +318,36 @@ $('#defectSaveBtn').on('click', function() {
 
 // ===================== 작업완료 ===============================
 document.getElementById('grid').addEventListener('click', function(e) {
-
 	if (e.target && e.target.classList.contains('finish-btn')) {
-		
-		if (!confirm('작업을 종료하시겠습니까?')) return; 
-		const resultId = parseInt(e.target.getAttribute('data-result-id'));
+
+		if (!confirm('작업을 종료하시겠습니까?')) return;
+
 		const workOrderId = parseInt(e.target.getAttribute('data-id'));
-		debugger;
-		
-		const row = grid.getData().find(r => r.resultId == resultId);
 
-		const defectQty = row.defectQty || 0;
-		const defectReason = row.defectReason || '';
-		
-		
-		if(defectQty > 0 && defectReason.trim() !== '') {
-			const defectDTO = {
-				defectQty: defectQty,
-                defectReason: defectReason,
-                empId: row.empId,        // 실제 작업자 ID
-                productNm: row.productNm
-            };
-			
-			$.ajax({
-				url: '/pop/saveDefect',
-				type: 'POST',
-				contentType: 'application/json',
-				data: JSON.stringify({
-					resultId: resultId,
-					defectDTO: defectDTO
-				}),
-				beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
-				success: function() {
-					// 성공 시 work_result도 갱신되므로 이후 화면 리로드
-					reloadGrid();
-				},
-				error: function(err) {
-					console.error('불량 저장 실패', err);
-				}
-			});
-			
-		} else {
-			$.ajax({
-				url: '/pop/workFinish',
-				type: 'POST',
-				data: JSON.stringify(workOrderId),
-				contentType: "application/json",
-				beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
-				success: function() { reloadGrid(); },
-				error: function(err) { console.error('작업완료 실패', err); }
-			});
-		}
-
+		$.ajax({
+			url: '/pop/workFinish',
+			type: 'POST',
+			data: JSON.stringify(workOrderId),
+			contentType: 'application/json',
+			beforeSend: function(xhr) {
+				xhr.setRequestHeader(csrfHeader, csrfToken);
+			},
+			success: function() {
+				reloadGrid();
+			},
+			error: function(err) {
+				console.error('작업완료 실패', err);
+			}
+		});
 	}
 });
+
+// 그리드 새로고침 함수
+function reloadGrid() {
+	$.getJSON('/pop/workResultList?page=0&size=20', function(data) {
+		grid.resetData(data); // 전체 렌더링
+	});
+}
 
 // 그리드 새로고침 함수
 function reloadGrid() {

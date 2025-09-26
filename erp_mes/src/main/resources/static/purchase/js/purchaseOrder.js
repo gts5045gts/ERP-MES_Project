@@ -33,14 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const workOrderAddBtn = document.getElementById("WorkOrderAddBtn");
 	const normalAddBtn = document.getElementById("NormalAddBtn");
-	
-//	const addBtn = document.getElementById("addBtn");
+
 	if (!isPURTeam && !isAUTLevel) {
-//		if (addBtn) addBtn.style.display = "none";
 		if (workOrderAddBtn) workOrderAddBtn.style.display = "none";
 		if (normalAddBtn) normalAddBtn.style.display = "none";
 	}
-	
+
 	if (isPURTeam || isAUTLevel) {
 		let editBtn = document.getElementById("editBtn");
 		if (!editBtn) {
@@ -181,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		purchaseGrid.on('click', async (ev) => {
 			const rowData = purchaseGrid.getRow(ev.rowKey);
-			
+
 			if (!rowData) {
 				editBtn.style.display = "none";
 				editBtn.removeAttribute('data-purchaseId');
@@ -199,6 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
 						alert("이미 취소된 발주입니다.");
 						return;
 					}
+
+					if (rowData.purchaseType !== '일반발주' || rowData.purchaseStatus !== 'REQUEST') {
+						alert("일반발주 중 '요청' 상태인 경우에만 취소 가능합니다.");
+						return;
+					}
+
 					editBtn.style.display = "none";
 					if (confirm("발주를 취소하시겠습니까?")) {
 						const purchaseId = rowData.purchaseId;
@@ -221,9 +225,9 @@ document.addEventListener("DOMContentLoaded", () => {
 					return;
 				}
 			}
-			
+
 			loadPurchaseDetails(rowData.purchaseId);
-			
+
 			if (rowData.purchaseStatus === 'REQUEST' && rowData.purchaseType === '일반발주') {
 				editBtn.style.display = "inline-block";
 				editBtn.dataset.purchaseId = rowData.purchaseId;
@@ -277,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			filteredData = filteredData.filter(order => {
 				// Grid 데이터의 필드명 'inputDate' 사용
 				const inputDate = order.inputDate;
-				if (!inputDate) 
+				if (!inputDate)
 					return false;
 
 				// 날짜 데이터가 유효한지 확인하고 범위 필터링

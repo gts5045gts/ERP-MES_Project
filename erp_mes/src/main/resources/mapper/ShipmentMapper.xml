@@ -16,27 +16,33 @@
 		 	order_status IN ('RECEIVED', 'INPRODUCTION', 'INSHIPMENT') -- 등록, 생산중, 출하진행중
 	</select>
 	
+<!-- 	출하 등록 모달창에서 선택한 수주의 상세목록을 불러옴 -->
 	<select id="getOrderDetailWithStockAndStatus" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
-        SELECT
+	
+	SELECT
             od.order_id,
             od.product_id,
             od.product_name,
             od.order_detail_status AS orderDetailStatus,
-            COALESCE(wi.stockQty, 0) AS stockQty,	-- 서브쿼리에서 계산된 총 재고량 
+            COALESCE(op.stockQty, 0) AS stockQty,	-- 서브쿼리에서 계산된 총 재고량 
             od.order_qty,
             (od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS remainingQty, -- 남은 출하 수량 계산
     		(od.order_qty - COALESCE(sd.total_shipped_qty, 0)) AS shipmentQty -- 출하수량(남은 수량으로 초기화)
         FROM
             orders_detail od
         LEFT JOIN (
-        	SELECT 
-        		product_id,
-        		SUM(item_amount) AS stockQty -- 같은 제품이지만 위치가 다를 수 있기 때문에(ex: product_id = 'PRD001'인 컬럼이 여러개) 재고량 더하기
+        	SELECT
+                order_id,
+                product_id,
+                CASE
+                    WHEN out_type = '출고완료' THEN out_count
+                    ELSE 0
+                END AS stockQty
         	FROM
-        		warehouse_item
-        	GROUP BY
-        		product_id
-        ) wi ON od.product_id = wi.product_id
+        		output
+            WHERE
+                out_type = '출고완료' OR out_type = '출고대기'
+        ) op ON od.product_id = op.product_id AND od.order_id = op.order_id
         LEFT JOIN (
     		SELECT
         		s.order_id,
@@ -53,20 +59,21 @@
         	od.order_id = #{orderId} AND od.order_detail_status != 'COMPLETION'
     </select>
     
-    <select id="getWarehouseItemsByProductId" resultType="com.erp_mes.mes.stock.dto.WarehouseItemDTO">
+    <select id="getOutputItemsByProductIdAndOrderId" resultType="com.erp_mes.mes.business.dto.OutputDTO">
         SELECT *
-        FROM warehouse_item 
-        WHERE product_id = #{productId} 
-        ORDER BY item_amount DESC
+        FROM output 
+        WHERE product_id = #{productId}
+        AND order_id = #{orderId} 
     </select>
     
-    <update id="updateWarehouseItemAmount">
+    <update id="updateOutputItemCount">
         UPDATE 
-            warehouse_item 
+            output
         SET 
-            item_amount = item_amount - #{amount} 
+            out_count = out_count - #{count} 
         WHERE 
-            manage_id = #{manageId}
+            order_id = #{orderId}
+        AND product_id = #{productId}
     </update>
     
 <!-- 전체 shipment 개수 가져오기 -->
