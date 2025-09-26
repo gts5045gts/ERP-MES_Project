@@ -328,5 +328,77 @@
 
     WHERE T1.INSPECTION_ID = #{inspectionId}
 	</select>
+<!-- 	불량관리 관련 -->
+	<select id="getDefectHistory" parameterType="map" resultType="com.erp_mes.mes.pop.dto.DefectDTO">
+	    SELECT
+	        T1.DEFECT_ITEM_ID AS defectItemId,
+	        T1.DEFECT_TYPE AS defectType,
+	        T1.DEFECT_REASON AS defectReason,
+	        T1.DEFECT_QTY AS defectQty,
+	        T1.PRODUCT_NAME AS productNm,
+	        T1.DEFECT_LOCATION AS defectLocation,
+	        T1.DEFECT_DATE AS defectDate,
+	        T3.EMP_NAME AS empName, 
+	        T4.COM_DT_NM AS defectLocationName,
+	        T5.COM_DT_NM AS defectTypeName
+	    FROM DEFECT_ITEM T1
+	    LEFT JOIN EMPLOYEE T3 ON T1.EMP_ID = T3.EMP_ID
+	    LEFT JOIN COMMON_DT_CODE T4 ON T1.DEFECT_LOCATION = T4.COM_DT_ID AND T4.COM_ID = 'LOC' 
+	    LEFT JOIN COMMON_DT_CODE T5 ON T1.DEFECT_TYPE = T5.COM_DT_ID AND T5.COM_ID = 'DEFECT'
+	    <where>
+	        <if test="defectType != null and defectType != ''">
+	            AND T1.DEFECT_TYPE = #{defectType}
+	        </if>
+	        <if test="productName != null and productName != ''">
+	            AND T1.PRODUCT_NAME = #{productName}
+	        </if>
+	        <if test="employeeId != null and employeeId != ''">
+	            AND T1.EMP_ID = #{employeeId}
+	        </if>
+            <if test="defectLocation != null and defectLocation != ''">
+            	AND T1.DEFECT_LOCATION = #{defectLocation}
+        	</if>
+	    </where>
+	    ORDER BY T1.DEFECT_DATE DESC
+	</select>
+	
+<select id="getDefectSummary" resultType="map">
+    SELECT
+        T1.TOTAL_COUNT, 
+        T1.TOTAL_DEFECT_QTY,
+        T2.TOTAL_PRODUCT_QTY
+    FROM 
+    (
+        SELECT
+            COUNT(DEFECT_ITEM_ID) AS TOTAL_COUNT, 
+            SUM(DEFECT_QTY) AS TOTAL_DEFECT_QTY
+        FROM DEFECT_ITEM
+    ) T1
+    CROSS JOIN
+    (
+        SELECT SUM(GOOD_QTY) + SUM(DEFECT_QTY) AS TOTAL_PRODUCT_QTY
+        FROM WORK_RESULT
+    ) T2
+</select>
+	
+	<select id="getMonthlyDefectTrend" resultType="map">
+	    SELECT
+	        TO_CHAR(DEFECT_DATE, 'YYYY-MM') AS MONTH,
+	        SUM(DEFECT_QTY) AS TOTAL_QUANTITY
+	    FROM DEFECT_ITEM
+	    GROUP BY TO_CHAR(DEFECT_DATE, 'YYYY-MM')
+	    ORDER BY MONTH
+	</select>
+	
+	<select id="getTypeRatio" resultType="map">
+    SELECT
+        T1.DEFECT_TYPE AS DEFECTTYPEID,
+        T2.COM_DT_NM AS DEFECTTYPENAME,
+        SUM(T1.DEFECT_QTY) AS TOTAL_QUANTITY 
+    FROM DEFECT_ITEM T1
+    LEFT JOIN COMMON_DT_CODE T2 ON T1.DEFECT_TYPE = T2.COM_DT_ID AND T2.COM_ID = 'DEFECT'
+    GROUP BY T1.DEFECT_TYPE, T2.COM_DT_NM
+    ORDER BY TOTAL_QUANTITY DESC
+	</select>
 
 </mapper>

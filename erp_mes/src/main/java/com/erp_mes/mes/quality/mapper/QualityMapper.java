@@ -1,6 +1,7 @@
 package com.erp_mes.mes.quality.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -67,5 +68,12 @@ public interface QualityMapper {
 InspectionTargetDTO getIncomingDetail(Long inspectionId);
 List<InspectionTargetDTO> getProcessDetail(Long inspectionId);
 String findInspectionTypeById(Long inspectionId);
+
+// =========================================================================================
+// 불량관리관련
+List<DefectDTO> getDefectHistory(Map<String, Object> params);
+List<Map<String, Object>> getMonthlyDefectTrend();
+List<Map<String, Object>> getTypeRatio();
+Map<String, Object> getDefectSummary();
 
 }

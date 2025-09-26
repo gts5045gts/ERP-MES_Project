@@ -27,4 +27,10 @@ public class DefectDTO {
 	private LocalDateTime defectDate;			// 불량 발생일자
 	private String lotId;
 	
+	// =================================================
+	// 불량관리에서 사용
+	private String empName;
+	private String defectTypeName;
+	private String defectLocationName;
+	
 }
