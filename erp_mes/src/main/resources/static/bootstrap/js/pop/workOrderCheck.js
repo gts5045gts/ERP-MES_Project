@@ -86,6 +86,15 @@ $('#workOrderBody').on('click', 'tr', function() {
 	    return;
 	}
 	
+	if (status === '진행중') {
+	    $('#workOrderCheck').prop('disabled', true); // 클릭 못하게
+	    $('#workOrderCheck').html('<i class="fa-solid fa-ban"></i> 작업시작'); // 클릭 못하게
+		
+	} else {
+	    $('#workOrderCheck').prop('disabled', false); // 활성화
+		$('#workOrderCheck').html('작업시작');
+	}
+	
 	const modalEl = document.getElementById('popModal');  // DOM element
 	const modal = new bootstrap.Modal(modalEl);
 	
