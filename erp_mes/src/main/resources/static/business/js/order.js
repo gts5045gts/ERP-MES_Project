@@ -254,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						editBtn.style.display = "none";
 
 						if (confirm("수주를 취소하시겠습니까?")) {
+//							comfirm -> prompt 로 변경해서 취소사유 입력할 수 있도록 해놓기
 							const orderId = rowData.orderId;
 							try {
 								const csrfToken = document.querySelector('meta[name="_csrf"]').content;
