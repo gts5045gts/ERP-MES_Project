@@ -737,7 +737,6 @@ public class WareService {
 
     // 출고 완료 처리
     @Transactional
-    @TrackLot(tableName = "output", pkColumnName = "out_id")
     public void completeOutput(String outId, String empId) {
         Map<String, Object> output = wareMapper.selectOutputById(outId);
         
@@ -776,10 +775,6 @@ public class WareService {
         
         // 출고 상태 변경
         wareMapper.updateOutputType(outId, "출고완료");
-        
-        // LOT 추적용 세션
-        HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", outId);
     }
 
     // Product 재고 차감 (warehouse_item 차감 후 product 차감)

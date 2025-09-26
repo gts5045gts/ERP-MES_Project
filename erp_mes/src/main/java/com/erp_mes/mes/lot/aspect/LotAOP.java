@@ -16,8 +16,10 @@ import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
+import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
+import com.erp_mes.mes.pop.repository.WorkResultRepository;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +64,8 @@ public class LotAOP {
 				String domain = tableName;
 				String targetVal = null;
 				
+				Long popWorkOrderID = null;
+				
 				int qtyUsed = 0;
 				
 				List<MaterialUsageDTO> usages = new ArrayList<MaterialUsageDTO>();
@@ -71,19 +75,20 @@ public class LotAOP {
 				for (Map<String, Object> row : tableInfo) {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
 				    	
+//				    	log.info(">>>>>>>>>entry.getValue()" + entry.getValue());
+				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
 				    	}
 				    	
-				    	if(entry.getKey().equals("work_order_id")){
+				    	if(entry.getKey().equals("WORK_ORDER_ID")){
 				    		workOrderId = entry.getValue();
 				    	}
 				    	
-				    	if(tableName.equals("INPUT")){
-				    		Object productId = entry.getValue();
-				    		if (productId != null) {
-								domain = "finished";
-							}
+				    	if(entry.getKey().equals("LOT_ID") && tableName.equals("INSPECTION") ){
+				    		
+				    		Object popLotId = entry.getValue();
+				    		popWorkOrderID = lotService.getPopLotId((String) popLotId);
 						}
 //				    	기존 LOT에 공정/검사/출하 이력만 추가하려면 createLot=false
 //						기존 lot가져와서 parentLotId에 넣음
@@ -140,6 +145,7 @@ public class LotAOP {
 								.targetIdValue(targetVal)
 								.materialCode((String) materialType)
 								.usages(usages)
+								.workOrderId(popWorkOrderID)
 								.build();
 
 				//임의로 createLot는 true로 진행함 필요시 switch 문 추가
