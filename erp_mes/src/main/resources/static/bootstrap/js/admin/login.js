@@ -13,7 +13,7 @@
 	          empPw = "1234";
 	          break;
 			case "USER":
-  	          empNo = "2025082803";
+  	          empNo = "2025082808";
   	          empPw = "1234";
   	          break;
 	      }	//일반사원 사원번호 변경

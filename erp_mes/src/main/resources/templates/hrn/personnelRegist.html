@@ -32,6 +32,7 @@
 						<button class="btn btn-primary btn-sm" id="inputData" onclick="input()">정보입력</button>
 						</div>
 						<form action="/personnel/registPro" method="post" enctype="multipart/form-data" id="registForm" name="registForm" >
+							<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 							<table class="eTable">
 								<tbody>
 									<tr>
