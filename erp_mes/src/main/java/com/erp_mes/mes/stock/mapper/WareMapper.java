@@ -266,6 +266,30 @@ public interface WareMapper {
     Integer getOutputSeqByManageId(@Param("manageId") String manageId, 
                                    @Param("today") String today);
     
+    // 0926 수주 대기 목록 조회
+    List<Map<String, Object>> selectPendingOrders();
+
+    // 수주 상세 조회
+    List<Map<String, Object>> selectOrderDetails(@Param("orderId") String orderId);
+
+    // 수주 상세 출하수량 업데이트
+    int updateOrderDetailShipped(@Param("orderId") String orderId,
+                                @Param("productId") String productId,
+                                @Param("shippedQty") Integer shippedQty);
+
+    // 수주 상태 업데이트
+    int updateOrderStatus(@Param("orderId") String orderId,
+                         @Param("status") String status);
+
+    // 오늘 완제품 출고 배치 건수 (POB 접두사용)
+    Integer getTodayProductOutputBatchCount(@Param("today") String today);
+    
+    // 완제품 manage_id별 재고 조회
+    List<Map<String, Object>> getProductStockGroupByManageId(@Param("productId") String productId);
+    
+    // 특정 접두사로 시작하는 out_id의 최대 번호 조회
+    Integer getMaxOutputCount(@Param("prefix") String prefix);
+    
     // ==================== 기초 데이터 조회 ====================
     
     // 부품 목록 조회 (구버전)

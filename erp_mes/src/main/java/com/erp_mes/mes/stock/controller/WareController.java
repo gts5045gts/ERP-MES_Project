@@ -475,4 +475,76 @@ public class WareController {
 	public List<Map<String, Object>> getProductsWithStock() {
 	    return wareService.getProductsWithStock();
 	}
+	
+	// 0926 수주 대기 목록 조회
+	@GetMapping("/api/pending-orders")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingOrders() {
+	    log.info("수주 대기 목록 조회");
+	    return wareService.getPendingOrders();
+	}
+
+	// 수주 상세 조회
+	@GetMapping("/api/order-details/{orderId}")
+	@ResponseBody
+	public List<Map<String, Object>> getOrderDetails(@PathVariable("orderId") String orderId) {
+	    log.info("수주 상세 조회 - orderId: {}", orderId);
+	    return wareService.getOrderDetails(orderId);
+	}
+
+	// 제품 재고 조회
+	@GetMapping("/api/product-stock/{productId}")
+	@ResponseBody
+	public Integer getProductStock(@PathVariable("productId") String productId) {
+	    return wareService.getProductTotalStock(productId);
+	}
+
+	// 완제품 배치 출고
+	@PostMapping("/api/outputs/product-batch")
+	@ResponseBody
+	public Map<String, Object> addProductOutputBatch(
+	        @RequestBody List<Map<String, Object>> items, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String batchId = wareService.addProductOutputBatch(items, principal.getName());
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 출고 완료");
+	    } catch(Exception e) {
+	        log.error("완제품 출고 실패:", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 완제품 입고완료 처리
+	@PutMapping("/api/inputs/{inId}/complete-product")
+	@ResponseBody
+	public Map<String, Object> completeProductInput(
+	        @PathVariable String inId, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.completeProductInput(inId, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고완료 및 LOT 부여");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	// ---
+	// 완제품 manage_id별 재고 조회
+	@GetMapping("/api/product-stock-by-manage/{productId}")
+	@ResponseBody
+	public List<Map<String, Object>> getProductStockByManage(
+	        @PathVariable("productId") String productId) {
+	    log.info("=== 완제품 manage_id별 재고 조회: {}", productId);
+	    return wareService.getProductStockByManageId(productId);
+	}
 }

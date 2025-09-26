@@ -148,7 +148,7 @@
     
     <!-- 완제품 출고 모달 -->
 	<div class="modal fade" id="productOutModal" tabindex="-1">
-	    <div class="modal-dialog modal-lg">
+	    <div class="modal-dialog modal-xl">
 	        <div class="modal-content">
 	            <div class="modal-header">
 	                <h5 class="modal-title">완제품 출고 등록 (납품)</h5>
@@ -157,44 +157,65 @@
 	                </button>
 	            </div>
 	            <div class="modal-body">
-	                <div class="row mb-3">
-	                    <div class="col-md-12">
-	                        <label>출고담당자</label>
-	                        <input type="text" class="form-control" id="product_out_emp" readonly>
+	                <!-- 수주서 연계 섹션 추가 -->
+	                <div class="card mb-3">
+	                    <div class="card-header bg-info text-white">
+	                        <h6 class="mb-0">수주서 연계</h6>
 	                    </div>
-	                </div>
-	                
-	                <hr>
-	                <div class="d-flex justify-content-between align-items-center mb-3">
-	                    <h6>출고 완제품 목록</h6>
-	                    <button type="button" class="btn btn-sm btn-info" onclick="addProductOutRow()">
-	                        <i class="fas fa-plus"></i> 제품 추가
-	                    </button>
-	                </div>
-	                
-	                <!-- 여기가 누락된 부분 -->
-	                <div id="productOutList">
-	                    <div class="product-out-item mb-2">
+	                    <div class="card-body">
 	                        <div class="row">
-	                            <div class="col-md-7">
-	                                <select class="form-control product-out-select" onchange="updateSelectedProductOutCount()">
-	                                    <option value="">선택하세요</option>
+	                            <div class="col-md-6">
+	                                <label>수주서 선택</label>
+	                                <select class="form-control" id="order_select" onchange="loadOrderDetails()">
+	                                    <option value="">-- 수주서를 선택하세요 --</option>
 	                                </select>
 	                            </div>
-	                            <div class="col-md-3">
-	                                <input type="number" class="form-control product-out-qty" placeholder="수량" min="1">
+	                            <div class="col-md-6">
+	                                <div id="order_info" style="display:none;">
+	                                    <div class="alert alert-warning mb-0">
+	                                        <small>수주번호: <span id="selected_order_id"></span></small><br>
+	                                        <small>거래처: <span id="selected_client"></span></small><br>
+	                                        <small>납기일: <span id="selected_delivery"></span></small>
+	                                    </div>
+	                                </div>
 	                            </div>
-	                            <div class="col-md-2">
-	                                <button class="btn btn-danger btn-sm remove-product-out" onclick="removeProductOutRow(this)" style="display:none;">
-	                                    <i class="fas fa-trash"></i>
-	                                </button>
-	                            </div>
+	                        </div>
+	                        
+	                        <!-- 수주 상세 테이블 -->
+	                        <div id="order_detail_section" style="display:none;" class="mt-3">
+	                            <table class="table table-sm table-bordered">
+	                                <thead class="thead-light">
+	                                    <tr>
+	                                        <th width="25%">제품정보</th>
+	                                        <th width="15%">수주수량</th>
+	                                        <th width="15%">기출고</th>
+	                                        <th width="15%">잔여수량</th>
+	                                        <th width="15%">재고</th>
+	                                        <th width="15%">출고수량</th>
+	                                    </tr>
+	                                </thead>
+	                                <tbody id="order_detail_body">
+	                                </tbody>
+	                            </table>
 	                        </div>
 	                    </div>
 	                </div>
 	                
+	                <div class="row mb-3">
+	                    <div class="col-md-6">
+	                        <label>출고담당자</label>
+	                        <input type="text" class="form-control" id="product_out_emp" readonly>
+	                    </div>
+	                    <div class="col-md-6">
+	                        <label>완제품 창고</label>
+	                        <select class="form-control" id="product_warehouse">
+	                            <!-- Ajax로 로드 -->
+	                        </select>
+	                    </div>
+	                </div>
+	                
 	                <div class="alert alert-info mt-3">
-	                    선택한 완제품: <span id="selectedProductOutCount">0</span>종
+	                    선택한 제품: <span id="selectedProductOutCount">0</span>개
 	                </div>
 	            </div>
 	            <div class="modal-footer">
@@ -671,11 +692,203 @@ function resetMaterialOutForm() {
 
 // ============ 완제품 출고 관련 ============
 
+function loadPendingOrders() {
+    console.log("수주 목록 로드 시작");
+    
+    $.ajax({
+        url: '/inventory/api/pending-orders',
+        type: 'GET',
+        success: function(data) {
+            console.log("받은 수주 데이터:", data);
+            
+            const select = $('#order_select');
+            select.empty();
+            select.append('<option value="">-- 수주서를 선택하세요 --</option>');
+            
+            if(data && data.length > 0) {
+                data.forEach(order => {
+                    select.append(`
+                        <option value="${order.orderId}" 
+                                data-client-id="${order.clientId}"
+                                data-client-name="${order.clientName}"
+                                data-delivery="${order.deliveryDate}">
+                            ${order.orderId} - ${order.clientName} (${order.itemCount}건)
+                        </option>
+                    `);
+                });
+                console.log("수주 옵션 추가 완료");
+            } else {
+                console.log("수주 데이터가 없습니다");
+                select.append('<option value="" disabled>수주 대기 건이 없습니다</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("수주 로드 실패:", error);
+            console.error("상태코드:", xhr.status);
+            console.error("응답:", xhr.responseText);
+        }
+    });
+}
+
+// 수주 상세 로드
+function loadOrderDetails() {
+	const orderId = $('#order_select').val();
+    
+    if(!orderId) {
+        $('#order_info').hide();
+        $('#order_detail_section').hide();
+        return;
+    }
+    
+    const clientName = $('#order_select option:selected').data('client-name');
+    const deliveryDate = $('#order_select option:selected').data('delivery');
+    
+    $('#selected_order_id').text(orderId);
+    $('#selected_client').text(clientName);
+    $('#selected_delivery').text(deliveryDate);
+    $('#order_info').show();
+    
+    $.ajax({
+        url: `/inventory/api/order-details/${orderId}`,
+        type: 'GET',
+        success: function(data) {
+            const tbody = $('#order_detail_body');
+            tbody.empty();
+            
+            // 테이블 헤더 수정
+            $('#order_detail_section table thead').html(`
+                <tr>
+                    <th width="20%">제품정보</th>
+                    <th width="10%">수주수량</th>
+                    <th width="10%">기출고</th>
+                    <th width="10%">잔여</th>
+                    <th width="35%">재고현황</th>
+                    <th width="15%">출고수량</th>
+                </tr>
+            `);
+            
+            data.forEach(item => {
+                const remainQty = item.orderQty - item.shippedQty;
+                
+                tbody.append(`
+                    <tr data-product-id="${item.productId}">
+                        <td>
+                            <strong>${item.productName}</strong>
+                            <br><small class="text-muted">${item.productId}</small>
+                        </td>
+                        <td class="text-center">${item.orderQty}</td>
+                        <td class="text-center">${item.shippedQty}</td>
+                        <td class="text-center">
+                            <span class="badge ${remainQty > 0 ? 'badge-warning' : 'badge-success'}">
+                                ${remainQty}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="manage-stock-area" id="stock-${item.productId}">
+                                <small class="text-muted">로딩중...</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="out-qty-area" id="qty-${item.productId}">
+                                <!-- 여기에 manage_id별 입력 필드 추가 -->
+                            </div>
+                        </td>
+                    </tr>
+                `);
+                
+                // manage_id별 재고 로드
+                loadProductManageStock(item.productId, remainQty);
+            });
+            
+            $('#order_detail_section').show();
+        }
+    });
+}
+
+//제품의 manage_id별 재고 로드
+function loadProductManageStock(productId, remainQty) {
+    $.ajax({
+        url: `/inventory/api/product-stock-by-manage/${productId}`,
+        type: 'GET',
+        success: function(stocks) {
+            let stockHtml = '';
+            let qtyHtml = '';
+            
+            if(stocks && stocks.length > 0) {
+                stockHtml = '<div style="max-height:100px; overflow-y:auto;">';
+                
+                stocks.forEach((stock, idx) => {
+                    const dateStr = stock.createDate ? 
+                        stock.createDate.substring(5, 10).replace('-', '/') : '';
+                    
+                    stockHtml += `
+                        <div class="small">
+                            <span class="badge badge-info">${idx + 1}</span>
+                            ${stock.warehouseName} 
+                            <span class="text-primary">${stock.itemAmount}개</span>
+                            <small class="text-muted">[${dateStr}]</small>
+                        </div>
+                    `;
+                    
+                    // 출고 수량 입력 필드 (manage_id별)
+                    const maxQty = Math.min(stock.itemAmount, remainQty);
+                    qtyHtml += `
+                        <input type="number" 
+                               class="form-control form-control-sm mb-1 manage-out-qty"
+                               data-product="${productId}"
+                               data-manage="${stock.manageId}"
+                               data-warehouse="${stock.warehouseId}"
+                               data-location="${stock.locationId}"
+                               min="0" max="${maxQty}"
+                               ${remainQty <= 0 ? 'disabled' : ''}>
+                    `;
+                });
+                
+                stockHtml += '</div>';
+            } else {
+                stockHtml = '<span class="text-danger">재고없음</span>';
+                qtyHtml = '<input type="number" class="form-control form-control-sm" disabled value="0">';
+            }
+            
+            $(`#stock-${productId}`).html(stockHtml);
+            $(`#qty-${productId}`).html(qtyHtml);
+        }
+    });
+}
+
+// 제품 재고 조회
+function loadProductStock(productId) {
+    $.ajax({
+        url: `/inventory/api/product-stock/${productId}`,
+        type: 'GET',
+        success: function(stock) {
+            $(`.stock-badge[data-product="${productId}"]`).text(stock + '개');
+            
+            // 출고수량 자동 조정
+            const input = $(`.order-out-qty[data-product="${productId}"]`);
+            const maxVal = parseInt(input.attr('max'));
+            if(stock < maxVal) {
+                input.val(stock);
+            }
+        }
+    });
+}	
+	
 // 완제품 출고 모달 열기
 function openProductOutModal() {
-    loadProductsForOut();
+    console.log("완제품 출고 모달 열기");
+    // 현재 사용자 정보 설정
+    $('#product_out_emp').val(currentUser.empId + ' - ' + currentUser.empName);
+    
+    // 수주 목록 로드
+    loadPendingOrders();
+    
+    // 완제품 창고 로드
+    loadProductWarehouses();
+    
     $('#productOutModal').modal('show');
 }
+
 
 // 완제품 목록 로드 (warehouse_item 재고 포함)
 function loadProductsForOut() {
@@ -743,6 +956,34 @@ function addProductOutRow() {
     }
 }
 
+//완제품 창고 로드
+function loadProductWarehouses() {
+    console.log("완제품 창고 로드 시작");
+    
+    $.ajax({
+        url: '/inventory/api/warehouses',
+        type: 'GET',
+        data: { warehouseType: '완제품' },
+        success: function(data) {
+            console.log("창고 데이터:", data);
+            
+            const select = $('#product_warehouse');
+            select.empty();
+            
+            if(data && data.length > 0) {
+                data.forEach(warehouse => {
+                    select.append(`<option value="${warehouse.warehouseId}">${warehouse.warehouseName}</option>`);
+                });
+            } else {
+                select.append('<option value="">완제품 창고가 없습니다</option>');
+            }
+        },
+        error: function(xhr) {
+            console.error("창고 로드 실패:", xhr);
+        }
+    });
+}
+
 // 완제품 행 삭제
 function removeProductOutRow(btn) {
     $(btn).closest('.product-out-item').remove();
@@ -763,33 +1004,32 @@ function updateSelectedProductOutCount() {
 
 // 완제품 출고 저장
 function saveProductOut() {
-    const items = [];
+    const orderId = $('#order_select').val();
     
-    $('.product-out-item').each(function() {
-        const productId = $(this).find('.product-out-select').val();
-        const qty = $(this).find('.product-out-qty').val();
-        const stock = $(this).find('.product-out-select option:selected').data('stock');
+    const items = [];
+    $('.manage-out-qty').each(function() {
+        const qty = parseInt($(this).val());
         
-        if(productId && qty) {
-            if(parseInt(qty) > parseInt(stock)) {
-                alert('재고가 부족합니다!');
-                return false;
-            }
+        if(qty && qty > 0) {
             items.push({
-                productId: productId,
+                productId: $(this).data('product'),
+                manageId: $(this).data('manage'),
+                warehouseId: $(this).data('warehouse'),
+                locationId: $(this).data('location'),
                 outCount: qty,
                 outType: '납품',
+                orderId: orderId
             });
         }
     });
     
     if(items.length === 0) {
-        alert('최소 하나의 완제품을 선택하세요.');
+        alert('출고할 수량을 입력하세요.');
         return;
     }
     
     $.ajax({
-        url: '/inventory/api/outputs/batch',
+        url: '/inventory/api/outputs/product-batch',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(items),
@@ -798,12 +1038,9 @@ function saveProductOut() {
         },
         success: function(result) {
             if(result.success) {
-                alert(result.message);
+                alert(`출고 완료!\n배치번호: ${result.batchId}`);
                 $('#productOutModal').modal('hide');
-                resetProductOutForm();
                 loadProductOutputList();
-            } else {
-                alert('출고 등록 실패: ' + result.message);
             }
         }
     });

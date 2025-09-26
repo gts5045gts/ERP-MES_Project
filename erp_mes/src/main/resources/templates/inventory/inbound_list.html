@@ -1131,7 +1131,7 @@ function saveProductBatch() {
     $('.prod-check:checked').each(function() {
         const data = $(this).data('info');
         items.push({
-            resultId: data.resultId,  // result_id 유지
+            resultId: data.resultId,
             itemType: 'product',
             productId: data.productId,
             inCount: data.availableQty,
@@ -1147,7 +1147,7 @@ function saveProductBatch() {
     }
     
     $.ajax({
-        url: '/inventory/api/inputs/production-batch', 
+        url: '/inventory/api/inputs/production-batch',
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(items),
@@ -1156,26 +1156,40 @@ function saveProductBatch() {
         },
         success: function(result) {
             if(result.success) {
-                alert(`입고 처리 중...\n배치번호: ${result.batchId}\n\n완제품은 자동으로 검사완료 처리됩니다.`);
+                alert(`입고대기로 등록되었습니다.\n배치번호: ${result.batchId}\n\n개별 검사 후 입고완료 처리하면 LOT가 부여됩니다.`);
                 $('#productInputModal').modal('hide');
                 
-                // 잠시 후 목록 새로고침 (completeInput 처리 시간 고려)
+                // 목록 새로고침
                 setTimeout(function() {
                     loadGroupedInputList();
                     loadProductionCompleted();
-                    
-                    // 완제품 탭도 새로고침
-                    if($('#product-tab').hasClass('active')) {
-                        loadProductGroupedList();
-                    }
-                }, 1000);
+                }, 500);
             }
         },
         error: function(xhr) {
-            console.error("입고 실패:", xhr);
-            alert('입고 처리 중 오류가 발생했습니다.');
+            alert('입고 등록 실패');
         }
     });
+}
+
+//완제품 입고 완료 버튼 처리
+function completeProductInput(inId) {
+    if(confirm('이 제품을 입고완료 하시겠습니까?\nLOT번호가 부여됩니다.')) {
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/complete-product`,
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('입고완료! LOT번호가 부여되었습니다.');
+                    refreshDetailModal();
+                    loadGroupedInputList();
+                }
+            }
+        });
+    }
 }
 
 //완제품 폼 초기화
