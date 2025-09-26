@@ -135,8 +135,8 @@ public class PersonnelController {
 		ResponseEntity<Resource> img = personnelImgService.getImgLocation(empId);
 		
 			
-			return img;
-		/*		이미지 잇을경우 없을경우 제어 할 예정
+//			return img;
+//				이미지 잇을경우 없을경우 제어 할 예정
 		if(img != null && img.getStatusCode().is2xxSuccessful() ) {
 			
 			return img;
@@ -149,7 +149,7 @@ public class PersonnelController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                     .body(resource);
 					 	
-		}*/
+		}
 	}
 	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")
