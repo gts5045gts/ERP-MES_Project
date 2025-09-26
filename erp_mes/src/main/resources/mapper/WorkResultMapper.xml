@@ -125,8 +125,14 @@
     LEFT JOIN product prod 	 	 ON pp.product_id = prod.product_id
     LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
 
-	WHERE o.work_order_status = '진행중'
-	ORDER BY w.created_at ASC
+	WHERE o.work_order_status IN ('작업완료', '검사대기', '진행중')
+	ORDER BY 
+	  CASE 
+	    WHEN o.work_order_status = '진행중' THEN 1
+	    WHEN o.work_order_status NOT IN ('검사대기', '작업완료') THEN 2
+	    ELSE 3
+	  END,
+	w.created_at ASC
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
 </select>
 

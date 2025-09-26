@@ -6,38 +6,51 @@ let grid;
 let currentPage = 0;
 let totalPages = 1;
 
+
+
 // 컬럼 정의
 const columns = [
-	{ header: 'Result ID', name: 'resultId', hidden: true },
-	{ header: '작업지시아이디', name: 'workOrderId', filter: 'select' },
-	{ header: '제품명', name: 'productNm', filter: 'select' },
+	{ header: 'Result ID', name: 'resultId', hidden: true},
+	{ header: '작업지시아이디', name: 'workOrderId', filter: 'select', align: 'center'},
+	{ header: '제품명', name: 'productNm', filter: 'select' , align: 'center'},
 //    { header: '공정명', name: 'processNm', filter: 'select' },
 //    { header: '설비명', name: 'equipmentNm', hidden: true },
-	{ header: '목표수량', name: 'planQty' },
-    { header: '생산수량', name: 'goodQty' },
-    { header: '불량수량', name: 'defectQty' },
-    { header: '기입시간', name: 'updatedAt', sortable: true },
-    { header: '작업상태', name: 'workOrderStatus', filter: 'select' },
+	{ header: '목표수량', name: 'planQty' , align: 'center'},
+    { header: '생산수량', name: 'goodQty' , align: 'center'},
     { 
-		header: '작업수량', 
-		name: 'workUpdate',
-		align: 'center', 
+		header: '불량수량', 
+		name: 'defectQty' , 
+		align: 'center',
 		formatter: function(props) {
-			if (props.row.workOrderStatus === '검사대기') {
-				// 작업완료 상태면 클릭 불가 버튼
-				return `<button class="btn btn-dark btn-sm edit-btn btn-disabled"><i class="fa-solid fa-ban"></i> 수정</button>`;
-			} else {
-				// 진행중/대기중이면 일반 버튼
-				return `<button class="btn btn-dark btn-sm edit-btn" data-result-id="${props.row.resultId}">수정</button>`;
-			}
-		} 
+		       let defectQty = props.value; // 기존 불량수량
+		       let btnHtml = '';
+
+		       // 작업상태에 따라 버튼 생성
+		       if (props.row.workOrderStatus !== '검사대기' && props.row.workOrderStatus !== '작업완료') {
+		           btnHtml = `<button class="btn btn-dark btn-sm edit-btn" data-result-id="${props.row.resultId}">수정</button>`;
+		       } else {
+		           btnHtml = `<button class="btn btn-dark btn-sm edit-btn btn-disabled">수정불가</button>`;
+		       }
+
+		       // 불량수량 + 버튼 같이 표시
+			   return `
+		               <div style="position: relative; width: 100%; text-align: center;">
+		                   <span>${defectQty}</span>
+		                   <span style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">
+		                       ${btnHtml}
+		                   </span>
+		               </div>
+			           `;
+		   }
 	},
+    { header: '작업시작시간', name: 'updatedAt', sortable: true , align: 'center'},
+    { header: '작업상태', name: 'workOrderStatus', filter: 'select' , align: 'center'},
     { 
 		header: '작업완료', 
 		name: 'workFinish',
 		align: 'center',  
 		formatter: function(props) {
-			if (props.row.workOrderStatus === '검사대기') {
+			if (props.row.workOrderStatus === '검사대기' || props.row.workOrderStatus === '작업완료') {
 				return '<span style="color:#28a745; font-weight:bold; font-size: 15px;">✔ 완료</span>';
 			}
 			return `<button class="btn btn-danger btn-sm finish-btn" data-result-id="${props.row.resultId}" data-id="${props.row.workOrderId}" data-route-id="${props.row.routeId}">작업완료</button>`;
@@ -81,13 +94,13 @@ function loadPage(page) {
             // 무한스크롤용 페이지 정보
             totalPages = res.totalPages || Math.ceil(res.length / 20);
             currentPage = page;
+			
 
             if (page === 0) {
                 grid.resetData(res); // 0페이지는 초기화
             } else {
                 grid.appendRows(res); // 이후 페이지는 append
             }
-			
 
         });
 }
@@ -333,7 +346,11 @@ document.getElementById('grid').addEventListener('click', function(e) {
 				xhr.setRequestHeader(csrfHeader, csrfToken);
 			},
 			success: function() {
-				reloadGrid();
+				const row = grid.getData().find(r => r.workOrderId == workOrderId);
+				if (row) {
+					row.workOrderStatus = '검사대기';
+					grid.updateRow(row.resultId, row);
+				}
 			},
 			error: function(err) {
 				console.error('작업완료 실패', err);
@@ -349,13 +366,7 @@ function reloadGrid() {
 	});
 }
 
-// 그리드 새로고침 함수
-function reloadGrid() {
-    $.getJSON('/pop/workResultList?page=0&size=20', function(data) {
-        grid.resetData(data); // 전체 렌더링		
 
-    });
-}
 
 
 

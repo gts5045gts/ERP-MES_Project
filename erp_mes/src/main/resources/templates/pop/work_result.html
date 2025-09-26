@@ -17,7 +17,7 @@
 <div class="container-fluid p-4">
 	<div class="header d-flex justify-content-between align-items-center">
 	    <div id="workerNm">
-	        작업자 : <span></span>
+	        <i class="fa-solid fa-screwdriver-wrench"></i> 작업자 : <span></span>
 	    </div>
 	    <div class="d-inline-flex align-items-center">
 			<button id="btnEndWork" type="button" class="btn btn-warning d-flex align-items-center">
@@ -31,7 +31,7 @@
             <div class="box">
                 <h5>작업지시</h5>
                 <div id="work-orders">
-                	<table class="table table-bordered text-center" style="font-size: 14px;">
+                	<table id="workOrderTable1" class="table table-bordered text-center" style="font-size: 14px;">
                 		<thead>
                 			<tr>
 								<th>작업지시ID</th>
@@ -92,7 +92,7 @@
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="workUpdateModalLabel">수량 등록</h5>
+				<h5 class="modal-title" id="workUpdateModalLabel">불량 수량 등록</h5>
 			</div>
 			<div class="modal-body">
 				<div style="display: flex; justify-content: space-between;">
@@ -109,7 +109,7 @@
 							        불량사유 선택
 							    </button>
 							    
-							    <div id="defectReasonOptions" style="margin-top: 10px; display: none;"></div>
+							    <div id="defectReasonOptions" style="margin-top: 20px; display: none;"></div>
 							    
 							</div>
 		                </div>
