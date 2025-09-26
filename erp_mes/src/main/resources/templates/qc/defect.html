@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>불량 내역 조회</title>
+
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/toastui-grid.min.css" />
+    <style>
+        /* 대시보드 카드 스타일 */
+        .summary-card {
+            background-color: #f8f9fc;
+            border-radius: 0.35rem;
+            border-left: 0.25rem solid #4e73df;
+        }
+
+        .summary-card-text {
+            color: #5a5c69;
+        }
+
+        .summary-card-icon {
+            color: #dddfeb;
+        }
+
+        /* 그래프 컨테이너 스타일 */
+        .chart-container {
+            min-height: 300px;
+        }
+
+        /* 필터 영역 스타일 */
+        .filter-area {
+            background-color: #ffffff;
+            border-radius: 0.35rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+    <div class="container-fluid p-4">
+        <h1 class="h3 mb-4 text-gray-800">불량 내역 조회</h1>
+
+        <div class="row">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card summary-card shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">총 불량 건수</div>
+                                <div class="h5 mb-0 font-weight-bold summary-card-text" id="totalDefectCount">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x summary-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card summary-card shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">총 불량률 (%)</div>
+                                <div class="h5 mb-0 font-weight-bold summary-card-text" id="totalDefectRate">0%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-percent fa-2x summary-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-md-6 mb-4">
+                <div class="card summary-card shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">TOP 1 불량 유형</div>
+                                <div class="h5 mb-0 font-weight-bold summary-card-text" id="topDefectType"></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-chart-pie fa-2x summary-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">월별 불량 발생 추이</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyDefectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">불량 유형별 비율</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="typeRatioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">불량 내역 상세 조회</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3 filter-area">
+                    <div class="row w-100">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label for="startDate">시작일</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <label for="endDate">종료일</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="defectTypeFilter">불량 유형</label>
+                            <select class="form-control" id="defectTypeFilter">
+                                <option value="">전체</option>
+                                <option th:each="type : ${defectTypes}" th:value="${type.comDtId}" th:text="${type.comDtNm}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <label for="productNameFilter">제품/자재명</label>
+                            <input type="text" class="form-control" id="productNameFilter" placeholder="제품 또는 자재명 검색">
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <label for="employeeIdFilter">등록자</label>
+                            <input type="text" class="form-control" id="employeeIdFilter" placeholder="사번 또는 이름 검색">
+                        </div>
+                        <div class="col-md-4 mt-3 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" type="button" id="filterBtn">조회</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <div id="grid3"></div>
+                </div>
+                <button class="btn btn-success mt-3" type="button" id="excelDownloadBtn">엑셀 다운로드</button>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/toastui-grid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    
+    <script th:inline="javascript">
+        // 서버에서 불량 유형 데이터 전달
+        const defectTypes = /*[[${defectTypes}]]*/[];
+    </script>
+    <script th:src="@{/bootstrap/js/qc/defectHistory.js}"></script>
+</th:block>
+</body>
+</html>

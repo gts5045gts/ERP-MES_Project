@@ -75,4 +75,6 @@ public interface ShipmentMapper {
     
     // 지연된 품목 ID 목록을 조회하는 메서드
     List<String> getDelayedProductIds();
+    
+    void updateShipmentStatusToReadyIfAllNotShipped(String shipmentId);
 }

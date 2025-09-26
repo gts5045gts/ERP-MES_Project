@@ -56,6 +56,7 @@
     		input_date,
     		emp_id,
     		purchase_status,
+    		purchase_type,
     		update_at
    		) VALUES (
         	#{purchaseId},
@@ -65,7 +66,8 @@
         	SYSDATE,
         	#{inputDate, jdbcType=DATE},
         	#{empId},
-        	'REQUEST', 
+        	'REQUEST',
+        	#{purchaseType}, 
         	SYSDATE
     )
 	</insert>
@@ -109,10 +111,12 @@
 			p.input_date AS inputDate,
 			p.emp_id AS empId,
 			e.emp_name AS empName,
-			c.client_name AS clientName
+			c.client_name AS clientName,
+			p.purchase_type AS purchaseType
 		FROM purchase p
 		LEFT JOIN employee e ON p.emp_id = e.emp_id
 		LEFT JOIN client c ON p.client_id = c.client_id
+		ORDER BY p.purchase_id DESC
 	</select>
 
 <!-- 	발주 상세 목록 조회 -->
@@ -232,6 +236,46 @@
         	purchase_detail_status = #{purchaseStatus}
         WHERE 
         	purchase_id = #{purchaseId}
-    </update>   
+    </update>
+    
+	<select id="getWorkOrderShortages" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
+        SELECT
+            wos.work_order_id,
+            wos.material_id,
+            wos.require_qty,
+            wo.start_date AS startDate
+        FROM
+            work_order_shortage wos
+        JOIN
+        	work_order wo ON wos.work_order_id = wo.work_order_id
+        WHERE
+            wos.status = '요청'
+    </select>
+
+    <select id="getWorkOrderDetailsForPurchase" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
+        SELECT
+            wos.work_order_id,
+            wos.material_id,
+            wos.require_qty,
+            m.material_name,
+            m.price,
+            m.unit, 	-- 발주 상세 테이블에 insert할 때 unit 값 필요.
+            (wos.require_qty * m.price) AS totalPrice
+        FROM
+            work_order_shortage wos
+        JOIN
+            material m ON wos.material_id = m.material_id
+        WHERE
+            wos.work_order_id = #{workOrderId}
+    </select>
+    
+    <update id="updateWorkOrderShortageStatus">
+        UPDATE 
+            work_order_shortage
+        SET 
+            status = #{status}
+        WHERE 
+            work_order_id = #{workOrderId}
+    </update>  
 	
 </mapper>

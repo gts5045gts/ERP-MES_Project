@@ -1,25 +1,20 @@
 package com.erp_mes.mes.pm.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.erp_mes.erp.commonCode.dto.CommonDetailCodeDTO;
 import com.erp_mes.erp.personnel.dto.PersonnelDTO;
+import com.erp_mes.mes.business.service.OrderService;
 import com.erp_mes.mes.pm.dto.BomDTO;
-import com.erp_mes.mes.pm.dto.MaterialDTO;
 import com.erp_mes.mes.pm.dto.OrdersDTO;
 import com.erp_mes.mes.pm.dto.OrdersDetailDTO;
 import com.erp_mes.mes.pm.dto.ProductDTO;
 import com.erp_mes.mes.pm.dto.ProductPlanDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderDTO;
 import com.erp_mes.mes.pm.dto.WorkOrderShortageDTO;
-import com.erp_mes.mes.pm.mapper.ProductBomMapper;
-import com.erp_mes.mes.pm.mapper.WorkOrderMapper;
 import com.erp_mes.mes.pm.mapper.PmMapper;
 
 import lombok.extern.log4j.Log4j2;
@@ -29,9 +24,11 @@ import lombok.extern.log4j.Log4j2;
 public class PmService {
 	
 	private final PmMapper pmMapper;
+	private final OrderService orderService;
 
-	public PmService(PmMapper pmMapper) {
+	public PmService(PmMapper pmMapper, OrderService orderService) {
 		this.pmMapper = pmMapper;
+		this.orderService = orderService;
 	}
 
 	// 생산계획 리스트
@@ -52,8 +49,10 @@ public class PmService {
 
 	// 생산계획 등록
 	public void productPlanRegist(ProductPlanDTO productPlanDTO) {
-		pmMapper.insertProductPlan(productPlanDTO);
 		
+		productPlanDTO.setPlanStatus("POSSIBLE");
+		pmMapper.insertProductPlan(productPlanDTO);
+		orderService.updateOrderStatusToInProduction(productPlanDTO.getOrderId(), productPlanDTO.getProductId());
 	}
 
 	// 작업지시서 리스트

@@ -95,10 +95,10 @@
 	                    <table class="table table-bordered">
 	                        <thead>
 	                            <tr>
-	                                <th width="25%">부품선택</th>
+	                                <th width="13%">부품선택</th>
 	                                <th width="20%">창고</th>
 	                                <th width="25%">Manage ID</th>
-	                                <th width="15%">재고</th>
+	                                <th width="10%">재고</th>
 	                                <th width="10%">출고수량</th>
 	                                <th width="5%">삭제</th>
 	                            </tr>
@@ -346,7 +346,7 @@ function updateMaterialOutModal() {
     
     $('#materialOutList').html(html);
 }
-//부품 선택 시 manage_id 옵션 표시 (새 함수)
+//부품 선택 시 manage_id 옵션 표시
 function showManageOptions(select) {
     const materialId = $(select).val();
     const row = $(select).closest('tr');
@@ -384,14 +384,30 @@ function showManageOptions(select) {
         }
         
         const whStocks = material.manageStocks.filter(s => s.warehouseId === selectedWh);
+        
+        // *** 입고일자로 정렬 추가 (오래된 것부터) ***
+        whStocks.sort((a, b) => {
+            const dateA = new Date(a.createDate || '1900-01-01');
+            const dateB = new Date(b.createDate || '1900-01-01');
+            return dateA - dateB;  // 오름차순 (오래된 것부터)
+        });
+        
         manageSelect.empty().append('<option value="">Manage ID 선택</option>');
         
-        whStocks.forEach(stock => {
+        whStocks.forEach((stock, index) => {
+            // *** 날짜 표시 추가 ***
+            let dateStr = '';
+            if(stock.createDate) {
+                // 2025-09-24 02:18 -> 09/24 형태로
+                dateStr = stock.createDate.substring(5, 10).replace('-', '/');
+            }
+            
+            // *** 순번도 추가해서 더 명확하게 ***
             manageSelect.append(`
                 <option value="${stock.manageId}" 
                         data-stock="${stock.itemAmount}"
                         data-location="${stock.locationId}">
-                    ${stock.manageId} (${stock.itemAmount}개)
+                    ${index + 1}. ${stock.manageId} (${stock.itemAmount}개) [입고: ${dateStr}]
                 </option>
             `);
         });

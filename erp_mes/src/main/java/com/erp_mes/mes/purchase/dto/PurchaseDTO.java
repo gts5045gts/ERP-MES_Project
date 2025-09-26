@@ -23,9 +23,12 @@ public class PurchaseDTO {
 	private Date inputDate;					// 입고예정일
 	private String empId;					// 발주 등록자 (= 로그인한 사용자)
 	private LocalDateTime updateAt;			// 수정일
+	private String purchaseType;
 	
 	private String clientName; // 조회용
 	private String empName; // 조회용
 	
 	private List<PurchaseDetailDTO> materials;
+	
+	private String workOrderId;
 }

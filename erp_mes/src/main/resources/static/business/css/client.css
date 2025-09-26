@@ -16,6 +16,19 @@ body {
 	align-items: center; /* 세로 중앙 정렬 */
 }
 
+.search-container > div.d-flex {
+    align-items: center; 
+}
+
+/* 라벨의 기본 마진을 제거하여 수직 중앙 정렬을 확실하게 */
+.search-container label {
+    font-size: 18px; /* h5 기본 글꼴 크기인 1.25rem에 맞춰서 조정 */
+    font-weight: 550; /* h5처럼 굵게 */
+    white-space: nowrap;
+    margin-bottom: 0 !important; /* ⭐ 가장 중요: 라벨의 하단 마진 강제 제거 */
+    /* 수직 정렬을 위해 약간의 패딩이나 라인 높이를 필요하다면 조정할 수 있지만, 여기서는 Flexbox에 의존. */
+}
+
 /* 등록 버튼 그룹 스타일 */
 .search-buttons {
 	display: flex; /* 플렉스 박스 레이아웃 */

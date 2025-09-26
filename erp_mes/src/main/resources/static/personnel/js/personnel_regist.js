@@ -1,9 +1,21 @@
 /**
  *   등록 혹은 수정 페이지 js 
  */
+	document.addEventListener('DOMContentLoaded', function() {
+		const token = $("meta[name='_csrf']").attr("content");
+		const header = $("meta[name='_csrf_header']").attr("content");
+	
+		$(document).ajaxSend(function(e, xhr, options) {
+			if (token && header) {
+				xhr.setRequestHeader(header, token);
+			}
+		});
+	});
+
+
 
 // 전화번호 유효성 검사 
-	document.getElementById('emp_ph').addEventListener('input', function(e) {
+	document.getElementById('phone').addEventListener('input', function(e) {
   		let input = e.target.value.replace(/\D/g, ''); // 숫자 이외의 문자는 모두 제거
   
 		// 최대 11자리까지 허용 (예: 01012345678)
@@ -49,7 +61,7 @@
 		e.target.value = formatted;
 	});
 	**/
-	document.getElementById('emp_bd').addEventListener('input', function(e) {
+	document.getElementById('resident').addEventListener('input', function(e) {
 	  	let input = e.target.value.replace(/\D/g, ''); // 숫자만 남김
 
 		// 최대 13자리까지만 허용
@@ -120,63 +132,73 @@
 	
 	// 입력안된 것들 검사 
 	
-	
 	function formBtn(){
 		let form = document.getElementById("registForm");
-		let name = document.getElementById("name").value;
-		let phone = document.getElementById("phone").value;
-		let resident = document.getElementById("resident").value;
-		let passwd = document.getElementById("passwd").value;
-		let staId = document.getElementById("staId").value;
-		let dep = document.getElementById("dep").value;
-		let pos = document.getElementById("pos").value;
-		let level = document.getElementById("level").value;
-		let addrNum = document.getElementById("addrNum").value;
-		let addr1 = document.getElementById("addr1").value;
-		let addr2 = document.getElementById("addr2").value;
-		let joinDate = document.getElementById("joinDate").value;
-		if(name === ""){
+		let name = document.getElementById("name");
+		let phone = document.getElementById("phone");
+		let resident = document.getElementById("resident");
+		let passwd = document.getElementById("passwd");
+		let staId = document.getElementById("staId");
+		let dep = document.getElementById("dep");
+		let pos = document.getElementById("pos");
+		let level = document.getElementById("level");
+		let addrNum = document.getElementById("emp_pc");
+		let addr1 = document.getElementById("emp_ad");
+		let addr2 = document.getElementById("emp_ba");
+		let joinDate = document.getElementById("joinDate");
+		
+		if(name.value === ""){
 			alert("이름을 입력해주세요.");
-			return
-		}else if(phone ===""){
+			name.focus();
+			return;
+		}else if(phone.value ===""){
 			alert("휴대폰 번호를 입력하세요.");
-			return
-		}else if(resident ===""){
+			phone.focus();
+			return;
+		}else if(resident.value ===""){
 			alert("주민등록 번호를 입력하세요.");
-			return
-		}else if(passwd ===""){
+			resident.focus();
+			return;
+		}else if(passwd.value ===""){
 			alert("비밀 번호를 입력하세요.");
-			return
-		}else if(staId ===""){
+			passwd.focus();
+			return;
+		}else if(staId.value ===""){
 			alert("재직 현황를 선택하세요.");
-			return
-		}else if(dep ===""){
+			staId.focus();
+			return;
+		}else if(dep.value ===""){
 			alert("부서를 선택하세요.");
-			return
-		}else if(pos ===""){
+			dep.focus();
+			return;
+		}else if(pos.value ===""){
 			alert("직책을 선택하세요.");
-			return
-		}else if(level ===""){
+			pos.focus();
+			return;
+		}else if(level.value ===""){
 			alert("보안등급을 선택하세요.");
-			return
-		}else if(addrNum ===""){
+			level.focus();
+			return;
+		}else if(addrNum.value ===""){
 			alert("우편번호를 입력하세요.");
-			return
-		}else if(addr1 ===""){
+			addrNum.focus();
+			return;
+		}else if(addr1.value ===""){
 			alert("주소를 입력하세요.");
-			return
-		}else if(addr2 ===""){
+			addr1.focus();
+			return;
+		}else if(addr2.value ===""){
 			alert("상세 주소를 입력하세요.");
-			return
-		}else if(joinDate ===""){
+			addr2.focus();
+			return;
+		}else if(joinDate.value ===""){
 			alert("입사일을 입력하세요.");
-			return
+			joinDate.focus();
+			return;
 		}
-		let formData = form.serialize();
-//		$.post("/")
+		form.submit();
 		
 		
 	}
-	
 	
 	

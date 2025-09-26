@@ -38,29 +38,29 @@
 
 			<!-- Divider -->
 			<hr class="sidebar-divider">
-
-			<!-- Heading -->
-			<div class="sidebar-heading">Interface</div>
-
-			<!-- Nav Item - Pages Collapse Menu -->
-			<li class="nav-item"><a class="nav-link collapsed" href="#"
-				data-toggle="collapse" data-target="#collapseTwo"
-				aria-expanded="true" aria-controls="collapseTwo"> <i
-					class="fas fa-fw fa-cog"></i> <span>시스템 관리</span>
-			</a>
-				<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-					data-parent="#accordionSidebar">
-					<div class="bg-white py-2 collapse-inner rounded">
-						<h6 class="collapse-header">코드관리 메뉴:</h6>
-						<a class="collapse-item" th:href="@{/admin/commonCode}">공통코드
-							관리</a>
-					</div>
-				</div></li>
-
-
-			<!-- Divider -->
-			<hr class="sidebar-divider">
-
+			<th:block sec:authorize="hasAuthority('ROLE_AUT001')">		<!-- 관리자 권한만 보이게 수정 -->
+				<!-- Heading -->
+				<div class="sidebar-heading">Interface</div>
+		
+				<!-- Nav Item - Pages Collapse Menu -->
+				<li class="nav-item"><a class="nav-link collapsed" href="#"
+					data-toggle="collapse" data-target="#collapseTwo"
+					aria-expanded="true" aria-controls="collapseTwo"> <i
+						class="fas fa-fw fa-cog"></i> <span>시스템 관리</span>
+				</a>
+					<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
+						data-parent="#accordionSidebar">
+						<div class="bg-white py-2 collapse-inner rounded">
+							<h6 class="collapse-header">코드관리 메뉴:</h6>
+							<a class="collapse-item" th:href="@{/admin/commonCode}">공통코드
+								관리</a>
+						</div>
+					</div></li>
+				
+		
+				<!-- Divider -->
+				<hr class="sidebar-divider">
+			</th:block>
 			<!-- Heading -->
 			<div class="sidebar-heading">
 				<!-- Nav Item - Utilities Collapse Menu -->
@@ -148,8 +148,8 @@
 					MES
 				</div>
 				
-<!-- 				기준정보 관리 메뉴  -->
-			<li class="nav-item"><a class="nav-link collapsed"
+<!-- 				기준정보 관리 메뉴  -->   <!-- 관리자 권한만 보이게 수정 -->
+			<li class="nav-item"><a class="nav-link collapsed" sec:authorize="hasAuthority('ROLE_AUT001')"
 				data-toggle="collapse" data-target="#collapseMasterDate"
 				aria-expanded="true" aria-controls="collapseMasterDate"> <i
 					class="fas fa-fw fa-folder"></i> <span>기준정보관리</span>
@@ -260,7 +260,7 @@
 						<h6 class="collapse-header">검사 관리:</h6>
 						<a class="collapse-item" th:href="@{/quality/qih}">품질검사 이력관리</a>
 						<h6 class="collapse-header">불량 관리:</h6>
-						<a class="collapse-item" th:href="@{/schedule}">불량 관리</a> <a
+						<a class="collapse-item" th:href="@{/defect}">불량 관리</a> <a
 							class="collapse-item" th:href="@{/schedule}">분석 리포트</a>
 
 					</div>

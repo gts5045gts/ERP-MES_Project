@@ -291,6 +291,24 @@ public class WareController {
 	    }
 	    return result;
 	}
+	
+	// 발주 대기 목록 조회 API
+	@GetMapping("/api/pending-purchases")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingPurchases() {
+	    log.info("발주 대기 목록 조회 API 호출");
+	    List<Map<String, Object>> result = wareService.getPendingPurchases();
+	    log.info("조회 결과: {}건", result.size());
+	    return result;
+	}
+
+	// 발주 상세 조회 API
+	@GetMapping("/api/purchase-details/{purId}")
+	@ResponseBody
+	public List<Map<String, Object>> getPurchaseDetails(@PathVariable("purId") String purId) {
+	    log.info("발주 상세 조회 - purId: {}", purId);
+	    return wareService.getPurchaseDetails(purId);
+	}
 	// ==================== 4. 출고 관리 API ====================
 
 	// 출고 목록 조회

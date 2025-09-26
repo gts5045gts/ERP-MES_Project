@@ -25,5 +25,6 @@ public class DefectDTO {
 	private Long defectLocation;				// 불량위치
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime defectDate;			// 불량 발생일자
+	private String lotId;
 	
 }
