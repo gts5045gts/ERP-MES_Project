@@ -111,14 +111,3 @@ body {
     background-color: #f0f0f0 !important;
     cursor: pointer;
 }
-
-#shipmentAddModal .modal-dialog {
-/*      max-width: 65%모달의 최대 너비를 90%로 설정 */
-/*     width: 80%; 모달의 너비를 90%로 설정 */
-/*     height: 70vh; 뷰포트 높이의 90%로 설정 */
-}
-
-/* #shipmentAddModal .modal-content { */
-/*     height: 75%; */
-/* } */
-

@@ -240,6 +240,7 @@
     
 	<select id="getWorkOrderShortages" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
         SELECT
+        	wos.short_id,
             wos.work_order_id,
             wos.material_id,
             wos.require_qty,
@@ -267,6 +268,7 @@
             material m ON wos.material_id = m.material_id
         WHERE
             wos.work_order_id = #{workOrderId}
+        AND wos.status = '요청'
     </select>
     
     <update id="updateWorkOrderShortageStatus">
