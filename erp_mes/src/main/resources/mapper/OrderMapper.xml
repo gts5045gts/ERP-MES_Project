@@ -264,27 +264,5 @@
           		AND pp.order_id = od.order_id
       )
     </update>	
-	
-<!-- 	모든 수주 상세가 출하완료 상태인지 확인 -->
-<!-- 	<select id="isAllDetailsCompleted" resultType="boolean"> -->
-<!--     	SELECT  -->
-<!--         	CASE WHEN COUNT(*) = 0 THEN 1 ELSE 0 END -->
-<!--     	FROM  -->
-<!--         	orders_detail -->
-<!--     	WHERE  -->
-<!--         	order_id = #{orderId} -->
-<!--     	AND  -->
-<!--         	order_detail_status != 'COMPLETION' -->
-<!-- 	</select> -->
-	
-<!-- 	모든 수주 상세가 출하완료라면 해당 수주도 출하완료로 update -->
-<!-- 	<update id="updateOrderStatusToCompletion"> -->
-<!--     	UPDATE  -->
-<!--         	orders -->
-<!--     	SET  -->
-<!--         	order_status = 'COMPLETION' -->
-<!--     	WHERE  -->
-<!--         	order_id = #{orderId} -->
-<!-- 	</update> -->
 
 </mapper>

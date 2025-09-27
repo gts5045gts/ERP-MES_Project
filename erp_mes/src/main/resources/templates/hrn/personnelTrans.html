@@ -27,12 +27,14 @@
                         <!-- 인사발령 페이지의 핵심 내용 -->
                         <div class="header-bar">
                             <div class="search-container">
+                            	<label for="typeSelect" class="orderStatus">발령구분</label>
                                 <select id="orderTypeSelect" class="form-select" aria-label="발령구분">
-                                    <option value="ALL">발령구분</option>
+<!--                                     <option value="ALL">발령구분</option> -->
+									<option value="ALL">전체</option>
                                     <option value="PROMOTION">승진</option>
                                     <option value="TRANSFER">전보</option>
-                                    <option value="ALL">전체</option>
                                 </select>
+                                <label for="transferDateSearch" class="orderStatus">발령일자</label>
                                 <input type="date" id="orderDateStart" class="form-control" placeholder="발령 시작일">
                                 <span>~</span>
                                 <input type="date" id="orderDateEnd" class="form-control" placeholder="발령 종료일">

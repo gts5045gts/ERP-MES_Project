@@ -106,7 +106,7 @@ public class PurchaseService {
 	
 	// 발주 취소 처리
 	@Transactional
-	public void cancelPurchase(String purchaseId) {
+	public void cancelPurchase(String purchaseId, String reason) {
 	    String currentStatus = purchaseMapper.findPurchaseStatus(purchaseId);
 
 	    if ("CANCELED".equals(currentStatus)) {
@@ -117,6 +117,9 @@ public class PurchaseService {
 	        
 	    // 해당 수주에 속한 모든 수주 상세 목록(orders_detail)의 상태를 'CANCELED'로 업데이트
 	    purchaseMapper.updatePurchaseDetailsStatus(purchaseId, "CANCELED");
+	    
+	    // 취소 사유
+	    purchaseMapper.updateReason(purchaseId, reason);
 	}
 	
 	// 자재 부족한 작업지시 목록 조회
