@@ -232,6 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 페이지 로드 시 전체 수주 목록 불러오기
 		loadOrders();
 
+		
 		orderGrid.on('click', async (ev) => {
 			const rowData = orderGrid.getRow(ev.rowKey);
 
@@ -247,7 +248,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (isBUSTeam || isAUTLevel) {
 				if (ev.columnName === 'orderStatus') {
 					if (rowData.orderStatus === 'CANCELED') {
-						alert("이미 취소된 수주입니다.");
+						const reason = rowData.reason || "취소 사유가 등록되지 않았습니다.";
+						alert(`[취소된 수주]\n수주번호: ${rowData.orderId}\n\n취소 사유: ${reason}`);
 						return;
 					}
 					if (rowData.orderStatus === 'RECEIVED') {
@@ -261,13 +263,11 @@ document.addEventListener("DOMContentLoaded", () => {
 							return;
 						}
 
-						// 사유 입력 확인 (필요에 따라 최소 글자 수 등 추가 검증 가능)
 						if (cancelReason.trim() === "") {
 							alert("취소 사유를 반드시 입력해야 합니다.");
 							return;
 						}
 
-//						if (confirm("수주를 취소하시겠습니까?")) {
 							const orderId = rowData.orderId;
 							try {
 								const csrfToken = document.querySelector('meta[name="_csrf"]').content;
@@ -287,6 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								}
 
 								orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+								orderGrid.setValue(ev.rowKey, 'reason', cancelReason);
 								alert("수주가 취소되었습니다.");
 
 								loadOrderDetails(orderId);
@@ -294,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
 								console.error("수주 취소 실패:", err);
 								alert("수주 취소 실패: " + err.message);
 							}
-//						}
 					} else {
 						// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
 						alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");

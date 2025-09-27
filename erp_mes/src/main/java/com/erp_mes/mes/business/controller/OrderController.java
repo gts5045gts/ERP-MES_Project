@@ -97,17 +97,6 @@ public class OrderController {
 	    }
 	    return ResponseEntity.ok(order);
 	}
-	
-//	// 수주 목록 (검색조건 적용)
-//	@GetMapping("/api/orders/search")
-//	@ResponseBody
-//	public List<OrderDTO> searchOrders(
-//	        @RequestParam(required = false) String orderStatus,
-//	        @RequestParam(required = false) String clientName
-//	) {
-//	    log.info("수주 검색 요청: 상태={}, 거래처명={}", orderStatus, clientName);
-//	    return orderService.searchOrders(orderStatus, clientName);
-//	}
 
 	// 수주 상세 목록 조회
 	@GetMapping("/api/orders/{orderId}/details")
