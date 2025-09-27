@@ -61,7 +61,7 @@ a[aria-expanded="true"]>.caret::before {
 										<!-- 공정 토글 -->
 										<li class="list-group-item py-1 px-2 border-0"><a
 											data-toggle="collapse" th:href="'#procA_' + *{workOrderId}" th:aria-controls="'procA_' + *{workOrderId}"
-											class="d-flex align-items-center" th:attr="data-value=*{productId}"> <span
+											class="d-flex align-items-center childList" th:attr="data-value=*{productId}"> <span
 												class="mr-2 caret"></span> 공정
 										</a>
 											<ul class="collapse pl-3 mt-2" th:id="'procA_' + *{workOrderId}" data-parent="#lotA">
@@ -270,7 +270,33 @@ a[aria-expanded="true"]>.caret::before {
 				}
 				   // process, equipment도 각각 렌더링 함수 만들기
 			}
-
+            
+            $(document).on("click", ".childList", function (e) {
+                e.preventDefault();
+                
+                let productId = $(this).data("value");
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+                
+                $.ajax({
+                  url: "/lot/getChildren/" + productId,
+                  method: "POST",
+                  contentType: "application/json",
+                  beforeSend: function(xhr) {
+                      xhr.setRequestHeader(header, token);
+                  },
+                  success: function (data) {
+                    console.log(data)
+                
+                    if (data.length > 0) {
+                      
+                    } else {
+                    }
+                  }
+                });
+            });
+            
+            
 	</script>
 	</th:block>
 </body>

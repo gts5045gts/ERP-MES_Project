@@ -3,14 +3,18 @@ package com.erp_mes.mes.lot.controller;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.constant.LotDomain;
@@ -73,5 +77,14 @@ public class LotController {
 		model.addAttribute("lotDTOList", lotDTOList);
 		
 		return "lot/lot_list";
+	}
+	
+	//요청 부분
+	@PostMapping("/getChildren/{productId}")
+	@ResponseBody // ★ 반드시 붙이기
+	public List<Map<String, Object>> getChildren(@PathVariable("productId") String productId){
+	    List<Map<String, Object>> equipList = lotService.findAll(productId);
+		log.info("proList" + equipList.toString()); 
+		return equipList;
 	}
 }

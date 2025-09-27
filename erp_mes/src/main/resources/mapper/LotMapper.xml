@@ -29,4 +29,47 @@
     ORDER BY w.work_order_id ASC
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
   </select>
+  
+  <select id="findAll" resultType="com.erp_mes.mes.plant.dto.ProcessDTO">
+        SELECT 
+            r.route_id,
+            r.pro_seq,
+            r.note,
+            r.equip_id,
+            r.pro_id,
+            r.product_id,
+            
+            p.pro_nm,
+            p.type_nm,
+            
+            e.equip_nm,
+            
+            d.product_name,
+            
+            r.material_id,
+            m.material_name
+            
+        FROM 
+            process_routing r
+        LEFT JOIN
+            process p 
+        ON 
+            r.pro_id = p.pro_id
+        JOIN 
+            equipment e
+        ON 
+            r.equip_id = e.equip_id
+        JOIN
+            product d
+        ON
+            r.product_id = d.product_id
+        LEFT JOIN 
+            material m
+        on 
+            r.material_id = m.material_id
+            
+        WHERE r.product_id = #{productId}
+        ORDER BY 
+            d.product_id, r.pro_seq ASC
+    </select>
   </mapper>
