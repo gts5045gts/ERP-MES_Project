@@ -85,12 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
-				{ header: '수주번호', name: 'orderId', align: 'center' },
+				{ header: '수주번호', name: 'orderId', align: 'center', sortable: true,},
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
 				{
 					header: '수주일', name: 'orderDate', align: 'center',
+					sortable: true,
 					// formatter 함수 추가
 					formatter: function(value) {
 						// value.value는 "2025-09-17T02:37:19"와 같은 형태
@@ -102,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '납기예정일', name: 'deliveryDate', align: 'center',
+					sortable: true,
 					editor: {
 						type: 'datePicker',
 						options: {
@@ -117,9 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						return '';
 					}
 				},
-				{ header: '수주수량', name: 'totalOrderQty', align: 'center' },
+				{ header: '수주수량', name: 'totalOrderQty', align: 'center', sortable: true,},
 				{
 					header: '수주금액', name: 'totalOrderPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -174,10 +177,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				{ header: '수주번호', name: 'orderId', align: 'center' },
 				{ header: '품목번호', name: 'productId', align: 'center' },
 				{ header: '품목명', name: 'productName', align: 'center' },
-				{ header: '수량', name: 'orderQty', align: 'center' },
+				{ header: '수량', name: 'orderQty', align: 'center', sortable: true },
 				{ header: '단위', name: 'unit', align: 'center' },
 				{
 					header: '단가', name: 'orderPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -187,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '총금액', name: 'totalPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -730,19 +735,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		renderSelectedItems();
 	};
 
-	//	// 품목 검색 버튼 이벤트
-	//	document.getElementById("searchProductBtn").addEventListener("click", () => {
-	//		const keyword = document.getElementById("productSearch").value;
-	//		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
-	//			.then(response => response.json())
-	//			.then(data => {
-	//				if (productListGrid) {
-	//					productListGrid.resetData(data);
-	//				}
-	//			})
-	//			.catch(error => console.error("품목 검색 오류:", error));
-	//	});
-
 	// ----------------------------------------------------------------------------------------------
 
 	// 폼 제출 이벤트 (수주 등록 및 수정)
@@ -773,16 +765,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		const items = selectedProducts.map(item => {
 			const orderQty = parseInt(item.qty) || 0;
 			const orderPrice = parseInt(item.price) || 0;
-			//			const orderQty = parseInt(item.orderQty ?? item.qty) || 0;
-			//			const orderPrice = parseInt(item.orderPrice ?? item.price) || 0;
 			return {
 				productId: item.productId,
 				productName: item.productName,
 				unit: item.unit,
 				orderQty: orderQty,
 				orderPrice: orderPrice,
-				totalPrice: orderQty * orderPrice,
-				//				deliveryDate: deliveryDate
+				totalPrice: orderQty * orderPrice
 			};
 		});
 
@@ -802,8 +791,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			totalOrderPrice: totalOrderPrice, // DTO 필드명
 			items: items
 		};
-
-		console.log("전송될 페이로드:", payload); // 이 부분을 추가하여 값 확인
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
