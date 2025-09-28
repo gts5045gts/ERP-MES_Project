@@ -1,6 +1,7 @@
 package com.erp_mes.erp.attendance.controller;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,27 @@ public class mainController {
 			model.addAttribute("startDate", startDate);
 			model.addAttribute("endDate", endDate);
 
-			log.info("commuteDTOList : " + commuteDTOList);		
+			log.info("commuteDTOList : " + commuteDTOList);	
+			
+			
+			// =================================
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+			
+		    if (commuteDTOList != null && !commuteDTOList.isEmpty()) {
+		        CommuteDTO todayCommute = commuteDTOList.get(0);
+
+		        model.addAttribute("checkInTimeStr", todayCommute.getCheckInTime() != null
+		                ? todayCommute.getCheckInTime().format(formatter)
+		                : "");
+		        model.addAttribute("checkOutTimeStr", todayCommute.getCheckOutTime() != null
+		                ? todayCommute.getCheckOutTime().format(formatter)
+		                : "");
+		    } else {
+		        model.addAttribute("checkInTimeStr", "");
+		        model.addAttribute("checkOutTimeStr", "");
+		    }
+
 
 			return "/main";
 		}
