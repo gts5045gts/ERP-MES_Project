@@ -1,18 +1,8 @@
 package com.erp_mes.mes.business.controller;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -22,15 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
 import com.erp_mes.mes.business.dto.ClientDTO;
 import com.erp_mes.mes.business.service.ClientService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -117,8 +103,8 @@ public class ClientController {
 //        log.info("로드된 serviceKey (길이): {}", serviceKey.length()); // 키의 존재 여부만 확인
 //
 //        // 공공데이터 API URL
-////        String url = "https://api.odcloud.kr/api/nts-businessman/v1/status"
-////                + "?serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
+//        String url = "https://api.odcloud.kr/api/nts-businessman/v1/status"
+//                + "?serviceKey=" + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 //
 //        // API 요청 body
 //        Map<String, Object> body = new HashMap<>();
@@ -131,7 +117,7 @@ public class ClientController {
 //
 //        try {
 //            // 💡 2. URL 인코딩은 StandardCharsets.UTF_8로 변경하여 IOException을 던지지 않도록 처리
-////            String encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
+//            String encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
 //
 //            String url = "https://api.odcloud.kr/api/nts-businessman/v1/status"
 //                    + "?serviceKey=" + serviceKey;

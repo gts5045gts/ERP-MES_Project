@@ -170,37 +170,37 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 		
 		//  사업자번호 검증 API 호출
-		try {
-			const validateResponse = await fetch("/business/api/validateBizNo", {
-				method: "POST",
-				headers: { 
-					"Content-Type": "application/json",
-					[csrfHeader]: csrfToken
-				},
-				body: JSON.stringify({ businessNumber })
-			});
-
-			if (!validateResponse.ok) {
-				alert("사업자등록번호 검증 요청 실패!");
-				return;
-			}
-
-			const validateResult = await validateResponse.json();
-			console.log("검증 결과:", validateResult);
-
-			// 공공데이터 응답 예시: {"status_code":"OK","data":[{"b_no":"1234567890","b_stt":"계속사업자","valid":"01"}]}
-			const validCode = validateResult.data[0].valid; // 01: 유효, 02: 폐업, 03: 휴업
-
-			if (validCode !== "01") {
-				alert("유효하지 않은 사업자등록번호입니다. (폐업/휴업/미등록)");
-				return;
-			}
-
-		} catch (error) {
-			console.error("검증 API 호출 에러:", error);
-			alert("사업자등록번호 검증 중 오류가 발생했습니다.");
-			return;
-		}
+//		try {
+//			const validateResponse = await fetch("/business/api/validateBizNo", {
+//				method: "POST",
+//				headers: { 
+//					"Content-Type": "application/json",
+//					[csrfHeader]: csrfToken
+//				},
+//				body: JSON.stringify({ businessNumber })
+//			});
+//
+//			if (!validateResponse.ok) {
+//				alert("사업자등록번호 검증 요청 실패!");
+//				return;
+//			}
+//
+//			const validateResult = await validateResponse.json();
+//			console.log("검증 결과:", validateResult);
+//
+//			// 공공데이터 응답 예시: {"status_code":"OK","data":[{"b_no":"1234567890","b_stt":"계속사업자","valid":"01"}]}
+//			const validCode = validateResult.data[0].valid; // 01: 유효, 02: 폐업, 03: 휴업
+//
+//			if (validCode !== "01") {
+//				alert("유효하지 않은 사업자등록번호입니다. (폐업/휴업/미등록)");
+//				return;
+//			}
+//
+//		} catch (error) {
+//			console.error("검증 API 호출 에러:", error);
+//			alert("사업자등록번호 검증 중 오류가 발생했습니다.");
+//			return;
+//		}
 
 		// 필수 입력 필드 확인
 		const requiredFields = [
@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 
 			if (response.ok) {
-				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록이 성공적으로 제출되었습니다.');
+				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록 완료!.');
 				clientAddModal.hide();
 				loadClients();
 			} else {
