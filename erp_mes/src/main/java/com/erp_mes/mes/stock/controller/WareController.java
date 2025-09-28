@@ -41,13 +41,6 @@ public class WareController {
 	
 	// ==================== 1. 페이지 라우팅 ====================
 	
-	// 창고내 재고 현황 페이지
-	@GetMapping("/warehouse")
-    public String warehouseList(Model model) {
-        log.info("창고 현황 페이지 접속");
-        return "inventory/warehouse_list";
-    }
-	
 	// 창고 정보 관리 페이지
 	@GetMapping("/ware")
     public String wareList(Model model) {
@@ -587,6 +580,85 @@ public class WareController {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
 	    }
+	    return result;
+	}
+	
+	//=================================================================================
+	
+	// 창고 레이아웃 페이지 - 데이터 전달
+	@GetMapping("/warehouse")
+	public String warehouseList(Model model) {
+	    log.info("창고 현황 페이지 접속");
+	    
+	    // 창고 목록 조회
+	    List<WarehouseDTO> warehouses = wareService.getWarehouseList(null, "Y", null);
+	    model.addAttribute("warehouses", warehouses);
+	    
+	    // 첫 번째 창고를 기본값으로
+	    if(!warehouses.isEmpty()) {
+	        String defaultWarehouseId = warehouses.get(0).getWarehouseId();
+	        model.addAttribute("defaultWarehouseId", defaultWarehouseId);
+	    }
+	    
+	    return "inventory/warehouse_list";
+	}
+
+	// 창고별 재고 현황 API
+	@GetMapping("/api/warehouse/layout/{warehouseId}")
+	@ResponseBody
+	public Map<String, Object> getWarehouseLayout(@PathVariable String warehouseId) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    try {
+	        // 창고 정보
+	        WarehouseDTO warehouse = wareService.getWarehouseInfo(warehouseId);
+	        result.put("warehouse", warehouse);
+	        
+	        // 해당 창고의 위치별 재고 현황
+	        List<Map<String, Object>> stockLayout = wareService.getWarehouseStockLayout(warehouseId);
+	        result.put("stockLayout", stockLayout);
+	        
+	        // 창고 요약 정보
+	        Map<String, Object> summary = wareService.getWarehouseSummary(warehouseId);
+	        result.put("summary", summary);
+	        
+	        result.put("success", true);
+	    } catch(Exception e) {
+	        log.error("창고 레이아웃 조회 실패", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    
+	    return result;
+	}
+
+	// 특정 위치의 상세 정보 조회
+	@GetMapping("/api/warehouse/location/{locationId}")
+	@ResponseBody
+	public Map<String, Object> getLocationDetail(@PathVariable String locationId) {
+	    return wareService.getLocationDetail(locationId);
+	}
+	
+	// 창고별 재고 시각화 API
+	@GetMapping("/api/warehouse/visual/{warehouseId}")
+	@ResponseBody
+	public Map<String, Object> getWarehouseVisual(@PathVariable String warehouseId) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    try {
+	        // warehouse_item에서 해당 창고의 재고 현황 조회
+	        List<Map<String, Object>> stockLayout = wareService.getWarehouseStockLayout(warehouseId);
+	        
+	        result.put("success", true);
+	        result.put("stockLayout", stockLayout);
+	        result.put("warehouseId", warehouseId);
+	        
+	    } catch(Exception e) {
+	        log.error("창고 레이아웃 조회 실패", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    
 	    return result;
 	}
 }

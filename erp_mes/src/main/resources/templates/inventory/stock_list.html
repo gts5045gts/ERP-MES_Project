@@ -193,14 +193,10 @@ function displayAllStockList(stockList) {
             
             if(stock.productType === '부품') {
                 typeBadge = '<span class="badge badge-info">부품</span>';
-                actionButton = '<button class="btn btn-sm btn-warning" onclick="openMaterialModal(\'' + 
-                              stock.productId + '\', \'' + stock.productName + '\', ' + 
-                              stock.quantity + ')">재고투입</button>';
+                actionButton = '<button class="btn btn-sm btn-secondary" disabled>-</button>';
             } else if(stock.productType === '반제품') {
                 typeBadge = '<span class="badge badge-warning">반제품</span>';
-                actionButton = '<button class="btn btn-sm btn-warning" onclick="openMaterialModal(\'' + 
-                              stock.productId + '\', \'' + stock.productName + '\', ' + 
-                              stock.quantity + ')">재고투입</button>';
+                actionButton = '<button class="btn btn-sm btn-secondary" disabled>-</button>';
             } else if(stock.productType === '완제품') {
                 typeBadge = '<span class="badge badge-success">완제품</span>';
                 actionButton = '<button class="btn btn-sm btn-secondary" disabled>-</button>';

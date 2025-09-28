@@ -760,6 +760,7 @@
 	        <if test="locationId != null">location_id,</if>
 	        <if test="orderId != null">order_id,</if>
 	        <if test="planId != null">product_plan,</if>
+	        <if test="workOrderId != null">work_order_id,</if>  <!-- 추가 -->
 	        update_date
 	    ) VALUES (
 	        #{outId}, 
@@ -774,6 +775,7 @@
 	        <if test="locationId != null">#{locationId},</if>
 	        <if test="orderId != null">#{orderId},</if>
 	        <if test="planId != null">#{planId},</if>
+	        <if test="workOrderId != null">#{workOrderId},</if>  <!-- 추가 -->
 	        SYSDATE
 	    )
 	</insert>
@@ -815,7 +817,8 @@
 	        location_id,
 	        manage_id,
 	        out_count,
-	        out_type
+	        out_type,
+	        work_order_id
 	    FROM output 
 	    WHERE out_id = #{outId}
 	</select>
@@ -1243,6 +1246,128 @@
 	    LEFT JOIN material m ON b.material_id = m.material_id
 	    WHERE pp.plan_id = #{planId}
 	    ORDER BY b.material_id
+	</select>
+	
+	<!--=====================================================================-->
+	<!-- 창고 단일 조회 -->
+	<select id="selectWarehouseInfoById" resultType="com.erp_mes.mes.stock.dto.WarehouseDTO">
+	    SELECT 
+	        w.warehouse_id as warehouseId,
+	        w.warehouse_name as warehouseName,
+	        w.warehouse_type as warehouseType,
+	        w.warehouse_location as warehouseLocation,
+	        w.emp_id as empId,
+	        e.emp_name as empName
+	    FROM warehouse w
+	    LEFT JOIN employee e ON w.emp_id = e.emp_id
+	    WHERE w.warehouse_id = #{warehouseId}
+	</select>
+	
+	<!-- 창고 재고 레이아웃 조회 -->
+	<select id="selectWarehouseStockLayout" resultType="map">
+	    SELECT 
+	        il.location_id as "locationId",
+	        il.loc_zone as "zone",
+	        il.loc_rack as "rack",
+	        il.loc_level as "level",
+	        il.loc_cell as "cell",
+	        wi.manage_id as "manageId",
+	        wi.material_id as "materialId",
+	        wi.product_id as "productId",
+	        COALESCE(m.material_name, p.product_name, '비어있음') as "itemName",
+	        COALESCE(m.material_id, p.product_id, '') as "itemCode",
+	        COALESCE(wi.item_amount, 0) as "currentQty",
+	        COALESCE(wi.max_amount, 1000) as "maxQty",
+	        CASE 
+	            WHEN wi.item_amount IS NULL THEN 0
+	            ELSE ROUND(wi.item_amount * 100.0 / COALESCE(wi.max_amount, 1000), 1)
+	        END as "usagePercent",
+	        wi.emp_id as "empId",
+	        e.emp_name as "empName",
+	        TO_CHAR(wi.update_date, 'YYYY-MM-DD HH24:MI') as "updateDate"
+	    FROM item_location il
+	    LEFT JOIN warehouse_item wi ON il.location_id = wi.location_id AND wi.use_yn = 'Y'
+	    LEFT JOIN material m ON wi.material_id = m.material_id
+	    LEFT JOIN product p ON wi.product_id = p.product_id
+	    LEFT JOIN employee e ON wi.emp_id = e.emp_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    ORDER BY il.loc_zone, il.loc_rack, il.loc_level DESC, il.loc_cell
+	</select>
+	
+	<!-- 위치 상세 조회 -->
+	<select id="selectLocationDetail" resultType="map">
+	    SELECT 
+	        il.location_id as "locationId",
+	        il.warehouse_id as "warehouseId",
+	        w.warehouse_name as "warehouseName",
+	        il.loc_zone as "zone",
+	        il.loc_rack as "rack",
+	        il.loc_level as "level",
+	        il.loc_cell as "cell",
+	        wi.manage_id as "manageId",
+	        COALESCE(m.material_id, p.product_id) as "itemCode",
+	        COALESCE(m.material_name, p.product_name) as "itemName",
+	        COALESCE(m.unit, p.unit) as "unit",
+	        wi.item_amount as "currentQty",
+	        wi.max_amount as "maxQty",
+	        wi.emp_id as "empId",
+	        e.emp_name as "empName",
+	        TO_CHAR(wi.create_date, 'YYYY-MM-DD') as "createDate",
+	        TO_CHAR(wi.update_date, 'YYYY-MM-DD HH24:MI') as "lastUpdate",
+	        wi.lot_id as "lotId"
+	    FROM item_location il
+	    LEFT JOIN warehouse_item wi ON il.location_id = wi.location_id
+	    LEFT JOIN warehouse w ON il.warehouse_id = w.warehouse_id
+	    LEFT JOIN material m ON wi.material_id = m.material_id
+	    LEFT JOIN product p ON wi.product_id = p.product_id
+	    LEFT JOIN employee e ON wi.emp_id = e.emp_id
+	    WHERE il.location_id = #{locationId}
+	</select>
+	
+	<!-- 창고 통계 쿼리들 -->
+	<select id="getTotalLocations" resultType="int">
+	    SELECT COUNT(*) FROM item_location 
+	    WHERE warehouse_id = #{warehouseId} AND zone_yn = 'Y'
+	</select>
+	
+	<select id="getUsedLocations" resultType="int">
+	    SELECT COUNT(DISTINCT wi.location_id)
+	    FROM warehouse_item wi
+	    INNER JOIN item_location il ON wi.location_id = il.location_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND wi.item_amount > 0
+	    AND wi.use_yn = 'Y'
+	</select>
+	
+	<select id="getTotalStockInWarehouse" resultType="int">
+	    SELECT NVL(SUM(wi.item_amount), 0)
+	    FROM warehouse_item wi
+	    INNER JOIN item_location il ON wi.location_id = il.location_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND wi.use_yn = 'Y'
+	</select>
+	
+	<!-- 창고 내 빈 위치 수 조회 -->
+	<select id="getEmptyLocationCnt" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM item_location il
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    AND NOT EXISTS (
+	        SELECT 1 FROM warehouse_item wi
+	        WHERE wi.location_id = il.location_id
+	        AND wi.item_amount > 0
+	        AND wi.use_yn = 'Y'
+	    )
+	</select>
+	<!--=======================-->
+	<select id="getUnstartedWorkOrder" resultType="map">
+	    SELECT work_order_id as "workOrderId"
+    FROM work_order
+    WHERE plan_id = #{planId}
+    AND work_order_status = '미착수'
+    AND ROWNUM = 1
 	</select>
 	
 </mapper>

@@ -783,6 +783,10 @@ public class WareService {
         String materialId = (String) output.get("MATERIAL_ID");
         String productId = (String) output.get("PRODUCT_ID");
         
+        // work_order_id 먼저 가져오기
+        Integer workOrderId = output.get("WORK_ORDER_ID") != null ? 
+            ((Number) output.get("WORK_ORDER_ID")).intValue() : null;
+        
         if(materialId == null && productId == null) {
             throw new RuntimeException("출고할 품목 정보가 없습니다.");
         }
@@ -798,10 +802,6 @@ public class WareService {
             
             wareMapper.reduceMaterialWarehouseStock(materialId, warehouseId, locationId, outCount);
             wareMapper.reduceMaterialQuantity(materialId, outCount);
-            
-            // *** work_order_id 11번 업데이트 추가 ***
-            wareMapper.updateOutputWorkOrder(outId, 11);
-            log.info("work_order_id 11번으로 업데이트 완료");
         } else if(productId != null) {
             // Product 처리
             log.info("Product 출고: productId={}, warehouseId={}, locationId={}, qty={}", 
@@ -812,8 +812,15 @@ public class WareService {
         // 출고 상태 변경
         wareMapper.updateOutputType(outId, "출고완료");
         
+        // 세션 설정
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", outId);
+        
+        // work_order_id도 세션에 저장 (자재 출고인 경우에만 의미있음)
+        if(workOrderId != null) {
+            session.setAttribute("workOrderId", workOrderId);
+            log.info("work_order_id {} 세션 저장", workOrderId);
+        }
     }
 
     // Product 재고 차감 (warehouse_item 차감 후 product 차감)
@@ -1017,7 +1024,8 @@ public class WareService {
     
     @Transactional
     public String addProductionOutputBatch(String planId, List<Map<String, Object>> items, String empId) {
-        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+    	log.info("=== 생산계획 출고 시작 - planId: [{}] ===", planId);
+    	String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
         if(batchCount == null) batchCount = 0;
         
@@ -1026,15 +1034,30 @@ public class WareService {
         Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
         if(todayTotalCount == null) todayTotalCount = 0;
         
+        // work_order_id 조회 추가
+        Map<String, Object> workOrder = wareMapper.getUnstartedWorkOrder(planId);
+        log.info("조회된 workOrder: {}", workOrder);
+        Integer workOrderId = null;
+        if(workOrder != null && workOrder.get("workOrderId") != null) {
+            workOrderId = ((Number) workOrder.get("workOrderId")).intValue();
+            log.info("plan_id {}의 미착수 work_order_id: {}", planId, workOrderId);
+        }
+        
         for(Map<String, Object> item : items) {
             todayTotalCount++;
             String outId = "OUT" + today + String.format("%04d", todayTotalCount);
+            
+            log.info("생산계획 자재 출고 등록: {}", outId);
             
             item.put("outId", outId);
             item.put("batchId", batchId);
             item.put("empId", empId);
             item.put("outType", "출고대기");
             item.put("planId", planId);
+            
+            if(workOrderId != null) {
+                item.put("workOrderId", workOrderId); 
+            }
             
             wareMapper.insertOutput(item);
         }
@@ -1121,5 +1144,38 @@ public class WareService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getProductsForInput() {
         return wareMapper.selectProductsForInput();
+    }
+    
+    //====================================================================
+ // 창고 정보 조회
+    @Transactional(readOnly = true)
+    public WarehouseDTO getWarehouseInfo(String warehouseId) {
+        return wareMapper.selectWarehouseInfoById(warehouseId);
+    }
+
+    // 창고 재고 레이아웃 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getWarehouseStockLayout(String warehouseId) {
+        return wareMapper.selectWarehouseStockLayout(warehouseId);
+    }
+
+    // 창고 요약 정보
+    @Transactional(readOnly = true)
+    public Map<String, Object> getWarehouseSummary(String warehouseId) {
+        Map<String, Object> summary = new HashMap<>();
+        
+        summary.put("emptyLocations", wareMapper.getEmptyLocationCnt(warehouseId));
+        
+        summary.put("totalLocations", wareMapper.getTotalLocations(warehouseId));
+        summary.put("usedLocations", wareMapper.getUsedLocations(warehouseId));
+        summary.put("totalStock", wareMapper.getTotalStockInWarehouse(warehouseId));
+        
+        return summary;
+    }
+
+    // 위치별 상세 정보
+    @Transactional(readOnly = true)
+    public Map<String, Object> getLocationDetail(String locationId) {
+        return wareMapper.selectLocationDetail(locationId);
     }
 }
