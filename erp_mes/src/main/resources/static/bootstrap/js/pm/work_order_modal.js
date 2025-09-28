@@ -19,12 +19,14 @@ document.getElementById("planSelect").addEventListener("change", async (e) => {
 		// 등록용 히든값들
 		document.getElementById("plan_id").value = dataPlan.planId;
 		document.getElementById("bom_id").value = dataPlan.bomId;
+		console.log("planId:", dataPlan.planId, "bomId:", dataPlan.bomId);
 
         // BOM + 자재 재고 가져오기
         const resBom = await fetch(`/pm/workOderInventory?plan_id=${planId}`);
         if (!resBom.ok) throw new Error("자재 정보 불러오기 실패");
 
         const bomList = await resBom.json();
+		console.log("bomList:", bomList);
 
         // div#MATERIAL_CNT 초기화
         const materialDiv = document.getElementById("MATERIAL_CNT");

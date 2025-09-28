@@ -11,6 +11,7 @@
 		FROM product_plan pp
 		JOIN product p
 		ON pp.product_id = p.product_id
+		ORDER BY pp.plan_id
 	</select>
 
 	
@@ -36,6 +37,7 @@
 		JOIN orders o 
 		ON od.order_id = o.order_id
 		WHERE order_detail_status = 'RECEIVED'
+		ORDER BY od.order_id
 	</select>
 	
 	<!-- 등록된 수주를 클릭해서 해당 정보값 들고오기 -->
@@ -77,6 +79,7 @@
 		SELECT *
 		FROM work_order w
 		JOIN employee e ON w.emp_id = e.emp_id
+		ORDER BY w.work_order_id
 	</select>
 
 	<!-- possible한 생산계획만 들고오기 -->	
@@ -84,9 +87,10 @@
 		SELECT *
 		FROM product_plan
 		WHERE plan_status = 'POSSIBLE'
+		ORDER BY plan_id
 	</select>
 	
-	<!-- 생산계획 아이디로 제품명과 생산수량 라우트 그룹 라인명 들고오기 -->	
+	<!-- 생산계획 아이디로 제품명과 생산수량 들고오기 -->	
 	<select id="getWorkOderInfo" resultType="com.erp_mes.mes.pm.dto.ProductPlanDTO">
 		SELECT DISTINCT
 		    pp.plan_id,
@@ -136,6 +140,7 @@
         )
 	</insert>
 	
+	<!-- 작업지시 등록하면 해당 생산계획 상태 변경 -->
 	<update id="updatePlanStatus" parameterType="string">
 	    UPDATE product_plan
 	    SET plan_status = 'IMPOSSIBLE'
