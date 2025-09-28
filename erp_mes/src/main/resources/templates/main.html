@@ -42,15 +42,22 @@
 						</div>
 						<div class="card-body">
 							<div class="d-flex align-items-center mb-3">
-								<label for="commute_start_time" class="mr-2">출근시간 :</label> <input
+								<label for="commute_start_time" class="mr-2">출근시간 :</label> 
+								<input
 									type="text" id="commute_start_time" class="form-control"
-									disabled>
+									disabled
+									th:value="${commuteDTOList.size() > 0 && commuteDTOList[0].checkInTime != null ? #temporals.format(commuteDTOList[0].checkInTime, 'HH:mm:ss') : ''}">
 							</div>
 							<div class="d-flex align-items-center mb-3">
-								<label for="commute_end_time" class="mr-2">퇴근시간 :</label> <input
-									type="text" id="commute_end_time" class="form-control" disabled>
+								<label for="commute_end_time" class="mr-2">퇴근시간 :</label> 
+								<input
+									type="text" id="commute_end_time" class="form-control" disabled
+									th:value="${commuteDTOList.size() > 0 && commuteDTOList[0].checkOutTime != null ? #temporals.format(commuteDTOList[0].checkOutTime, 'HH:mm:ss') : ''}">>
 							</div>
-							<button class="btn btn-primary btn-block">출퇴근 관리</button>
+							<div class="d-flex align-items-center gap-4">
+								<button id="checkInBtn" class="btn btn-success btn-sm me-3" style="min-width: 80px; margin-right:100px;">출근</button>
+							    <button id="checkOutBtn" class="btn btn-success btn-sm" style="min-width: 80px; margin-right:190px;">퇴근</button>
+							</div>
 						</div>
 					</div>
 
@@ -247,5 +254,6 @@
 	</th:block>
 	<th:block layout:fragment="script">
 		<script th:src="@{/bootstrap/js/groupware/schedule.js}"></script>
+		<script th:src="@{/bootstrap/js/attendance/check_in_out.js}"></script>
 	</th:block>
 </html>

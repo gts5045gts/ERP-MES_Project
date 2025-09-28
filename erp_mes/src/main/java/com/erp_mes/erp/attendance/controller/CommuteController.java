@@ -93,6 +93,7 @@ public class CommuteController {
 
 		return "/commute/commute_list";
 	}
+	
 
 	// 출근버튼
 	@ResponseBody
