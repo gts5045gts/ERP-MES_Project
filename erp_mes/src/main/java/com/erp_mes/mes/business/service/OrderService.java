@@ -81,7 +81,7 @@ public class OrderService {
 
 	// 수주 취소 처리
 	@Transactional
-    public void cancelOrder(String orderId) {
+    public void cancelOrder(String orderId, String reason) {
         String currentStatus = orderMapper.findOrderStatus(orderId);
 
         if ("CANCELED".equals(currentStatus)) {
@@ -92,6 +92,9 @@ public class OrderService {
         
         // 해당 수주에 속한 모든 수주 상세 목록(orders_detail)의 상태를 'CANCELED'로 업데이트
         orderMapper.updateOrderDetailsStatus(orderId, "CANCELED");
+        
+        // 취소 사유
+        orderMapper.updateReason(orderId, reason);
     }
 	
 	// 수주 수정

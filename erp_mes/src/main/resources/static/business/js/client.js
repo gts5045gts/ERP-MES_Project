@@ -8,12 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		minBodyHeight: 200,
 		emptyMessage: '조회결과가 없습니다.',
 		columns: [
-			{ header: '거래처 번호', name: 'clientId', align: 'center' },
+			{ header: '거래처 번호', name: 'clientId', align: 'center', sortable: true },
 			{ header: '거래처명', name: 'clientName', align: 'center' },
 			{ header: '거래처 유형', name: 'clientType', align: 'center' },
 			{ header: '사업자 번호', name: 'businessNumber', align: 'center' },
 			{ header: '대표자명', name: 'ceoName', align: 'center' },
-			{ header: '주소', name: 'clientAddress', align: 'left' },
+			{ header: '주소', name: 'clientAddress', align: 'left', width: 300},
 			{ header: '전화번호', name: 'clientPhone', align: 'center' },
 			{ header: '거래 여부', name: 'clientStatus', align: 'center' }
 		],
@@ -33,6 +33,25 @@ document.addEventListener("DOMContentLoaded", () => {
 	const addBtn = document.getElementById("addBtn");
 	if (!isAUTLevel) {
 		if (addBtn) addBtn.style.display = "none";
+	}
+	
+	// 사업자등록번호 입력 제약 로직: 숫자만, 10자리 제한
+	const businessNumberInput = document.getElementById("businessNumber");
+
+	if (businessNumberInput) {
+	    businessNumberInput.addEventListener('input', function(e) {
+	        let value = e.target.value;
+
+	        // 1. 숫자 이외의 문자 제거 (숫자만 입력 가능)
+	        value = value.replace(/[^0-9]/g, '');
+
+	        // 2. 최대 10자리로 제한
+	        if (value.length > 10) {
+	            value = value.substring(0, 10);
+	        }
+
+	        e.target.value = value;
+	    });
 	}
 
 	// 페이지 처음 로딩 시 전체 목록 불러오기
@@ -137,38 +156,51 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 모달 폼 제출 이벤트 (등록, 수정 같이 사용)
 	form.addEventListener("submit", async (event) => {
 		event.preventDefault();
+		
+		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
 		const businessNumber = document.getElementById("businessNumber").value.trim();
 
-		//  사업자번호 검증 API 호출
-		try {
-			const validateResponse = await fetch("/business/api/validateBizNo", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ businessNumber })
-			});
-
-			if (!validateResponse.ok) {
-				alert("사업자등록번호 검증 요청 실패!");
-				return;
-			}
-
-			const validateResult = await validateResponse.json();
-			console.log("검증 결과:", validateResult);
-
-			// 공공데이터 응답 예시: {"status_code":"OK","data":[{"b_no":"1234567890","b_stt":"계속사업자","valid":"01"}]}
-			const validCode = validateResult.data[0].valid; // 01: 유효, 02: 폐업, 03: 휴업
-
-			if (validCode !== "01") {
-				alert("유효하지 않은 사업자등록번호입니다. (폐업/휴업/미등록)");
-				return;
-			}
-
-		} catch (error) {
-			console.error("검증 API 호출 에러:", error);
-			alert("사업자등록번호 검증 중 오류가 발생했습니다.");
-			return;
+		// 검증: 사업자등록번호가 10자리인지 확인
+		if (businessNumber.length !== 10) {
+			alert("사업자등록번호는 10자리 숫자로 입력해야 합니다.");
+			document.getElementById("businessNumber").focus();
+			return; 
 		}
+		
+		//  사업자번호 검증 API 호출
+//		try {
+//			const validateResponse = await fetch("/business/api/validateBizNo", {
+//				method: "POST",
+//				headers: { 
+//					"Content-Type": "application/json",
+//					[csrfHeader]: csrfToken
+//				},
+//				body: JSON.stringify({ businessNumber })
+//			});
+//
+//			if (!validateResponse.ok) {
+//				alert("사업자등록번호 검증 요청 실패!");
+//				return;
+//			}
+//
+//			const validateResult = await validateResponse.json();
+//			console.log("검증 결과:", validateResult);
+//
+//			// 공공데이터 응답 예시: {"status_code":"OK","data":[{"b_no":"1234567890","b_stt":"계속사업자","valid":"01"}]}
+//			const validCode = validateResult.data[0].valid; // 01: 유효, 02: 폐업, 03: 휴업
+//
+//			if (validCode !== "01") {
+//				alert("유효하지 않은 사업자등록번호입니다. (폐업/휴업/미등록)");
+//				return;
+//			}
+//
+//		} catch (error) {
+//			console.error("검증 API 호출 에러:", error);
+//			alert("사업자등록번호 검증 중 오류가 발생했습니다.");
+//			return;
+//		}
 
 		// 필수 입력 필드 확인
 		const requiredFields = [
@@ -189,9 +221,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				return; // 함수 실행 중단
 			}
 		}
-
-		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
 		const formData = {
 			clientId: document.getElementById("clientId").value,
@@ -221,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 
 			if (response.ok) {
-				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록이 성공적으로 제출되었습니다.');
+				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록 완료!.');
 				clientAddModal.hide();
 				loadClients();
 			} else {
