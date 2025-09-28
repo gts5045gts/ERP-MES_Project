@@ -29,9 +29,9 @@
 	
 	                    alert(`출근 완료: ${formatted}`);
 						
-						$("#commute_start_time").val(formatted);
+//						$("#commute_start_time").val(formatted);
 						
-//	                    location.reload(); // 필요 시 리스트 새로고침
+	                    location.reload(); // 필요 시 리스트 새로고침
 	                }
 	            },
 	            error: function(xhr) {
@@ -80,8 +80,8 @@
 	                                      String(dateObj.getSeconds()).padStart(2, '0');
 	
 	                    alert(`퇴근 완료: ${formatted}`);
-						$("#commute_end_time").val(formatted);
-//	                    location.reload(); // 리스트 새로고침
+//						$("#commute_end_time").val(formatted);
+	                    location.reload(); // 리스트 새로고침
 	                }
 	            },
 	            error: function(xhr) {
