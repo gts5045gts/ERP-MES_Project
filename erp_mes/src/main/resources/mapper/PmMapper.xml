@@ -31,11 +31,6 @@
 	
 		<!-- 등록된(received) 수주만 -->
 	<select id="getOrderId" resultType="com.erp_mes.mes.pm.dto.OrdersDTO">
-<!-- 		SELECT od.id, od.order_id, od.order_qty, od.order_detail_status, o.delivery_date, od.product_id, od.product_name -->
-<!-- 		FROM orders_detail od -->
-<!-- 		JOIN orders o -->
-<!-- 		ON od.order_id = o.order_id -->
-<!-- 		WHERE order_status = 'RECEIVED' -->
 		SELECT od.id, od.order_id, od.product_name, od.order_qty, od.order_detail_status, o.delivery_date
 		FROM orders_detail od 
 		JOIN orders o 
@@ -141,6 +136,12 @@
         )
 	</insert>
 	
+	<update id="updatePlanStatus" parameterType="string">
+	    UPDATE product_plan
+	    SET plan_status = 'IMPOSSIBLE'
+	    WHERE plan_id = #{planId}
+	</update>
+	
 	<!-- bom의 자재, 재고량 조회 -->
 	<select id="getMaterialsByBomId" resultType="com.erp_mes.mes.pm.dto.BomDTO">
 	    SELECT 
@@ -159,6 +160,7 @@
 	    WHERE b.bom_id = #{bomId}
 	</select>
 	
+	<!-- 부족한 자재 정보 -->
 	<select id="getPurchaseInfo" resultType="com.erp_mes.mes.pm.dto.BomDTO">
 	    SELECT 
 	        b.material_id,
