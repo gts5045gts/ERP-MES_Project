@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 
 			if (response.ok) {
-				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록 완료!.');
+				alert(isEditMode ? '거래처가 수정되었습니다.' : '거래처 등록 완료!');
 				clientAddModal.hide();
 				loadClients();
 			} else {

@@ -585,20 +585,4 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	});
 
-	// 검색 버튼 클릭 이벤트 -- 아직 미구현
-	//	document.getElementById("searchBtn").addEventListener("click", () => {
-	//		const status = document.getElementById("shipmentStatus").value;
-	//		const keyword = document.getElementById("cliSearch").value;
-	//
-	//		let url = `/business/api/shipments/search?shipmentStatus=${status}&clientName=${encodeURIComponent(keyword)}`;
-	//
-	//		fetch(url)
-	//			.then(response => response.json())
-	//			.then(data => {
-	//				shipmentGrid.resetData(data);
-	//				shipmentDetailGrid.resetData([]); // 검색 시 상세 그리드 초기화
-	//			})
-	//			.catch(error => console.error("출하 목록 검색 오류:", error));
-	//	});
-
 });
