@@ -112,7 +112,8 @@
 			p.emp_id AS empId,
 			e.emp_name AS empName,
 			c.client_name AS clientName,
-			p.purchase_type AS purchaseType
+			p.purchase_type AS purchaseType,
+			p.reason
 		FROM purchase p
 		LEFT JOIN employee e ON p.emp_id = e.emp_id
 		LEFT JOIN client c ON p.client_id = c.client_id
@@ -237,6 +238,14 @@
         WHERE 
         	purchase_id = #{purchaseId}
     </update>
+    <update id="updateReason">
+    	UPDATE
+    		purchase
+    	SET
+    		reason = #{reason}
+    	WHERE
+    		purchase_id = #{purchaseId}
+    </update>  
     
 	<select id="getWorkOrderShortages" resultType="com.erp_mes.mes.pm.dto.WorkOrderShortageDTO">
         SELECT

@@ -954,30 +954,34 @@ function showDetail(batchId, type) {
                 }
                 
                 let actionButtons = '';
-                if(type === '생산완료') {
-                    // 완제품은 자동 처리되므로 버튼 없음
-                    if(item.inStatus === '입고완료') {
-                        actionButtons = '<span class="text-success">✔ 자동완료</span>';
-                    } else {
-                        actionButtons = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i></span>';
-                    }
-                } else {
-                    // 부품/반제품은 기존 로직
-                    if(item.inStatus === '입고대기') {
-                        actionButtons = `
-                            <button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">
-                                검사완료
-                            </button>
-                            <button class="btn btn-sm btn-danger ml-1" onclick="openRejectModal('${item.inId}')">
-                                반려
-                            </button>
-                        `;
-                    } else if(item.inStatus === '입고반려') {
-                        actionButtons = `<span class="text-danger" title="${item.inReason || '반려됨'}">반려</span>`;
-                    } else {
-                        actionButtons = '<span class="text-success">✔ 완료</span>';
-                    }
-                }
+				if(type === '생산완료') {
+				    if(item.inStatus === '입고완료') {
+				        actionButtons = '<span class="text-success">✔ 완료</span>';
+				    } else if (item.inStatus === '입고대기') {
+				        actionButtons = `
+				            <button class="btn btn-sm btn-success" onclick="completeProductInput('${item.inId}')">
+				                <i class="fas fa-check"></i> 입고 완료
+				            </button>
+				        `;
+				    } else if (item.inStatus === '입고반려') {
+				        actionButtons = `<span class="text-danger" title="${item.inReason || '반려됨'}">반려</span>`;
+				    }
+				} else {
+				    if(item.inStatus === '입고대기') {
+				        actionButtons = `
+				            <button class="btn btn-sm btn-success" onclick="inspectOne('${item.inId}')">
+				                검사완료
+				            </button>
+				            <button class="btn btn-sm btn-danger ml-1" onclick="openRejectModal('${item.inId}')">
+				                반려
+				            </button>
+				        `;
+				    } else if(item.inStatus === '입고반려') {
+				        actionButtons = `<span class="text-danger" title="${item.inReason || '반려됨'}">반려</span>`;
+				    } else {
+				        actionButtons = '<span class="text-success">✔ 완료</span>';
+				    }
+				}
                 
                 let locationDisplay = '-';
                 if(item.inStatus === '입고완료' && item.locationId) {
@@ -1016,6 +1020,29 @@ function showDetail(batchId, type) {
             $('#detailModal').modal('show');
         }
     });
+}
+
+// 완제품 입고 완료 버튼 처리 함수
+function completeProductInput(inId) {
+    if(confirm('이 제품을 입고완료 하시겠습니까?\nLOT번호가 부여됩니다.')) {
+        $.ajax({
+            url: `/inventory/api/inputs/${inId}/complete-product`, 
+            type: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+            },
+            success: function(result) {
+                if(result.success) {
+                    alert('입고완료! LOT번호가 부여되었습니다.');
+                    refreshDetailModal(); 
+                    loadProductGroupedList(); 
+                }
+            },
+            error: function(xhr) {
+                alert('처리 실패: ' + xhr.responseJSON.message);
+            }
+        });
+    }
 }
 
 //반려 모달 열기

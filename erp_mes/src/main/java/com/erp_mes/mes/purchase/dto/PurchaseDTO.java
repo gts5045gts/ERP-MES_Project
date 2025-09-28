@@ -24,6 +24,7 @@ public class PurchaseDTO {
 	private String empId;					// 발주 등록자 (= 로그인한 사용자)
 	private LocalDateTime updateAt;			// 수정일
 	private String purchaseType;
+	private String reason; 					// 취소사유
 	
 	private String clientName; // 조회용
 	private String empName; // 조회용

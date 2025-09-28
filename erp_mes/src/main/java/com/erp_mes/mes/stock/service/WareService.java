@@ -145,8 +145,8 @@ public class WareService {
             params.put("productId", params.get("productId"));
             wareMapper.insertInput(params);
             
-            String empId = (String) params.get("empId");
-            completeInput(inId, empId);
+//            String empId = (String) params.get("empId");
+//            completeInput(inId, empId);
             
             log.info("완제품 입고 처리: {}", inId);
 
@@ -268,6 +268,9 @@ public class WareService {
                 log.error("발주 상태 업데이트 실패", e);
                 // 발주 처리 실패해도 입고는 계속 진행
             }
+            firstLocation = distributeToWarehouseItemsForMaterial(
+                    warehouseId, materialId, inCount, empId
+            );
         } else if(productId != null) {
             // 완제품인 경우 - 발주 처리 안 함
             log.info("완제품 입고 - 발주 처리 스킵 (productId: {})", productId);
@@ -767,6 +770,7 @@ public class WareService {
 
     // 출고 완료 처리
     @Transactional
+    @TrackLot(tableName = "output", pkColumnName = "out_id")
     public void completeOutput(String outId, String empId) {
         Map<String, Object> output = wareMapper.selectOutputById(outId);
         
@@ -807,6 +811,9 @@ public class WareService {
         
         // 출고 상태 변경
         wareMapper.updateOutputType(outId, "출고완료");
+        
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", outId);
     }
 
     // Product 재고 차감 (warehouse_item 차감 후 product 차감)

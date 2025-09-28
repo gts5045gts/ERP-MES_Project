@@ -41,13 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
-				{ header: '출하번호', name: 'shipmentId', align: 'center' },
+				{ header: '출하번호', name: 'shipmentId', align: 'center', sortable: true },
 				{ header: '수주번호', name: 'orderId', align: 'center' },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
 				{
 					header: '출하일', name: 'shipmentDate', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.split('T')[0];
@@ -57,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '납기일', name: 'deliveryDate', align: 'center',
+					sortable: true,
 					editor: {
 						type: 'datePicker',
 						options: {
@@ -114,8 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				{ header: '출하번호', name: 'shipmentId', align: 'center' },
 				{ header: '품목번호', name: 'productId', align: 'center' },
 				{ header: '품목명', name: 'productName', align: 'center' },
-				{ header: '수주수량', name: 'orderQty', align: 'center' },
-				{ header: '현재 출하수량', name: 'shipmentQty', align: 'center' },
+				{ header: '수주수량', name: 'orderQty', align: 'center', sortable: true },
+				{ header: '현재 출하수량', name: 'shipmentQty', align: 'center', sortable: true },
 				{
 					header: '진행상태', name: 'shipmentDetailStatus', align: 'center',
 					formatter: function(value) {
