@@ -18,8 +18,7 @@
 	
 <!-- 	출하 등록 모달창에서 선택한 수주의 상세목록을 불러옴 -->
 	<select id="getOrderDetailWithStockAndStatus" resultType="com.erp_mes.mes.business.dto.OrderDetailDTO">
-	
-	SELECT
+		SELECT
             od.order_id,
             od.product_id,
             od.product_name,

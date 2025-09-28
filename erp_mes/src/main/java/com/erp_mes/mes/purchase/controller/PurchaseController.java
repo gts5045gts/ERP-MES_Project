@@ -133,9 +133,10 @@ public class PurchaseController {
 	
 	// 발주 취소 
     @PutMapping("/api/purchase/{purchaseId}/cancel")
-    public ResponseEntity<?> cancelPurchase(@PathVariable("purchaseId") String purchaseId) {
+    public ResponseEntity<?> cancelPurchase(@PathVariable("purchaseId") String purchaseId, @RequestBody PurchaseDTO reason) {
         try {
-        	purchaseService.cancelPurchase(purchaseId);
+        	String cancelReason = reason.getReason();
+        	purchaseService.cancelPurchase(purchaseId, cancelReason);
             return ResponseEntity.ok(Map.of("purchaseId", purchaseId, "newStatus", "CANCELED"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

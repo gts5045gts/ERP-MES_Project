@@ -30,9 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const addBtn = document.getElementById("addBtn");
 	if (!isBUSTeam && !isAUTLevel) {
-	    if (addBtn) addBtn.style.display = "none";
+		if (addBtn) addBtn.style.display = "none";
 	}
-	
+
 	// 동적으로 수정 버튼 생성 (등록 버튼 옆에)
 	if (isBUSTeam || isAUTLevel) {
 		let editBtn = document.getElementById("editBtn");
@@ -85,12 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
-				{ header: '수주번호', name: 'orderId', align: 'center' },
+				{ header: '수주번호', name: 'orderId', align: 'center', sortable: true,},
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
 				{
 					header: '수주일', name: 'orderDate', align: 'center',
+					sortable: true,
 					// formatter 함수 추가
 					formatter: function(value) {
 						// value.value는 "2025-09-17T02:37:19"와 같은 형태
@@ -102,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '납기예정일', name: 'deliveryDate', align: 'center',
+					sortable: true,
 					editor: {
 						type: 'datePicker',
 						options: {
@@ -117,9 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						return '';
 					}
 				},
-				{ header: '수주수량', name: 'totalOrderQty', align: 'center' },
+				{ header: '수주수량', name: 'totalOrderQty', align: 'center', sortable: true,},
 				{
 					header: '수주금액', name: 'totalOrderPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -174,10 +177,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				{ header: '수주번호', name: 'orderId', align: 'center' },
 				{ header: '품목번호', name: 'productId', align: 'center' },
 				{ header: '품목명', name: 'productName', align: 'center' },
-				{ header: '수량', name: 'orderQty', align: 'center' },
+				{ header: '수량', name: 'orderQty', align: 'center', sortable: true },
 				{ header: '단위', name: 'unit', align: 'center' },
 				{
 					header: '단가', name: 'orderPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -187,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				},
 				{
 					header: '총금액', name: 'totalPrice', align: 'center',
+					sortable: true,
 					formatter: function(value) {
 						if (value.value) {
 							return value.value.toLocaleString();
@@ -232,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		// 페이지 로드 시 전체 수주 목록 불러오기
 		loadOrders();
 
+		
 		orderGrid.on('click', async (ev) => {
 			const rowData = orderGrid.getRow(ev.rowKey);
 
@@ -247,14 +253,26 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (isBUSTeam || isAUTLevel) {
 				if (ev.columnName === 'orderStatus') {
 					if (rowData.orderStatus === 'CANCELED') {
-						alert("이미 취소된 수주입니다.");
+						const reason = rowData.reason || "취소 사유가 등록되지 않았습니다.";
+						alert(`[취소된 수주]\n수주번호: ${rowData.orderId}\n\n취소 사유: ${reason}`);
 						return;
 					}
 					if (rowData.orderStatus === 'RECEIVED') {
 						editBtn.style.display = "none";
 
-						if (confirm("수주를 취소하시겠습니까?")) {
-//							comfirm -> prompt 로 변경해서 취소사유 입력할 수 있도록 해놓기
+						const cancelReason = prompt("수주를 취소하시겠습니까? 취소 사유를 입력해주세요.");
+
+						// 사용자가 '취소'를 누르거나, 아무것도 입력하지 않고 '확인'을 누른 경우 처리
+						if (cancelReason === null) {
+							// 사용자가 prompt 창에서 '취소' 버튼을 누름
+							return;
+						}
+
+						if (cancelReason.trim() === "") {
+							alert("취소 사유를 반드시 입력해야 합니다.");
+							return;
+						}
+
 							const orderId = rowData.orderId;
 							try {
 								const csrfToken = document.querySelector('meta[name="_csrf"]').content;
@@ -265,7 +283,8 @@ document.addEventListener("DOMContentLoaded", () => {
 									headers: {
 										"Content-Type": "application/json",
 										[csrfHeader]: csrfToken
-									}
+									},
+									body: JSON.stringify({ reason: cancelReason })
 								});
 
 								if (!res.ok) {
@@ -273,6 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
 								}
 
 								orderGrid.setValue(ev.rowKey, 'orderStatus', 'CANCELED');
+								orderGrid.setValue(ev.rowKey, 'reason', cancelReason);
 								alert("수주가 취소되었습니다.");
 
 								loadOrderDetails(orderId);
@@ -280,7 +300,6 @@ document.addEventListener("DOMContentLoaded", () => {
 								console.error("수주 취소 실패:", err);
 								alert("수주 취소 실패: " + err.message);
 							}
-						}
 					} else {
 						// '등록' 상태가 아닌 경우 (생산중, 출하진행중 )
 						alert("생산/출하 진행중이거나 완료된 수주는 취소할 수 없습니다.");
@@ -716,19 +735,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		renderSelectedItems();
 	};
 
-	//	// 품목 검색 버튼 이벤트
-	//	document.getElementById("searchProductBtn").addEventListener("click", () => {
-	//		const keyword = document.getElementById("productSearch").value;
-	//		fetch(`/business/api/products/search?keyword=${encodeURIComponent(keyword)}`)
-	//			.then(response => response.json())
-	//			.then(data => {
-	//				if (productListGrid) {
-	//					productListGrid.resetData(data);
-	//				}
-	//			})
-	//			.catch(error => console.error("품목 검색 오류:", error));
-	//	});
-
 	// ----------------------------------------------------------------------------------------------
 
 	// 폼 제출 이벤트 (수주 등록 및 수정)
@@ -759,16 +765,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		const items = selectedProducts.map(item => {
 			const orderQty = parseInt(item.qty) || 0;
 			const orderPrice = parseInt(item.price) || 0;
-			//			const orderQty = parseInt(item.orderQty ?? item.qty) || 0;
-			//			const orderPrice = parseInt(item.orderPrice ?? item.price) || 0;
 			return {
 				productId: item.productId,
 				productName: item.productName,
 				unit: item.unit,
 				orderQty: orderQty,
 				orderPrice: orderPrice,
-				totalPrice: orderQty * orderPrice,
-				//				deliveryDate: deliveryDate
+				totalPrice: orderQty * orderPrice
 			};
 		});
 
@@ -788,8 +791,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			totalOrderPrice: totalOrderPrice, // DTO 필드명
 			items: items
 		};
-
-		console.log("전송될 페이로드:", payload); // 이 부분을 추가하여 값 확인
 
 		const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;

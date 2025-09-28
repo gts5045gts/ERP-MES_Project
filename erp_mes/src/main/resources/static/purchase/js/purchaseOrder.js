@@ -75,21 +75,24 @@ document.addEventListener("DOMContentLoaded", () => {
 			minBodyHeight: 200,
 			emptyMessage: '조회결과가 없습니다.',
 			columns: [
-				{ header: '발주번호', name: 'purchaseId', align: 'center' },
+				{ header: '발주번호', name: 'purchaseId', align: 'center', sortable: true },
 				{ header: '거래처명', name: 'clientName', align: 'center' },
 				{ header: '등록자 사원번호', name: 'empId', align: 'center' },
 				{ header: '등록자', name: 'empName', align: 'center' },
 				{
 					header: '발주일', name: 'purchaseDate', align: 'center',
+					sortable: true,
 					formatter: (value) => value.value ? value.value.split('T')[0] : ''
 				},
 				{
 					header: '입고요청일', name: 'inputDate', align: 'center',
+					sortable: true,
 					formatter: (value) => value.value ? value.value.split('T')[0] : ''
 				},
-				{ header: '발주수량', name: 'totalPurchaseQty', align: 'center' },
+				{ header: '발주수량', name: 'totalPurchaseQty', align: 'center', sortable: true },
 				{
 					header: '발주금액', name: 'totalPurchasePrice', align: 'center',
+					sortable: true, 
 					formatter: (value) => value.value ? value.value.toLocaleString() : ''
 				},
 				{ header: '발주구분', name: 'purchaseType', align: 'center' },
@@ -135,14 +138,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				{ header: '발주번호', name: 'purchaseId', align: 'center' },
 				{ header: '자재번호', name: 'materialId', align: 'center' },
 				{ header: '자재명', name: 'materialName', align: 'center' },
-				{ header: '수량', name: 'purchaseQty', align: 'center' },
+				{ header: '수량', name: 'purchaseQty', align: 'center', sortable: true },
 				{ header: '단위', name: 'unit', align: 'center' },
 				{
 					header: '단가', name: 'purchasePrice', align: 'center',
+					sortable: true,
 					formatter: (value) => value.value ? value.value.toLocaleString() : ''
 				},
 				{
 					header: '총금액', name: 'totalPrice', align: 'center',
+					sortable: true,
 					formatter: (value) => value.value ? value.value.toLocaleString() : ''
 				},
 				{
@@ -194,7 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 				if (ev.columnName === 'purchaseStatus') {
 					if (rowData.purchaseStatus === 'CANCELED') {
-						alert("이미 취소된 발주입니다.");
+						const reason = rowData.reason || "취소 사유가 등록되지 않았습니다.";
+						alert(`[취소된 발주]\n발주번호: ${rowData.purchaseId}\n\n취소 사유: ${reason}`);
 						return;
 					}
 
@@ -203,26 +209,48 @@ document.addEventListener("DOMContentLoaded", () => {
 						return;
 					}
 
-					editBtn.style.display = "none";
-					if (confirm("발주를 취소하시겠습니까?")) {
+					if (rowData.purchaseStatus === 'REQUEST') {
+						editBtn.style.display = "none";
+					
+						const cancelReason = prompt("발주를 취소하시겠습니까? 취소 사유를 입력해주세요.");
+					
+						// 사용자가 '취소'를 누르거나, 아무것도 입력하지 않고 '확인'을 누른 경우 처리
+						if (cancelReason === null) {
+							// 사용자가 prompt 창에서 '취소' 버튼을 누름
+							return;
+						}
+
+						if (cancelReason.trim() === "") {
+							alert("취소 사유를 반드시 입력해야 합니다.");
+							return;
+						}
+					
 						const purchaseId = rowData.purchaseId;
 						try {
 							const csrfToken = document.querySelector('meta[name="_csrf"]').content;
 							const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 							const res = await fetch(`/purchase/api/purchase/${purchaseId}/cancel`, {
 								method: "PUT",
-								headers: { "Content-Type": "application/json", [csrfHeader]: csrfToken }
+								headers: {
+									"Content-Type": "application/json",
+									[csrfHeader]: csrfToken
+								},
+								body: JSON.stringify({ reason: cancelReason })
 							});
+							
 							if (!res.ok) throw new Error(await res.text());
+							
 							purchaseGrid.setValue(ev.rowKey, 'purchaseStatus', 'CANCELED');
+							purchaseGrid.setValue(ev.rowKey, 'reason', cancelReason);
 							alert("발주가 취소되었습니다.");
+							
 							loadPurchaseDetails(purchaseId);
 						} catch (err) {
 							console.error("발주 취소 실패:", err);
 							alert("발주 취소 실패: " + err.message);
 						}
+						return;
 					}
-					return;
 				}
 			}
 

@@ -50,6 +50,9 @@ public interface PmMapper {
 	// 작업지시 등록
 	int insertWorkOrder(WorkOrderDTO workOrderDTO);
 
+	// 작업지시 등록하면 생산계획 상태값 변경
+	void updatePlanStatus(String planId);
+	
 	// bomId로 자재 찾기
 	List<BomDTO> getMaterialsByBomId(String bomId);
 
@@ -61,9 +64,8 @@ public interface PmMapper {
 
 	// 발주 등록
 	int insertPusrchase(WorkOrderShortageDTO workOrderShortageDTO);
+
 	
-	// 재고 부족한거 등록
-//	int insertWorkOrderShortage(WorkOrderShortageDTO shortage);
 
 	
 

@@ -136,6 +136,12 @@
         )
 	</insert>
 	
+	<update id="updatePlanStatus" parameterType="string">
+	    UPDATE product_plan
+	    SET plan_status = 'IMPOSSIBLE'
+	    WHERE plan_id = #{planId}
+	</update>
+	
 	<!-- bom의 자재, 재고량 조회 -->
 	<select id="getMaterialsByBomId" resultType="com.erp_mes.mes.pm.dto.BomDTO">
 	    SELECT 
@@ -154,6 +160,7 @@
 	    WHERE b.bom_id = #{bomId}
 	</select>
 	
+	<!-- 부족한 자재 정보 -->
 	<select id="getPurchaseInfo" resultType="com.erp_mes.mes.pm.dto.BomDTO">
 	    SELECT 
 	        b.material_id,

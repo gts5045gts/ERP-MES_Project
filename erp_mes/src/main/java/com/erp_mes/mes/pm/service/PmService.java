@@ -116,6 +116,9 @@ public class PmService {
 		// 작업지시 등록 (부족 여부에 따라 상태값 다르게)
 		pmMapper.insertWorkOrder(workOrderDTO);
 		
+		// 생산계획 상태값 변경
+		pmMapper.updatePlanStatus(workOrderDTO.getPlanId());
+		
 	}
 
 	// 발주 자재정보
