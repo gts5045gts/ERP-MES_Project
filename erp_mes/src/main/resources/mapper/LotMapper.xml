@@ -30,46 +30,48 @@
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
   </select>
   
-  <select id="findAll" resultType="com.erp_mes.mes.plant.dto.ProcessDTO">
+  <select id="findByProcess" resultType="com.erp_mes.mes.plant.dto.ProcessDTO">
         SELECT 
-            r.route_id,
-            r.pro_seq,
-            r.note,
-            r.equip_id,
-            r.pro_id,
-            r.product_id,
-            
             p.pro_nm,
-            p.type_nm,
-            
-            e.equip_nm,
-            
-            d.product_name,
-            
-            r.material_id,
-            m.material_name
-            
+            p.type_nm
         FROM 
             process_routing r
         LEFT JOIN
             process p 
         ON 
             r.pro_id = p.pro_id
-        JOIN 
-            equipment e
-        ON 
-            r.equip_id = e.equip_id
-        JOIN
-            product d
-        ON
-            r.product_id = d.product_id
-        LEFT JOIN 
-            material m
-        on 
-            r.material_id = m.material_id
+
             
         WHERE r.product_id = #{productId}
         ORDER BY 
-            d.product_id, r.pro_seq ASC
+            r.pro_seq ASC
+    </select>
+    <select id="findDetail" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+        SELECT
+            w.result_id         AS resultId,
+            w.good_qty          AS goodQty,
+            w.defect_qty        AS defectQty,
+            w.updated_at        AS updatedAt,
+            w.defect_item_id    AS defectItemId,
+            
+            e.emp_name          AS empNm,
+            
+            o.work_order_id     AS workOrderId,
+            o.bom_id            AS bomId,
+            o.start_date        AS startDate,
+            o.end_date          AS endDate,
+            o.work_order_status AS workOrderStatus,
+            
+            pp.product_id       AS productId,
+            pp.plan_quantity    AS planQty,
+            prod.product_name   AS productNm
+                     
+        FROM work_order o
+            LEFT JOIN product_plan pp    ON o.plan_id = pp.plan_id
+            LEFT JOIN product prod       ON pp.product_id = prod.product_id
+            LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
+            LEFT JOIN employee e      ON e.emp_id = o.emp_id
+    
+        WHERE o.work_order_id = #{workOrderId}
     </select>
   </mapper>

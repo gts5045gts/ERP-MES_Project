@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
+import com.erp_mes.mes.lot.dto.LotDetailDTO;
 import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.trace.TrackLot;
+import com.erp_mes.mes.pop.dto.WorkResultDTO;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -79,12 +81,39 @@ public class LotController {
 		return "lot/lot_list";
 	}
 	
-	//요청 부분
-	@PostMapping("/getChildren/{productId}")
+	//자식 공정 가져오기
+	@PostMapping("/getChildren/process/{productId}")
 	@ResponseBody // ★ 반드시 붙이기
-	public List<Map<String, Object>> getChildren(@PathVariable("productId") String productId){
-	    List<Map<String, Object>> equipList = lotService.findAll(productId);
-		log.info("proList" + equipList.toString()); 
-		return equipList;
+	public List<Map<String, Object>> getProcess(@PathVariable("productId") String productId){
+	    List<Map<String, Object>> children = lotService.findByProcess(productId);
+//		log.info("proList" + children.toString()); 
+		return children;
+	}
+	
+	//자식 자재 가져오기
+	@PostMapping("/getChildren/material/{workOrderId}")
+	@ResponseBody // ★ 반드시 붙이기
+	public List<LotDetailDTO> getMaterial(@PathVariable("workOrderId") String workOrderId){
+	    List<LotDetailDTO> children = lotService.findByMaterial(workOrderId);
+		log.info("proList" + children.toString()); 
+		return children;
+	}
+	
+	//설비 가져오기
+	@PostMapping("/getChildren/equipment/{productId}")
+	@ResponseBody // ★ 반드시 붙이기
+	public List<LotDetailDTO> getEquipment(@PathVariable("productId") String productId){
+	    List<LotDetailDTO> children = lotService.findByEquipment(productId);
+		log.info("proList=====" + children.toString()); 
+		return children;
+	}
+	
+	//상세정보
+	@PostMapping("/getLotDetail/{workOrderId}")
+	@ResponseBody // ★ 반드시 붙이기
+	public List<WorkResultDTO> getLotDetail(@PathVariable("workOrderId") Long workOrderId){
+	    List<WorkResultDTO> orderDetail = lotService.findDetail(workOrderId);
+//		log.info("proList" + orderDetail.toString()); 
+		return orderDetail;
 	}
 }

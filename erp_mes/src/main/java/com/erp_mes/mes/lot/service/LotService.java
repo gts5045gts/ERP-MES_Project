@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
+import com.erp_mes.mes.lot.dto.LotDetailDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
@@ -24,6 +25,7 @@ import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.stock.mapper.WareMapper;
 
 import jakarta.persistence.EntityManager;
@@ -232,22 +234,36 @@ public class LotService {
 		return outCount;
 	}
 
-	public List<Map<String, Object>> findAll(String productId) {
-		List<ProcessDTO> proList = lotMapper.findAll(productId);
+	public List<Map<String, Object>> findByProcess(String productId) {
+		List<ProcessDTO> children = lotMapper.findByProcess(productId);
 		
-		List<Map<String, Object>> position = proList.stream()
+		List<Map<String, Object>> process = children.stream()
 			.map(dto -> {
 					Map<String, Object> map = new HashMap<>();
-					map.put("proId", dto.getProId());
 					map.put("proNm", dto.getProNm());
 					map.put("typeNm",dto.getTypeNm());
-					map.put("note",dto.getNote());
-					map.put("inspecNm",dto.getInspecNm());
 					return map;
 				})
 		    .collect(Collectors.toList());
 		
-		return position;
+		return process;
+	}
+
+	public List<WorkResultDTO> findDetail(Long workOrderId) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        return lotMapper.findDetail(workOrderId);
+		
+	}
+
+	public List<LotDetailDTO> findByMaterial(String workOrderId) {
+		 
+		return lotRepository.findByMaterialInfo(workOrderId);
+	}
+
+	public List<LotDetailDTO> findByEquipment(String productId) {
+		return lotRepository.findByEquipmenInfo(productId);
 	}
 
 }
