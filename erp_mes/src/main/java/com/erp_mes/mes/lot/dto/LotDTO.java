@@ -15,7 +15,6 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-//@Builder		한 파일에 빌더가 두개가 존재해서 오류 발생으로 인한 주석처리
 @ToString
 public class LotDTO {
 
@@ -41,6 +40,12 @@ public class LotDTO {
 	private Long workOrderId;// 작업지시 Id
 	
 	private LocalDateTime createdAt; // 선택: 서비스에서 세팅
+	
+	private String worOrderStatus;
+	
+	private String productName;
+	
+	private String productId;
 	
 	// 선택 연관 입력
 	private List<MaterialUsageDTO> usages; // 자재 사용 내역(있을 때만 저장)

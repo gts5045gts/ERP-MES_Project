@@ -333,8 +333,10 @@ public class InspectionService {
         qualityMapper.updateWorkOrderStatus(workOrderIdString); 
         
      // finish lot 생성
-        HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", newInspectionId);
+        if (newInspectionId != null) {
+        	HttpSession session = SessionUtil.getSession();
+            session.setAttribute("targetIdValue", newInspectionId);	
+		}
     }
 
     // 검사 ID로 상세 정보를 조회하는 메서드
