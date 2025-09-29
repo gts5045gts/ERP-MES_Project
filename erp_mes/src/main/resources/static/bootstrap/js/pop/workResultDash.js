@@ -234,7 +234,12 @@ function drawChart(data) {
         .nice()
         .range([height, 0]);
 
-    g.select(".x-axis").call(d3.axisBottom(x));
+	g.select(".x-axis")
+		.call(d3.axisBottom(x))
+		.selectAll("text")
+		.attr("transform", "rotate(-30)")   // 45도 회전
+		.style("text-anchor", "end")        // 오른쪽 끝 기준 정렬
+		.style("font-size", "9px");        // 글자 조금 작게
     g.select(".y-axis").call(d3.axisLeft(y).ticks(5));
 
     const bars = g.selectAll(".bar").data(data, d => d.equipment);

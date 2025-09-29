@@ -132,8 +132,7 @@
 	    WHEN o.work_order_status = '진행중' THEN 1
 	    WHEN o.work_order_status NOT IN ('검사대기', '작업완료') THEN 2
 	    ELSE 3
-	  END,
-	w.created_at ASC
+	  END
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
 </select>
 
