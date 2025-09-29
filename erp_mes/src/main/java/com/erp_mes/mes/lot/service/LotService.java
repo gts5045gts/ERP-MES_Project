@@ -265,5 +265,4 @@ public class LotService {
 	public List<LotDetailDTO> findByEquipment(String productId) {
 		return lotRepository.findByEquipmenInfo(productId);
 	}
-
 }

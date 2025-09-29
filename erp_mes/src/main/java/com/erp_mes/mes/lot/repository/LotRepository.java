@@ -74,4 +74,6 @@ public interface LotRepository extends JpaRepository<LotMaster, String> {
 			""", nativeQuery = true)
 	List<LotDetailDTO> findByEquipmenInfo(@Param("productId") String productId);
 
+	List<LotMaster> findByTargetIdValue(String targetIdValue);
+
 }
