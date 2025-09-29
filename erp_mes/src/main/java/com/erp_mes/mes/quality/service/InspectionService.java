@@ -120,6 +120,7 @@ public class InspectionService {
     }
     
     @Transactional
+    @TrackLot(tableName = "input", pkColumnName = "in_id") 
     public void verifyIncomingCount(String inId, Long acceptedCount, Long defectiveCount, String empId, String lotId, String inspectionType, String defectType, String remarks, String materialId) {
         // 1. INPUT 테이블에서 기존 in_count를 조회
     	Integer expectedCount = qualityMapper.findInCountByInId(inId);
@@ -170,6 +171,12 @@ public class InspectionService {
         } else {
             qualityMapper.updateInputStatusByInId(inId, "불량", 0L); // 불량만 있으면 '불량' 상태로 변경
         }
+        
+        // Lot 생성 처리를 위해 PK 값을 세션에 저장
+        if (newInspectionId != null) {
+        	HttpSession session = SessionUtil.getSession();
+            session.setAttribute("targetIdValue", inId);	
+		}
     }
     
     @Transactional(readOnly = true)

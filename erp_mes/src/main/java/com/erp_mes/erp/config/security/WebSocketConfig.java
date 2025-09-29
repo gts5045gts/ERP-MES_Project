@@ -10,14 +10,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-   @Override
-   public void registerStompEndpoints(StompEndpointRegistry registry) {
-      // 클라이언트가 웹소켓에 접속할 엔드포인트: /ws/chat
-      // SockJS는 웹소켓을 지원하지 않는 구형 브라우저를 위해 대체 통신 기술을 제공
-      registry.addEndpoint("/ws/chat")
-             .setAllowedOriginPatterns("*") // 모든 출처에서 접근 허용
-             .withSockJS();
-   }
+	@Override
+	public void registerStompEndpoints(StompEndpointRegistry registry) {
+		// 클라이언트가 웹소켓에 접속할 엔드포인트: /ws/chat
+		// SockJS는 웹소켓을 지원하지 않는 구형 브라우저를 위해 대체 통신 기술을 제공
+		registry.addEndpoint("/ws/chat")
+	    		.setAllowedOriginPatterns("*") // 모든 출처에서 접근 허용
+	    		.withSockJS();
+	}
 
    @Override
    public void configureMessageBroker(MessageBrokerRegistry registry) {
