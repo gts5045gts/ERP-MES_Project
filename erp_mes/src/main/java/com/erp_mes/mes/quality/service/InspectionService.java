@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.erp_mes.erp.commonCode.entity.CommonDetailCode;
 import com.erp_mes.erp.commonCode.service.CommonCodeService;
+import com.erp_mes.erp.config.util.SessionUtil;
+import com.erp_mes.mes.lot.trace.TrackLot;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
 import com.erp_mes.mes.plant.service.ProcessService;
 import com.erp_mes.mes.pm.mapper.WorkOrderMapper;
@@ -26,6 +28,7 @@ import com.erp_mes.mes.quality.repository.InspectionFMRepository;
 import com.erp_mes.mes.stock.dto.MaterialDTO;
 import com.erp_mes.mes.stock.service.StockService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -258,6 +261,7 @@ public class InspectionService {
     
     // 공정 검사 수량 등록 및 처리
     @Transactional
+    @TrackLot(tableName = "inspection", pkColumnName = "inspection_id") //lot 생성
     public void registerProcessInspectionResult(InspectionRegistrationRequestDTO requestDTO) {
         
         String workOrderIdString = requestDTO.getTargetId(); // 클라이언트에서 받은 String WORK_ORDER_ID
@@ -327,6 +331,12 @@ public class InspectionService {
 
         // 5. WORK_RESULT 업데이트 및 WORK_ORDER 상태 업데이트
         qualityMapper.updateWorkOrderStatus(workOrderIdString); 
+        
+     // finish lot 생성
+        if (newInspectionId != null) {
+        	HttpSession session = SessionUtil.getSession();
+            session.setAttribute("targetIdValue", newInspectionId);	
+		}
     }
 
     // 검사 ID로 상세 정보를 조회하는 메서드

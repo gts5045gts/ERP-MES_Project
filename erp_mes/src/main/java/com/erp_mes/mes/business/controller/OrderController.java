@@ -7,13 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.erp_mes.erp.personnel.dto.PersonnelLoginDTO;
@@ -37,7 +37,17 @@ public class OrderController {
 
 	// 수주 화면
 	@GetMapping("order")
-	public String order() {
+	public String order(Model model, @AuthenticationPrincipal PersonnelLoginDTO userDetails) {
+		log.info(userDetails);
+		String userDeptId = userDetails.getEmpDeptId();
+		String userLevelId = userDetails.getEmpLevelId();
+		
+		// 부서 코드가 'DEP006'(영업팀)일 경우, 버튼 표시 여부를 true로 설정
+        boolean isBusTeam = "DEP006".equals(userDeptId);
+        model.addAttribute("isBUSTeam", isBusTeam);
+        
+        boolean isAutLevel = "AUT001".equals(userLevelId);
+        model.addAttribute("isAUTLevel", isAutLevel);
 
 		return "/business/order";
 	}
@@ -87,17 +97,6 @@ public class OrderController {
 	    }
 	    return ResponseEntity.ok(order);
 	}
-	
-//	// 수주 목록 (검색조건 적용)
-//	@GetMapping("/api/orders/search")
-//	@ResponseBody
-//	public List<OrderDTO> searchOrders(
-//	        @RequestParam(required = false) String orderStatus,
-//	        @RequestParam(required = false) String clientName
-//	) {
-//	    log.info("수주 검색 요청: 상태={}, 거래처명={}", orderStatus, clientName);
-//	    return orderService.searchOrders(orderStatus, clientName);
-//	}
 
 	// 수주 상세 목록 조회
 	@GetMapping("/api/orders/{orderId}/details")
@@ -118,9 +117,10 @@ public class OrderController {
 	
 	// 수주 취소 
     @PutMapping("/api/orders/{orderId}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId) {
+    public ResponseEntity<?> cancelOrder(@PathVariable("orderId") String orderId, @RequestBody OrderDTO reason) {
         try {
-        	orderService.cancelOrder(orderId);
+        	String cancelReason = reason.getReason();
+        	orderService.cancelOrder(orderId, cancelReason);
             return ResponseEntity.ok(Map.of("orderId", orderId, "newStatus", "CANCELED"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

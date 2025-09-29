@@ -49,13 +49,10 @@ public interface OrderMapper {
     // 한번의 수행에 여러 건의 OrderDetailDTO insert 
     void insertOrderDetails(List<OrderDetailDTO> items);
 // ==================
-    
-	int updateOrderDetailStatus();
+   
+    int updateOrderDetailStatus(@Param("orderId") String orderId, @Param("productId") String productId);
 
-	
-	// 모든 수주 상세 품목이 출하완료 되었는지 확인
-//	boolean isAllDetailsCompleted(String orderId);
-//	// 수주 상태를 출하완료로 변경
-//	void updateOrderStatusToCompletion(String orderId);
+	void updateReason(@Param("orderId") String orderId, @Param("reason") String reason);
+
 
 }

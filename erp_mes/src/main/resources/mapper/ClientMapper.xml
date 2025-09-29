@@ -23,6 +23,7 @@
                    WHEN 'INACTIVE' THEN '거래중지'
            	   END AS client_status
 		 FROM client
+		 ORDER BY client_id desc
 	</select>
 	
 <!-- 	거래처 필터링 -> 일부 거래처만 조회 -->

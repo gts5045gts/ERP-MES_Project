@@ -103,7 +103,7 @@
 	        m.material_name as "materialName",
 	        i.product_id as "productId",  
 	        p.product_name as "productName",
-	        i.result_id as "resultId", 
+	        i.purchase_id as "purchaseId", 
 	        i.client_id as "clientId",
 	        c.client_name as "clientName",
 	        i.in_count as "inCount",
@@ -113,18 +113,90 @@
 	        i.in_type as "inType",
 	        TO_CHAR(i.in_complete, 'YYYY-MM-DD HH24:MI:SS') as "inComplete",
 	        i.location_id as "locationId",
-	        i.batch_id as "batchId",
-	        wr.work_order_id as "workOrderId"
+	        i.batch_id as "batchId"
 	    FROM input i
 	    LEFT JOIN warehouse w ON i.warehouse_id = w.warehouse_id
 	    LEFT JOIN material m ON i.material_id = m.material_id
 	    LEFT JOIN product p ON i.product_id = p.product_id  
 	    LEFT JOIN client c ON i.client_id = c.client_id
 	    LEFT JOIN employee e ON i.emp_id = e.emp_id
-	    LEFT JOIN work_result wr ON i.result_id = wr.result_id 
 	    WHERE 1=1
 	    ORDER BY i.in_complete DESC
 	</select>
+	
+	<select id="selectPendingPurchases" resultType="map">
+	    SELECT 
+	        p.purchase_id as "purId",
+	        p.client_id as "clientId",
+	        c.client_name as "clientName",
+	        TO_CHAR(p.purchase_date, 'YYYY-MM-DD') as "purDate",
+	        p.purchase_status as "purStatus",
+	        p.total_purchase_qty as "totalQty",
+	        p.total_purchase_price as "totalPrice",
+	        (SELECT COUNT(*) FROM purchase_detail pd WHERE pd.purchase_id = p.purchase_id) as "itemCount"
+	    FROM purchase p
+	    LEFT JOIN client c ON p.client_id = c.client_id
+	    WHERE p.purchase_status IN ('REQUEST', 'WAITING')  <!-- COMPLETION 제외 -->
+	    ORDER BY p.purchase_date DESC, p.purchase_id DESC
+	</select>
+	
+	<!-- 발주 상세 조회 -->
+	<select id="selectPurchaseDetails" resultType="map">
+	    SELECT 
+	        pd.id as "purDetailId",
+	        pd.purchase_id as "purId",
+	        pd.material_id as "materialId",
+	        pd.material_name as "materialName",
+	        pd.purchase_qty as "orderQty",
+	        pd.purchase_detail_status as "status",
+	        pd.unit,
+	        NVL(m.quantity, 0) as "currentStock",
+	        COALESCE(
+	            (SELECT SUM(i.in_count) 
+	             FROM input i 
+	             WHERE i.purchase_id = pd.purchase_id 
+	             AND i.material_id = pd.material_id
+	             AND i.in_status != '입고반려'), 0
+	        ) as "receivedQty"
+	    FROM purchase_detail pd
+	    LEFT JOIN material m ON pd.material_id = m.material_id
+	    WHERE pd.purchase_id = #{purId}
+	    ORDER BY pd.material_id
+	</select>
+	
+	<!-- 발주 상태 업데이트 -->
+	<update id="updatePurchaseStatus">
+	    UPDATE purchase 
+	    SET purchase_status = #{status},
+	        update_at = SYSDATE
+	    WHERE purchase_id = #{purId}
+	</update>
+	
+	<!-- 특정 품목의 발주 상세 조회 -->
+	<select id="selectPurchaseDetailByMaterial" resultType="map">
+	    SELECT 
+	        pd.id as "purDetailId",
+	        pd.purchase_qty as "orderQty",
+	        pd.purchase_detail_status as "status",
+	        COALESCE(
+	            (SELECT SUM(i.in_count) 
+	             FROM input i 
+	             WHERE i.purchase_id = pd.purchase_id 
+	             AND i.material_id = pd.material_id
+	             AND i.in_status != '입고반려'), 0
+	        ) as "receivedQty"
+	    FROM purchase_detail pd
+	    WHERE pd.purchase_id = #{purId}
+	    AND pd.material_id = #{materialId}
+	</select>
+	
+	<update id="updatePurchaseDetailStatus">
+	    UPDATE purchase_detail
+	    SET purchase_detail_status = #{status},
+	        update_at = SYSDATE
+	    WHERE purchase_id = #{purId}
+	    AND material_id = #{materialId}
+	</update>
 	
 	<!-- Product warehouse_item 관련 쿼리 -->
 	<select id="getPartiallyFilledLocationsProduct" resultType="map">
@@ -201,6 +273,7 @@
 	        warehouse_id,
 	        <if test="productId != null">product_id,</if>
 	        <if test="materialId != null">material_id,</if>
+	        <if test="purchaseId != null and purchaseId != ''">purchase_id,</if> 
 	        result_id, 
 	        client_id, 
 	        in_count, 
@@ -216,6 +289,7 @@
 	        #{warehouseId},
 	        <if test="productId != null">#{productId},</if>
 	        <if test="materialId != null">#{materialId},</if>
+	        <if test="purchaseId != null and purchaseId != ''">#{purchaseId},</if>
 	        #{resultId, jdbcType=NUMERIC},
 	        #{clientId},
 	        #{inCount}, 
@@ -621,7 +695,7 @@
 	    WHERE wi.material_id = #{materialId}
 	    AND wi.item_amount > 0
 	    AND wi.use_yn = 'Y'
-	    ORDER BY wi.create_date ASC  <!-- 입고순(오래된것부터) -->
+	    ORDER BY wi.create_date ASC  <!-- 입고순(오래된것부터) 정렬 -->
 	</select>
 	
 	<!-- 이미 있으면 수량만 업데이트 -->
@@ -675,29 +749,33 @@
 	<insert id="insertOutput">
 	    INSERT INTO output (
 	        out_id, 
-	        lot_id,  
-	        product_id, 
-	        material_id, 
+	        <if test="productId != null">product_id,</if>
+	        <if test="materialId != null">material_id,</if>
 	        warehouse_id, 
 	        out_count, 
 	        out_type, 
 	        emp_id, 
-	        batch_id, 
-	        manage_id,
-	        location_id,
+	        batch_id,
+	        <if test="manageId != null">manage_id,</if>
+	        <if test="locationId != null">location_id,</if>
+	        <if test="orderId != null">order_id,</if>
+	        <if test="planId != null">product_plan,</if>
+	        <if test="workOrderId != null">work_order_id,</if>  <!-- 추가 -->
 	        update_date
 	    ) VALUES (
 	        #{outId}, 
-	        #{lotId, jdbcType=VARCHAR},
-	        #{productId, jdbcType=VARCHAR}, 
-	        #{materialId, jdbcType=VARCHAR}, 
+	        <if test="productId != null">#{productId},</if>
+	        <if test="materialId != null">#{materialId},</if>
 	        #{warehouseId}, 
 	        #{outCount},
 	        #{outType}, 
 	        #{empId}, 
 	        #{batchId},
-	        #{manageId},
-	        #{locationId, jdbcType=VARCHAR},
+	        <if test="manageId != null">#{manageId},</if>
+	        <if test="locationId != null">#{locationId},</if>
+	        <if test="orderId != null">#{orderId},</if>
+	        <if test="planId != null">#{planId},</if>
+	        <if test="workOrderId != null">#{workOrderId},</if>  <!-- 추가 -->
 	        SYSDATE
 	    )
 	</insert>
@@ -739,7 +817,8 @@
 	        location_id,
 	        manage_id,
 	        out_count,
-	        out_type
+	        out_type,
+	        work_order_id
 	    FROM output 
 	    WHERE out_id = #{outId}
 	</select>
@@ -1029,5 +1108,266 @@
 	        update_date = SYSDATE
 	    WHERE out_id = #{outId}
 	</update>
+	
+	<!-- 0926 수주 대기 목록 조회 -->
+	<select id="selectPendingOrders" resultType="map">
+	    SELECT 
+	        o.order_id as "orderId",
+	        o.client_id as "clientId", 
+	        o.client_name as "clientName",
+	        TO_CHAR(o.delivery_date, 'YYYY-MM-DD') as "deliveryDate",
+	        o.total_order_qty as "totalQty",
+	        o.order_status as "status",
+	        (SELECT COUNT(*) FROM orders_detail od WHERE od.order_id = o.order_id) as "itemCount"
+	    FROM orders o
+	    WHERE o.order_status NOT IN ('completion') 
+	    ORDER BY o.order_date DESC, o.order_id DESC
+	</select>
+	
+	<!-- 수주 상세 조회 -->
+	<select id="selectOrderDetails" resultType="map">
+	    SELECT 
+	        od.product_id as "productId",
+	        od.product_name as "productName",
+	        od.order_qty as "orderQty",
+	        NVL((SELECT SUM(out_count) 
+	             FROM output o
+	             WHERE o.order_id = od.order_id 
+	             AND o.product_id = od.product_id
+	             AND o.out_type = '출고완료'), 0) as "shippedQty",
+	        p.quantity as "stock"
+	    FROM orders_detail od
+	    LEFT JOIN product p ON od.product_id = p.product_id
+	    WHERE od.order_id = #{orderId}
+	    ORDER BY od.id
+	</select>
+	
+	<!-- 수주 상세 출하수량 업데이트 -->
+	<update id="updateOrderDetailShipped">
+	    <![CDATA[
+	    UPDATE orders_detail
+	    SET order_detail_status = 
+	        CASE
+	            WHEN order_qty <= (SELECT NVL(SUM(out_count), 0)
+	                              FROM output 
+	                              WHERE order_id = #{orderId} 
+	                              AND product_id = #{productId}
+	                              AND out_type = '출고완료')
+	            THEN 'completion'
+	            ELSE 'inshipment'
+	        END,
+	        update_at = SYSDATE
+	    WHERE order_id = #{orderId}
+	    AND product_id = #{productId}
+	    ]]>
+	</update>
+	
+	<!-- 수주 상태 업데이트 -->
+	<update id="updateOrderStatus">
+	    UPDATE orders
+	    SET order_status = #{status},
+	        update_at = SYSDATE
+	    WHERE order_id = #{orderId}
+	</update>
+	
+	<!-- 오늘 완제품 출고 배치 건수 -->
+	<select id="getTodayProductOutputBatchCount" resultType="integer">
+	    SELECT NVL(MAX(TO_NUMBER(SUBSTR(batch_id, -3))), 0)
+	    FROM output 
+	    WHERE batch_id LIKE 'POB' || #{today} || '%'
+	</select>
+	
+	<!-- output 테이블에 work_order_id 업데이트 -->
+	<update id="updateOutputWorkOrder">
+	    UPDATE output
+	    SET work_order_id = #{workOrderId},
+	        update_date = SYSDATE
+	    WHERE out_id = #{outId}
+	</update>
+	
+	<!-- 완제품 manage_id별 재고 조회 -->
+	<select id="getProductStockGroupByManageId" resultType="map">
+	    SELECT 
+	        wi.manage_id as "manageId",
+	        wi.product_id as "productId",
+	        wi.warehouse_id as "warehouseId",
+	        w.warehouse_name as "warehouseName",
+	        wi.location_id as "locationId",
+	        wi.item_amount as "itemAmount",
+	        TO_CHAR(wi.create_date, 'YYYY-MM-DD HH24:MI') as "createDate"
+	    FROM warehouse_item wi
+	    INNER JOIN warehouse w ON wi.warehouse_id = w.warehouse_id
+	    WHERE wi.product_id = #{productId}
+	    AND wi.item_amount > 0
+	    AND wi.use_yn = 'Y'
+	    ORDER BY wi.create_date ASC 
+	</select>
+	
+	<!-- 특정 접두사의 최대 번호 조회 -->
+	<select id="getMaxOutputCount" resultType="integer">
+	    SELECT NVL(MAX(TO_NUMBER(SUBSTR(out_id, LENGTH(#{prefix}) + 1))), 0)
+	    FROM output
+	    WHERE out_id LIKE #{prefix} || '%'
+	    AND REGEXP_LIKE(SUBSTR(out_id, LENGTH(#{prefix}) + 1), '^[0-9]+$')
+	</select>
+	
+	<!-- 생산계획 대기 목록 조회 -->
+	<select id="selectPendingProductPlans" resultType="map">
+	    SELECT 
+	        pp.plan_id as "planId",
+	        pp.product_id as "productId",
+	        p.product_name as "productName",
+	        pp.plan_quantity as "planQuantity",
+	        TO_CHAR(pp.start_date, 'YYYY-MM-DD') as "startDate",
+	        TO_CHAR(pp.end_date, 'YYYY-MM-DD') as "endDate",
+	        TO_CHAR(pp.due_date, 'YYYY-MM-DD') as "dueDate",
+	        pp.plan_status as "status"
+	    FROM product_plan pp
+	    LEFT JOIN product p ON pp.product_id = p.product_id
+	    WHERE pp.plan_status = 'POSSIBLE'
+	    ORDER BY pp.due_date, pp.plan_id
+	</select>
+	
+	<!-- 생산계획별 BOM 상세 조회 -->
+	<select id="selectPlanBOMDetails" resultType="map">
+	    SELECT 
+	        b.bom_id as "bomId",
+	        b.material_id as "materialId",
+	        m.material_name as "materialName",
+	        b.quantity as "bomQty",
+	        pp.plan_quantity as "planQty",
+	        (b.quantity * pp.plan_quantity) as "requiredQty",
+	        NVL((SELECT SUM(wi.item_amount) 
+	             FROM warehouse_item wi 
+	             WHERE wi.material_id = b.material_id 
+	             AND wi.use_yn = 'Y'), 0) as "currentStock"
+	    FROM product_plan pp
+	    INNER JOIN bom b ON pp.product_id = b.product_id
+	    LEFT JOIN material m ON b.material_id = m.material_id
+	    WHERE pp.plan_id = #{planId}
+	    ORDER BY b.material_id
+	</select>
+	
+	<!--=====================================================================-->
+	<!-- 창고 단일 조회 -->
+	<select id="selectWarehouseInfoById" resultType="com.erp_mes.mes.stock.dto.WarehouseDTO">
+	    SELECT 
+	        w.warehouse_id as warehouseId,
+	        w.warehouse_name as warehouseName,
+	        w.warehouse_type as warehouseType,
+	        w.warehouse_location as warehouseLocation,
+	        w.emp_id as empId,
+	        e.emp_name as empName
+	    FROM warehouse w
+	    LEFT JOIN employee e ON w.emp_id = e.emp_id
+	    WHERE w.warehouse_id = #{warehouseId}
+	</select>
+	
+	<!-- 창고 재고 레이아웃 조회 -->
+	<select id="selectWarehouseStockLayout" resultType="map">
+	    SELECT 
+	        il.location_id as "locationId",
+	        il.loc_zone as "zone",
+	        il.loc_rack as "rack",
+	        il.loc_level as "level",
+	        il.loc_cell as "cell",
+	        wi.manage_id as "manageId",
+	        wi.material_id as "materialId",
+	        wi.product_id as "productId",
+	        COALESCE(m.material_name, p.product_name, '비어있음') as "itemName",
+	        COALESCE(m.material_id, p.product_id, '') as "itemCode",
+	        COALESCE(wi.item_amount, 0) as "currentQty",
+	        COALESCE(wi.max_amount, 1000) as "maxQty",
+	        CASE 
+	            WHEN wi.item_amount IS NULL THEN 0
+	            ELSE ROUND(wi.item_amount * 100.0 / COALESCE(wi.max_amount, 1000), 1)
+	        END as "usagePercent",
+	        wi.emp_id as "empId",
+	        e.emp_name as "empName",
+	        TO_CHAR(wi.update_date, 'YYYY-MM-DD HH24:MI') as "updateDate"
+	    FROM item_location il
+	    LEFT JOIN warehouse_item wi ON il.location_id = wi.location_id AND wi.use_yn = 'Y'
+	    LEFT JOIN material m ON wi.material_id = m.material_id
+	    LEFT JOIN product p ON wi.product_id = p.product_id
+	    LEFT JOIN employee e ON wi.emp_id = e.emp_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    ORDER BY il.loc_zone, il.loc_rack, il.loc_level DESC, il.loc_cell
+	</select>
+	
+	<!-- 위치 상세 조회 -->
+	<select id="selectLocationDetail" resultType="map">
+	    SELECT 
+	        il.location_id as "locationId",
+	        il.warehouse_id as "warehouseId",
+	        w.warehouse_name as "warehouseName",
+	        il.loc_zone as "zone",
+	        il.loc_rack as "rack",
+	        il.loc_level as "level",
+	        il.loc_cell as "cell",
+	        wi.manage_id as "manageId",
+	        COALESCE(m.material_id, p.product_id) as "itemCode",
+	        COALESCE(m.material_name, p.product_name) as "itemName",
+	        COALESCE(m.unit, p.unit) as "unit",
+	        wi.item_amount as "currentQty",
+	        wi.max_amount as "maxQty",
+	        wi.emp_id as "empId",
+	        e.emp_name as "empName",
+	        TO_CHAR(wi.create_date, 'YYYY-MM-DD') as "createDate",
+	        TO_CHAR(wi.update_date, 'YYYY-MM-DD HH24:MI') as "lastUpdate",
+	        wi.lot_id as "lotId"
+	    FROM item_location il
+	    LEFT JOIN warehouse_item wi ON il.location_id = wi.location_id
+	    LEFT JOIN warehouse w ON il.warehouse_id = w.warehouse_id
+	    LEFT JOIN material m ON wi.material_id = m.material_id
+	    LEFT JOIN product p ON wi.product_id = p.product_id
+	    LEFT JOIN employee e ON wi.emp_id = e.emp_id
+	    WHERE il.location_id = #{locationId}
+	</select>
+	
+	<!-- 창고 통계 쿼리들 -->
+	<select id="getTotalLocations" resultType="int">
+	    SELECT COUNT(*) FROM item_location 
+	    WHERE warehouse_id = #{warehouseId} AND zone_yn = 'Y'
+	</select>
+	
+	<select id="getUsedLocations" resultType="int">
+	    SELECT COUNT(DISTINCT wi.location_id)
+	    FROM warehouse_item wi
+	    INNER JOIN item_location il ON wi.location_id = il.location_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND wi.item_amount > 0
+	    AND wi.use_yn = 'Y'
+	</select>
+	
+	<select id="getTotalStockInWarehouse" resultType="int">
+	    SELECT NVL(SUM(wi.item_amount), 0)
+	    FROM warehouse_item wi
+	    INNER JOIN item_location il ON wi.location_id = il.location_id
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND wi.use_yn = 'Y'
+	</select>
+	
+	<!-- 창고 내 빈 위치 수 조회 -->
+	<select id="getEmptyLocationCnt" resultType="int">
+	    SELECT COUNT(*) 
+	    FROM item_location il
+	    WHERE il.warehouse_id = #{warehouseId}
+	    AND il.zone_yn = 'Y'
+	    AND NOT EXISTS (
+	        SELECT 1 FROM warehouse_item wi
+	        WHERE wi.location_id = il.location_id
+	        AND wi.item_amount > 0
+	        AND wi.use_yn = 'Y'
+	    )
+	</select>
+	<!--=======================-->
+	<select id="getUnstartedWorkOrder" resultType="map">
+	    SELECT work_order_id as "workOrderId"
+    FROM work_order
+    WHERE plan_id = #{planId}
+    AND work_order_status = '미착수'
+    AND ROWNUM = 1
+	</select>
 	
 </mapper>

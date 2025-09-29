@@ -132,16 +132,16 @@ public class PersonnelController {
 	@GetMapping("/loginShowImg/{empId}")
 	public ResponseEntity<Resource> getImg2(@PathVariable("empId") String empId) {
 		log.info("사원 번호 : " + empId);
-		ResponseEntity<Resource> img = personnelImgService.getImgLocation(empId);
+		
 		
 			
+//			return img;
+//			 try catch 문으로 변경
+		try {
+			ResponseEntity<Resource> img = personnelImgService.getImgLocation(empId);
 			return img;
-		/*		이미지 잇을경우 없을경우 제어 할 예정
-		if(img != null && img.getStatusCode().is2xxSuccessful() ) {
-			
-			return img;
-		}
-		else {
+		} catch (Exception e)  {
+			log.error("이미지 로드 실패, 기본 이미지 반환: " + empId, e);
 			
 			Resource resource = new ClassPathResource("static/bootstrap/img/undraw_profile.svg");
 			return ResponseEntity.ok()
@@ -149,7 +149,7 @@ public class PersonnelController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                     .body(resource);
 					 	
-		}*/
+		}
 	}
 	// 인사현황 데이터 응답
 	@GetMapping("/api/personnels")

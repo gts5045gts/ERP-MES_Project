@@ -132,37 +132,66 @@ public class WareService {
 
         String inId = "IN" + today + String.format("%03d", todayCount + 1);
         params.put("inId", inId);
-
+        
+        // 발주 연계 처리 - BATCH 생성 시점에 WAITING으로 변경
+        String purchaseId = (String) params.get("purchaseId");
+        
         if(params.get("inReason") == null || "".equals(params.get("inReason"))) {
             params.put("inReason", params.get("inType"));
         }
 
         if("product".equals(itemType)) {
-            // 완제품도 일단 입고대기로 변경
-            params.put("inStatus", "입고대기");  // 입고완료 → 입고대기
+            params.put("inStatus", "입고대기");
             params.put("productId", params.get("productId"));
-
             wareMapper.insertInput(params);
             
-            // 바로 completeInput 호출
-            String empId = (String) params.get("empId");
-            completeInput(inId, empId);
+//            String empId = (String) params.get("empId");
+//            completeInput(inId, empId);
             
             log.info("완제품 입고 처리: {}", inId);
 
         } else {
-            // 부품/반제품은 기존대로 입고대기
             params.put("inStatus", "입고대기");
             String materialId = (String) params.get("productId");
             params.put("materialId", materialId);
             params.remove("productId");
 
             wareMapper.insertInput(params);
+            
+            // 발주 연계 시 상태를 WAITING으로 변경
+            if(purchaseId != null && !purchaseId.isEmpty()) {
+                wareMapper.updatePurchaseDetailStatus(purchaseId, materialId, "WAITING");
+                updatePurchaseMainStatus(purchaseId);
+            }
+            
             log.info("부품/반제품 입고 대기: {}", inId);
         }
         
         return inId;
     }
+    // 발주 메인 상태 업데이트
+    private void updatePurchaseMainStatus(String purchaseId) {
+        // 모든 상세가 REQUEST가 아닌지 확인
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+        boolean hasWaitingOrComplete = details.stream()
+            .anyMatch(d -> "WAITING".equals(d.get("status")) || "COMPLETION".equals(d.get("status")));
+        
+        if(hasWaitingOrComplete) {
+            wareMapper.updatePurchaseStatus(purchaseId, "WAITING");
+        }
+    }
+    // 발주 완료 체크
+    private void checkAndUpdatePurchaseCompletion(String purchaseId) {
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+        boolean allComplete = details.stream()
+            .allMatch(d -> "COMPLETION".equals(d.get("status")));
+        
+        if(allComplete) {
+            wareMapper.updatePurchaseStatus(purchaseId, "COMPLETION");
+            log.info("발주 {} 모든 품목 입고 완료", purchaseId);
+        }
+    }
+
     
     // 오늘 배치 건수 조회
     public Integer getTodayBatchCount(String today) {
@@ -175,6 +204,11 @@ public class WareService {
     @TrackLot(tableName = "input", pkColumnName = "IN_ID")
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
+        
+        // 디버깅: input 데이터 확인
+        log.info("=== 입고완료 처리 시작 ===");
+        log.info("inId: {}", inId);
+        log.info("input 데이터: {}", input);
         
         if(input == null) {
             throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
@@ -190,39 +224,59 @@ public class WareService {
         String materialId = (String) input.get("MATERIAL_ID");
         String productId = (String) input.get("PRODUCT_ID");
         String warehouseId = (String) input.get("WAREHOUSE_ID");
+        String purchaseId = (String) input.get("PURCHASE_ID");
         Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
         
-        // 위치 할당
+        // 디버깅: 발주 정보 확인
+        log.info("materialId: {}, purchaseId: {}", materialId, purchaseId);
+        
         String firstLocation = null;
         String manageId = null;
         
-        if(productId != null && materialId == null) {
-            // 완제품 처리
-            firstLocation = distributeToWarehouseItemsForProduct(warehouseId, productId, inCount, empId);
-            if(firstLocation != null) {
-                manageId = warehouseId + "_" + productId + "_" + firstLocation;
+        if(materialId != null && purchaseId != null && !purchaseId.isEmpty()) {
+            log.info("=== 발주 연계 입고 상태 업데이트 시작 ===");
+            log.info("purchaseId: {}, materialId: {}", purchaseId, materialId);
+            
+            try {
+                // 1. 해당 발주-자재의 상세 상태를 COMPLETION으로
+                int updateResult = wareMapper.updatePurchaseDetailStatus(purchaseId, materialId, "COMPLETION");
+                log.info("purchase_detail 업데이트 결과: {} 건", updateResult);
+                
+                // 2. 해당 발주의 모든 상세 조회
+                List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purchaseId);
+                boolean allComplete = true;
+                
+                for(Map<String, Object> detail : details) {
+                    String detailMaterialId = (String) detail.get("materialId");
+                    String status = (String) detail.get("status");
+                    log.info("발주 상세 체크 - materialId: {}, status: {}", detailMaterialId, status);
+                    
+                    if(!"COMPLETION".equals(status)) {
+                        allComplete = false;
+                    }
+                }
+                
+                // 3. 모든 상세가 완료되면 메인 발주도 COMPLETION
+                if(allComplete) {
+                    wareMapper.updatePurchaseStatus(purchaseId, "COMPLETION");
+                    log.info("발주 {} 전체 완료 처리", purchaseId);
+                } else {
+                    log.info("발주 {} 아직 미완료 항목 있음", purchaseId);
+                }
+                
+            } catch(Exception e) {
+                log.error("발주 상태 업데이트 실패", e);
+                // 발주 처리 실패해도 입고는 계속 진행
             }
-            
-            wareMapper.updateProductQuantity(productId, inCount);
-            
-        } else if(materialId != null) {
-            // 부품/반제품 처리
-            firstLocation = distributeToWarehouseItemsForMaterial(warehouseId, materialId, inCount, empId);
-            if(firstLocation != null) {
-                manageId = warehouseId + "_" + materialId + "_" + firstLocation;
-            }
-            
-            wareMapper.updateMaterialQuantity(materialId, inCount);
-        }
-        
-        if(firstLocation == null) {
-            throw new RuntimeException(
-                String.format("창고 %s에 충분한 저장 공간이 없습니다. 입고 수량: %d개", 
-                             warehouseId, inCount)
+            firstLocation = distributeToWarehouseItemsForMaterial(
+                    warehouseId, materialId, inCount, empId
             );
+        } else if(productId != null) {
+            // 완제품인 경우 - 발주 처리 안 함
+            log.info("완제품 입고 - 발주 처리 스킵 (productId: {})", productId);
         }
         
-        // 입고 완료 처리
+        // 기존 마지막 처리
         wareMapper.updateInputStatus(inId, "입고완료");
         wareMapper.updateInputLocation(inId, firstLocation);
         
@@ -230,14 +284,53 @@ public class WareService {
             wareMapper.updateInputManageId(inId, manageId);
         }
         
-        log.info("입고 완료: {} - 위치: {}, manage_id: {}", inId, firstLocation, manageId);
+        log.info("=== 입고 완료 처리 종료 ===");
         
-        // LOT 추적용 세션 - @TrackLot이 LOT 생성
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", inId);
     }
     
-    
+    // 새로 추가: 발주 관련 메서드만
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPendingPurchases() {
+        return wareMapper.selectPendingPurchases();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPurchaseDetails(String purId) {
+        return wareMapper.selectPurchaseDetails(purId);
+    }
+
+    private void checkAndUpdatePurchaseStatus(String purId) {
+        List<Map<String, Object>> details = wareMapper.selectPurchaseDetails(purId);
+        boolean allWaitingOrComplete = details.stream()
+            .allMatch(d -> !"REQUEST".equals(d.get("status")));
+        
+        if(allWaitingOrComplete) {
+            wareMapper.updatePurchaseStatus(purId, "WAITING");
+        }
+    }
+
+    private void updatePurchaseCompletion(String purId, String materialId) {
+        Map<String, Object> detail = wareMapper.selectPurchaseDetailByMaterial(purId, materialId);
+        if(detail != null) {
+            Integer orderQty = ((Number) detail.get("orderQty")).intValue();
+            Integer receivedQty = ((Number) detail.get("receivedQty")).intValue();
+            
+            if(receivedQty >= orderQty) {
+                wareMapper.updatePurchaseDetailStatus(purId, materialId, "COMPLETION");
+                
+                // 전체 발주 완료 체크
+                List<Map<String, Object>> allDetails = wareMapper.selectPurchaseDetails(purId);
+                boolean allComplete = allDetails.stream()
+                    .allMatch(d -> "COMPLETION".equals(d.get("status")));
+                
+                if(allComplete) {
+                    wareMapper.updatePurchaseStatus(purId, "COMPLETION");
+                }
+            }
+        }
+    }
     
     private String distributeToWarehouseItemsForMaterial(String warehouseId, String materialId, Integer totalCount, String empId) {
         String firstLocation = null;
@@ -449,6 +542,7 @@ public class WareService {
         return result;
     }
     
+    // 생산 완료 제품 배치 입고 (입고대기로 먼저)
     @Transactional
     public String addProductionBatch(List<Map<String, Object>> items, String empId) {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
@@ -459,7 +553,6 @@ public class WareService {
         
         for(Map<String, Object> item : items) {
             try {
-                // result_id 가져오기
                 Object resultIdObj = item.get("resultId");
                 Number resultId = null;
                 if(resultIdObj != null) {
@@ -467,20 +560,19 @@ public class WareService {
                         (Number) resultIdObj : Long.parseLong(String.valueOf(resultIdObj));
                 }
                 
-                log.info("처리 중: resultId={}", resultId);
-                
                 item.put("empId", empId);
                 item.put("batchId", batchId);
-                item.put("resultId", resultId);  // input 테이블에 저장될 result_id
+                item.put("resultId", resultId);
+                item.put("inStatus", "입고대기"); 
                 
                 String inId = addInput(item);
-                log.info("입고 완료: inId={}", inId);
+                log.info("입고대기 등록: inId={}", inId);
                 
-                // work_result 테이블의 in_id 업데이트
                 if(resultId != null) {
-                    log.info("work_result 업데이트: resultId={}, inId={}", resultId, inId);
                     wareMapper.updateWorkResultInId(String.valueOf(resultId), inId);
                 }
+                
+                
             } catch(Exception e) {
                 log.error("입고 처리 중 에러:", e);
                 throw e;
@@ -488,6 +580,60 @@ public class WareService {
         }
         
         return batchId;
+    }
+    
+    // 완제품 입고 완료 처리 (개별 LOT 부여)
+    @Transactional
+    @TrackLot(tableName = "input", pkColumnName = "IN_ID")
+    public void completeProductInput(String inId, String empId) {
+        Map<String, Object> input = wareMapper.selectInputById(inId);
+        
+        if(input == null) {
+            throw new RuntimeException("입고 정보를 찾을 수 없습니다.");
+        }
+        
+        String currentStatus = (String) input.get("IN_STATUS");
+        
+        if("입고완료".equals(currentStatus)) {
+            log.info("이미 입고완료된 건입니다: {}", inId);
+            return;
+        }
+        
+        String productId = (String) input.get("PRODUCT_ID");
+        String warehouseId = (String) input.get("WAREHOUSE_ID");
+        Integer inCount = ((Number) input.get("IN_COUNT")).intValue();
+        
+        // warehouse_item 재고 증가 처리
+        String firstLocation = distributeToWarehouseItemsForProduct(
+            warehouseId, productId, inCount, empId
+        );
+        
+        // 입고 상태를 입고완료로 변경
+        wareMapper.updateInputStatus(inId, "입고완료");
+        wareMapper.updateInputLocation(inId, firstLocation);
+        
+        // LOT 추적용 세션 설정
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", inId);
+        
+        log.info("완제품 {} 입고완료 및 LOT 부여: {}", productId, inId);
+    }
+    
+    // 완제품 배치의 모든 항목 입고완료 처리
+    @Transactional
+    public void completeProductBatch(String batchId, String empId) {
+        List<Map<String, Object>> inputs = wareMapper.selectInputListByBatch(batchId);
+        
+        for(Map<String, Object> input : inputs) {
+            String inId = (String) input.get("inId");
+            String inStatus = (String) input.get("inStatus");
+            
+            if("입고대기".equals(inStatus)) {
+                completeProductInput(inId, empId);
+            }
+        }
+        
+        log.info("배치 {} 전체 입고완료 처리", batchId);
     }
     
 	// ==================== 출고 관리 ====================
@@ -524,32 +670,19 @@ public class WareService {
         
         String batchId = "MOB" + today + String.format("%03d", batchCount + 1);
         
-        // manage_id별 시퀀스를 메모리에서 관리
-        Map<String, Integer> seqMap = new HashMap<>();
+        // 오늘 전체 출고 건수 조회
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
         
         for(Map<String, Object> item : items) {
             String manageId = (String) item.get("manageId");
             String materialId = (String) item.get("materialId");
             
-            // DB에서 최대값 조회 (처음 한 번만)
-            if(!seqMap.containsKey(manageId)) {
-                Integer dbSeq = wareMapper.getOutputSeqByManageId(manageId, today);
-                seqMap.put(manageId, dbSeq == null ? 0 : dbSeq);
-            }
+            // 단순 일련번호 증가
+            todayTotalCount++;
+            String outId = "OUT" + today + String.format("%04d", todayTotalCount);
             
-            // 메모리에서 시퀀스 증가
-            Integer seq = seqMap.get(manageId) + 1;
-            seqMap.put(manageId, seq);
-            
-            String[] parts = manageId.split("_");
-            String uniquePart = "";
-            if(parts.length >= 2) {
-                uniquePart = parts[1];
-            }
-            
-            String outId = "OUT" + today + uniquePart + String.format("%02d", seq);
-            
-            log.info("manageId: {}, seq: {}, 생성된 outId: {}", manageId, seq, outId);
+            log.info("생성된 outId: {}", outId);
             
             item.put("outId", outId);
             item.put("materialId", materialId);
@@ -587,7 +720,37 @@ public class WareService {
         
         return "OUT" + today + shortCode + String.format("%02d", seq + 1);
     }
-
+    
+    // 기존 addOutputBatch는 그대로 두고, 생산계획 전용 메서드 추가
+    @Transactional
+    public String addProductionMaterialOutputBatch(String planId, List<Map<String, Object>> items, String empId) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+        
+        String batchId = "PMOB" + today + String.format("%03d", batchCount + 1);
+        
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
+        
+        for(Map<String, Object> item : items) {
+            todayTotalCount++;
+            String outId = "POUT" + today + String.format("%04d", todayTotalCount);
+            
+            log.info("생산계획 자재 출고 등록: {}", outId);
+            
+            item.put("outId", outId);
+            item.put("batchId", batchId);
+            item.put("empId", empId);
+            item.put("outType", "출고대기");
+            item.put("planId", planId);  // 생산계획 ID 추가
+            
+            wareMapper.insertOutput(item);
+        }
+        
+        return batchId;
+    }
+    
     // 해당 품목의 재고가 있는 창고 정보(warehouseId, manageId) 조회
     private Map<String, Object> findAvailableWarehouseWithManage(String productId) {
         List<Map<String, Object>> warehouses = wareMapper.getWarehousesWithStock(productId);
@@ -615,13 +778,15 @@ public class WareService {
             throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
         }
         
-        // 디버깅 로그 추가
         log.info("출고 정보: {}", output);
         
         String materialId = (String) output.get("MATERIAL_ID");
         String productId = (String) output.get("PRODUCT_ID");
         
-        // null 체크 추가
+        // work_order_id 먼저 가져오기
+        Integer workOrderId = output.get("WORK_ORDER_ID") != null ? 
+            ((Number) output.get("WORK_ORDER_ID")).intValue() : null;
+        
         if(materialId == null && productId == null) {
             throw new RuntimeException("출고할 품목 정보가 없습니다.");
         }
@@ -630,7 +795,7 @@ public class WareService {
         String locationId = (String) output.get("LOCATION_ID");
         Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
         
-        // materialId가 있는 경우만 처리
+        // materialId가 있는 경우만 처리 (부품 출고)
         if(materialId != null) {
             log.info("Material 출고: materialId={}, warehouseId={}, locationId={}, qty={}", 
                      materialId, warehouseId, locationId, outCount);
@@ -647,9 +812,15 @@ public class WareService {
         // 출고 상태 변경
         wareMapper.updateOutputType(outId, "출고완료");
         
-        // LOT 추적용 세션
+        // 세션 설정
         HttpSession session = SessionUtil.getSession();
         session.setAttribute("targetIdValue", outId);
+        
+        // work_order_id도 세션에 저장 (자재 출고인 경우에만 의미있음)
+        if(workOrderId != null) {
+            session.setAttribute("workOrderId", workOrderId);
+            log.info("work_order_id {} 세션 저장", workOrderId);
+        }
     }
 
     // Product 재고 차감 (warehouse_item 차감 후 product 차감)
@@ -797,6 +968,158 @@ public class WareService {
         return count;
     }
     
+    // 0926 수주 대기 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPendingOrders() {
+        return wareMapper.selectPendingOrders();
+    }
+
+    // 수주 상세 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOrderDetails(String orderId) {
+        return wareMapper.selectOrderDetails(orderId);
+    }
+
+    // 제품 전체 재고
+    @Transactional(readOnly = true)
+    public Integer getProductTotalStock(String productId) {
+        Integer stock = wareMapper.getProductTotalStock(productId);
+        return stock != null ? stock : 0;
+    }
+
+    // 완제품 배치 출고 등록
+    @Transactional
+    public String addProductOutputBatch(List<Map<String, Object>> items, String empId) {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayProductOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+        String batchId = "POB" + today + String.format("%03d", batchCount + 1);
+        
+        // POUT250926으로 시작하는 최대값 조회
+        String prefix = "POUT" + today;
+        Integer maxCount = wareMapper.getMaxOutputCount(prefix);
+        if(maxCount == null) maxCount = 0;
+        
+        for(Map<String, Object> item : items) {
+            maxCount++;  // 1부터 시작했으니 2, 3, 4...
+            String outId = prefix + String.format("%04d", maxCount);
+            
+            item.put("outId", outId);
+            item.put("empId", empId);
+            item.put("batchId", batchId);
+            item.put("outType", "출고대기");
+            
+            log.info("출고 등록 시도: {}", outId);
+            
+            try {
+                wareMapper.insertOutput(item);
+            } catch(Exception e) {
+                log.error("출고 등록 실패 - outId: {}", outId, e);
+                throw e;
+            }
+        }
+        
+        return batchId;
+    }
+    
+    @Transactional
+    public String addProductionOutputBatch(String planId, List<Map<String, Object>> items, String empId) {
+    	log.info("=== 생산계획 출고 시작 - planId: [{}] ===", planId);
+    	String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Integer batchCount = wareMapper.getTodayOutputBatchCount(today);
+        if(batchCount == null) batchCount = 0;
+        
+        String batchId = "MOB" + today + String.format("%03d", batchCount + 1);
+        
+        Integer todayTotalCount = wareMapper.getTodayOutputCount(today);
+        if(todayTotalCount == null) todayTotalCount = 0;
+        
+        // work_order_id 조회 추가
+        Map<String, Object> workOrder = wareMapper.getUnstartedWorkOrder(planId);
+        log.info("조회된 workOrder: {}", workOrder);
+        Integer workOrderId = null;
+        if(workOrder != null && workOrder.get("workOrderId") != null) {
+            workOrderId = ((Number) workOrder.get("workOrderId")).intValue();
+            log.info("plan_id {}의 미착수 work_order_id: {}", planId, workOrderId);
+        }
+        
+        for(Map<String, Object> item : items) {
+            todayTotalCount++;
+            String outId = "OUT" + today + String.format("%04d", todayTotalCount);
+            
+            log.info("생산계획 자재 출고 등록: {}", outId);
+            
+            item.put("outId", outId);
+            item.put("batchId", batchId);
+            item.put("empId", empId);
+            item.put("outType", "출고대기");
+            item.put("planId", planId);
+            
+            if(workOrderId != null) {
+                item.put("workOrderId", workOrderId); 
+            }
+            
+            wareMapper.insertOutput(item);
+        }
+        
+        return batchId;
+    }
+    
+    @Transactional
+    @TrackLot(tableName = "output", pkColumnName = "out_id")
+    public void completeProductOutput(String outId, String empId) {
+        Map<String, Object> output = wareMapper.selectOutputById(outId);
+        
+        if(output == null) {
+            throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
+        }
+        
+        String productId = (String) output.get("PRODUCT_ID");
+        String warehouseId = (String) output.get("WAREHOUSE_ID");
+        Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
+        
+        // 재고 차감
+        reduceProductStock(productId, warehouseId, outCount);
+        
+        // 상태를 출고완료로 변경
+        wareMapper.updateOutputType(outId, "출고완료");
+        
+        // LOT 추적용 세션
+        HttpSession session = SessionUtil.getSession();
+        session.setAttribute("targetIdValue", outId);
+    }
+
+    // 수주 출하 상태 업데이트
+    private void updateOrderShipmentStatus(String orderId, String productId, Integer shippedQty) {
+        wareMapper.updateOrderDetailShipped(orderId, productId, shippedQty);
+        
+        // 모든 상세가 완료되었는지 확인
+        List<Map<String, Object>> details = wareMapper.selectOrderDetails(orderId);
+        boolean allComplete = details.stream()
+            .allMatch(d -> d.get("orderQty").equals(d.get("shippedQty")));
+        
+        if(allComplete) {
+            wareMapper.updateOrderStatus(orderId, "completion");
+        }
+    }
+    
+    // 완제품 manage_id별 재고 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getProductStockByManageId(String productId) {
+        return wareMapper.getProductStockGroupByManageId(productId);
+    }
+    
+    // 생산계획 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPendingProductPlans() {
+        return wareMapper.selectPendingProductPlans();
+    }
+
+    // 생산계획별 BOM 상세 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getPlanBOMDetails(String planId) {
+        return wareMapper.selectPlanBOMDetails(planId);
+    }
     // ==================== 데이터 조회 ====================
 
     // 부품 목록 조회 (구버전)
@@ -821,5 +1144,38 @@ public class WareService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getProductsForInput() {
         return wareMapper.selectProductsForInput();
+    }
+    
+    //====================================================================
+ // 창고 정보 조회
+    @Transactional(readOnly = true)
+    public WarehouseDTO getWarehouseInfo(String warehouseId) {
+        return wareMapper.selectWarehouseInfoById(warehouseId);
+    }
+
+    // 창고 재고 레이아웃 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getWarehouseStockLayout(String warehouseId) {
+        return wareMapper.selectWarehouseStockLayout(warehouseId);
+    }
+
+    // 창고 요약 정보
+    @Transactional(readOnly = true)
+    public Map<String, Object> getWarehouseSummary(String warehouseId) {
+        Map<String, Object> summary = new HashMap<>();
+        
+        summary.put("emptyLocations", wareMapper.getEmptyLocationCnt(warehouseId));
+        
+        summary.put("totalLocations", wareMapper.getTotalLocations(warehouseId));
+        summary.put("usedLocations", wareMapper.getUsedLocations(warehouseId));
+        summary.put("totalStock", wareMapper.getTotalStockInWarehouse(warehouseId));
+        
+        return summary;
+    }
+
+    // 위치별 상세 정보
+    @Transactional(readOnly = true)
+    public Map<String, Object> getLocationDetail(String locationId) {
+        return wareMapper.selectLocationDetail(locationId);
     }
 }

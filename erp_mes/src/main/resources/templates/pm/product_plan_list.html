@@ -5,7 +5,11 @@
 <head>
     <!-- 개별페이지 CSS 영역 -->
     <th:block layout:fragment="style">
-<!--                <link rel="stylesheet" th:href="@{/css/item_main.css}" /> -->
+    <style>
+	    #planRegisterModal .modal-dialog {
+		  max-width: 850px; /* 원하는 가로 크기 */
+		}
+	</style>
     </th:block>
     <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
 </head>
@@ -29,7 +33,7 @@
 	
 		<form id="planForm">
 		<div class="modal fade" id="planRegisterModal" tabindex="-1" aria-labelledby="planRegisterLabel" aria-hidden="true">
-		    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+		    <div class="modal-dialog modal-dialog-scrollable">
 		        <div class="modal-content" id="modalContentContainer">
 		            
 		            <!-- 모달 헤더 -->
@@ -50,37 +54,33 @@
 						<div class="row mb-4">
 		                    <div class="col">
 		                        <label for="product_id" class="form-label">생산계획 번호</label>
-		                        <input type="text" id="plan_id" name="planId" class="form-control" placeholder="ex) PP20250101-001">
+		                        <input type="text" id="plan_id" name="planId" class="form-control" placeholder="ex) PP20250101-001" required="required">
+		                        <input type="hidden" id="order_id" name="orderId" class="form-control">
 		                    </div>
 						</div>
 						<div class="row mb-4">
 		                    <div class="col">
 		                      <label for="product_name" class="form-label">제품명</label>
-						      <select name="productId" class="form-control">
-						        <option value="">선택하세요</option>
-						        <option th:each="p : ${productName}"
-						                th:value="${p.productId}"
-						                th:text="${p.productName} + ' (' + ${p.productId} + ')'">
-						        </option>
-						      </select>
+		                        <input type="text" id="product_name" name="productName" class="form-control" placeholder="ex) 10" readonly="readonly">
+		                        <input type="hidden" id="product_id" name="productId" class="form-control">
 		                    </div>
 		                    <div class="col">
 		                        <label for="product_name" class="form-label">생산 수량</label>
-		                        <input type="text" id="plan_quantity" name="planQuantity" class="form-control" placeholder="ex) 10">
+		                        <input type="text" id="plan_quantity" name="planQuantity" class="form-control" placeholder="ex) 10" readonly="readonly">
 		                    </div>
 						</div>
 						<div class="row mb-4">
 		                    <div class="col">
 		                        <label for="product_id" class="form-label">생산계획 시작일</label>
-		                        <input type="date" id="start_date" name="startDate" class="form-control">
+		                        <input type="date" id="start_date" name="startDate" class="form-control" required="required">
 		                    </div>
 		                    <div class="col">
 		                        <label for="product_name" class="form-label">생산계획 종료일</label>
-		                        <input type="date" id="end_date" name="endDate" class="form-control">
+		                        <input type="date" id="end_date" name="endDate" class="form-control" required="required">
 		                    </div>
 		                    <div class="col">
 		                        <label for="product_name" class="form-label">납기일</label>
-		                        <input type="date" id="due_date" name="dueDate" class="form-control">
+		                        <input type="date" id="due_date" name="dueDate" class="form-control" readonly="readonly">
 		                    </div>
 		                </div>
 		            </div>

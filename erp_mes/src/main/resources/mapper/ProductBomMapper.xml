@@ -12,6 +12,7 @@
 		ON p.product_type = c.com_dt_id
 		JOIN common_dt_code cc
 		ON p.unit = cc.com_dt_id
+		ORDER BY p.product_id
 	</select>
 	
 	<!-- 제품 유형(공통코드) -->

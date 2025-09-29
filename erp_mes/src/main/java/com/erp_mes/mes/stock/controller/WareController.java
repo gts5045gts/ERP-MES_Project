@@ -41,13 +41,6 @@ public class WareController {
 	
 	// ==================== 1. 페이지 라우팅 ====================
 	
-	// 창고내 재고 현황 페이지
-	@GetMapping("/warehouse")
-    public String warehouseList(Model model) {
-        log.info("창고 현황 페이지 접속");
-        return "inventory/warehouse_list";
-    }
-	
 	// 창고 정보 관리 페이지
 	@GetMapping("/ware")
     public String wareList(Model model) {
@@ -291,6 +284,24 @@ public class WareController {
 	    }
 	    return result;
 	}
+	
+	// 발주 대기 목록 조회 API
+	@GetMapping("/api/pending-purchases")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingPurchases() {
+	    log.info("발주 대기 목록 조회 API 호출");
+	    List<Map<String, Object>> result = wareService.getPendingPurchases();
+	    log.info("조회 결과: {}건", result.size());
+	    return result;
+	}
+
+	// 발주 상세 조회 API
+	@GetMapping("/api/purchase-details/{purId}")
+	@ResponseBody
+	public List<Map<String, Object>> getPurchaseDetails(@PathVariable("purId") String purId) {
+	    log.info("발주 상세 조회 - purId: {}", purId);
+	    return wareService.getPurchaseDetails(purId);
+	}
 	// ==================== 4. 출고 관리 API ====================
 
 	// 출고 목록 조회
@@ -351,6 +362,7 @@ public class WareController {
 	// 출고완료 처리 엔드포인트
 	@PutMapping("/api/outputs/{outId}/complete")
 	@ResponseBody
+	@TrackLot(tableName = "output", pkColumnName = "out_id")
 	public Map<String, Object> completeOutput(@PathVariable("outId") String outId, Principal principal) {
 	    
 	    Map<String, Object> result = new HashMap<>();
@@ -360,6 +372,9 @@ public class WareController {
 	        wareService.completeOutput(outId, empId);
 	        result.put("success", true);
 	        result.put("message", "출고완료 처리");
+	        
+	        HttpSession session = SessionUtil.getSession();
+	        session.setAttribute("targetIdValue", outId);
 	    } catch(Exception e) {
 	        result.put("success", false);
 	        result.put("message", e.getMessage());
@@ -370,7 +385,7 @@ public class WareController {
 	// 출고취소 처리 엔드포인트
 	@DeleteMapping("/api/outputs/{outId}/cancel")
 	@ResponseBody
-	public Map<String, Object> cancelOutput(@PathVariable String outId) {
+	public Map<String, Object> cancelOutput(@PathVariable("outId") String outId) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
 	        wareService.cancelOutput(outId);
@@ -456,5 +471,198 @@ public class WareController {
 	@ResponseBody
 	public List<Map<String, Object>> getProductsWithStock() {
 	    return wareService.getProductsWithStock();
+	}
+	
+	// 0926 수주 대기 목록 조회
+	@GetMapping("/api/pending-orders")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingOrders() {
+	    log.info("수주 대기 목록 조회");
+	    return wareService.getPendingOrders();
+	}
+
+	// 수주 상세 조회
+	@GetMapping("/api/order-details/{orderId}")
+	@ResponseBody
+	public List<Map<String, Object>> getOrderDetails(@PathVariable("orderId") String orderId) {
+	    log.info("수주 상세 조회 - orderId: {}", orderId);
+	    return wareService.getOrderDetails(orderId);
+	}
+
+	// 제품 재고 조회
+	@GetMapping("/api/product-stock/{productId}")
+	@ResponseBody
+	public Integer getProductStock(@PathVariable("productId") String productId) {
+	    return wareService.getProductTotalStock(productId);
+	}
+
+	// 완제품 배치 출고
+	@PostMapping("/api/outputs/product-batch")
+	@ResponseBody
+	public Map<String, Object> addProductOutputBatch(
+	        @RequestBody List<Map<String, Object>> items, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String batchId = wareService.addProductOutputBatch(items, principal.getName());
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 출고 완료");
+	    } catch(Exception e) {
+	        log.error("완제품 출고 실패:", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	// 완제품 입고완료 처리
+	@PutMapping("/api/inputs/{inId}/complete-product")
+	@ResponseBody
+	public Map<String, Object> completeProductInput(
+			@PathVariable("inId") String inId, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        wareService.completeProductInput(inId, principal.getName());
+	        result.put("success", true);
+	        result.put("message", "입고완료 및 LOT 부여");
+	    } catch(Exception e) {
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	// 완제품 manage_id별 재고 조회
+	@GetMapping("/api/product-stock-by-manage/{productId}")
+	@ResponseBody
+	public List<Map<String, Object>> getProductStockByManage(
+	        @PathVariable("productId") String productId) {
+	    log.info("=== 완제품 manage_id별 재고 조회: {}", productId);
+	    return wareService.getProductStockByManageId(productId);
+	}
+	// ---
+	
+	// 생산계획 대기 목록 조회
+	@GetMapping("/api/pending-plans")
+	@ResponseBody
+	public List<Map<String, Object>> getPendingPlans() {
+	    return wareService.getPendingProductPlans();
+	}
+
+	// 생산계획별 BOM 상세 조회
+	@GetMapping("/api/plan-bom/{planId}")
+	@ResponseBody
+	public List<Map<String, Object>> getPlanBOM(@PathVariable("planId") String planId) {
+	    return wareService.getPlanBOMDetails(planId);
+	}
+	
+	@PostMapping("/api/outputs/production-material-batch")
+	@ResponseBody
+	public Map<String, Object> addProductionOutputBatch(
+	        @RequestBody Map<String, Object> requestData, 
+	        Principal principal) {
+	    
+	    Map<String, Object> result = new HashMap<>();
+	    try {
+	        String planId = (String) requestData.get("planId");
+	        List<Map<String, Object>> items = (List<Map<String, Object>>) requestData.get("items");
+	        
+	        if(planId == null || planId.isEmpty()) {
+	            throw new RuntimeException("생산계획 ID가 필요합니다.");
+	        }
+	        
+	        String batchId = wareService.addProductionOutputBatch(planId, items, principal.getName());
+	        
+	        result.put("success", true);
+	        result.put("batchId", batchId);
+	        result.put("message", items.size() + "건 생산계획 자재 출고 등록");
+	    } catch(Exception e) {
+	        log.error("생산계획 자재 출고 실패:", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    return result;
+	}
+	
+	//=================================================================================
+	
+	// 창고 레이아웃 페이지 - 데이터 전달
+	@GetMapping("/warehouse")
+	public String warehouseList(Model model) {
+	    log.info("창고 현황 페이지 접속");
+	    
+	    // 창고 목록 조회
+	    List<WarehouseDTO> warehouses = wareService.getWarehouseList(null, "Y", null);
+	    model.addAttribute("warehouses", warehouses);
+	    
+	    // 첫 번째 창고를 기본값으로
+	    if(!warehouses.isEmpty()) {
+	        String defaultWarehouseId = warehouses.get(0).getWarehouseId();
+	        model.addAttribute("defaultWarehouseId", defaultWarehouseId);
+	    }
+	    
+	    return "inventory/warehouse_list";
+	}
+
+	// 창고별 재고 현황 API
+	@GetMapping("/api/warehouse/layout/{warehouseId}")
+	@ResponseBody
+	public Map<String, Object> getWarehouseLayout(@PathVariable String warehouseId) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    try {
+	        // 창고 정보
+	        WarehouseDTO warehouse = wareService.getWarehouseInfo(warehouseId);
+	        result.put("warehouse", warehouse);
+	        
+	        // 해당 창고의 위치별 재고 현황
+	        List<Map<String, Object>> stockLayout = wareService.getWarehouseStockLayout(warehouseId);
+	        result.put("stockLayout", stockLayout);
+	        
+	        // 창고 요약 정보
+	        Map<String, Object> summary = wareService.getWarehouseSummary(warehouseId);
+	        result.put("summary", summary);
+	        
+	        result.put("success", true);
+	    } catch(Exception e) {
+	        log.error("창고 레이아웃 조회 실패", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    
+	    return result;
+	}
+
+	// 특정 위치의 상세 정보 조회
+	@GetMapping("/api/warehouse/location/{locationId}")
+	@ResponseBody
+	public Map<String, Object> getLocationDetail(@PathVariable("locationId") String locationId) {
+	    return wareService.getLocationDetail(locationId);
+	}
+	
+	// 창고별 재고 시각화 API
+	@GetMapping("/api/warehouse/visual/{warehouseId}")
+	@ResponseBody
+	public Map<String, Object> getWarehouseVisual(@PathVariable("warehouseId") String warehouseId) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    try {
+	        // warehouse_item에서 해당 창고의 재고 현황 조회
+	        List<Map<String, Object>> stockLayout = wareService.getWarehouseStockLayout(warehouseId);
+	        
+	        result.put("success", true);
+	        result.put("stockLayout", stockLayout);
+	        result.put("warehouseId", warehouseId);
+	        
+	    } catch(Exception e) {
+	        log.error("창고 레이아웃 조회 실패", e);
+	        result.put("success", false);
+	        result.put("message", e.getMessage());
+	    }
+	    
+	    return result;
 	}
 }

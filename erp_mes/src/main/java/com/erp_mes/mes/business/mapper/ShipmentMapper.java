@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.erp_mes.mes.business.dto.OrderDTO;
 import com.erp_mes.mes.business.dto.OrderDetailDTO;
+import com.erp_mes.mes.business.dto.OutputDTO;
 import com.erp_mes.mes.business.dto.ShipmentDTO;
 import com.erp_mes.mes.business.dto.ShipmentDetailDTO;
 import com.erp_mes.mes.stock.dto.WarehouseItemDTO;
@@ -21,10 +22,10 @@ public interface ShipmentMapper {
     List<OrderDetailDTO> getOrderDetailWithStockAndStatus(@Param("orderId") String orderId);
     
 	// product_id로 재고가 많은 순서대로 warehouse_item 조회
-    List<WarehouseItemDTO> getWarehouseItemsByProductId(@Param("productId") String productId);
+    List<OutputDTO> getOutputItemsByProductIdAndOrderId(@Param("productId") String productId, @Param("orderId") String orderId);
     
 	// warehouse_item 재고 수량 차감
-    int updateWarehouseItemAmount(@Param("manageId") String manageId, @Param("amount") int amount);
+    int updateOutputItemCount(@Param("productId") String productId, @Param("orderId") String orderId ,@Param("count") int count);
     
     // 출하번호 부여를 위한 컬럼수 체크
 	int countShipment();
@@ -75,4 +76,6 @@ public interface ShipmentMapper {
     
     // 지연된 품목 ID 목록을 조회하는 메서드
     List<String> getDelayedProductIds();
+    
+    void updateShipmentStatusToReadyIfAllNotShipped(String shipmentId);
 }

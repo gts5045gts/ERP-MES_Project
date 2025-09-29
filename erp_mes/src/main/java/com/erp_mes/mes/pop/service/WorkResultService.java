@@ -21,6 +21,7 @@ import com.erp_mes.erp.commonCode.repository.CommonCodeRepository;
 import com.erp_mes.erp.commonCode.repository.CommonDetailCodeRepository;
 import com.erp_mes.mes.plant.dto.ProcessDTO;
 import com.erp_mes.mes.pm.dto.BomDTO;
+import com.erp_mes.mes.pop.dto.DefectDTO;
 import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.entity.WorkResult;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
@@ -97,11 +98,13 @@ public class WorkResultService {
 	}
 
 
-	// 불량 아이디 저장
-	public void updateDefect(Long resultId, Long defectItemId) {
-		workResultMapper.updateDefectItemId(resultId, defectItemId);
-
+	public List<WorkResultDTO> bomByWorkOrderId(Long workOrderId) {
+		return workResultMapper.bomByWorkOrderId(workOrderId);
 	}
+
+
+
+
 
 
 

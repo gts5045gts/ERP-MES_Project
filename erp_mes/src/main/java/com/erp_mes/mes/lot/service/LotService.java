@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.AliasToEntityMapResultTransformer;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.erp_mes.mes.lot.constant.LotDomain;
 import com.erp_mes.mes.lot.dto.LotDTO;
+import com.erp_mes.mes.lot.dto.LotDetailDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
 import com.erp_mes.mes.lot.entity.LotMaterialUsage;
@@ -22,6 +24,9 @@ import com.erp_mes.mes.lot.mapper.LotMapper;
 import com.erp_mes.mes.lot.repository.LotMaterialUsageRepository;
 import com.erp_mes.mes.lot.repository.LotProcessHistoryRepository;
 import com.erp_mes.mes.lot.repository.LotRepository;
+import com.erp_mes.mes.plant.dto.ProcessDTO;
+import com.erp_mes.mes.pop.dto.WorkResultDTO;
+import com.erp_mes.mes.stock.mapper.WareMapper;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -39,6 +44,7 @@ public class LotService {
 	private final LotRepository lotRepository;
 	private final LotMaterialUsageRepository usageRepository;
 	private final LotMapper lotMapper;
+	private final WareMapper wareMapper;
 	
 	@PersistenceContext
     private EntityManager entityManager;
@@ -68,6 +74,7 @@ public class LotService {
 		            .type(prefix)
 		            .materialCode(lotDTO.getMaterialCode())
 		            .machineId(machineId)
+		            .workOrderId(lotDTO.getWorkOrderId())
 		            .createdAt(LocalDateTime.now())
 		            .build();
 
@@ -204,6 +211,59 @@ public class LotService {
         params.put("size", size);
 		
 		return lotMapper.lotListWithPaged(params);
+	}
+
+	public Long getPopLotId(String popLotId) {
+		return lotRepository.findPopByworkOrderId(popLotId);
+	}
+
+	public List<LotMaster> getOutPutLotIdAll(Object workOrderId) {
+		workOrderId = Long.parseLong(String.valueOf(workOrderId));
+		return lotRepository.findByWorkOrderId((Long) workOrderId);
+	}
+
+	public int getOutPutQty(String targetIdValue) {
+		Map<String, Object> output = wareMapper.selectOutputById(targetIdValue);
+		
+		if(output == null) {
+            throw new RuntimeException("출고 정보를 찾을 수 없습니다.");
+        }
+		
+		Integer outCount = ((Number) output.get("OUT_COUNT")).intValue();
+		
+		return outCount;
+	}
+
+	public List<Map<String, Object>> findByProcess(String productId) {
+		List<ProcessDTO> children = lotMapper.findByProcess(productId);
+		
+		List<Map<String, Object>> process = children.stream()
+			.map(dto -> {
+					Map<String, Object> map = new HashMap<>();
+					map.put("proNm", dto.getProNm());
+					map.put("typeNm",dto.getTypeNm());
+					return map;
+				})
+		    .collect(Collectors.toList());
+		
+		return process;
+	}
+
+	public List<WorkResultDTO> findDetail(Long workOrderId) {
+
+        Map<String, Object> params = new HashMap<>();
+
+        return lotMapper.findDetail(workOrderId);
+		
+	}
+
+	public List<LotDetailDTO> findByMaterial(String workOrderId) {
+		 
+		return lotRepository.findByMaterialInfo(workOrderId);
+	}
+
+	public List<LotDetailDTO> findByEquipment(String productId) {
+		return lotRepository.findByEquipmenInfo(productId);
 	}
 
 }

@@ -9,7 +9,7 @@
 <!-- 불량 테이블 업데이트 -->
 <insert id="saveDefect"  parameterType="com.erp_mes.mes.pop.dto.DefectDTO"  keyProperty="defectItemId">
 	INSERT INTO defect_item
-		(work_order_id , defect_type, defect_reason, defect_qty, product_name, emp_id, defect_location, defect_date)
+		(work_order_id , defect_type, defect_reason, defect_qty, product_name, emp_id, defect_location, defect_date, lot_id)
 	VALUES
 		(#{workOrderId,jdbcType=NUMERIC},
 		#{defectType,jdbcType=VARCHAR},
@@ -18,9 +18,19 @@
 		#{productNm,jdbcType=VARCHAR},
 		#{empId,jdbcType=VARCHAR},
 		#{defectLocation,jdbcType=VARCHAR},
-		#{defectDate,jdbcType=DATE})
+		SYSDATE,
+		#{lotId,jdbcType=VARCHAR})
 </insert>
 
+<!-- 불량 수정 -->
+<update id="updateDefect" parameterType="com.erp_mes.mes.pop.dto.DefectDTO">
+    UPDATE defect_item
+    SET
+	        defect_type    = #{defectType,jdbcType=VARCHAR},
+	        defect_reason  = #{defectReason,jdbcType=VARCHAR},
+	        defect_qty     = #{defectQty,jdbcType=NUMERIC}
+    WHERE 	work_order_id = #{workOrderId,jdbcType=NUMERIC}
+</update>
 
 
     
