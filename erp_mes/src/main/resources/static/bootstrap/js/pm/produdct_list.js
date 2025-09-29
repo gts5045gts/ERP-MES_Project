@@ -5,6 +5,7 @@ const prodGrid = new tui.Grid({
     { header: '제품 코드', name: 'productId', sortable: true, align: 'center' },
     { header: '제품명', name: 'productName', sortable: true, align: 'center' },
     { header: '제품 구분', name: 'productType', sortable: true, align: 'center' },
+    { header: '가격', name: 'price', sortable: true, align: 'center' },
     { header: '단위', name: 'unit', sortable: true, align: 'center' },
     { header: '등록일', name: 'createdAt', sortable: true, align: 'center' },
   ],

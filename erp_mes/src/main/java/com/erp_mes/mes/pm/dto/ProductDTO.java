@@ -19,7 +19,7 @@ public class ProductDTO {
 	private String productName;
 	private String productType;
 	private String unit;
-	private String price;
+	private Integer price;
 	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDateTime createdAt;
