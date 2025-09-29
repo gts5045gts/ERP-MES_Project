@@ -770,7 +770,7 @@ public class WareService {
 
     // 출고 완료 처리
     @Transactional
-    @TrackLot(tableName = "output", pkColumnName = "out_id")
+//    @TrackLot(tableName = "output", pkColumnName = "out_id")
     public void completeOutput(String outId, String empId) {
         Map<String, Object> output = wareMapper.selectOutputById(outId);
         
@@ -814,7 +814,7 @@ public class WareService {
         
         // 세션 설정
         HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", outId);
+//        session.setAttribute("targetIdValue", outId);
         
         // work_order_id도 세션에 저장 (자재 출고인 경우에만 의미있음)
         if(workOrderId != null) {
