@@ -381,7 +381,7 @@ public class WareController {
 	// 출고취소 처리 엔드포인트
 	@DeleteMapping("/api/outputs/{outId}/cancel")
 	@ResponseBody
-	public Map<String, Object> cancelOutput(@PathVariable String outId) {
+	public Map<String, Object> cancelOutput(@PathVariable("outId") String outId) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
 	        wareService.cancelOutput(outId);
@@ -517,7 +517,7 @@ public class WareController {
 	@PutMapping("/api/inputs/{inId}/complete-product")
 	@ResponseBody
 	public Map<String, Object> completeProductInput(
-	        @PathVariable String inId, 
+			@PathVariable("inId") String inId, 
 	        Principal principal) {
 	    
 	    Map<String, Object> result = new HashMap<>();
@@ -635,14 +635,14 @@ public class WareController {
 	// 특정 위치의 상세 정보 조회
 	@GetMapping("/api/warehouse/location/{locationId}")
 	@ResponseBody
-	public Map<String, Object> getLocationDetail(@PathVariable String locationId) {
+	public Map<String, Object> getLocationDetail(@PathVariable("locationId") String locationId) {
 	    return wareService.getLocationDetail(locationId);
 	}
 	
 	// 창고별 재고 시각화 API
 	@GetMapping("/api/warehouse/visual/{warehouseId}")
 	@ResponseBody
-	public Map<String, Object> getWarehouseVisual(@PathVariable String warehouseId) {
+	public Map<String, Object> getWarehouseVisual(@PathVariable("warehouseId") String warehouseId) {
 	    Map<String, Object> result = new HashMap<>();
 	    
 	    try {
