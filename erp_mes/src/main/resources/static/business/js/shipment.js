@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (!isBUSTeam && !isAUTLevel) {
 		if (addBtn) addBtn.style.display = "none";
 	}
-	
+
 	// 선택한 품목 정보를 저장할 배열
 	let selectedProducts = [];
 
@@ -551,6 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		try {
 			let allSuccess = true;
+			let lastShipmentId = null;
 
 			for (const payload of shipmentPayloads) {
 				console.log("전송될 페이로드:", payload);
@@ -564,12 +565,24 @@ document.addEventListener("DOMContentLoaded", () => {
 					body: JSON.stringify(payload)
 				});
 
+				const responseText = await res.text();
+
 				if (!res.ok) {
 					allSuccess = false;
-					const txt = await res.text();
-					console.error("서버 응답 에러:", res.status, txt);
-					alert("출하 등록 실패: " + txt);
+					//					const txt = await res.text();
+					console.error("서버 응답 에러:", res.status, responseText);
+					alert("출하 등록 실패: " + responseText);
 					break; // 하나라도 실패하면 중단
+				} else {
+					try {
+						const jsonResponse = JSON.parse(responseText);
+						lastShipmentId = jsonResponse.shipmentId; // 응답에서 출하 번호를 받아서 저장
+					} catch (e) {
+						console.error("JSON 파싱 오류: 서버 응답이 유효한 JSON이 아닙니다.", e, "응답 텍스트:", responseText);
+						allSuccess = false;
+						alert("출하 등록은 성공했지만, 응답 처리 중 오류가 발생했습니다.");
+						break;
+					}
 				}
 			}
 
@@ -577,6 +590,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				alert("출하 등록 완료!");
 				shipmentAddModal.hide();
 				loadShipments();
+				if (lastShipmentId) {
+					loadShipmentDetails(lastShipmentId);
+				}
+
 			}
 
 		} catch (err) {
