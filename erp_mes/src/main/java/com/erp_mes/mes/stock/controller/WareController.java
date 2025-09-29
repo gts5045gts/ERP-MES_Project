@@ -183,6 +183,7 @@ public class WareController {
 	// 배치 단위 입고 등록
 	@PostMapping("/api/inputs/batch")
 	@ResponseBody
+	@TrackLot(tableName = "input", pkColumnName = "IN_ID") //부품 입고는 여기 한곳만 위치함
 	public Map<String, Object> addInputBatch(@RequestBody List<Map<String, Object>> items, Principal principal) {
 	    Map<String, Object> result = new HashMap<>();
 	    try {
@@ -195,6 +196,10 @@ public class WareController {
 	            item.put("batchId", batchId);
 	            
 	            String inId = wareService.addInput(item);
+	            if (inId != null) {
+	            	HttpSession session = SessionUtil.getSession();
+		            session.setAttribute("targetIdValue", inId);	
+				}
 	        }
 	        
 	        result.put("success", true);

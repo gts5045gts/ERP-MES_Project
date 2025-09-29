@@ -201,7 +201,6 @@ public class WareService {
 
     // 입고 검사 완료 처리 (로트 처리)
     @Transactional
-    @TrackLot(tableName = "input", pkColumnName = "IN_ID")
     public void completeInput(String inId, String empId) {
         Map<String, Object> input = wareMapper.selectInputById(inId);
         
@@ -285,9 +284,6 @@ public class WareService {
         }
         
         log.info("=== 입고 완료 처리 종료 ===");
-        
-        HttpSession session = SessionUtil.getSession();
-        session.setAttribute("targetIdValue", inId);
     }
     
     // 새로 추가: 발주 관련 메서드만

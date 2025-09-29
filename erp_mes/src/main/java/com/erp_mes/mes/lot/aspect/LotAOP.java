@@ -1,6 +1,5 @@
 package com.erp_mes.mes.lot.aspect;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,15 +13,11 @@ import com.erp_mes.erp.config.util.SessionUtil;
 import com.erp_mes.mes.lot.dto.LotDTO;
 import com.erp_mes.mes.lot.dto.MaterialUsageDTO;
 import com.erp_mes.mes.lot.entity.LotMaster;
-import com.erp_mes.mes.lot.entity.LotMaterialUsage;
 import com.erp_mes.mes.lot.repository.LotRepository;
 import com.erp_mes.mes.lot.service.LotService;
 import com.erp_mes.mes.lot.service.LotUsageService;
 import com.erp_mes.mes.lot.trace.TrackLot;
-import com.erp_mes.mes.pm.dto.WorkOrderDTO;
-import com.erp_mes.mes.pop.dto.WorkResultDTO;
 import com.erp_mes.mes.pop.mapper.WorkResultMapper;
-import com.erp_mes.mes.pop.repository.WorkResultRepository;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -111,16 +106,16 @@ public class LotAOP {
 				    }
 				}
 				
-				if(tableName.equals("INPUT")){
-					List<LotMaster> masters = lotRepository.findByTargetIdValue((String) targetIdValue);
-					log.info("masters>>>>>>>>>>>>>>>>"+masters);
-
-				    if (masters != null && !masters.isEmpty()) {
-				        log.error("이미 등록된 정보입니다.");
-				        return null;  
-				    }
-					
-				}
+				/*
+				 * if(tableName.equals("INPUT")){ List<LotMaster> masters =
+				 * lotRepository.findByTargetIdValue((String) targetIdValue);
+				 * log.info("masters>>>>>>>>>>>>>>>>"+masters);
+				 * 
+				 * if (masters != null && !masters.isEmpty()) { log.error("이미 등록된 정보입니다.");
+				 * return null; }
+				 * 
+				 * }
+				 */
 				
 				if(tableName.equals("WORK_RESULT")){
 	    			
