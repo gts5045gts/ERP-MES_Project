@@ -70,6 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 alert('발주 요청 완료!');
                 $('#purchaseModal').modal('hide');
+				
+				// 발주 확정 버튼 비활성화
+				const btn = document.getElementById("purchaseConfirmBtn");
+				btn.disabled = true;
+				btn.textContent = "발주 요청 완료"; 
+				
                 loadWorkOrder();
             } else {
                 alert('등록 실패!');

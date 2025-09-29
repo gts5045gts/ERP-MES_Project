@@ -58,15 +58,10 @@ public class LotController {
 		LotDomain lotDomain = LotDomain.fromDomain(domain.toLowerCase().trim());
         String prefix = lotDomain.getPrefix();
         
-        log.info(">>>>>>>>>>>>>>>>>>>>>>>lotDomamin======="+lotDomain);
-        log.info(">>>>>>>>>>>>>>>>>>>>>>>prepix======="+prefix);
-        
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String lastLotId = lotRepository.findByLastLotId(prefix, datePart, null);
         lotId = lotService.generateLotId(prefix, datePart, null, lastLotId);
         
-        log.info("lotid======="+lotId);
-		
 		return "ok";
 	}
 	
@@ -95,7 +90,6 @@ public class LotController {
 	@ResponseBody // ★ 반드시 붙이기
 	public List<LotDetailDTO> getMaterial(@PathVariable("workOrderId") String workOrderId){
 	    List<LotDetailDTO> children = lotService.findByMaterial(workOrderId);
-		log.info("proList" + children.toString()); 
 		return children;
 	}
 	
@@ -104,7 +98,6 @@ public class LotController {
 	@ResponseBody // ★ 반드시 붙이기
 	public List<LotDetailDTO> getEquipment(@PathVariable("productId") String productId){
 	    List<LotDetailDTO> children = lotService.findByEquipment(productId);
-		log.info("proList=====" + children.toString()); 
 		return children;
 	}
 	
@@ -113,7 +106,6 @@ public class LotController {
 	@ResponseBody // ★ 반드시 붙이기
 	public List<WorkResultDTO> getLotDetail(@PathVariable("workOrderId") Long workOrderId){
 	    List<WorkResultDTO> orderDetail = lotService.findDetail(workOrderId);
-//		log.info("proList" + orderDetail.toString()); 
 		return orderDetail;
 	}
 }
