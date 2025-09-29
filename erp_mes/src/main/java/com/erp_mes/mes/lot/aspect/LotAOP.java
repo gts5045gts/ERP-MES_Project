@@ -45,8 +45,6 @@ public class LotAOP {
 		
 		try {
 			
-			log.info("AOP 진입, TrackLot: " + trackLot);
-
 			result = pjp.proceed();
 			
 			HttpSession session = SessionUtil.getSession();
@@ -80,8 +78,6 @@ public class LotAOP {
 				
 				for (Map<String, Object> row : tableInfo) {
 				    for (Map.Entry<String, Object> entry : row.entrySet()) {
-				    	
-				    	log.info(">>>>>>>>>entry.getValue()" + entry.getValue());
 				    	
 				    	if(entry.getKey().equals("MATERIAL_TYPE")){
 					        materialType = entry.getValue();	
@@ -118,8 +114,6 @@ public class LotAOP {
 		    				
 		    				qtyUsed = lotService.getOutPutQty(lot.getTargetIdValue());
 		    				
-		    				log.info("qtyUsed>>>>>>>>>>>>>>>>"+qtyUsed);
-				    		
 							MaterialUsageDTO usage = MaterialUsageDTO.builder()
 													.parentLotId((String) parentLotId) // 자재 lotID
 													.qtyUsed(qtyUsed)
