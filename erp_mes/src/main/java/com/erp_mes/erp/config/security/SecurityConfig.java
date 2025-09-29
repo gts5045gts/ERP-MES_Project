@@ -35,10 +35,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     	return httpSecurity
+    		.csrf(csrf -> csrf
+    				.ignoringRequestMatchers("/ws/**") 
+    			)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/main","/bootstrap/**").permitAll()
                 .requestMatchers("/login").permitAll()
-
                 // 관리자 근태관리 URL 접근 제한
                 .requestMatchers("/attendance/adminCommute/**", "/attendance/adminCommuteLog/**")
                 .hasAnyRole("AUT001","AUT002")
