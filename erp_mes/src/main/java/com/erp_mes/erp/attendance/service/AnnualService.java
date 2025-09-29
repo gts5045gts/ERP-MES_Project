@@ -90,8 +90,6 @@ public class AnnualService {
 		// 직급별 연차 자동 적용 (갱신)
 	    ann.setAnnTotal((double)getAnnByHireDate(emp.getJoinDate()));
 	    
-	    annRepository.save(ann);
-	   
 	    return new AnnualDTO(ann, emp);
 		
 	}
@@ -116,7 +114,7 @@ public class AnnualService {
 
 	
 	// 사원의 권한별 연차 조회 + 무한스크롤
-	@Transactional
+	@Transactional(readOnly = true)
 	public Page<AnnualDTO> getAllAnnByYearPaged(String empId, String annYear, Pageable pageable) {
 	    Personnel loginUser = getPersonnel(empId);
 	    String roleCode = loginUser.getLevel().getComDtId();
