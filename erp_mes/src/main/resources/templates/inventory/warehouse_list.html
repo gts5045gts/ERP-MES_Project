@@ -340,29 +340,6 @@
                             </table>
                         </div>
                     </div>
-                    
-                    <!-- 입출고 이력 -->
-                    <div class="mt-3">
-                        <h6>최근 입출고 이력</h6>
-                        <table class="table table-sm" id="historyTable">
-                            <thead>
-                                <tr>
-                                    <th>구분</th>
-                                    <th>일시</th>
-                                    <th>수량</th>
-                                    <th>담당자</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- 동적 생성 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning" onclick="adjustStock()">재고조정</button>
-                    <button type="button" class="btn btn-info" onclick="viewHistory()">전체이력</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
                 </div>
             </div>
         </div>
@@ -566,28 +543,33 @@ function updateWarehouseGrid(stockData) {
 }
 
 // 위치 상세 정보 표시 (기존 함수 수정)
-function showDetail(locationId) {
-    const cell = $(`.location-cell:has(small:contains('${locationId}'))`);
-    const stockInfo = cell.data('stockInfo');
+function showLocationDetail(locationId) {
+    const $cell = $(`.location-cell[data-location="${locationId}"]`);
+    const stockInfo = $cell.data('stockInfo');
     
-    $('#detailCard').show();
-    $('#detail-location').text(locationId);
+    $('#modal-location').text(locationId);
     
     if(stockInfo) {
-        $('#detail-item').text(stockInfo.itemName || '-');
-        $('#detail-code').text(stockInfo.materialId || stockInfo.productId || '-');
-        $('#detail-qty').text(stockInfo.currentQty || 0);
-        $('#detail-max').text(stockInfo.maxQty || 1000);
-        $('#detail-manager').text(stockInfo.empName || '-');
-        $('#detail-date').text(stockInfo.updateDate || '-');
+        $('#modal-manage-id').text(stockInfo.manageId || '-');
+        $('#modal-item-code').text(stockInfo.itemCode || '-');
+        $('#modal-item-name').text(stockInfo.itemName || '-');
+        $('#modal-current-qty').text(stockInfo.currentQty || 0);
+        $('#modal-max-qty').text(stockInfo.maxQty || 1000);
+        $('#modal-emp').text(stockInfo.empName || '-');
+        $('#modal-update').text(stockInfo.updateDate || '-');
+        
+        const usage = Math.round((stockInfo.currentQty / (stockInfo.maxQty || 1000)) * 100);
+        $('#modal-usage-bar').css('width', usage + '%').text(usage + '%');
     } else {
-        $('#detail-item').text('비어있음');
-        $('#detail-code').text('-');
-        $('#detail-qty').text('0');
-        $('#detail-max').text('1000');
-        $('#detail-manager').text('-');
-        $('#detail-date').text('-');
+        $('#modal-manage-id').text('-');
+        $('#modal-item-code').text('-');
+        $('#modal-item-name').text('비어있음');
+        $('#modal-current-qty').text('0');
+        $('#modal-max-qty').text('1000');
+        $('#modal-usage-bar').css('width', '0%').text('0%');
     }
+    
+    $('#locationDetailModal').modal('show');
 }
 
 // 랙 상세 모달 열기 (기존 함수 수정)
