@@ -30,5 +30,11 @@ public class DefectDTO {
 
 	private Long resultId; // 실적 id
 	
+	// =================================================
+	// 불량관리에서 사용
+	private String empName;
+	private String defectTypeName;
+	private String defectLocationName;
+	
 
 }

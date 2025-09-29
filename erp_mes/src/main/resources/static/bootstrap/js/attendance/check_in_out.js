@@ -1,3 +1,6 @@
+console.log("CSRF Header:", csrfHeader);
+console.log("CSRF Token:", csrfToken);
+
 // 출근 버튼
 	$(document).ready(function() {
 	    const checkInBtn = $("#checkInBtn");
