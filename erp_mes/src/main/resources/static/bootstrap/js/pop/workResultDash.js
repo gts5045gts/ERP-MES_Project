@@ -164,24 +164,31 @@ const STORAGE_KEY = "cumulativeEquipment";
 const Y_AXIS_MIN = 10;
 
 function updateEquipmentChart(bomData = []) {
-	    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-	    bomData.forEach(row => {
-	        const equip = row.equipmentNm;
-	        saved[equip] = (saved[equip] || 0) + 1; // 누적
-	    });
-
-	    // 로컬 스토리지 업데이트
-	    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-
-	    // 차트용 데이터 변환
-	    const data = Object.keys(saved).map(equip => ({
-	        equipment: equip,
-	        count: saved[equip]
-	    }));
-
-	    drawChart(data);
+	if (!bomData || bomData.length === 0) {
+		// 데이터 없으면 빈 차트만 표시
+		drawChart([]);
+		return;
 	}
+
+	const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+	bomData.forEach(row => {
+		const equip = row.equipmentNm;
+		saved[equip] = (saved[equip] || 0) + 1; // 누적
+	});
+
+	// 로컬 스토리지 업데이트
+	localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+	// 차트용 데이터 변환
+	const data = Object.keys(saved).map(equip => ({
+		equipment: equip,
+		count: saved[equip]
+	}));
+
+	drawChart(data);
+}
 // 새로고침 시 저장된 값 복원 후 차트 표시
 document.addEventListener("DOMContentLoaded", () => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -227,7 +234,12 @@ function drawChart(data) {
         .nice()
         .range([height, 0]);
 
-    g.select(".x-axis").call(d3.axisBottom(x));
+	g.select(".x-axis")
+		.call(d3.axisBottom(x))
+		.selectAll("text")
+		.attr("transform", "rotate(-30)")   // 45도 회전
+		.style("text-anchor", "end")        // 오른쪽 끝 기준 정렬
+		.style("font-size", "9px");        // 글자 조금 작게
     g.select(".y-axis").call(d3.axisLeft(y).ticks(5));
 
     const bars = g.selectAll(".bar").data(data, d => d.equipment);

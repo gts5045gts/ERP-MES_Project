@@ -31,7 +31,6 @@ $(document).ready(function() {
                         <td>${item.workOrderId}</td>
                         <td>${item.productNm}</td>
                         <td>${item.startDate}</td>
-                        <td>${item.endDate}</td>
                         <td class="${statusClass}">${item.workOrderStatus}</td>
                     </tr>
                 `;

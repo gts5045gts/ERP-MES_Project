@@ -19,13 +19,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	    		.withSockJS();
 	}
 
-	@Override
-	public void configureMessageBroker(MessageBrokerRegistry registry) {
-		// 서버의 @Controller로 라우팅될 메시지 prefix
-		registry.setApplicationDestinationPrefixes("/app");
-		// 메시지 브로커로 라우팅될 메시지 prefix (구독)
-		registry.enableSimpleBroker("/topic", "/queue", "/user");
-		registry.setUserDestinationPrefix("/user");
-	}
+   @Override
+   public void configureMessageBroker(MessageBrokerRegistry registry) {
+      // 서버의 @Controller로 라우팅될 메시지 prefix
+      registry.setApplicationDestinationPrefixes("/app");
+      // 메시지 브로커로 라우팅될 메시지 prefix (구독)
+      registry.enableSimpleBroker("/topic", "/queue", "/user");
+      registry.setUserDestinationPrefix("/user");
+   }
 
 }

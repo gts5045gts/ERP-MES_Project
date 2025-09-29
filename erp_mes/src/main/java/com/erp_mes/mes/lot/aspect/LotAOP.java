@@ -94,7 +94,11 @@ public class LotAOP {
 						}
 				    	
 				    	if(tableName.equals("OUTPUT")){
-				    		popWorkOrderID = Long.parseLong(String.valueOf(workOrderId));
+				    		log.info("workOrderId>>>>>>>>>>>>"+workOrderId);
+				    		if (workOrderId != null) {
+				    			popWorkOrderID = Long.parseLong(String.valueOf(workOrderId));
+					    		log.info("popWorkOrderID>>>>>>>>>>>>"+popWorkOrderID);	
+							}
 						}
 				    }
 				}

@@ -26,6 +26,7 @@
 	LEFT JOIN equipment e ON pr.equip_id = e.equip_id
     LEFT JOIN product prod ON pr.product_id = prod.product_id
  	WHERE o.emp_id = #{empId}
+ 	ORDER BY o.work_order_id ASC
 </select>
 
 <!-- 상세작업지시 모달을 위한 조인 -->
@@ -131,8 +132,7 @@
 	    WHEN o.work_order_status = '진행중' THEN 1
 	    WHEN o.work_order_status NOT IN ('검사대기', '작업완료') THEN 2
 	    ELSE 3
-	  END,
-	w.created_at ASC
+	  END
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
 </select>
 

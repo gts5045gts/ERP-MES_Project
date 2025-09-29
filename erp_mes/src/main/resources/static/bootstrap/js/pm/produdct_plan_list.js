@@ -10,7 +10,7 @@ const planGrid = new tui.Grid({
     { header: '종료일', name: 'endDate', sortable: true, align: 'center' },
     { header: '납기일', name: 'dueDate', sortable: true, align: 'center' },
   ],
-  bodyHeight: 270
+  bodyHeight: 500
 });
 
 async function loadProductPlan() {
