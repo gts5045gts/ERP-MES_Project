@@ -6,25 +6,72 @@
   <mapper namespace="com.erp_mes.mes.lot.mapper.LotMapper">
   <select id="lotListWithPaged" resultType="com.erp_mes.mes.lot.dto.LotDTO">
   	SELECT
-  		l.lot_id,
-	    w.result_id      	AS resultId,
-	    w.good_qty       	AS goodQty,
-	    w.defect_qty     	AS defectQty,
-	    w.updated_at     	AS updatedAt,
-	    w.created_at     	AS createdAt,
-	    
-	    b.quantity 			AS quantity,
-	    
-	    o.work_order_id  	AS workOrderId,
-	    o.work_order_status AS workOrderStatus
-	
-	FROM lot_master l
-	LEFT JOIN work_order o l.w.work_order_id = o.work_order_id
-	LEFT JOIN bom b ON o.bom_id = o.bom_id
-	LEFT JOIN product p ON b.product_id = p.product_id
-    
-    where l.type = 'FG'
-	ORDER BY l.lot_id ASC
+        COALESCE(fg.lot_id, w.lot_id) AS lotId,   -- FG LOT 있으면 FG LOT 표시
+        o.work_order_status AS worOrderStatus,
+        w.work_order_id AS workOrderId,
+        p.product_name AS productName,
+        pl.product_id AS productId
+    FROM work_result w
+    LEFT JOIN work_order o 
+        ON o.work_order_id = w.work_order_id
+    LEFT JOIN product_plan pl 
+        ON pl.plan_id = o.plan_id
+    LEFT JOIN product p 
+        ON p.product_id = pl.product_id
+    LEFT JOIN (
+        SELECT 
+            lot_id,
+            type,
+            work_order_id
+        FROM lot_master
+    ) fg ON fg.work_order_id = w.work_order_id and fg.type = 'FG'
+    WHERE w.lot_id IS NOT NULL
+    ORDER BY w.work_order_id ASC
 	OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY	
   </select>
+  
+  <select id="findByProcess" resultType="com.erp_mes.mes.plant.dto.ProcessDTO">
+        SELECT 
+            p.pro_nm,
+            p.type_nm
+        FROM 
+            process_routing r
+        LEFT JOIN
+            process p 
+        ON 
+            r.pro_id = p.pro_id
+
+            
+        WHERE r.product_id = #{productId}
+        ORDER BY 
+            r.pro_seq ASC
+    </select>
+    <select id="findDetail" resultType="com.erp_mes.mes.pop.dto.WorkResultDTO">
+        SELECT
+            w.result_id         AS resultId,
+            w.good_qty          AS goodQty,
+            w.defect_qty        AS defectQty,
+            w.updated_at        AS updatedAt,
+            w.defect_item_id    AS defectItemId,
+            
+            e.emp_name          AS empNm,
+            
+            o.work_order_id     AS workOrderId,
+            o.bom_id            AS bomId,
+            o.start_date        AS startDate,
+            o.end_date          AS endDate,
+            o.work_order_status AS workOrderStatus,
+            
+            pp.product_id       AS productId,
+            pp.plan_quantity    AS planQty,
+            prod.product_name   AS productNm
+                     
+        FROM work_order o
+            LEFT JOIN product_plan pp    ON o.plan_id = pp.plan_id
+            LEFT JOIN product prod       ON pp.product_id = prod.product_id
+            LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
+            LEFT JOIN employee e      ON e.emp_id = o.emp_id
+    
+        WHERE o.work_order_id = #{workOrderId}
+    </select>
   </mapper>

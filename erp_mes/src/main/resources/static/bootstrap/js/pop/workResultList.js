@@ -346,11 +346,18 @@ document.getElementById('grid').addEventListener('click', function(e) {
 				xhr.setRequestHeader(csrfHeader, csrfToken);
 			},
 			success: function() {
-				const row = grid.getData().find(r => r.workOrderId == workOrderId);
-				if (row) {
-					row.workOrderStatus = '검사대기';
-					grid.updateRow(row.resultId, row);
+				reloadGrid();
+				const $orderRow = $(`#workOrderBody tr[data-id='${workOrderId}']`);
+				if ($orderRow.length) {
+					$orderRow.find('td:last')
+						.text('검사대기')
+						.removeClass('status-progress status-pending status-other') // 모든 상태 클래스 제거
+						.css('color', '#000');
 				}
+				
+				$.getJSON('/pop/workOrder', function(workOrders) {
+				    updateProgressChart(workOrders); // 전체 작업지시 기준
+				});
 			},
 			error: function(err) {
 				console.error('작업완료 실패', err);

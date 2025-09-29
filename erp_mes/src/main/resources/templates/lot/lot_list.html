@@ -44,99 +44,52 @@ a[aria-expanded="true"]>.caret::before {
 							style="min-height: 56px; border-bottom: 1px solid #e3e6f0;">
 							<h6 class="m-0 font-weight-bold text-primary">LOT 계층구조</h6>
 							<div class="ml-auto">
-								<input id="search" class="form-control form-control-sm"
-									placeholder="LOT번호 또는 제품코드 검색">
+								<!--보류 <input id="search" class="form-control form-control-sm"
+									placeholder="LOT번호 또는 제품코드 검색">-->
 							</div>
 						</div>
 						<div class="card-body" style="height: 56vh; overflow: auto;">
-							<ul th:each="lotDTO : ${lotDTOList}" th:object="${lotDTO}"
-								class="list-group list-group-flush" id="lotTree">
+							<ul th:each="lotDTO, stat : ${lotDTOList}" th:object="${lotDTO}"
+								class="list-group list-group-flush lotTree" th:id="'lotTree_' + ${stat.index}" >
 								<!-- 1뎁스 -->
-								<li class="list-group-item p-2"><a data-toggle="collapse"
-									href="#lotA" class="d-flex align-items-center"
-									aria-expanded="false" aria-controls="lotA"> <span
-										class="mr-2 caret"></span> <span th:text="*{lotId}"></span> <!-- 예시 
-	LOT-20250709-NKFG-245-그레이-002 스니커즈 (진행중) -->
+								<li class="list-group-item p-2">
+                                    <a 
+                                        data-toggle="collapse"
+								        th:href="'#lotA_' + *{workOrderId}"
+                                        class="d-flex align-items-center parentList"
+                                        aria-expanded="false"
+                                        th:aria-controls="'lotA_' + *{workOrderId}"
+                                        th:data-value="*{workOrderId}"
+                                      > <span
+										class="mr-2 caret"></span> <span th:text="|*{lotId} *{productName} (*{worOrderStatus})|"></span>
 								</a>
-									<ul class="collapse pl-4 mt-2" id="lotA" data-parent="#lotTree">
+									<ul class="collapse pl-4 mt-2" th:id="'lotA_' + *{workOrderId}" th:data-parent="'#lotTree_' + ${stat.index}">
 										<!-- 공정 토글 -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#procA" aria-controls="procA"
-											class="d-flex align-items-center"> <span
-												class="mr-2 caret"></span> 공정
-										</a>
-											<ul class="collapse pl-3 mt-2" id="procA" data-parent="#lotA">
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-001","step":"재단"}'>재단</a>
-												</li>
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","step":"봉제"}'>봉제</a>
-												</li>
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-003","step":"조립"}'>조립</a>
-												</li>
-											</ul></li>
+											data-toggle="collapse" th:href="'#procA_' + *{workOrderId}" th:aria-controls="'procA_' + *{workOrderId}"
+											class="d-flex align-items-center childList" data-type="process" th:attr="data-value=*{productId}"> <span
+												class="mr-2 caret"></span> 공정</a>
+                                                <ul class="collapse pl-3 mt-2" th:id="'procA_' + *{workOrderId}" th:attr="data-parent='#lotA_' + *{workOrderId}">
+                                                </ul>
+										</li>
 										<!-- 자재 토글 -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#matA" aria-controls="matA"
-											class="d-flex align-items-center"> <span
+											data-toggle="collapse" th:href="'#matA' + *{workOrderId}" th:aria-controls="'matA' + *{workOrderId}"
+											class="d-flex align-items-center childList" data-type="material" th:attr="data-value=*{workOrderId}"> <span
 												class="mr-2 caret"></span> 자재
 										</a>
-											<ul class="collapse pl-3 mt-2" id="matA" data-parent="#lotA">
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-004","material":"가죽-브라운"}'>가죽-브라운</a>
-												</li>
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","material":"끈-그레이"}'>끈-그레이</a>
-												</li>
+											<ul class="collapse pl-3 mt-2" th:id="'matA' + *{workOrderId}" th:attr="data-parent='#lotA_' + *{workOrderId}">
+
 											</ul></li>
 										<!-- 설비 토글 (참고로 동일 패턴) -->
 										<li class="list-group-item py-1 px-2 border-0"><a
-											data-toggle="collapse" href="#eqA" aria-controls="eqA"
-											class="d-flex align-items-center"> <span
+											data-toggle="collapse" th:href="'#eqA' + *{workOrderId}" th:aria-controls="'eqA' + *{workOrderId}"
+											class="d-flex align-items-center childList" data-type="equipment" th:attr="data-value=*{productId}"> <span
 												class="mr-2 caret"></span> 설비
 										</a>
-											<ul class="collapse pl-3 mt-2" id="eqA" data-parent="#lotA">
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","equip":"내부 부착기 1호 / EQ060"}'>내부
-														부착기 1호 / EQ060</a></li>
-												<li class="list-group-item py-1 px-2 border-0"><a
-													href="#" class="lot-leaf"
-													data-lot='{"lotCode":"LOT-20250709-NKFG-245-그레이-002","equip":"조립 자동화 1호 / EQ061"}'>조립
-														자동화 1호 / EQ061</a></li>
+											<ul class="collapse pl-3 mt-2" th:id="'eqA' + *{workOrderId}" th:attr="data-parent='#lotA_' + *{workOrderId}">
 											</ul></li>
 									</ul></li>
-
-								<!-- 더미 2건 -->
-								<!-- <li class="list-group-item p-2">
-	                  <a data-toggle="collapse" href="#lot-20240715" class="d-flex align-items-center collapsed" aria-expanded="false">
-	                    <span class="mr-2 caret"></span>
-	                    <span class="text-truncate">LOT-20240715-NKAF-270-검정-001 스니커즈 (완료)</span>
-	                  </a>
-	                  <ul class="collapse pl-4 mt-2" id="lot-20240715" data-parent="#lotTree">
-	                    <li class="list-group-item py-1 px-2 border-0">
-	                      <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20240715-NKAF-270-검정-001","empNo":"20231102","itemName":"Black Sneaker","itemCode":"NKAF","itemType":"스니커즈","size":270,"color":"검정","heel":2,"status":"완료","planQty":120,"startDate":"2024-07-15"}'>공정</a>
-	                    </li>
-	                  </ul>
-	                </li>
-	
-	                <li class="list-group-item p-2">
-	                  <a data-toggle="collapse" href="#lot-20230621" class="d-flex align-items-center collapsed" aria-expanded="false">
-	                    <span class="mr-2 caret"></span>
-	                    <span class="text-truncate">LOT-20230621-JILL-235-검정-002 구두 (완료)</span>
-	                  </a>
-	                  <ul class="collapse pl-4 mt-2" id="lot-20230621" data-parent="#lotTree">
-	                    <li class="list-group-item py-1 px-2 border-0">
-	                      <a href="#" class="lot-leaf" data-lot='{"lotCode":"LOT-20230621-JILL-235-검정-002","empNo":"20220930","itemName":"Dress Shoes","itemCode":"JILL","itemType":"구두","size":235,"color":"검정","heel":4,"status":"완료","planQty":80,"startDate":"2023-06-21"}'>공정</a>
-	                    </li>
-	                  </ul>
-	                </li> -->
 							</ul>
 						</div>
 					</div>
@@ -152,69 +105,7 @@ a[aria-expanded="true"]>.caret::before {
 						</div>
 						<div class="card-body">
 							<div class="container-fluid px-0">
-								<div class="row">
-								<!--
-									<div class="col-6">
-										 <div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">담당부서</span>
-											<span class="font-weight-normal">영업부</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">담당
-												팀</span> <span class="font-weight-normal">2팀</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">공정진행상태</span>
-											<span class="font-weight-normal">작업종료</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">작업시작일</span>
-											<span class="font-weight-normal">2025-07-09</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">생산수량</span>
-											<span class="font-weight-normal">32</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">설비명</span>
-											<span class="font-weight-normal">내부 부착기 1호</span>
-										</div>
-
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">설비명</span>
-											<span class="font-weight-normal">내부 부착기 1호</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">설비명</span>
-											<span class="font-weight-normal">내부 부착기 1호</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">설비명</span>
-											<span class="font-weight-normal">내부 부착기 1호</span>
-										</div> 
-									</div>
-									<div class="col-6">
-										 <div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">공정장</span>
-											<span class="font-weight-normal">정재윤</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">공정장
-												사번</span> <span class="font-weight-normal">20240025</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">작업종료일</span>
-											<span class="font-weight-normal">2025-07-09</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">불량수량</span>
-											<span class="font-weight-normal">0</span>
-										</div>
-										<div class="mb-3">
-											<span class="text-secondary font-weight-bold d-block">설비코드</span>
-											<span class="font-weight-normal">EQ060</span>
-										</div> 
-									</div>-->
+								<div id="lotDetailRow" class="row">
 								</div>
 							</div>
 						</div>
@@ -228,50 +119,174 @@ a[aria-expanded="true"]>.caret::before {
 
 	<th:block layout:fragment="script">
 		<script>
-        // 상세 바인딩
-			function bindDetail(d) {
-				document.getElementById('d_lotCode').textContent = d.lotCode || '-';
-				  
-				 /*  $.ajax({
-				      url: '/api/lot/detail',
-				      method: 'GET',
-				      data: { type: type, id: id },
-				      success: function(detail) {
-				          // 우측 LOT 상세 화면 변경
-				          $('#lot-detail').html(renderLotDetail(detail, type));
-				      }
-				  }); */
-				
-				const badge = document.getElementById('d_status');
-				badge.textContent = d.status || '-';
-				badge.className = 'badge ' + (d.status === '완료' ? 'badge-success' : 'badge-info');
-			}
+        document.addEventListener("DOMContentLoaded", function() {         
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");   
+    
+    	        // 트리 항목 클릭 이벤트 위임
+                /*const lotTrees = document.getElementsByClassName('lotTree');
+                Array.from(lotTrees).forEach(function(tree) {
+                    tree.addEventListener('click', function(e) {
+                        const a = e.target.closest('a.lot-leaf');
+                        if (!a) return;
+                        e.preventDefault();
+                        const data = JSON.parse(a.getAttribute('data-lot'));
+                        //bindDetail(data);
+                    });
+                });
+    
+    			// 초기 선택(첫 번째 leaf)
+    			window.addEventListener('DOMContentLoaded', () => {
+    				const first = document.querySelector('#lotTree a.lot-leaf');
+    				if (first) first.click();
+    			});*/
+             
+                $(document).on("click", ".parentList", function (e) {
+                    e.preventDefault();
+                    
+                    let workOrderId = $(this).attr('data-value');
+                    
+                    $.ajax({
+                      url: "/lot/getLotDetail/" + workOrderId,
+                      method: "POST",
+                      contentType: "application/json",
+                      beforeSend: function(xhr) {
+                          xhr.setRequestHeader(header, token);
+                      },
+                      success: function (data) {
+                        //console.log(data)
+                    
+                        if (data.length > 0) {
+                            // 1) LOT 상세 카드의 .row를 찾음
+                             //    가능하면 <div id="lotDetailRow" class="row">로 id를 부여해 정확히 선택
+                             const $row = $('#lotDetailRow').length
+                               ? $('#lotDetailRow')
+                               : $('h6:contains("LOT 상세")').closest('.card').find('.card-body .container-fluid .row').first();
+    
+                             // 2) .row 안의 첫 번째 .col-6을 타깃으로, 없으면 생성
+                             let $col = $row.find('.col-6').first();
+                             if ($col.length === 0) {
+                               $col = $('<div class="col-6"></div>').appendTo($row);
+                             }
+    
+                             // 3) 기존 내용 제거 후(.empty), 최대 9개 항목 렌더
+                             $col.empty();
+    
+                             const item = Array.isArray(data) && data.length ? data[0] : null;
+                             const safe = v => (v === null || v === undefined || v === '') ? '-' : String(v);
+    
+                             const fields = [
+                               { label: '작업자', key: 'empNm' },
+                               { label: '제품명', key: 'productNm' },
+                               { label: '목표수량', key: 'planQty' },
+                               { label: '생산수량', key: 'goodQty' },
+                               { label: '불량수량', key: 'defectQty' },
+                               { label: '작업시작일', key: 'startDate' },
+                               { label: '작업종료일', key: 'endDate' },
+                               { label: '작업상태', key: 'workOrderStatus' },
+                             ];
+    
+                             fields.slice(0, 9).forEach(f => {
+                               const $mb = $('<div class="mb-3"></div>');
+                               $mb.append($('<span class="text-secondary font-weight-bold d-block"></span>').text(f.label));
+                               $mb.append($('<span class="font-weight-normal"></span>').text(item ? safe(item[f.key]) : '-'));
+                               $col.append($mb);
+                             });
+                            
+                        } else {
+                            
+                        }
+                      }
+                    });
+                });
+                
+                // 타입별 엔드포인트 매핑
+                const endpointByType = {
+                  process:   id => `/lot/getChildren/process/${id}`,
+                  material:  id => `/lot/getChildren/material/${id}`,
+                  equipment: id => `/lot/getChildren/equipment/${id}`
+                };
 
-	        // 트리 항목 클릭 이벤트 위임
-	        document.getElementById('lotTree').addEventListener('click', function(e) {
-				const a = e.target.closest('a.lot-leaf');
-				if (!a) return;
-				e.preventDefault();
-				const data = JSON.parse(a.getAttribute('data-lot'));
-				bindDetail(data);
-	        });
+                // 공용 렌더링: 응답 스키마가 달라도 안전하게 표시
+                function renderChildren($ul, data, type) {
+                  $ul.empty();
 
-			// 초기 선택(첫 번째 leaf)
-			window.addEventListener('DOMContentLoaded', () => {
-				const first = document.querySelector('#lotTree a.lot-leaf');
-				if (first) first.click();
-			});
-         
-			function renderLotDetail(detail, type) {
-				// 각 타입별로 detail을 HTML로 만들어줌
-				// 예시: type == 'material'일 때
-				if (type === 'material') {
-				    return '<div>LOT 코드:' + detail.lotCode + '</div>'
-				        + '<div>자재명:' + detail.materialName + '</div>';
-				}
-				   // process, equipment도 각각 렌더링 함수 만들기
-			}
+                  if (!Array.isArray(data) || data.length === 0) {
+                    // 필요 시 빈 상태 표시
+                    // $ul.append('<li class="list-group-item py-1 px-2 border-0 text-muted">데이터 없음</li>');
+                    return;
+                  }
 
+                  data.forEach(item => {
+                    let text = '';
+                    let extra = type === 'process'   ? (item.opSeq ? ` (OP:${item.opSeq})` : '') :
+                                type === 'material'  ? (item.qty ? ` x${item.qty}` : '') :
+                                type === 'equipment' ? (item.status ? ` [${item.status}]` : '') :
+                                                      (item.stateNm ? ` [${item.stateNm}]` : '');
+    
+                    if (type === 'material') {
+                      text = `${item.lotId} / ${item.materialId} / ${item.materialName} / ${item.materialType} / ${item.outCount}${extra}`;
+                    } else if (type === 'equipment') {
+                      text = `${item.equipmentId || item.equipId || '-'} / ${item.equipNm || item.eqpNm || '-'} / ${item.note || '-'}${extra}`;
+                    } else {
+                      const name = item.proNm || item.name || '-';
+                      const typeNm = item.typeNm || type;
+                      text = `${name} / ${typeNm}${extra}`;
+                    }
+
+                    const $li = $('<li>', {
+                      class: 'list-group-item py-1 px-2 border-0',
+                      text: text
+                    });
+
+                    $ul.append($li);
+                  });
+
+                  $ul.collapse('toggle');
+                }
+
+                // 공용 클릭 핸들러
+                $(document).on("click", ".childList", function (e) {
+                  e.preventDefault();
+
+                  const $trigger = $(this);
+                  const id   = $trigger.data("value");
+                  const type = ($trigger.data("type") || '').toString().toLowerCase();
+                  const $ul  = $trigger.next('ul');
+                  
+                  console.log("id===="+ id)
+                  console.log("type===="+ type)
+                  
+                  if (!id || !type || !endpointByType[type]) {
+                    console.warn('Invalid type or id for childList:', type, id);
+                    return;
+                  }
+
+                  $ul.empty();
+
+                  $.ajax({
+                    url: endpointByType[type](id),
+                    method: "POST",
+                    contentType: "application/json",
+                    beforeSend: function(xhr) {
+                      xhr.setRequestHeader(header, token);
+                    },
+                    success: function (data) {
+                       console.log(data)
+                      renderChildren($ul, data, type);
+                    },
+                    error: function (xhr) {
+                      console.error('Load children failed:', xhr);
+                      // 필요 시 오류 표시
+                      // $ul.append('<li class="list-group-item py-1 px-2 border-0 text-danger">로드 실패</li>');
+                    }
+                  });
+                });
+            });
+            
+            
+            
+            
 	</script>
 	</th:block>
 </body>
