@@ -259,9 +259,9 @@
 					<div class="bg-white py-2 collapse-inner rounded">
 						<h6 class="collapse-header">검사 관리:</h6>
 						<a class="collapse-item" th:href="@{/quality/qih}">품질검사 이력관리</a>
-						<h6 class="collapse-header">불량 관리:</h6>
-						<a class="collapse-item" th:href="@{/defect}">불량 관리</a> <a
-							class="collapse-item" th:href="@{/schedule}">분석 리포트</a>
+<!-- 						<h6 class="collapse-header">불량 관리:</h6> -->
+<!-- 						<a class="collapse-item" th:href="@{/defect}">불량 관리</a> <a -->
+<!-- 							class="collapse-item" th:href="@{/schedule}">분석 리포트</a> -->
 
 					</div>
 				</div></li>
@@ -578,47 +578,7 @@ function createMessageItem(message) {
     return messageItem;
 }
 
-//사이드바 메뉴 상태 유지 로직 추가
-//==========================================================================
 
-// 페이지 로드 시 이전에 열려있던 메뉴 복원
-function restoreMenuState() {
- 	// Session Storage에서 저장된 메뉴 ID를 가져옴
-	const activeCollapseId = sessionStorage.getItem('activeCollapseMenu');
- 
- 	if (activeCollapseId) {
-     	// 이전에 열려있던 메뉴의 collapse 요소를 찾고
-     	const collapseElement = document.getElementById(activeCollapseId);
-     
-     	if (collapseElement) {
-         	// Bootstrap의 'show' 클래스를 추가하여 메뉴를 펼침
-         	collapseElement.classList.add('show');
-         
-         	// 연결된 메뉴 제목(<a> 태그)에 'collapsed' 클래스를 제거하여 열림 상태로 유지
-         	const menuLink = document.querySelector(`[data-target="#${activeCollapseId}"]`);
-        	if (menuLink) {
-             	menuLink.classList.remove('collapsed');
-             	menuLink.setAttribute('aria-expanded', 'true');
-         	}
-     	}
- 	}
-}
-
-// 서브 메뉴(.collapse-item) 클릭 시 상태 저장
-function setupMenuStateSaving() {
- 	document.querySelectorAll('.collapse-item').forEach(item => {
-     	item.addEventListener('click', function() {
-         	// 클릭된 서브 메뉴가 속한 부모 collapse 메뉴의 ID를 찾아서
-         	// .collapse 클래스를 가진 가장 가까운 조상 요소를 찾고
-         	let parentCollapse = this.closest('.collapse');
-         	if (parentCollapse) {
-             	// 해당 ID 를 Session Storage에 저장
-             	sessionStorage.setItem('activeCollapseMenu', parentCollapse.id);
-         	}
-     	});
- 	});
-}
-//==========================================================================
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
