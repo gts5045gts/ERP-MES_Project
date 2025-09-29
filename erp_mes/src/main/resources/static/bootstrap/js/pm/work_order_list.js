@@ -23,7 +23,7 @@ const workOrderGrid = new tui.Grid({
 	  }
     }
   ],
-  bodyHeight: 'fitToParent'
+  bodyHeight: 500
 });
 
 async function loadWorkOrder() {

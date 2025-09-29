@@ -41,22 +41,26 @@
 							<h6 class="m-0 font-weight-bold text-primary">출퇴근 관리</h6>
 						</div>
 						<div class="card-body">
-							<div class="d-flex align-items-center mb-3">
-								<label for="commute_start_time" class="mr-2">출근시간 :</label> 
-								<input
-									type="text" id="commute_start_time" class="form-control"
-									disabled
-									th:value="${checkInTimeStr}">
+							<div class="mb-3 row align-items-center">
+							    <label for="commute_start_time" class="col-auto">출근시간 :</label>
+							    <div class="col">
+							        <input type="text" id="commute_start_time" class="form-control form-control-sm" disabled th:value="${checkInTimeStr}">
+							    </div>
+							    <div class="col-auto">
+							        <button id="checkInBtn" class="btn btn-success btn-sm" style="min-width: 80px;">출근</button>
+							    </div>
 							</div>
-							<div class="d-flex align-items-center mb-3">
-								<label for="commute_end_time" class="mr-2">퇴근시간 :</label> 
-								<input
-									type="text" id="commute_end_time" class="form-control" disabled
-      								th:value="${checkOutTimeStr}">
+							
+							<div class="mb-3 row align-items-center">
+							    <label for="commute_end_time" class="col-auto">퇴근시간 :</label>
+							    <div class="col">
+							        <input type="text" id="commute_end_time" class="form-control form-control-sm" disabled th:value="${checkOutTimeStr}">
+							    </div>
+							    <div class="col-auto">
+							        <button id="checkOutBtn" class="btn btn-success btn-sm" style="min-width: 80px;">퇴근</button>
+							    </div>
 							</div>
 							<div class="d-flex align-items-center gap-4">
-								<button id="checkInBtn" class="btn btn-success btn-sm me-3" style="min-width: 80px; margin-right:100px;">출근</button>
-							    <button id="checkOutBtn" class="btn btn-success btn-sm" style="min-width: 80px; margin-right:190px;">퇴근</button>
 							</div>
 						</div>
 					</div>
