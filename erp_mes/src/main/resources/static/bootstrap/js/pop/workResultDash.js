@@ -164,24 +164,31 @@ const STORAGE_KEY = "cumulativeEquipment";
 const Y_AXIS_MIN = 10;
 
 function updateEquipmentChart(bomData = []) {
-	    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-	    bomData.forEach(row => {
-	        const equip = row.equipmentNm;
-	        saved[equip] = (saved[equip] || 0) + 1; // 누적
-	    });
-
-	    // 로컬 스토리지 업데이트
-	    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-
-	    // 차트용 데이터 변환
-	    const data = Object.keys(saved).map(equip => ({
-	        equipment: equip,
-	        count: saved[equip]
-	    }));
-
-	    drawChart(data);
+	if (!bomData || bomData.length === 0) {
+		// 데이터 없으면 빈 차트만 표시
+		drawChart([]);
+		return;
 	}
+
+	const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+	bomData.forEach(row => {
+		const equip = row.equipmentNm;
+		saved[equip] = (saved[equip] || 0) + 1; // 누적
+	});
+
+	// 로컬 스토리지 업데이트
+	localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+	// 차트용 데이터 변환
+	const data = Object.keys(saved).map(equip => ({
+		equipment: equip,
+		count: saved[equip]
+	}));
+
+	drawChart(data);
+}
 // 새로고침 시 저장된 값 복원 후 차트 표시
 document.addEventListener("DOMContentLoaded", () => {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
