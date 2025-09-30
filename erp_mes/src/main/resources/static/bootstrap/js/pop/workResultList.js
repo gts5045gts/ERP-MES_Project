@@ -11,10 +11,8 @@ let totalPages = 1;
 // 컬럼 정의
 const columns = [
 	{ header: 'Result ID', name: 'resultId', hidden: true},
-	{ header: '작업지시아이디', name: 'workOrderId', filter: 'select', align: 'center'},
+	{ header: '작업지시아이디', name: 'workOrderId', sortable: true, align: 'center'},
 	{ header: '제품명', name: 'productNm', filter: 'select' , align: 'center'},
-//    { header: '공정명', name: 'processNm', filter: 'select' },
-//    { header: '설비명', name: 'equipmentNm', hidden: true },
 	{ header: '목표수량', name: 'planQty' , align: 'center'},
     { header: '생산수량', name: 'goodQty' , align: 'center'},
     { 
@@ -95,7 +93,6 @@ function loadPage(page) {
             totalPages = res.totalPages || Math.ceil(res.length / 20);
             currentPage = page;
 			
-
             if (page === 0) {
                 grid.resetData(res); // 0페이지는 초기화
             } else {
@@ -107,55 +104,49 @@ function loadPage(page) {
 
 // 작업시작 버튼 클릭
 $('#workOrderCheck').on('click', function() {
-	const workOrderId = $(this).data('id');
+    const workOrderId = $(this).data('id');
+
+    const modalEl = document.getElementById('popModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+
     $.ajax({
         url: `/pop/startWork`,
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify ({ workOrderId: workOrderId }),
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader(csrfHeader, csrfToken);
-        },
+        data: JSON.stringify({ workOrderId: workOrderId }),
+        beforeSend: function(xhr) { xhr.setRequestHeader(csrfHeader, csrfToken); },
         success: function(res) {
-            // DB 기준으로 화면 갱신
+			// 새 데이터 처리
 			res.forEach(item => {
-				// 작업 시작 시점에 생산수량을 목표수량으로 세팅
-				if (!item.goodQty) {  // 이미 값이 있으면 그대로, 없으면
-					item.goodQty = item.planQty || 0;
+				if (!item.goodQty) item.goodQty = item.planQty || 0;
+
+				// 1️⃣ Grid 상태 업데이트
+				grid.setValue(item.resultId, 'workOrderStatus', '진행중');
+
+				// 2️⃣ 작업지시서 테이블 상태 업데이트
+				const $orderRow = $(`#workOrderBody tr[data-id='${item.workOrderId}']`);
+				if ($orderRow.length) {
+					$orderRow.find('td:last')
+						.text('진행중')
+						.removeClass()
+						.addClass('status-progress')
+						.css('color', '#000');
 				}
-				grid.appendRow(item);
-			});
-			
-			// 작업지시서의 상태변경
-			const workOrderIds = [...new Set(res.map(item => item.workOrderId))];
-		    workOrderIds.forEach(id => {
-		        const row = $(`#workOrderBody tr[data-id='${id}']`);
-		        if(row.length) {
-		            row.find('td:last')
-		               .text('진행중')
-		               .removeClass()
-		               .addClass('status-progress');
-		        }
-		    });
-			
-			$.ajax({
-				url: `/pop/bom/workOrder/${workOrderId}`,
-				type: 'GET',
-				dataType: 'json',
-				success: function(equipData) {
-					updateEquipmentChart(equipData); // 바로 그래프 업데이트
-				},
-				error: function(err) { console.error('BOM 조회 실패:', err); }
 			});
 
+            // 그리드 갱신 (맨 위로 올라가도록)
+            const allData = [...res, ...grid.getData()];
+            grid.resetData(allData);
+            grid.sort({ columnName: 'updatedAt', ascending: false });
 
-			
-        // 모달 닫기 및 체크박스 없애기
-            $('#popModal').modal('hide');
+            // 차트 업데이트
+			$.getJSON(`/pop/bom/workOrder/${workOrderId}`, function(bomData) {
+				console.log('BOM 데이터', bomData);
+			    updateEquipmentChart(bomData); // 서버 데이터 기준으로 바로 렌더
+			});
         },
-        error: function(err) {
-            console.error('작업 시작 실패:', err);
-        }
+        error: function(err) { console.error('작업 시작 실패:', err); }
     });
 });
 

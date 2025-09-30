@@ -1,5 +1,4 @@
 //=============== 도넛차트(불량률, 생산률) ======================================= 
-
 function updateQuantityChart(workOrders) {
 	var width = 230,
 		height = 270,
@@ -89,10 +88,12 @@ function updateQuantityChart(workOrders) {
 //=============== 도넛차트(전체진행률) ======================================= 
 function updateProgressChart(workOrders) {
 	var width = 230, height = 270, radius = Math.min(width, height) / 2;
+	
+	var filteredWorkOrders = workOrders.filter(d => d.workOrderStatus !== '재고부족');
 
 	// 완료/미완료 계산
-	var total = workOrders.length;
-	var completed = workOrders.filter(d => d.workOrderStatus === '검사대기' || d.workOrderStatus === '작업완료').length;
+	var total = filteredWorkOrders.length;
+	var completed = filteredWorkOrders.filter(d => d.workOrderStatus === '검사대기' || d.workOrderStatus === '작업완료').length;
 	var incomplete = total - completed;
 
 	var data = [

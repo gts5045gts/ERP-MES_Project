@@ -13,6 +13,9 @@ $(document).ready(function() {
 			const seenIds = new Set();
 
             workOrders.forEach(function(item) {
+				
+				if (item.workOrderStatus === '재고부족') return;
+				
 				if (seenIds.has(item.workOrderId)) {
                     return; // 이미 추가된 workOrderId면 스킵
                 }
@@ -27,7 +30,7 @@ $(document).ready(function() {
 			    }
 				
                 const tr = `
-                    <tr data-id="${item.workOrderId}" data-product-id="${item.productId}" data-equipment="${item.equipmentNm}" data-goodqty="${item.goodQty}">
+                    <tr data-id="${item.workOrderId}" data-emp-id="${item.empId}" data-product-id="${item.productId}" data-equipment="${item.equipmentNm}" data-goodqty="${item.goodQty}">
                         <td>${item.workOrderId}</td>
                         <td>${item.productNm}</td>
                         <td>${item.startDate}</td>
@@ -77,6 +80,7 @@ $('#workOrderBody').on('click', 'tr', function() {
 	
 	const productId = $(this).data('product-id');
 	const workOrderId = $(this).data('id');
+	const empId = $(this).data('emp-id');
 	
 	const status = $(this).find('td:last').text().trim(); // 마지막 td가 상태라고 가정
 
@@ -100,7 +104,7 @@ $('#workOrderBody').on('click', 'tr', function() {
     modal.show();
 	
 	$('#workOrderCheck').data('id', workOrderId);
-	
+	$('#workOrderCheck').data('emp-id', empId);
 	
 	// 모달이 완전히 열린 후 Grid 초기화
 	modalEl.addEventListener('shown.bs.modal', function() {
@@ -111,8 +115,7 @@ $('#workOrderBody').on('click', 'tr', function() {
 	        success: function(bomData) {
 				
 	            Workgrid1.resetData(bomData);   // BOM 데이터를 Grid에 세팅
-	            Workgrid1.refreshLayout();      // 레이아웃 갱신
-
+	            Workgrid1.refreshLayout();      // 레이아웃 갱신				
 				
 	        },
 	        error: function(xhr, status, error) {
@@ -124,11 +127,6 @@ $('#workOrderBody').on('click', 'tr', function() {
 });
 
 
-$('#popModal').on('hidden.bs.modal', function () {
-	$('#shortageBody').empty();       // tbody 비우기
-    $('#shortageList').hide();        // 리스트 숨기기
-    selectedInput = null;             // 선택된 input 초기화
-    $('#Workgrid1 .material-req').prop('checked', false); // 체크박스 초기화
-});
+
 
 

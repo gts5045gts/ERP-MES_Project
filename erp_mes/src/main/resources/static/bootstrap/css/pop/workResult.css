@@ -139,6 +139,10 @@
     font-weight: 500 !important;
 }
 
+#grid .tui-grid-cell {
+    font-size: 14px !important;
+}
+
 
 
 /* 수정 모달 */

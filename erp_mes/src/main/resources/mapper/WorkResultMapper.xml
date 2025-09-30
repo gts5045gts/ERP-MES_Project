@@ -94,6 +94,7 @@
         o.work_order_id   	AS workOrderId,
         o.bom_id          	AS bomId,
         o.work_order_status AS workOrderStatus,
+        o.emp_id           AS empId,
         pr.product_id		AS productId,
         pr.plan_quantity    AS planQty,
 		prod.product_name 	AS productNm
@@ -127,6 +128,7 @@
     LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
 
 	WHERE o.work_order_status IN ('작업완료', '검사대기', '진행중')
+	AND o.emp_id = #{empId}
 	ORDER BY 
 	  CASE 
 	    WHEN o.work_order_status = '진행중' THEN 1

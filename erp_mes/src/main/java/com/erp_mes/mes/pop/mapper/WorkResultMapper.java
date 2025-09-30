@@ -16,6 +16,9 @@ public interface WorkResultMapper {
 
 	// bom조회를 위한 조인
 	List<WorkResultDTO> workOrderWithBom(@Param("productId") String productId);
+	
+	// 하나의 작업지시 기준 설비 조회
+	List<WorkResultDTO> bomByWorkOrderId(@Param("workOrderId") Long workOrderId, @Param("empId") String empId);
     
     // 작업지시서의 작업상태 업데이트
 	int updateWorkOrderStatus(@Param("workOrderId") Long workOrderId);
@@ -32,7 +35,6 @@ public interface WorkResultMapper {
 	// 불량 실적에 로트아이디 넣기
 	String findLotIdByWorkOrderId(@Param("workOrderId") Long workOrderId);
 
-	List<WorkResultDTO> bomByWorkOrderId(@Param("workOrderId") Long workOrderId);
 
 
 

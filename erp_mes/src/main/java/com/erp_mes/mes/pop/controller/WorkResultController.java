@@ -37,7 +37,6 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 public class WorkResultController {
 
-    private final CommonCodeController commonCodeController;
 	
 	private final WorkResultMapper workResultMapper;
 	private final WorkResultService workResultService;
@@ -69,11 +68,12 @@ public class WorkResultController {
 		return workResultService.workOrderWithBom(productId);
 	}
 	
-	// 하나의 작업지시 기준 bom 조회
+	// 하나의 작업지시 기준 설비 조회
 	@GetMapping("/bom/workOrder/{workOrderId}")
 	@ResponseBody
-	public List<WorkResultDTO> getBomByWorkOrder(@PathVariable("workOrderId") Long workOrderId) {
-	    return workResultService.bomByWorkOrderId(workOrderId);
+	public List<WorkResultDTO> getBomByWorkOrder(@PathVariable("workOrderId") Long workOrderId ,Authentication authentication) {
+		String empId = authentication.getName();
+		return workResultService.bomByWorkOrderId(workOrderId, empId);
 	}
 	
 	// 작업시작 클릭시 작업현황 업데이트
@@ -92,9 +92,11 @@ public class WorkResultController {
 	@GetMapping("/workResultList")
 	@ResponseBody
 	public List<WorkResultDTO> getWorkResultList(
+			Authentication authentication,
 			@RequestParam(value = "page", defaultValue = "0") int page, 
 			@RequestParam(value = "size", defaultValue = "20") int size) {
-		return workResultService.getPagedWorkResults(page, size);
+		String empId = authentication.getName();
+		return workResultService.getPagedWorkResults(page, size, empId);
 	}
 	
 	// 수량 업데이트

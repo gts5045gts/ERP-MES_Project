@@ -44,6 +44,13 @@ public class WorkResultService {
 	    return workResultMapper.workOrderWithBom(productId);
 	}
 	
+
+	// 하나의 작업지시 안에 설비조회
+	public List<WorkResultDTO> bomByWorkOrderId(Long workOrderId, String empId) {
+		return workResultMapper.bomByWorkOrderId(workOrderId, empId);
+	}
+
+	
 	
 	// 작업시작 클릭시 작업현황에 업데이트
 	@Transactional
@@ -65,13 +72,13 @@ public class WorkResultService {
 
 
 	// 무한 스크롤
-	public List<WorkResultDTO> getPagedWorkResults(int page, int size) {
+	public List<WorkResultDTO> getPagedWorkResults(int page, int size, String empId) {
         int offset = page * size;
 
         Map<String, Object> params = new HashMap<>();
         params.put("offset", offset);
         params.put("size", size);
-
+        params.put("empId", empId);
         return workResultMapper.workResultWithPaged(params);
     }
 
@@ -95,11 +102,6 @@ public class WorkResultService {
 				.stream()
                 .map(code -> new CommonDetailCodeDTO(code.getComDtId(), code.getComDtNm()))
                 .collect(Collectors.toList());
-	}
-
-
-	public List<WorkResultDTO> bomByWorkOrderId(Long workOrderId) {
-		return workResultMapper.bomByWorkOrderId(workOrderId);
 	}
 
 

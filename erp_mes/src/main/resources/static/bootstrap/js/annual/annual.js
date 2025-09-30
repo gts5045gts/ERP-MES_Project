@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         { header: '입사일', name: 'joinDate', sortable: true},
         { header: '총 휴가일수', name: 'annTotal', sortable: true},
         { header: '사용 휴가일수', name: 'annUse', sortable: true},
-        { header: '잔여 휴가일수', name: 'annRemain', sortable: true},
-        { header: '휴가 소멸일', name: 'annExpire', sortable: true }
+        { header: '잔여 휴가일수', name: 'annRemain', sortable: true}
+//        { header: '휴가 소멸일', name: 'annExpire', sortable: true }
     ];
 
 	grid = new tui.Grid({
