@@ -92,9 +92,11 @@ public class WorkResultController {
 	@GetMapping("/workResultList")
 	@ResponseBody
 	public List<WorkResultDTO> getWorkResultList(
+			Authentication authentication,
 			@RequestParam(value = "page", defaultValue = "0") int page, 
 			@RequestParam(value = "size", defaultValue = "20") int size) {
-		return workResultService.getPagedWorkResults(page, size);
+		String empId = authentication.getName();
+		return workResultService.getPagedWorkResults(page, size, empId);
 	}
 	
 	// 수량 업데이트

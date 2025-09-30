@@ -112,7 +112,8 @@ $('#workOrderBody').on('click', 'tr', function() {
 				
 	            Workgrid1.resetData(bomData);   // BOM 데이터를 Grid에 세팅
 	            Workgrid1.refreshLayout();      // 레이아웃 갱신
-
+				
+				updateEquipmentChart(bomData);
 				
 	        },
 	        error: function(xhr, status, error) {

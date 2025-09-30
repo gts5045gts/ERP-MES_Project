@@ -65,13 +65,13 @@ public class WorkResultService {
 
 
 	// 무한 스크롤
-	public List<WorkResultDTO> getPagedWorkResults(int page, int size) {
+	public List<WorkResultDTO> getPagedWorkResults(int page, int size, String empId) {
         int offset = page * size;
 
         Map<String, Object> params = new HashMap<>();
         params.put("offset", offset);
         params.put("size", size);
-
+        params.put("empId", empId);
         return workResultMapper.workResultWithPaged(params);
     }
 

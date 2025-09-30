@@ -1,5 +1,4 @@
 //=============== 도넛차트(불량률, 생산률) ======================================= 
-
 function updateQuantityChart(workOrders) {
 	var width = 230,
 		height = 270,
@@ -171,33 +170,22 @@ function updateEquipmentChart(bomData = []) {
 		return;
 	}
 
-	const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+	const equipmentCounts = {};
 
 	bomData.forEach(row => {
 		const equip = row.equipmentNm;
-		saved[equip] = (saved[equip] || 0) + 1; // 누적
+		equipmentCounts[equip] = (equipmentCounts[equip] || 0) + 1;
 	});
 
-	// 로컬 스토리지 업데이트
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
 
 	// 차트용 데이터 변환
 	const data = Object.keys(saved).map(equip => ({
 		equipment: equip,
-		count: saved[equip]
+		count: equipmentCounts[equip]
 	}));
 
 	drawChart(data);
 }
-// 새로고침 시 저장된 값 복원 후 차트 표시
-document.addEventListener("DOMContentLoaded", () => {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const data = Object.keys(saved).map(equip => ({
-        equipment: equip,
-        count: saved[equip]
-    }));
-    drawChart(data);
-});
 
 function drawChart(data) {
     const svg = d3.select("#equipmentChart");

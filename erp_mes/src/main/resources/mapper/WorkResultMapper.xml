@@ -72,6 +72,7 @@
 	JOIN process_routing pr ON pr.bom_id = o.bom_id
 	JOIN equipment e ON e.equip_id = pr.equip_id
 	WHERE o.work_order_id = #{workOrderId}
+	AND o.emp_id = #{empId}
 </select>
 
 
@@ -127,6 +128,7 @@
     LEFT JOIN work_result w      ON w.work_order_id = o.work_order_id
 
 	WHERE o.work_order_status IN ('작업완료', '검사대기', '진행중')
+	AND o.emp_id = #{empId}
 	ORDER BY 
 	  CASE 
 	    WHEN o.work_order_status = '진행중' THEN 1
