@@ -1,0 +1,2 @@
+# NOVA
+ERP-MES 시스템
